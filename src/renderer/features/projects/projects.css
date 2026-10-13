@@ -4,6 +4,13 @@
   padding: 4px 0 12px;
 }
 
+.start-buttons .button-outline {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .root-block {
   display: flex;
   flex-direction: column;

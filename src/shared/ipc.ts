@@ -72,6 +72,7 @@ export const IpcChannel = {
   resourcesGet: 'resources:get',
   toolsLint: 'tools:lint',
   toolsFormat: 'tools:format',
+  agentsCommands: 'agents:commands',
   shellReveal: 'shell:reveal',
   portsList: 'ports:list',
   portsStop: 'ports:stop',
@@ -163,6 +164,9 @@ export interface DesktopApi {
   tools: {
     lint(request: LintRequest): Promise<LintResult>
     format(request: FormatRequest): Promise<FormatResult>
+  }
+  agents: {
+    listCommands(): Promise<string[]>
   }
   shell: {
     reveal(path: string): Promise<void>

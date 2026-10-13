@@ -14,6 +14,7 @@ import { ConfirmHost } from './ui/ConfirmHost'
 import { ToastHost } from './ui/ToastHost'
 import { useCloseRequestStore } from './state/closeRequestStore'
 import { useLayoutStore } from './state/layoutStore'
+import { startProjectTabSync } from './state/projectTabSync'
 import { useProjectsStore } from './state/projectsStore'
 import { useRefreshStore } from './state/refreshStore'
 import { restoreSavedSession, startSessionPersistence } from './state/sessionPersistence'
@@ -26,7 +27,12 @@ function useStartupData(): void {
 
   useEffect(() => {
     restoreSavedSession()
-    return startSessionPersistence()
+    const stopPersistence = startSessionPersistence()
+    const stopProjectTabSync = startProjectTabSync()
+    return () => {
+      stopPersistence()
+      stopProjectTabSync()
+    }
   }, [])
 
   useEffect(() => {

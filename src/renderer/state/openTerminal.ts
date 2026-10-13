@@ -1,4 +1,5 @@
 import { accountToRef } from '../../shared/accounts'
+import { providerOfCommand, type AgentLauncher } from '../../shared/agentLaunchers'
 import { resumeCommandFor } from '../../shared/resumeCommand'
 import type { ProviderId, SessionSummary } from '../../shared/types'
 import { selectActiveAccount, useAccountsStore } from './accountsStore'
@@ -11,16 +12,21 @@ const startCommandByProvider: Record<ProviderId, string> = {
   codex: 'codex'
 }
 
-export function openTerminal(provider: ProviderId | null): void {
+function openInActiveProject(startCommand: string | undefined): void {
   const cwd = useProjectsStore.getState().activeProjectPath
+  const provider = startCommand === undefined ? null : providerOfCommand(startCommand)
   const account = provider === null ? null : selectActiveAccount(useAccountsStore.getState(), provider)
 
-  useWorkspaceStore.getState().openTerminalTab({
-    cwd,
-    account: accountToRef(account),
-    startCommand: provider === null ? undefined : startCommandByProvider[provider]
-  })
+  useWorkspaceStore.getState().openTerminalTab({ cwd, account: accountToRef(account), startCommand })
   useLayoutStore.getState().showSection('projects')
+}
+
+export function openTerminal(provider: ProviderId | null): void {
+  openInActiveProject(provider === null ? undefined : startCommandByProvider[provider])
+}
+
+export function openAgent(launcher: AgentLauncher): void {
+  openInActiveProject(launcher.command.trim())
 }
 
 export async function openAccountSignInTerminal(

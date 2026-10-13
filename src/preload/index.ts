@@ -65,6 +65,9 @@ const api: DesktopApi = {
     lint: (request) => ipcRenderer.invoke(IpcChannel.toolsLint, request),
     format: (request) => ipcRenderer.invoke(IpcChannel.toolsFormat, request)
   },
+  agents: {
+    listCommands: () => ipcRenderer.invoke(IpcChannel.agentsCommands)
+  },
   shell: {
     reveal: (path) => ipcRenderer.invoke(IpcChannel.shellReveal, path)
   },

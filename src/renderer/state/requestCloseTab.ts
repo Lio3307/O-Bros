@@ -1,10 +1,10 @@
+import { tabsInActiveProject } from './activeProjectTabs'
 import { askToConfirm } from './confirmStore'
 import { useWorkspaceStore } from './workspaceStore'
 
 function unsavedTitles(exceptTabId: string | null): string[] {
-  return useWorkspaceStore
-    .getState()
-    .tabs.filter((tab) => tab.kind === 'file' && tab.isModified && tab.id !== exceptTabId)
+  return tabsInActiveProject()
+    .filter((tab) => tab.kind === 'file' && tab.isModified && tab.id !== exceptTabId)
     .map((tab) => tab.title)
 }
 

@@ -215,3 +215,51 @@
 - Implementation / validation / outcome: Written / typecheck and test listing pass / not run.
 - Result acceptance: Pending user feedback.
 - Learning: Prove terminal behaviour through a side effect on disk, not through pixels.
+
+### Tabs follow the selected project
+- Scope and goal: Switching from folder A to folder B must not show A's terminals, in the tab bar or in Open sessions.
+- Choice and authority: User-requested. A tab belongs to the selected project when its folder (terminal) or path (file) is inside it. Hidden terminals stay mounted and running, only hidden from lists. Selecting a project restores the tab last used in it. Opening, resuming or activating a tab outside the selected project selects its closest project first, so a tab is never opened invisibly.
+- Evidence: projectTabs.test.ts, closestProject.test.ts and groupTerminals.test.ts pass; typecheck passes. The interface was not launched.
+- Alternatives and sacrifice: Closing A's terminals on switch was rejected because it kills running work. One tab list per project in the store was rejected because it changes persistence and every consumer. The Resource Manager still lists every terminal, since hidden ones use memory.
+- Residual risk/debt: A terminal with no folder shows in every project. Project matching compares path text, so a different drive-letter case would count as another project.
+- Mitigation and revisit trigger: Revisit if users want terminals pinned to all projects, or if path case causes surprises on Windows.
+- Recovery and ownership: src/renderer/features/terminal/projectTabs.ts, src/renderer/state/projectTabSync.ts, src/renderer/state/activeProjectTabs.ts.
+- Implementation / validation / outcome: Written / unit tests and typecheck / not yet seen running.
+- Result acceptance: Pending user feedback.
+- Learning: Filter at the view and keep the data global, so switching projects never destroys state.
+
+### Clickable file:line references in terminals
+- Scope and goal: Open a file at a line straight from compiler errors, stack traces and agent output.
+- Choice and authority: User-requested. A pure parser (src/shared/fileReference.ts) splits each terminal line into words and reads path:line:column or path(line,column), without regular expressions. A link provider registers it with xterm. Ctrl or Cmd plus click opens it through the existing editor navigation.
+- Evidence: fileReference.test.ts and the new paths tests pass; typecheck passes. The terminal was not launched.
+- Alternatives and sacrifice: Plain click was rejected because it fights text selection. A new "file exists" IPC call was rejected; the existing directory listing proves existence and keeps the project-folder guard. Links that wrap across two screen lines and paths with spaces are not detected.
+- Residual risk/debt: Relative paths resolve from the folder the terminal started in, not from where the shell has since moved. Words that look like a file with a number, such as notes.txt:5 in prose, become links.
+- Mitigation and revisit trigger: Revisit if users report wrong files opening; the fix would be reading the shell working directory.
+- Recovery and ownership: src/shared/fileReference.ts, src/renderer/features/terminal/fileLinkProvider.ts and openFileReference.ts.
+- Implementation / validation / outcome: Written / unit tests and typecheck / not yet seen running.
+- Result acceptance: Pending user feedback.
+- Learning: A parser with no UI dependency can carry all the edge cases and be tested without a terminal.
+
+### Configurable agent buttons
+- Scope and goal: The Projects panel had Claude and Codex hard-coded, but people use other agents (OpenCode and more) and different ones per machine.
+- Choice and authority: User-requested. A list of launchers (name and command) saved in local storage, defaulting to Claude and Codex. Each button runs its command in a new terminal in the selected folder. A command that starts with claude or codex still picks the active account. Settings, Agents lets the user add, rename, edit, remove and reset, and lists known agents found in PATH.
+- Evidence: agentLaunchers.test.ts and agentDetector.test.ts pass; typecheck passes. The interface was not launched.
+- Alternatives and sacrifice: Detecting and showing only installed agents automatically was rejected because it hides a button when PATH differs inside the app. Accounts and usage stay limited to Claude and Codex because only those two have account folders and usage data.
+- Residual risk/debt: PATH is read from the app process, so an agent installed after launch, or a shell-only alias, is not found until restart or added by hand. The detection list of known agents is hard-coded.
+- Mitigation and revisit trigger: Add agents by hand in Settings. Revisit the known list when a new agent CLI becomes common.
+- Recovery and ownership: src/shared/agentLaunchers.ts, src/main/services/agents/agentDetector.ts, src/renderer/state/agentLaunchersStore.ts, AgentsPage.tsx.
+- Implementation / validation / outcome: Written / unit tests and typecheck / not yet seen running.
+- Result acceptance: Pending user feedback.
+- Learning: A launcher is just a name and a command; only the two providers with accounts need special handling.
+
+### Agents: two buttons, none by default, any CLI from PATH
+- Scope and goal: The Projects row broke the layout with four buttons, and the machine-specific agents should not be assumed.
+- Choice and authority: User-requested. At most two agent buttons, chosen with a Show checkbox; none until the user picks. The main process lists every runnable program in PATH, so o-bros can suggest well-known agents and search for any other command. Known agents show their logo (paths copied from the lobehub icons package, saved in src/renderer/ui/agentMarks.ts); others show a generic icon.
+- Evidence: agentLaunchers.test.ts and agentDetector.test.ts pass; typecheck passes. The interface was not launched.
+- Alternatives and sacrifice: Guessing which programs are agents by name was rejected as unreliable, so the user confirms by adding. Adding the icon package as a dependency was rejected; only 19 icons are embedded.
+- Residual risk/debt: Some names collide with other tools (goose is also a database migration tool, vibe and amp are generic). PATH comes from the app process, so a new install needs a restart. Logos are trademarks of their owners.
+- Mitigation and revisit trigger: Suggestions are only added when the user clicks Add. Revisit the logo set when new agents become common.
+- Recovery and ownership: src/main/services/agents/agentDetector.ts, src/shared/agentLaunchers.ts, src/renderer/ui/AgentIcon.tsx and agentMarks.ts, AgentsPage.tsx.
+- Implementation / validation / outcome: Written / unit tests and typecheck / not yet seen running.
+- Result acceptance: Pending user feedback.
+- Learning: Let the user confirm what is an agent; the app only needs to make every installed command findable.

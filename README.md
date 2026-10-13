@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="resources/logo.png" alt="o-bros logo" width="120">
+</p>
+
 # o-bros
 
 [![CI](https://github.com/Lio3307/O-Bros/actions/workflows/ci.yml/badge.svg)](https://github.com/Lio3307/O-Bros/actions/workflows/ci.yml)

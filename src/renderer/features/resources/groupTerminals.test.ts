@@ -41,6 +41,32 @@ describe('groupTerminalsByWorkspace', () => {
     expect(groups[0].terminals.map((row) => row.paneId)).toEqual(['1', '2'])
   })
 
+  it('separates folders of the same root and marks the selected project', () => {
+    const rootsWithFolders: ProjectRoot[] = [
+      {
+        name: 'PersonalRepo',
+        path: 'E:\\PersonalRepo',
+        branch: null,
+        folders: [
+          { name: 'o-bros', path: 'E:\\PersonalRepo\\o-bros', branch: null },
+          { name: 'site', path: 'E:\\PersonalRepo\\site', branch: null }
+        ]
+      }
+    ]
+    const tabs = [terminalTab('a', 'E:\\PersonalRepo\\o-bros', ['1']), terminalTab('b', 'E:\\PersonalRepo\\site', ['2'])]
+    const groups = groupTerminalsByWorkspace(
+      tabs,
+      rootsWithFolders,
+      [resource('1', 20, 1), resource('2', 10, 1)],
+      'E:\\PersonalRepo\\site'
+    )
+
+    expect(groups.map((group) => [group.name, group.isSelectedProject])).toEqual([
+      ['o-bros', false],
+      ['site', true]
+    ])
+  })
+
   it('falls back to the folder name for terminals outside every root', () => {
     const tabs = [terminalTab('a', 'D:\\Scratch', ['1'])]
     const groups = groupTerminalsByWorkspace(tabs, roots, [resource('1', 10, 1)])

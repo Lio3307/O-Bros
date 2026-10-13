@@ -1,5 +1,6 @@
 import { ChevronDown, Columns2, File, Plus, Rows2, Terminal, X } from 'lucide-react'
-import { useCallback, useEffect, useState, type MouseEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
+import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useAttentionStore } from '../../state/attentionStore'
 import { copyPath, revealInFileExplorer } from '../files/fileActions'
 import { openTerminal } from '../../state/openTerminal'
@@ -102,12 +103,13 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
 }
 
 export function TabBar() {
-  const tabs = useWorkspaceStore((state) => state.tabs)
+  const tabs = useActiveProjectTabs()
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
   const splitPane = useWorkspaceStore((state) => state.splitPane)
   const activateTab = useWorkspaceStore((state) => state.activateTab)
   const clearAttention = useAttentionStore((state) => state.clear)
   const [openMenu, setOpenMenu] = useState<OpenMenu | null>(null)
+  const scrollerRef = useRef<HTMLDivElement>(null)
   const closeMenu = useCallback(() => setOpenMenu(null), [])
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
@@ -123,6 +125,16 @@ export function TabBar() {
     window.addEventListener('focus', clearActiveTabAttention)
     return () => window.removeEventListener('focus', clearActiveTabAttention)
   }, [activeTabId, clearAttention])
+
+  useEffect(() => {
+    scrollerRef.current?.querySelector('.tab-active')?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+  }, [activeTabId, tabs.length])
+
+  function scrollTabsSideways(event: WheelEvent<HTMLDivElement>): void {
+    if (scrollerRef.current !== null && event.deltaX === 0) {
+      scrollerRef.current.scrollLeft += event.deltaY
+    }
+  }
 
   function showAllTabs(event: MouseEvent<HTMLButtonElement>): void {
     const bounds = event.currentTarget.getBoundingClientRect()
@@ -140,9 +152,11 @@ export function TabBar() {
   return (
     <div className="tab-bar">
       <div className="tab-list">
-        {tabs.map((tab) => (
-          <TabItem key={tab.id} tab={tab} isActive={tab.id === activeTabId} onOpenMenu={setOpenMenu} />
-        ))}
+        <div className="tab-scroller" ref={scrollerRef} onWheel={scrollTabsSideways}>
+          {tabs.map((tab) => (
+            <TabItem key={tab.id} tab={tab} isActive={tab.id === activeTabId} onOpenMenu={setOpenMenu} />
+          ))}
+        </div>
         <button type="button" className="tab-new" title="New terminal" onClick={() => openTerminal(null)}>
           <Plus size={16} />
         </button>

@@ -33,6 +33,26 @@ export function parentPath(path: string): string {
   return lastSlash <= 0 ? normalized : normalized.slice(0, lastSlash)
 }
 
+export function isAbsolutePath(path: string): boolean {
+  return path.startsWith('/') || path.startsWith('\\') || path.charAt(1) === ':'
+}
+
+export function resolvePath(basePath: string, path: string): string {
+  if (isAbsolutePath(path)) {
+    return path
+  }
+  const separator = basePath.includes('\\') ? '\\' : '/'
+  const segments = normalizeSeparators(basePath).split('/')
+  for (const segment of normalizeSeparators(path).split('/')) {
+    if (segment === '..' && segments.length > 1) {
+      segments.pop()
+    } else if (segment !== '' && segment !== '.' && segment !== '..') {
+      segments.push(segment)
+    }
+  }
+  return segments.join(separator)
+}
+
 export function relativePathFrom(path: string, rootPath: string): string {
   const normalizedPath = normalizeSeparators(path)
   const normalizedRoot = normalizeSeparators(rootPath)

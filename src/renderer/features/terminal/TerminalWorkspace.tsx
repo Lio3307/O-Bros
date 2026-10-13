@@ -1,4 +1,5 @@
 import { lazy, Suspense, useRef } from 'react'
+import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { openTerminal } from '../../state/openTerminal'
 import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
 import { PaneLayoutView } from './PaneLayoutView'
@@ -13,11 +14,12 @@ interface TerminalWorkspaceProps {
 
 export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
   const tabs = useWorkspaceStore((state) => state.tabs)
+  const projectTabs = useActiveProjectTabs()
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
   const startedTabIds = useRef(new Set<string>())
 
   const terminalTabs = tabs.filter(isTerminalTab)
-  const activeFileTab = tabs.find((tab) => tab.kind === 'file' && tab.id === activeTabId)
+  const activeFileTab = projectTabs.find((tab) => tab.kind === 'file' && tab.id === activeTabId)
 
   if (activeTabId !== null) {
     startedTabIds.current.add(activeTabId)
@@ -27,9 +29,9 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
     <div className={isVisible ? 'workspace' : 'workspace workspace-hidden'}>
       <TabBar />
       <div className="workspace-content">
-        {tabs.length === 0 && (
+        {projectTabs.length === 0 && (
           <div className="empty-state">
-            <p>No terminal is open.</p>
+            <p>No terminal is open in this project.</p>
             <button type="button" className="button-primary" onClick={() => openTerminal(null)}>
               New terminal
             </button>

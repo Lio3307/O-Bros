@@ -1,9 +1,12 @@
 import { create } from 'zustand'
-import { isPathInside, lastPathSegment } from '../../shared/paths'
+import { closestProject } from '../../shared/closestProject'
+import { isPathInside, lastPathSegment, parentPath } from '../../shared/paths'
 import type { AccountRef } from '../../shared/types'
 import { forgetEditorState } from '../features/editor/editorSessions'
 import { useRecentFilesStore } from './recentFilesStore'
+import { useProjectsStore } from './projectsStore'
 import { listPaneIds, removePaneFromLayout, splitPaneInLayout, type PaneLayout, type SplitDirection } from '../features/terminal/paneTree'
+import { belongsToProject, neighbourTabId, tabLocation } from '../features/terminal/projectTabs'
 import { moveItem } from '../features/terminal/tabOrder'
 
 export interface TerminalPaneInfo {
@@ -106,9 +109,14 @@ function mapTerminalTab(tabs: WorkspaceTab[], tabId: string, update: (tab: Termi
   return tabs.map((tab) => (tab.kind === 'terminal' && tab.id === tabId ? update(tab) : tab))
 }
 
-function nextActiveTabId(tabs: WorkspaceTab[], closedIndex: number): string | null {
-  const neighbour = tabs[closedIndex] ?? tabs[closedIndex - 1]
-  return neighbour?.id ?? null
+function showProjectOf(tab: WorkspaceTab): void {
+  const projects = useProjectsStore.getState()
+  const location = tabLocation(tab)
+  if (location === null || belongsToProject(tab, projects.activeProjectPath)) {
+    return
+  }
+  const fallbackPath = tab.kind === 'file' ? parentPath(location) : location
+  projects.selectProject(closestProject(location, projects.roots)?.path ?? fallbackPath)
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
@@ -119,20 +127,28 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
     const terminalCount = get().tabs.filter((tab) => tab.kind === 'terminal').length
     const tab = buildTerminalTab(options, terminalCount)
     set({ tabs: [...get().tabs, tab], activeTabId: tab.id })
+    showProjectOf(tab)
   },
 
   openFileTab: (filePath) => {
     useRecentFilesStore.getState().record(filePath)
     const existing = get().tabs.find((tab) => tab.kind === 'file' && tab.path === filePath)
     if (existing !== undefined) {
-      set({ activeTabId: existing.id })
+      get().activateTab(existing.id)
       return
     }
     const tab: FileTab = { kind: 'file', id: newId(), title: lastPathSegment(filePath), path: filePath, isModified: false }
     set({ tabs: [...get().tabs, tab], activeTabId: tab.id })
+    showProjectOf(tab)
   },
 
-  activateTab: (tabId) => set({ activeTabId: tabId }),
+  activateTab: (tabId) => {
+    const tab = get().tabs.find((candidate) => candidate.id === tabId)
+    set({ activeTabId: tabId })
+    if (tab !== undefined) {
+      showProjectOf(tab)
+    }
+  },
 
   closeTab: (tabId) => {
     const { tabs, activeTabId } = get()
@@ -147,18 +163,23 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
     const remaining = tabs.filter((tab) => tab.id !== tabId)
     set({
       tabs: remaining,
-      activeTabId: activeTabId === tabId ? nextActiveTabId(remaining, closedIndex) : activeTabId
+      activeTabId:
+        activeTabId === tabId
+          ? neighbourTabId(remaining, closedIndex, useProjectsStore.getState().activeProjectPath)
+          : activeTabId
     })
   },
 
   closeOtherTabs: (tabId) => {
     const { tabs } = get()
-    for (const tab of tabs) {
-      if (tab.kind === 'file' && tab.id !== tabId) {
+    const projectPath = useProjectsStore.getState().activeProjectPath
+    const closing = tabs.filter((tab) => tab.id !== tabId && belongsToProject(tab, projectPath))
+    for (const tab of closing) {
+      if (tab.kind === 'file') {
         forgetEditorState(tab.path)
       }
     }
-    set({ tabs: tabs.filter((tab) => tab.id === tabId), activeTabId: tabId })
+    set({ tabs: tabs.filter((tab) => !closing.includes(tab)), activeTabId: tabId })
   },
 
   closeFileTabsInside: (path) => {

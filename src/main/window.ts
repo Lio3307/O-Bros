@@ -14,6 +14,7 @@ export function createMainWindow(): BrowserWindow {
     minWidth: 900,
     minHeight: 560,
     backgroundColor: TERMINAL_COLOR,
+    icon: join(__dirname, '../../resources/logo.png'),
     titleBarStyle: 'hidden',
     titleBarOverlay: { color: CHROME_COLOR, symbolColor: TEXT_COLOR, height: TITLE_BAR_HEIGHT },
     webPreferences: {

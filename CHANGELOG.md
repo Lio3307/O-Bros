@@ -17,6 +17,17 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - A local log file for crashes and hidden errors, with an Open log folder button.
 - Installer packaging for Windows, macOS and Linux through a release workflow.
 
+### Added (agents)
+- Settings → Agents: keep a list of agents (Claude, Codex, OpenCode, Gemini, Aider or any command), find them in your PATH (including a search over every program), give them their own logos, and choose up to two to show as buttons in Projects. No agent button is shown until you choose.
+
+### Added (terminal links)
+- Ctrl+click a `file:line:column` reference in a terminal to open that file at that line.
+
+### Changed
+- Tabs, Open sessions and Close other tabs now follow the selected project. Terminals of other folders keep running and reappear when their folder is selected.
+- The Resource Manager groups terminals by folder and marks the selected project.
+- The status bar usage is a short labelled line (`5h 82% 2h33m  wk 37% 4d16h`) instead of a bar and long text, and each provider can be hidden in Settings → Agents.
+
 ### Security
 - Content-Security-Policy forbids plugins, base URL changes and form posts.
 - The window refuses to open new windows or navigate away from the app.

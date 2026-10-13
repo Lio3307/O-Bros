@@ -1,10 +1,11 @@
-import { Code2, FolderCog, HardDrive, Info, Scissors, SquareTerminal, UserRound } from 'lucide-react'
+import { Bot, Code2, FolderCog, HardDrive, Info, Scissors, SquareTerminal, UserRound } from 'lucide-react'
 import type { SettingsPage } from '../../state/layoutStore'
 import { useLayoutStore } from '../../state/layoutStore'
 import { PanelHeader } from '../../ui/PanelHeader'
 
 const settingsItems: { page: SettingsPage; label: string; Icon: typeof UserRound }[] = [
   { page: 'accounts', label: 'Provider accounts', Icon: UserRound },
+  { page: 'agents', label: 'Agents', Icon: Bot },
   { page: 'folders', label: 'Project folders', Icon: FolderCog },
   { page: 'editor', label: 'Editor', Icon: Code2 },
   { page: 'snippets', label: 'Snippets', Icon: Scissors },

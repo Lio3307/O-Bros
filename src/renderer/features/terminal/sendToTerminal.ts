@@ -1,9 +1,11 @@
 import { quotePathForShell } from '../../../shared/shellQuote'
+import { tabsInActiveProject } from '../../state/activeProjectTabs'
 import { toast } from '../../state/toastStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 
 function findTargetPaneId(): string | null {
-  const { tabs, activeTabId } = useWorkspaceStore.getState()
+  const tabs = tabsInActiveProject()
+  const { activeTabId } = useWorkspaceStore.getState()
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
   if (activeTab?.kind === 'terminal') {
     return activeTab.focusedPaneId

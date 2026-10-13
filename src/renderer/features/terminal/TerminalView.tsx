@@ -8,6 +8,8 @@ import { useTerminalFontStore } from '../../state/terminalFontStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
 import { DRAGGED_PATH_TYPE } from '../files/dragData'
+import { createFileLinkProvider } from './fileLinkProvider'
+import { openFileReference } from './openFileReference'
 import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
 import { registerTerminal, unregisterTerminal } from './terminalRegistry'
 import { TerminalSearchBar } from './TerminalSearchBar'
@@ -77,6 +79,9 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
     terminalRef.current = terminal
     fitAddonRef.current = fitAddon
     registerTerminal(paneId, terminal)
+    terminal.registerLinkProvider(
+      createFileLinkProvider(terminal, (reference) => void openFileReference(reference, cwd))
+    )
 
     terminal.attachCustomKeyEventHandler((event) => {
       const isFindShortcut = event.type === 'keydown' && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f'

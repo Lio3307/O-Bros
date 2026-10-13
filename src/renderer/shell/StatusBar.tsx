@@ -1,5 +1,5 @@
 import { CircleAlert, MemoryStick, Terminal, TriangleAlert } from 'lucide-react'
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { formatBytes } from '../../shared/format'
 import type { ProviderId } from '../../shared/types'
 import { ProblemsPopover } from '../features/problems/ProblemsPopover'
@@ -8,9 +8,9 @@ import { selectActiveAccount, useAccountsStore } from '../state/accountsStore'
 import { countProblems, useProblemsStore } from '../state/problemsStore'
 import { useResourcesStore } from '../state/resourcesStore'
 import { useUsageStore } from '../state/usageStore'
+import { useUsageVisibilityStore } from '../state/usageVisibilityStore'
 import { AccountsRefreshButton } from '../ui/AccountsRefreshButton'
 import { ProviderMark } from '../ui/ProviderMark'
-import { UsageBar } from '../ui/UsageBar'
 import { describeCompactWindow, listUsageWindows } from '../ui/usageText'
 import { useNow } from '../ui/useNow'
 import { UsagePopover } from './UsagePopover'
@@ -21,32 +21,36 @@ const USAGE_TEXT_REFRESH_MS = 30_000
 const RESOURCE_POLL_IDLE_MS = 15_000
 const RESOURCE_POLL_OPEN_MS = 3_000
 
+const WINDOW_NAMES: Record<string, string> = { '5h': '5-hour limit', wk: 'Weekly limit' }
+
 function ProviderUsage({ provider, onClick }: { provider: ProviderId; onClick: () => void }) {
   const account = useAccountsStore((state) => selectActiveAccount(state, provider))
   const usage = useUsageStore((state) => (account === null ? undefined : state.usageByAccountId[account.id]))
+  const isHidden = useUsageVisibilityStore((state) => state.hiddenProviders.includes(provider))
   const now = useNow(USAGE_TEXT_REFRESH_MS)
 
-  if (account === null) {
+  if (account === null || isHidden) {
     return null
   }
 
   const windows = listUsageWindows(usage)
-  const barPercent = windows[0]?.window.percentUsed ?? null
 
   return (
     <button type="button" className="status-usage" title="Show usage" onClick={onClick}>
       <ProviderMark provider={provider} size={16} />
-      <UsageBar percentUsed={barPercent} />
       {windows.length === 0 && <span>{usage?.errorMessage ? 'unavailable' : '—'}</span>}
-      {windows.map(({ label, window }, index) => {
+      {windows.map(({ label, window }) => {
         const { percent, remaining } = describeCompactWindow(window, now)
         return (
-          <Fragment key={label}>
-            {index > 0 && <span className="status-separator">·</span>}
-            <span title={`${label === '5h' ? '5 hours' : 'Weekly'}: ${percent} used, resets in ${remaining}`}>
-              <span className="status-percent">{percent}</span> used {remaining}
-            </span>
-          </Fragment>
+          <span
+            key={label}
+            className="status-window"
+            title={`${WINDOW_NAMES[label] ?? label}: ${percent} used, resets in ${remaining}`}
+          >
+            <span className="status-window-label">{label}</span>
+            <span className="status-percent">{percent}</span>
+            <span className="status-window-reset">{remaining}</span>
+          </span>
         )
       })}
     </button>
@@ -126,6 +130,8 @@ export function StatusBar() {
   const [openPanel, setOpenPanel] = useState<OpenPanel>(null)
   const containerRef = useCloseOnOutsideClickOrEscape(openPanel !== null, () => setOpenPanel(null))
   useResourcePolling(openPanel === 'resources')
+  const hiddenProviders = useUsageVisibilityStore((state) => state.hiddenProviders)
+  const hasVisibleUsage = hiddenProviders.length < 2
 
   function toggle(panel: Exclude<OpenPanel, null>): void {
     setOpenPanel(openPanel === panel ? null : panel)
@@ -138,7 +144,7 @@ export function StatusBar() {
       {openPanel === 'problems' && <ProblemsPopover onNavigate={() => setOpenPanel(null)} />}
       <ProviderUsage provider="claude" onClick={() => toggle('usage')} />
       <ProviderUsage provider="codex" onClick={() => toggle('usage')} />
-      <AccountsRefreshButton variant="icon" iconSize={12} />
+      {hasVisibleUsage && <AccountsRefreshButton variant="icon" iconSize={12} />}
       <ProblemsStatus onClick={() => toggle('problems')} />
       <ResourceStatus onClick={() => toggle('resources')} />
     </footer>

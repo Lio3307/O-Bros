@@ -1,5 +1,30 @@
 import { describe, expect, it } from 'vitest'
-import { fileExtension, isPathInside, lastPathSegment, parentPath, relativePathFrom } from './paths'
+import { fileExtension, isAbsolutePath, isPathInside, lastPathSegment, parentPath, relativePathFrom, resolvePath } from './paths'
+
+describe('isAbsolutePath', () => {
+  it('recognises drive, root and UNC paths', () => {
+    expect(isAbsolutePath('C:\\dev\\a.ts')).toBe(true)
+    expect(isAbsolutePath('/home/me/a.ts')).toBe(true)
+    expect(isAbsolutePath('\\\\server\\share\\a.ts')).toBe(true)
+    expect(isAbsolutePath('src/a.ts')).toBe(false)
+  })
+})
+
+describe('resolvePath', () => {
+  it('joins a relative path to the base with the base separator', () => {
+    expect(resolvePath('C:\\dev\\app', 'src/a.ts')).toBe('C:\\dev\\app\\src\\a.ts')
+    expect(resolvePath('/home/me/app', './src/a.ts')).toBe('/home/me/app/src/a.ts')
+  })
+
+  it('applies parent segments without leaving the drive', () => {
+    expect(resolvePath('C:\\dev\\app', '..\\other\\b.ts')).toBe('C:\\dev\\other\\b.ts')
+    expect(resolvePath('C:\\dev', '../../../b.ts')).toBe('C:\\b.ts')
+  })
+
+  it('returns absolute paths unchanged', () => {
+    expect(resolvePath('C:\\dev\\app', 'D:\\x\\a.ts')).toBe('D:\\x\\a.ts')
+  })
+})
 
 describe('lastPathSegment', () => {
   it('handles both separators', () => {

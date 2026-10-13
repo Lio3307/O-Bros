@@ -81,6 +81,33 @@
   resize: vertical;
 }
 
+.field-command {
+  font-family: var(--font-mono);
+}
+
+.field-search {
+  flex: none;
+  max-width: 360px;
+}
+
+.agent-icon {
+  display: grid;
+  flex: 0 0 24px;
+  place-items: center;
+  color: var(--color-muted);
+}
+
+.agent-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-white);
+}
+
+.table-row .field {
+  margin-right: 8px;
+}
+
 .provider-header {
   display: flex;
   flex-direction: column;
@@ -206,4 +233,18 @@
 
 .auto-save-input {
   flex: 0 0 110px;
+}
+
+.agent-show {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  margin-right: 12px;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.agent-show input[type='checkbox'] {
+  accent-color: var(--color-white);
 }

@@ -44,11 +44,35 @@
   overflow: hidden;
 }
 
+.tab-scroller {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.tab-scroller::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tab-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tab-scroller::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+.tab-scroller::-webkit-scrollbar-thumb:hover {
+  background: var(--color-faint);
+}
+
 .tab {
   display: flex;
   align-items: center;
-  flex: 0 1 180px;
-  min-width: 96px;
+  flex: 0 0 160px;
   gap: 8px;
   padding: 0 12px;
   color: var(--color-muted);

@@ -12,6 +12,7 @@ A reference for everything o-bros does and where its settings live.
 | Search | `Ctrl+F` opens a find bar inside the focused terminal. `Enter` goes to the next match, `Shift+Enter` to the previous one. |
 | Drop a path | Drag a file or folder from the Files panel, or a file from your file manager, onto a terminal to paste its quoted path. |
 | Send path | Right-click an item in the file tree and choose **Send Path to Terminal**. |
+| Open file at line | `Ctrl+click` (`Cmd+click` on macOS) a reference such as `src/App.tsx:12:5`, `E:\repo\a.ts:7` or `src/a.ts(12,5)` to open that file at that line in the editor. Relative paths are resolved from the folder the terminal started in. A file that does not exist, or is outside your opened folders, shows a message instead. |
 | Finished notification | If a terminal prints for 8 seconds or more and then stays quiet for 4 seconds while you are in another tab or app, you get a notification and a dot on its tab. Turn it off in Settings → Terminal. |
 | History size | How many lines each terminal keeps (1,000 to 10,000). A smaller number uses less memory. Settings → Terminal. |
 
@@ -24,6 +25,9 @@ Terminals only start when their tab is first shown, and the GPU renderer is rele
 - Drag tabs to reorder them.
 - The arrow next to the split buttons lists every tab.
 - Closing a file with unsaved changes asks first.
+- **Tabs follow the selected project.** The tab bar and Open sessions show only the terminals and files inside the selected folder. Terminals of other folders keep running in the background and come back when you select that folder again. A terminal without a folder shows everywhere.
+- A dot next to a folder in the Projects panel means a terminal there finished while you were in another folder.
+- **Close other tabs** only closes the tabs of the selected project.
 - Your tabs, splits and active tab come back when you reopen the app. Restored terminals are plain shells in the same folder; they do not re-run `claude` or `codex`.
 
 ## Files panel
@@ -72,11 +76,13 @@ Git must already know your name and email (`git config`). o-bros shows a clear m
 - Shows the 5-hour and weekly usage of each, with when it resets.
 - **Use** switches which account new terminals run with.
 - **Add account** creates a named login (see [Getting started](GETTING-STARTED.md)).
-- The status bar shows the active Claude and Codex usage. Press it for a detailed or compact popover.
+- The status bar shows the active Claude and Codex usage as a short line, for example `5h 82% 2h33m  wk 37% 4d16h` (window, percent used, time until it resets). In a narrow window the reset time is dropped first, then the `5h` and `wk` labels; hover it for the full name and reset time, and press it for a detailed or compact popover.
+- Only Claude and Codex report usage, so other agents never show one. Hide either one in Settings → Agents → Usage in the status bar.
 
 ## Projects panel
 
-- Open sessions per project, with how long ago each started.
+- **Agent buttons** at the top start a command-line agent in the selected folder. At most two are shown, plus the plain terminal button. None are shown at first, because every computer has different agents. Open Settings → Agents (or press the Agents button), add the CLIs you use, and tick **Show** on up to two.
+- Open sessions of the selected folder, with how long ago each started.
 - Folders in each project with their git branch. Feature branches are shown in white.
 - **Scripts:** the selected project's `package.json` scripts. Press one to run it in a new terminal. The package manager (npm, pnpm, yarn or bun) is chosen from the lock file.
 
@@ -131,6 +137,7 @@ Short messages (toasts) appear bottom right, with an icon for success, warning o
 | Page | Setting |
 |---|---|
 | Provider accounts | Rescan, Use, Add account |
+| Agents | Your list of agent CLIs (add, rename, change the command, remove), well-known agents found in your PATH, a search over every program in PATH, and up to two shown as buttons. Known agents get their own logo |
 | Project folders | Add and remove folders |
 | Editor | Auto save and delay, linter mode, format on save, enabled languages |
 | Snippets | Per-language snippets, reset to defaults |

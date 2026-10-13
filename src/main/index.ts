@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Menu } from 'electron'
 import { buildApplicationMenu } from './applicationMenu'
 import { registerAccountsIpc } from './ipc/accountsIpc'
+import { registerAgentsIpc } from './ipc/agentsIpc'
 import { registerAppIpc } from './ipc/appIpc'
 import { registerFilesIpc } from './ipc/filesIpc'
 import { registerGitIpc } from './ipc/gitIpc'
@@ -21,6 +22,7 @@ import { createMainWindow } from './window'
 
 function registerAllIpc(): void {
   registerPtyIpc()
+  registerAgentsIpc()
   registerAccountsIpc()
   registerProjectsIpc()
   registerFilesIpc()

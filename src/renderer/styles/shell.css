@@ -123,6 +123,8 @@
 
 .status-bar {
   position: relative;
+  container-type: inline-size;
+  container-name: statusbar;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -136,6 +138,8 @@
 
 .status-usage {
   display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
   align-items: center;
   gap: 8px;
   height: 100%;
@@ -163,4 +167,36 @@
 
 .status-separator {
   color: var(--color-faint);
+}
+
+.status-window {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-right: 6px;
+}
+
+.status-window-reset {
+  color: var(--color-muted);
+}
+
+.status-window-label {
+  font-size: 11px;
+  color: var(--color-faint);
+}
+
+@container statusbar (max-width: 1000px) {
+  .status-window-reset {
+    display: none;
+  }
+}
+
+@container statusbar (max-width: 820px) {
+  .status-window-label {
+    display: none;
+  }
+
+  .status-window {
+    margin-right: 0;
+  }
 }

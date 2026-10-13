@@ -1,15 +1,20 @@
-import { ChevronDown, ChevronRight, Folder, FolderPlus, GitBranch, Terminal } from 'lucide-react'
+import { Bot, ChevronDown, ChevronRight, Folder, FolderPlus, GitBranch, Terminal } from 'lucide-react'
 import { useState } from 'react'
 import { isPrimaryBranch } from '../../../shared/gitSync'
 import { isPathInside } from '../../../shared/paths'
 import { formatAge } from '../../../shared/time'
 import type { ProjectRoot } from '../../../shared/types'
-import { openTerminal } from '../../state/openTerminal'
+import { useActiveProjectTabs } from '../../state/activeProjectTabs'
+import { useAttentionStore } from '../../state/attentionStore'
+import { shownLaunchers } from '../../../shared/agentLaunchers'
+import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
+import { useLayoutStore } from '../../state/layoutStore'
+import { openAgent, openTerminal } from '../../state/openTerminal'
+import { AgentIcon } from '../../ui/AgentIcon'
 import { useProjectsStore } from '../../state/projectsStore'
 import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
 import { PanelHeader } from '../../ui/PanelHeader'
 import { ScriptsList } from './ScriptsList'
-import { ProviderMark } from '../../ui/ProviderMark'
 import { useNow } from '../../ui/useNow'
 import './projects.css'
 
@@ -26,12 +31,12 @@ function BranchLabel({ branch }: { branch: string }) {
 }
 
 function SessionList({ root }: { root: ProjectRoot }) {
-  const tabs = useWorkspaceStore((state) => state.tabs)
+  const projectTabs = useActiveProjectTabs()
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
   const activateTab = useWorkspaceStore((state) => state.activateTab)
   const now = useNow(SESSION_AGE_REFRESH_MS)
 
-  const sessions = tabs
+  const sessions = projectTabs
     .filter(isTerminalTab)
     .filter((tab) => tab.cwd !== null && isPathInside(tab.cwd, root.path))
   if (sessions.length === 0) {
@@ -57,9 +62,23 @@ function SessionList({ root }: { root: ProjectRoot }) {
   )
 }
 
+function useFinishedElsewhere(): (folderPath: string) => boolean {
+  const tabs = useWorkspaceStore((state) => state.tabs)
+  const attentionTabIds = useAttentionStore((state) => state.tabIds)
+  const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
+
+  return (folderPath) =>
+    folderPath !== activeProjectPath &&
+    tabs.filter(isTerminalTab).some((tab) => {
+      const isInFolder = tab.cwd !== null && isPathInside(tab.cwd, folderPath)
+      return isInFolder && attentionTabIds.includes(tab.id)
+    })
+}
+
 function FolderList({ root }: { root: ProjectRoot }) {
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const selectProject = useProjectsStore((state) => state.selectProject)
+  const hasFinishedElsewhere = useFinishedElsewhere()
 
   if (root.folders.length === 0) {
     return null
@@ -79,6 +98,9 @@ function FolderList({ root }: { root: ProjectRoot }) {
           <Folder size={14} />
           <span className="row-name">{folder.name}</span>
           {folder.branch !== null && <BranchLabel branch={folder.branch} />}
+          {hasFinishedElsewhere(folder.path) && (
+            <span className="tab-attention-dot" title="A terminal here finished while you were away" />
+          )}
         </button>
       ))}
     </div>
@@ -118,6 +140,16 @@ function RootBlock({ root }: { root: ProjectRoot }) {
 export function ProjectsPanel() {
   const roots = useProjectsStore((state) => state.roots)
   const addRoot = useProjectsStore((state) => state.addRoot)
+  const savedLaunchers = useAgentLaunchersStore((state) => state.launchers)
+  const shownIds = useAgentLaunchersStore((state) => state.shownIds)
+  const launchers = shownLaunchers(savedLaunchers, shownIds)
+  const openSection = useLayoutStore((state) => state.openSection)
+  const selectSettingsPage = useLayoutStore((state) => state.selectSettingsPage)
+
+  function chooseAgents(): void {
+    selectSettingsPage('agents')
+    openSection('settings')
+  }
 
   return (
     <div className="panel-content">
@@ -127,12 +159,22 @@ export function ProjectsPanel() {
         </button>
       </PanelHeader>
       <div className="start-buttons">
-        <button type="button" className="button-outline" title="Start Claude in the selected folder" onClick={() => openTerminal('claude')}>
-          <ProviderMark provider="claude" /> Claude
-        </button>
-        <button type="button" className="button-outline" title="Start Codex in the selected folder" onClick={() => openTerminal('codex')}>
-          <ProviderMark provider="codex" /> Codex
-        </button>
+        {launchers.map((launcher) => (
+          <button
+            key={launcher.id}
+            type="button"
+            className="button-outline"
+            title={`Run "${launcher.command}" in the selected folder`}
+            onClick={() => openAgent(launcher)}
+          >
+            <AgentIcon command={launcher.command} /> {launcher.name}
+          </button>
+        ))}
+        {launchers.length === 0 && (
+          <button type="button" className="button-outline" title="Choose agent buttons" onClick={chooseAgents}>
+            <Bot size={14} /> Agents
+          </button>
+        )}
         <button type="button" className="button-outline" title="Plain terminal in the selected folder" onClick={() => openTerminal(null)}>
           <Terminal size={14} />
         </button>

@@ -19,6 +19,7 @@ function WorkspaceRows({ group }: { group: WorkspaceGroup }) {
         <span className="resource-name">
           <Chevron size={14} />
           {group.name} workspace
+          {group.isSelectedProject && <span className="muted"> · selected</span>}
         </span>
         <span className="resource-number">{formatPercent(group.cpuPercent)}</span>
         <span className="resource-number resource-number-strong">{formatBytes(group.workingSetBytes)}</span>
@@ -45,8 +46,12 @@ export function ResourcePopover() {
   const refresh = useResourcesStore((state) => state.refresh)
   const tabs = useWorkspaceStore((state) => state.tabs)
   const roots = useProjectsStore((state) => state.roots)
+  const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
 
-  const groups = snapshot === null ? [] : groupTerminalsByWorkspace(tabs.filter(isTerminalTab), roots, snapshot.terminals)
+  const groups =
+    snapshot === null
+      ? []
+      : groupTerminalsByWorkspace(tabs.filter(isTerminalTab), roots, snapshot.terminals, activeProjectPath)
 
   return (
     <div className="resource-popover" role="dialog" aria-label="Resource manager">
