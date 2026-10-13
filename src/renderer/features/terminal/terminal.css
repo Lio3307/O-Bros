@@ -1,0 +1,272 @@
+.workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-terminal);
+}
+
+.workspace-hidden {
+  display: none;
+}
+
+.workspace-content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.tab-content {
+  position: absolute;
+  inset: 0;
+}
+
+.tab-content-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--tabbar-height);
+  background: var(--color-chrome);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tab-list {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  flex: 0 1 180px;
+  min-width: 96px;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--color-muted);
+  border-right: 1px solid var(--color-border);
+  border-top: 2px solid transparent;
+  cursor: pointer;
+}
+
+.tab-active {
+  color: var(--color-white);
+  background: var(--color-terminal);
+  border-top-color: var(--color-white);
+}
+
+.tab-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.tab > svg,
+.tab-modified-dot,
+.tab-attention-dot,
+.tab-close {
+  flex-shrink: 0;
+}
+
+.tab-active .tab-title {
+  font-weight: 600;
+}
+
+.tab-modified-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-white);
+}
+
+.tab-attention-dot {
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--color-white);
+  border-radius: 50%;
+}
+
+.tab-close,
+.tab-new,
+.tab-bar-actions button,
+.pane-actions button {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+}
+
+.tab-close {
+  opacity: 0;
+}
+
+.tab:hover .tab-close,
+.tab-active .tab-close {
+  opacity: 1;
+}
+
+.tab-new {
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0 8px;
+}
+
+.tab-bar-actions {
+  display: flex;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+.tab-close:hover,
+.tab-new:hover,
+.tab-bar-actions button:hover,
+.pane-actions button:hover {
+  color: var(--color-white);
+  background: var(--color-hover);
+}
+
+.editable-title-input {
+  width: 160px;
+  padding: 2px 6px;
+  color: var(--color-text);
+  background: var(--color-panel);
+  border: 1px solid var(--color-white);
+  border-radius: 2px;
+  outline: none;
+}
+
+.pane-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid transparent;
+}
+
+.pane-frame-focused {
+  border-color: var(--color-white);
+}
+
+.pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--color-chrome);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pane-title {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.pane-frame-focused .pane-title {
+  color: var(--color-white);
+  font-weight: 600;
+}
+
+.pane-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.terminal-host {
+  flex: 1;
+  min-height: 0;
+  padding: 8px 12px;
+}
+
+.resize-handle {
+  background: var(--color-border);
+  background-clip: padding-box;
+  border: 0 solid transparent;
+}
+
+.resize-handle-horizontal {
+  width: 5px;
+  margin: 0 -2px;
+  border-left-width: 2px;
+  border-right-width: 2px;
+  cursor: col-resize;
+}
+
+.resize-handle-vertical {
+  height: 5px;
+  margin: -2px 0;
+  border-top-width: 2px;
+  border-bottom-width: 2px;
+  cursor: row-resize;
+}
+
+.resize-handle:hover {
+  background-color: var(--color-faint);
+}
+
+.empty-state {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  height: 100%;
+  color: var(--color-muted);
+}
+
+.terminal-search {
+  position: absolute;
+  top: 8px;
+  right: 20px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.terminal-search input {
+  width: 180px;
+  height: 24px;
+  padding: 0 8px;
+  color: var(--color-text);
+  background: var(--color-terminal);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  outline: none;
+}
+
+.terminal-search input:focus {
+  border-color: var(--color-faint);
+}
+
+.terminal-search button {
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+}
+
+.terminal-search button:hover {
+  color: var(--color-white);
+  background: var(--color-hover);
+}

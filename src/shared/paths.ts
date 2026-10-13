@@ -1,0 +1,43 @@
+function normalizeSeparators(path: string): string {
+  return path.split('\\').join('/')
+}
+
+export function lastPathSegment(path: string): string {
+  const normalized = normalizeSeparators(path)
+  return normalized.slice(normalized.lastIndexOf('/') + 1)
+}
+
+export function fileExtension(path: string): string {
+  const name = lastPathSegment(path)
+  const dotIndex = name.lastIndexOf('.')
+  return dotIndex <= 0 ? '' : name.slice(dotIndex + 1).toLowerCase()
+}
+
+export function isPathInside(childPath: string, parentPath: string): boolean {
+  const child = normalizeSeparators(childPath)
+  const parent = normalizeSeparators(parentPath)
+  return child === parent || child.startsWith(`${parent}/`)
+}
+
+export function comparablePath(path: string, ignoreCase: boolean): string {
+  let normalized = normalizeSeparators(path)
+  while (normalized.length > 1 && normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1)
+  }
+  return ignoreCase ? normalized.toLowerCase() : normalized
+}
+
+export function parentPath(path: string): string {
+  const normalized = normalizeSeparators(path)
+  const lastSlash = normalized.lastIndexOf('/')
+  return lastSlash <= 0 ? normalized : normalized.slice(0, lastSlash)
+}
+
+export function relativePathFrom(path: string, rootPath: string): string {
+  const normalizedPath = normalizeSeparators(path)
+  const normalizedRoot = normalizeSeparators(rootPath)
+  if (normalizedPath === normalizedRoot) {
+    return ''
+  }
+  return normalizedPath.startsWith(`${normalizedRoot}/`) ? normalizedPath.slice(normalizedRoot.length + 1) : normalizedPath
+}

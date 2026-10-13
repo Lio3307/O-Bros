@@ -1,0 +1,10 @@
+.editor-host {
+  height: 100%;
+  min-height: 0;
+  background: var(--color-terminal);
+}
+
+.editor-error {
+  padding: 24px;
+  color: var(--color-muted);
+}

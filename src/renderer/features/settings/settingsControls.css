@@ -1,0 +1,209 @@
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 20px;
+  margin-bottom: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.settings-subtitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.settings-segmented {
+  align-self: flex-start;
+}
+
+.settings-segmented .segment {
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.settings-wrap {
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.toggle-row input[type='checkbox'] {
+  accent-color: var(--color-white);
+}
+
+.snippet-row {
+  align-items: flex-start;
+  padding: 12px 16px;
+}
+
+.snippet-fields {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.snippet-line {
+  display: flex;
+  gap: 8px;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  color: var(--color-text);
+  background: var(--color-terminal);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  outline: none;
+}
+
+.field:focus {
+  border-color: var(--color-faint);
+}
+
+.field-prefix {
+  flex: 0 0 140px;
+}
+
+.field-body {
+  font-family: var(--font-mono);
+  resize: vertical;
+}
+
+.provider-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accounts-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 16px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.account-card-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.account-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-card-subtitle {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.account-usage {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 190px;
+}
+
+.account-usage-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+}
+
+.account-note {
+  margin: 0;
+  padding: 14px 16px;
+  color: var(--color-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+}
+
+.settings-wrap {
+  gap: 4px;
+}
+
+.settings-wrap .segment {
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 12px;
+}
+
+.add-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.add-account-steps {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--color-muted);
+}
+
+.add-account-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-account-row .field {
+  max-width: 280px;
+}
+
+.auto-save-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auto-save-controls-off {
+  opacity: 0.5;
+}
+
+.auto-save-custom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auto-save-input {
+  flex: 0 0 110px;
+}

@@ -1,0 +1,72 @@
+.files-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: var(--files-panel-width);
+  padding: 12px;
+  background: var(--color-panel);
+  border-left: 1px solid var(--color-border);
+}
+
+.files-header {
+  display: flex;
+  align-items: center;
+  height: 28px;
+}
+
+.find-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 10px;
+  color: var(--color-muted);
+  background: var(--color-terminal);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: text;
+}
+
+.find-field input {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.files-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.files-tree .row {
+  flex-shrink: 0;
+}
+
+.search-tag {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 11px;
+}
+
+.search-scope {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 4px 0 10px;
+}
+
+.search-scope-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

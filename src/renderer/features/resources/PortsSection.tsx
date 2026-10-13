@@ -1,0 +1,50 @@
+import { Square } from 'lucide-react'
+import { useEffect } from 'react'
+import { usePortsStore } from '../../state/portsStore'
+import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
+
+const PORTS_POLL_MS = 5000
+
+export function PortsSection() {
+  const ports = usePortsStore((state) => state.ports)
+  const load = usePortsStore((state) => state.load)
+  const stop = usePortsStore((state) => state.stop)
+  const tabs = useWorkspaceStore((state) => state.tabs)
+
+  useEffect(() => {
+    void load()
+    const timer = setInterval(() => void load(), PORTS_POLL_MS)
+    return () => clearInterval(timer)
+  }, [load])
+
+  function terminalTitle(paneId: string): string {
+    for (const tab of tabs.filter(isTerminalTab)) {
+      const pane = tab.panes[paneId]
+      if (pane !== undefined) {
+        return pane.title
+      }
+    }
+    return 'Terminal'
+  }
+
+  return (
+    <div className="ports-section">
+      <h3 className="section-label">Listening ports</h3>
+      {ports === null && <p className="panel-empty">Looking…</p>}
+      {ports !== null && ports.length === 0 && <p className="panel-empty">Nothing is listening on a port.</p>}
+      {ports?.map((entry) => (
+        <div key={`${entry.pid}-${entry.port}`} className="resource-row resource-row-terminal">
+          <span className="resource-name">
+            <span className="port-number">:{entry.port}</span>
+            <span className="muted port-owner">
+              {entry.processName} · {terminalTitle(entry.paneId)}
+            </span>
+          </span>
+          <button type="button" className="port-stop" title="Stop this process" onClick={() => void stop(entry)}>
+            <Square size={12} /> Stop
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}

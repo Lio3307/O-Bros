@@ -1,0 +1,123 @@
+.usage-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 12px;
+  z-index: 20;
+  width: 400px;
+  padding: 16px 0 0;
+  color: var(--color-text);
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  font-size: 13px;
+}
+
+.usage-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.usage-popover-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.usage-popover-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usage-popover-modes {
+  margin: 12px 16px 0;
+  padding: 3px;
+}
+
+.usage-popover-modes .segment {
+  height: 28px;
+}
+
+.usage-providers {
+  margin-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.usage-provider,
+.usage-navigation-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.usage-provider:hover,
+.usage-navigation-row:hover {
+  background: var(--color-hover);
+}
+
+.usage-navigation-row {
+  justify-content: space-between;
+  padding: 16px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.usage-navigation-row:last-child {
+  border-bottom: none;
+}
+
+.usage-provider-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--color-white);
+  background: var(--color-selected);
+  border-radius: 8px;
+}
+
+.usage-provider-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.usage-provider-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.usage-provider-name {
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.usage-provider-windows {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.usage-window {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usage-window-percent {
+  font-weight: 600;
+  color: var(--color-white);
+}
