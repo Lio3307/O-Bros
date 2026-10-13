@@ -2,6 +2,7 @@
   "name": "o-bros",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Terminal-first workspace for the Claude and Codex CLIs",
   "main": "./out/main/index.js",
   "scripts": {
