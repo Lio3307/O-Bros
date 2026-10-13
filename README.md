@@ -1,5 +1,7 @@
 # o-bros
 
+[![CI](https://github.com/Lio3307/O-Bros/actions/workflows/ci.yml/badge.svg)](https://github.com/Lio3307/O-Bros/actions/workflows/ci.yml)
+
 A terminal-first desktop workspace for the **Claude** and **Codex** command-line tools.
 
 o-bros puts real terminals, a code editor, git changes, session history and your usage limits in one window, and it keeps memory use low by doing most work only when you ask for it.
