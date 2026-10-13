@@ -4,6 +4,7 @@ import { EditorSettingsPage } from './EditorSettingsPage'
 import { ProjectFoldersPage } from './ProjectFoldersPage'
 import { ProviderAccountsPage } from './ProviderAccountsPage'
 import { SnippetsPage } from './SnippetsPage'
+import { StoragePage } from './StoragePage'
 import { TerminalSettingsPage } from './TerminalSettingsPage'
 
 const pageByName: Record<SettingsPageId, () => ReactElement> = {
@@ -11,7 +12,8 @@ const pageByName: Record<SettingsPageId, () => ReactElement> = {
   folders: () => <ProjectFoldersPage />,
   editor: () => <EditorSettingsPage />,
   snippets: () => <SnippetsPage />,
-  terminal: () => <TerminalSettingsPage />
+  terminal: () => <TerminalSettingsPage />,
+  storage: () => <StoragePage />
 }
 
 export function SettingsPage() {

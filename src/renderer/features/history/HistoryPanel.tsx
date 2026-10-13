@@ -1,9 +1,12 @@
-import { Trash2, X } from 'lucide-react'
+import { Play, Trash2, X } from 'lucide-react'
 import { useEffect } from 'react'
+import { formatBytes } from '../../../shared/format'
+import { describeSessionDelete } from '../../../shared/sessionDeleteMessage'
 import { groupByDay, type DayGroup } from '../../../shared/time'
 import type { SessionSummary } from '../../../shared/types'
 import { askToConfirm } from '../../state/confirmStore'
 import { useHistoryStore } from '../../state/historyStore'
+import { resumeSession } from '../../state/openTerminal'
 import { PanelHeader } from '../../ui/PanelHeader'
 import { ProviderMark } from '../../ui/ProviderMark'
 import './history.css'
@@ -19,15 +22,12 @@ function groupSessions(sessions: SessionSummary[], now: number): Record<DayGroup
   return groups
 }
 
-async function removeAfterConfirm(filePaths: string[]): Promise<void> {
-  const noun = filePaths.length === 1 ? 'session' : 'sessions'
-  const isConfirmed = await askToConfirm({
-    title: 'Delete ' + filePaths.length + ' ' + noun + '?',
-    message: 'They move to the Recycle Bin or Trash and disappear from your history list. You can restore them from there.',
-    confirmLabel: 'Delete'
-  })
+async function removeAfterConfirm(sessions: SessionSummary[]): Promise<void> {
+  const totalBytes = sessions.reduce((total, session) => total + session.sizeBytes, 0)
+  const { deletePermanently, remove } = useHistoryStore.getState()
+  const isConfirmed = await askToConfirm(describeSessionDelete(sessions.length, totalBytes, deletePermanently))
   if (isConfirmed) {
-    await useHistoryStore.getState().remove(filePaths)
+    await remove(sessions.map((session) => session.filePath))
   }
 }
 
@@ -43,17 +43,28 @@ function SessionItem({ session, isSelected }: { session: SessionSummary; isSelec
       >
         <span className="session-title">{session.title}</span>
         <span className="session-meta">
-          <ProviderMark provider={session.provider} size={12} /> {session.projectPath ?? 'Unknown folder'}
+          <ProviderMark provider={session.provider} size={12} /> {formatBytes(session.sizeBytes)} ·{' '}
+          {session.projectPath ?? 'Unknown folder'}
         </span>
       </button>
-      <button
-        type="button"
-        className="session-delete"
-        title="Delete this session"
-        onClick={() => void removeAfterConfirm([session.filePath])}
-      >
-        <Trash2 size={14} />
-      </button>
+      <div className="session-actions">
+        <button
+          type="button"
+          className="session-action"
+          title="Resume this session in a terminal"
+          onClick={() => resumeSession(session)}
+        >
+          <Play size={14} />
+        </button>
+        <button
+          type="button"
+          className="session-action"
+          title="Delete this session"
+          onClick={() => void removeAfterConfirm([session])}
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
     </div>
   )
 }
@@ -81,7 +92,7 @@ function DateFilter() {
         <button
           type="button"
           className="button-remove history-delete-all"
-          onClick={() => void removeAfterConfirm(sessions.map((session) => session.filePath))}
+          onClick={() => void removeAfterConfirm(sessions)}
         >
           Delete {sessions.length}
         </button>

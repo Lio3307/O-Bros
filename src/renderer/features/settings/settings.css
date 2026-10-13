@@ -123,3 +123,9 @@
   gap: 8px;
   font-size: 11px;
 }
+
+.cleanup-amount {
+  flex-shrink: 0;
+  margin: 0 16px;
+  text-align: right;
+}

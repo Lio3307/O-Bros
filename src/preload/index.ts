@@ -53,7 +53,9 @@ const api: DesktopApi = {
   history: {
     list: (day) => ipcRenderer.invoke(IpcChannel.historyList, day),
     get: (filePath) => ipcRenderer.invoke(IpcChannel.historyGet, filePath),
-    remove: (filePaths) => ipcRenderer.invoke(IpcChannel.historyRemove, filePaths)
+    remove: (filePaths, permanently) => ipcRenderer.invoke(IpcChannel.historyRemove, filePaths, permanently),
+    storage: () => ipcRenderer.invoke(IpcChannel.historyStorage),
+    removeOlderThan: (request) => ipcRenderer.invoke(IpcChannel.historyRemoveOlder, request)
   },
   resources: {
     get: () => ipcRenderer.invoke(IpcChannel.resourcesGet)
@@ -73,6 +75,11 @@ const api: DesktopApi = {
     listRunningTasks: () => ipcRenderer.invoke(IpcChannel.appListRunningTasks),
     confirmClose: () => ipcRenderer.invoke(IpcChannel.appConfirmClose),
     onCloseRequested: (listener) => subscribe<undefined>(IpcChannel.appCloseRequested, () => listener())
+  },
+  storage: {
+    report: () => ipcRenderer.invoke(IpcChannel.storageReport),
+    clearAppCache: () => ipcRenderer.invoke(IpcChannel.storageClearAppCache),
+    clearLeftoverTemp: () => ipcRenderer.invoke(IpcChannel.storageClearLeftoverTemp)
   }
 }
 

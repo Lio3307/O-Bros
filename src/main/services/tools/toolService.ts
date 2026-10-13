@@ -4,10 +4,10 @@ import { basename, dirname, join } from 'node:path'
 import type { FormatRequest, FormatResult, LintRequest, LintResult } from '../../../shared/types'
 import { assertInsideProjectRoots } from '../../pathGuard'
 import { parseOxlintReport } from './oxlintParser'
+import { LINT_TEMP_PREFIX } from '../storage/leftoverTempFolders'
 import { runBundledTool } from './toolRunner'
 
 const OXLINT_CONFIG_FILE = '.oxlintrc.json'
-const LINT_TEMP_PREFIX = 'o-bros-lint-'
 const MAX_FAILURE_TEXT_LENGTH = 300
 
 async function fileExists(path: string): Promise<boolean> {

@@ -20,13 +20,17 @@ import type {
   ProjectRoot,
   ProjectScripts,
   ProviderId,
+  RemoveOlderSessionsRequest,
+  RemoveSessionsResult,
   RenameEntryRequest,
   ResourceSnapshot,
   RunningTask,
   SearchHit,
   SearchRequest,
   SessionMessage,
-  SessionSummary
+  SessionStorageReport,
+  SessionSummary,
+  StorageReport
 } from './types'
 
 export const IpcChannel = {
@@ -62,6 +66,8 @@ export const IpcChannel = {
   historyList: 'history:list',
   historyGet: 'history:get',
   historyRemove: 'history:remove',
+  historyStorage: 'history:storage',
+  historyRemoveOlder: 'history:removeOlder',
   resourcesGet: 'resources:get',
   toolsLint: 'tools:lint',
   toolsFormat: 'tools:format',
@@ -70,7 +76,10 @@ export const IpcChannel = {
   portsStop: 'ports:stop',
   appListRunningTasks: 'app:listRunningTasks',
   appConfirmClose: 'app:confirmClose',
-  appCloseRequested: 'app:closeRequested'
+  appCloseRequested: 'app:closeRequested',
+  storageReport: 'storage:report',
+  storageClearAppCache: 'storage:clearAppCache',
+  storageClearLeftoverTemp: 'storage:clearLeftoverTemp'
 } as const
 
 export interface PtyCreateRequest {
@@ -136,7 +145,9 @@ export interface DesktopApi {
   history: {
     list(day: string | null): Promise<SessionSummary[]>
     get(filePath: string): Promise<SessionMessage[]>
-    remove(filePaths: string[]): Promise<number>
+    remove(filePaths: string[], permanently: boolean): Promise<number>
+    storage(): Promise<SessionStorageReport[]>
+    removeOlderThan(request: RemoveOlderSessionsRequest): Promise<RemoveSessionsResult>
   }
   resources: {
     get(): Promise<ResourceSnapshot>
@@ -156,5 +167,10 @@ export interface DesktopApi {
     listRunningTasks(): Promise<RunningTask[]>
     confirmClose(): Promise<void>
     onCloseRequested(listener: () => void): () => void
+  }
+  storage: {
+    report(): Promise<StorageReport>
+    clearAppCache(): Promise<void>
+    clearLeftoverTemp(): Promise<void>
   }
 }

@@ -8,27 +8,16 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 
 > **Status:** early version. Built and tested on Windows 11. macOS and Linux code paths exist but have not been tested. There is no installer yet; you run it from source.
 
-## Screenshots
-
-![The workspace with a terminal and the files panel](docs/images/workspace.png)
-
-| Editor with linting | Git changes |
-|---|---|
-| ![The code editor](docs/images/editor.png) | ![The Changes panel](docs/images/changes.png) |
-
-| Session history | Provider accounts |
-|---|---|
-| ![The History panel](docs/images/history.png) | ![Provider accounts settings](docs/images/settings.png) |
-
 ## What you get
 
 - **Real terminals** with tabs and splits (xterm.js and node-pty). Start `claude`, `codex` or a plain shell in any project folder.
 - **Accounts and usage.** Detects your Claude and Codex logins on this computer, lets you switch between them, and shows 5-hour and weekly usage in the status bar.
 - **Files and editor.** A file tree with a right-click menu, name and text search, quick open (`Ctrl+P`) and a CodeMirror editor with snippets, linting and formatting for JavaScript and TypeScript, auto save and 14 languages.
 - **Git changes.** Stage, unstage, discard and commit, switch branches, fetch, and read diffs.
-- **Session history.** Browse your Claude conversations by day and move old ones to the Recycle Bin.
+- **Session history and Resume.** Browse your Claude and Codex conversations by day, resume one in a terminal with a click, and delete old ones.
 - **Development helpers.** Run `package.json` scripts, see problems from the linter, see and stop listening ports, and get a notification when a long command finishes.
 - **Resource Manager.** See how much memory and CPU each terminal and the app use.
+- **Storage and memory.** One settings page that shows what is safe to clear (app cache, leftover temp files, terminal history, recent files) and clears it with a button.
 
 ## Quick start
 
@@ -85,7 +74,7 @@ o-bros never asks for your password and never stores your tokens. It reads the l
 
 - Usage numbers come from endpoints the providers do not document. They may change or stop working.
 - Formatting uses `oxfmt`, which is not yet 1.0, and supports JavaScript, TypeScript, JSON, CSS, HTML, Markdown and YAML only.
-- Only Claude sessions appear in History. Codex history is not read yet.
+- Resume starts `claude --resume` or `codex resume` in a terminal and relies on the CLI finding the session; if the project folder was moved or deleted, resume will not work.
 - No installer or auto-update. Packaging needs extra setup (see [Development](docs/DEVELOPMENT.md)).
 
 ## License

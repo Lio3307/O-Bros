@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 export type Section = 'projects' | 'history' | 'changes' | 'settings'
 export type SidebarMode = 'expanded' | 'rail' | 'hidden'
-export type SettingsPage = 'accounts' | 'folders' | 'editor' | 'snippets' | 'terminal'
+export type SettingsPage = 'accounts' | 'folders' | 'editor' | 'snippets' | 'terminal' | 'storage'
 
 interface LayoutState {
   section: Section

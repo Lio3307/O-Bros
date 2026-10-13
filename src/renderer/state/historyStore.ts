@@ -7,6 +7,8 @@ interface HistoryState {
   sessions: SessionSummary[]
   selectedFilePath: string | null
   day: string | null
+  deletePermanently: boolean
+  setDeletePermanently: (deletePermanently: boolean) => void
   load: () => Promise<void>
   select: (filePath: string) => void
   setDay: (day: string | null) => Promise<void>
@@ -27,6 +29,9 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
     sessions: [],
     selectedFilePath: null,
     day: null,
+    deletePermanently: false,
+
+    setDeletePermanently: (deletePermanently) => set({ deletePermanently }),
 
     load: reload,
 
@@ -39,9 +44,12 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
 
     remove: async (filePaths) => {
       try {
-        const removedCount = await window.api.history.remove(filePaths)
+        const permanently = get().deletePermanently
+        const removedCount = await window.api.history.remove(filePaths, permanently)
         const noun = removedCount === 1 ? 'session' : 'sessions'
-        toast.success('Moved ' + removedCount + ' ' + noun + ' to the Recycle Bin or Trash.')
+        const outcome = permanently ? 'Deleted ' : 'Moved '
+        const destination = permanently ? '.' : ' to the Recycle Bin or Trash.'
+        toast.success(outcome + removedCount + ' ' + noun + destination)
       } catch (error) {
         toast.error(friendlyErrorMessage(error, 'Could not delete the session.'))
       }

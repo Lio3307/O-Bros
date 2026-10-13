@@ -84,10 +84,38 @@ export interface SearchHit {
 
 export interface SessionSummary {
   filePath: string
+  sessionId: string
   provider: ProviderId
+  account: AccountRef | null
   title: string
   projectPath: string | null
   lastActiveAt: number
+  sizeBytes: number
+}
+
+export interface SessionAgeBucket {
+  days: number | null
+  sessionCount: number
+  totalBytes: number
+}
+
+export interface SessionStorageReport {
+  provider: ProviderId
+  sessionCount: number
+  totalBytes: number
+  oldestAt: number | null
+  buckets: SessionAgeBucket[]
+}
+
+export interface RemoveOlderSessionsRequest {
+  provider: ProviderId
+  days: number | null
+  permanently: boolean
+}
+
+export interface RemoveSessionsResult {
+  removedCount: number
+  freedBytes: number
 }
 
 export interface SessionMessage {
@@ -212,4 +240,10 @@ export interface ListeningPort {
   pid: number
   processName: string
   paneId: string
+}
+
+export interface StorageReport {
+  appCacheBytes: number
+  leftoverTempBytes: number
+  leftoverTempFolders: number
 }

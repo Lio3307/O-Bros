@@ -30,10 +30,20 @@
   position: relative;
 }
 
-.session-delete {
+.session-actions {
   position: absolute;
   top: 6px;
   right: 6px;
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+}
+
+.session-item:hover .session-actions {
+  opacity: 1;
+}
+
+.session-action {
   display: grid;
   place-items: center;
   padding: 4px;
@@ -41,14 +51,9 @@
   background: var(--color-panel);
   border: none;
   border-radius: 4px;
-  opacity: 0;
 }
 
-.session-item:hover .session-delete {
-  opacity: 1;
-}
-
-.session-delete:hover {
+.session-action:hover {
   color: var(--color-white);
   background: var(--color-hover);
 }

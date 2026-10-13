@@ -1,4 +1,4 @@
-import { Code2, FolderCog, Scissors, SquareTerminal, UserRound } from 'lucide-react'
+import { Code2, FolderCog, HardDrive, Scissors, SquareTerminal, UserRound } from 'lucide-react'
 import type { SettingsPage } from '../../state/layoutStore'
 import { useLayoutStore } from '../../state/layoutStore'
 import { PanelHeader } from '../../ui/PanelHeader'
@@ -8,7 +8,8 @@ const settingsItems: { page: SettingsPage; label: string; Icon: typeof UserRound
   { page: 'folders', label: 'Project folders', Icon: FolderCog },
   { page: 'editor', label: 'Editor', Icon: Code2 },
   { page: 'snippets', label: 'Snippets', Icon: Scissors },
-  { page: 'terminal', label: 'Terminal', Icon: SquareTerminal }
+  { page: 'terminal', label: 'Terminal', Icon: SquareTerminal },
+  { page: 'storage', label: 'Storage and memory', Icon: HardDrive }
 ]
 
 export function SettingsPanel() {

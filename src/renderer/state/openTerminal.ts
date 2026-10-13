@@ -1,5 +1,6 @@
 import { accountToRef } from '../../shared/accounts'
-import type { ProviderId } from '../../shared/types'
+import { resumeCommandFor } from '../../shared/resumeCommand'
+import type { ProviderId, SessionSummary } from '../../shared/types'
 import { selectActiveAccount, useAccountsStore } from './accountsStore'
 import { useLayoutStore } from './layoutStore'
 import { useProjectsStore } from './projectsStore'
@@ -46,5 +47,15 @@ export function openTerminalIn(cwd: string): void {
 
 export function runInTerminal(cwd: string, command: string, title: string): void {
   useWorkspaceStore.getState().openTerminalTab({ cwd, account: null, startCommand: command, title })
+  useLayoutStore.getState().showSection('projects')
+}
+
+export function resumeSession(session: SessionSummary): void {
+  useWorkspaceStore.getState().openTerminalTab({
+    cwd: session.projectPath,
+    account: session.account,
+    startCommand: resumeCommandFor(session.provider, session.sessionId),
+    title: 'Resume ' + session.title.slice(0, 24)
+  })
   useLayoutStore.getState().showSection('projects')
 }

@@ -10,6 +10,7 @@ import { registerProjectsIpc } from './ipc/projectsIpc'
 import { registerPtyIpc } from './ipc/ptyIpc'
 import { registerResourcesIpc } from './ipc/resourcesIpc'
 import { registerShellIpc } from './ipc/shellIpc'
+import { registerStorageIpc } from './ipc/storageIpc'
 import { registerToolsIpc } from './ipc/toolsIpc'
 import { killAllTerminals } from './services/ptyManager'
 import { guardWindowClose } from './closeGuard'
@@ -27,6 +28,7 @@ function registerAllIpc(): void {
   registerShellIpc()
   registerAppIpc()
   registerPortsIpc()
+  registerStorageIpc()
 }
 
 app.whenReady().then(() => {

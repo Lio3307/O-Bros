@@ -6,6 +6,7 @@ const STORAGE_KEY = 'o-bros.recentFiles'
 interface RecentFilesState {
   paths: string[]
   record: (filePath: string) => void
+  clear: () => void
 }
 
 function readSaved(): string[] {
@@ -16,16 +17,25 @@ function readSaved(): string[] {
   }
 }
 
+function saveRecentFiles(paths: string[]): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(paths))
+  } catch {
+    return
+  }
+}
+
 export const useRecentFilesStore = create<RecentFilesState>()((set, get) => ({
   paths: readSaved(),
 
   record: (filePath) => {
     const paths = pushRecentFile(get().paths, filePath)
     set({ paths })
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(paths))
-    } catch {
-      return
-    }
+    saveRecentFiles(paths)
+  },
+
+  clear: () => {
+    set({ paths: [] })
+    saveRecentFiles([])
   }
 }))

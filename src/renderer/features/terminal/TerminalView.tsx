@@ -9,6 +9,7 @@ import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
 import { DRAGGED_PATH_TYPE } from '../files/dragData'
 import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
+import { registerTerminal, unregisterTerminal } from './terminalRegistry'
 import { TerminalSearchBar } from './TerminalSearchBar'
 import { terminalOptions } from './terminalTheme'
 
@@ -75,6 +76,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
     terminal.open(host)
     terminalRef.current = terminal
     fitAddonRef.current = fitAddon
+    registerTerminal(paneId, terminal)
 
     terminal.attachCustomKeyEventHandler((event) => {
       const isFindShortcut = event.type === 'keydown' && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f'
@@ -112,6 +114,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
       stopListeningToExit()
       stopListeningToTyping.dispose()
       forgetTerminalActivity(paneId)
+      unregisterTerminal(paneId)
       window.api.pty.kill(paneId)
       terminal.dispose()
       terminalRef.current = null
