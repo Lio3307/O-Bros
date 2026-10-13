@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
       - name: Get the code
@@ -43,3 +43,24 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  smoke:
+    name: Smoke test on Windows
+    runs-on: windows-latest
+    continue-on-error: true
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and run the smoke tests
+        run: npm run test:e2e

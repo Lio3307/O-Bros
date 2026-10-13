@@ -31,8 +31,18 @@ const KNOWN_PROBLEMS: KnownProblem[] = [
 
 const FALLBACK_MESSAGE = 'Something went wrong. Please try again.'
 
+let reportHiddenError: ((rawMessage: string) => void) | null = null
+
+export function setHiddenErrorReporter(reporter: (rawMessage: string) => void): void {
+  reportHiddenError = reporter
+}
+
 export function friendlyErrorMessage(error: unknown, fallback: string = FALLBACK_MESSAGE): string {
   const rawMessage = error instanceof Error ? error.message : typeof error === 'string' ? error : ''
   const known = KNOWN_PROBLEMS.find((problem) => rawMessage.includes(problem.needle))
-  return known === undefined ? fallback : known.message
+  if (known === undefined) {
+    reportHiddenError?.(rawMessage)
+    return fallback
+  }
+  return known.message
 }

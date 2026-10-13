@@ -7,6 +7,14 @@ dist/
 release/
 build/
 
+# Installers and packages, in case they land outside release/
+*.exe
+*.dmg
+*.AppImage
+*.blockmap
+*.tgz
+latest*.yml
+
 # Logs
 *.log
 npm-debug.log*
@@ -27,6 +35,8 @@ pnpm-debug.log*
 .cache/
 .eslintcache
 coverage/
+test-results/
+playwright-report/
 
 # Operating system files
 .DS_Store
@@ -38,3 +48,5 @@ desktop.ini
 .vscode/*
 !.vscode/extensions.json
 .claude/
+.playwright-mcp/
+.superpowers/

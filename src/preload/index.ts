@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
 import { IpcChannel, type DesktopApi, type PtyDataEvent, type PtyExitEvent } from '../shared/ipc'
+import type { UpdateStatus } from '../shared/types'
 
 function subscribe<Payload>(channel: string, listener: (payload: Payload) => void): () => void {
   const handler = (_event: IpcRendererEvent, payload: Payload) => listener(payload)
@@ -74,12 +75,21 @@ const api: DesktopApi = {
   app: {
     listRunningTasks: () => ipcRenderer.invoke(IpcChannel.appListRunningTasks),
     confirmClose: () => ipcRenderer.invoke(IpcChannel.appConfirmClose),
-    onCloseRequested: (listener) => subscribe<undefined>(IpcChannel.appCloseRequested, () => listener())
+    onCloseRequested: (listener) => subscribe<undefined>(IpcChannel.appCloseRequested, () => listener()),
+    log: (level, message) => ipcRenderer.send(IpcChannel.appLog, level, message),
+    openLogFolder: () => ipcRenderer.invoke(IpcChannel.appOpenLogFolder)
   },
   storage: {
     report: () => ipcRenderer.invoke(IpcChannel.storageReport),
     clearAppCache: () => ipcRenderer.invoke(IpcChannel.storageClearAppCache),
     clearLeftoverTemp: () => ipcRenderer.invoke(IpcChannel.storageClearLeftoverTemp)
+  },
+  updater: {
+    status: () => ipcRenderer.invoke(IpcChannel.updaterStatus),
+    check: () => ipcRenderer.invoke(IpcChannel.updaterCheck),
+    download: () => ipcRenderer.invoke(IpcChannel.updaterDownload),
+    openReleases: () => ipcRenderer.invoke(IpcChannel.updaterOpenReleases),
+    onStatusChanged: (listener) => subscribe<UpdateStatus>(IpcChannel.updaterStatusChanged, listener)
   }
 }
 

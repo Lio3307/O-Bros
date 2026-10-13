@@ -1,0 +1,37 @@
+appId: com.lio3307.obros
+productName: o-bros
+copyright: Copyright (c) 2026 Lio3307
+
+directories:
+  output: release
+
+files:
+  - out/**
+  - package.json
+
+asar: false
+
+win:
+  icon: resources/logo.png
+  target:
+    - target: nsis
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+mac:
+  icon: resources/logo.png
+  category: public.app-category.developer-tools
+  target: [dmg, zip]
+
+linux:
+  icon: resources/logo.png
+  category: Development
+  target: [AppImage]
+
+publish:
+  provider: github
+  owner: Lio3307
+  repo: O-Bros

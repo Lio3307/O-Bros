@@ -247,3 +247,13 @@ export interface StorageReport {
   leftoverTempBytes: number
   leftoverTempFolders: number
 }
+
+export type UpdateState = 'unavailable' | 'idle' | 'checking' | 'upToDate' | 'available' | 'downloading' | 'ready' | 'failed'
+
+export interface UpdateStatus {
+  state: UpdateState
+  currentVersion: string
+  latestVersion: string | null
+  percent: number
+  message: string | null
+}

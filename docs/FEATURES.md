@@ -60,9 +60,10 @@ Git must already know your name and email (`git config`). o-bros shows a clear m
 
 ## History
 
-- Lists your Claude conversations, newest first, grouped by Today, Yesterday and Earlier.
+- Lists your Claude and Codex conversations, newest first, grouped by Today, Yesterday and Earlier. Each row shows the file size.
 - Pick a date to see one day.
-- Delete one session, or every session of the chosen day. They move to the Recycle Bin or Trash.
+- **Resume** (play button on a row): opens a terminal in the session's project folder, with the right account, and runs `claude --resume <id>` or `codex resume <id>`.
+- Delete one session, or every session of the chosen day. A confirmation says what you lose and how much space it frees.
 - Click a session to read it. It is read-only.
 
 ## Accounts and usage
@@ -86,6 +87,41 @@ Press the memory figure in the status bar.
 - Total CPU and memory for the app and every terminal, grouped by project.
 - **Listening ports** opened by programs inside your terminals, with a Stop button for each.
 
+## Storage and memory
+
+Settings → Storage and memory lists everything o-bros can clear for you, how big it is, and a button for each. Everything on the page is safe: it is rebuilt when needed.
+
+| Item | What it is | What clearing does |
+|---|---|---|
+| App cache | Files the app window keeps so it starts faster (web cache and compiled code cache) | Frees disk space. The next start may be a little slower once. |
+| Leftover temporary files | `o-bros-lint-*` folders in the system temp folder that a crash left behind. Folders younger than a minute are skipped because a lint may still be using them. | Removes them. |
+| Terminal history in memory | The scrolled-off lines every open terminal keeps | Frees memory. Visible text and running programs are not touched. |
+| Recent files list | The names Quick open shows when its box is empty | Empties the list. |
+
+**Saved conversations.** The same page lists, for Claude and for Codex, how many sessions are saved, how much disk they use and how old the oldest is. Each provider has one Delete button per age (not used for 7, 30 or 90 days or more, or all sessions) showing exactly how many sessions and bytes it would remove. A checkbox switches between the Recycle Bin or Trash (recoverable, space freed when emptied) and permanent delete (space freed at once, cannot be undone). Every delete asks for confirmation first.
+
+| Keep sessions | Delete sessions |
+|---|---|
+| Costs disk space only, not memory | Frees disk space |
+| You can resume with full context and read them in History | You can no longer resume or read them |
+| Resuming a long session reloads its whole conversation, which can use more of your usage limit and be slower | Starting fresh is cheaper but starts without that context |
+
+**Clear everything below** runs the four cleanups above. It does not delete conversations. The page never touches your project files, git history, Claude or Codex logins and conversations, project folders list, or editor and terminal settings. Old conversations are removed from the History panel.
+
+## About and updates
+
+Settings → About and updates shows the version and updates the installed app.
+
+| Action | What happens |
+|---|---|
+| Check for updates | Asks GitHub whether a newer release exists. Nothing is sent but the request itself. |
+| Download | Fetches the new version. The running app is not changed. |
+| Close and install | Uses the normal close confirmation, then the update installs. Start o-bros again. |
+| Releases page | Opens the releases on GitHub in your browser, for a manual download. |
+| Open log folder | Opens the folder holding `o-bros.log`, to attach to a bug report. |
+
+Updates never run by themselves, and are unavailable when you run from source.
+
 ## Notifications and messages
 
 Short messages (toasts) appear bottom right, with an icon for success, warning or error. Errors are shown in bold. System error text is translated into plain sentences; o-bros does not show raw error codes.
@@ -99,3 +135,5 @@ Short messages (toasts) appear bottom right, with an icon for success, warning o
 | Editor | Auto save and delay, linter mode, format on save, enabled languages |
 | Snippets | Per-language snippets, reset to defaults |
 | Terminal | History size, finished notification |
+| Storage and memory | Clear app cache, leftover temporary files, terminal history, recent files, saved conversations |
+| About and updates | Version, check for updates, download, releases page |

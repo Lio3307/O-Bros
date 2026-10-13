@@ -1,5 +1,6 @@
 import { BrowserWindow } from 'electron'
 import { join } from 'node:path'
+import { writeLog } from './services/logging/logFile'
 
 const TITLE_BAR_HEIGHT = 36
 const CHROME_COLOR = '#0B0B0B'
@@ -21,6 +22,16 @@ export function createMainWindow(): BrowserWindow {
       nodeIntegration: false,
       sandbox: true
     }
+  })
+
+  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+  window.webContents.on('will-navigate', (event, url) => {
+    if (url !== window.webContents.getURL()) {
+      event.preventDefault()
+    }
+  })
+  window.webContents.on('render-process-gone', (_event, details) => {
+    writeLog('error', 'The interface process stopped: ' + details.reason)
   })
 
   const devServerUrl = process.env.ELECTRON_RENDERER_URL

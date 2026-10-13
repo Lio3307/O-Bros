@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react'
 import { useLayoutStore, type SettingsPage as SettingsPageId } from '../../state/layoutStore'
+import { AboutPage } from './AboutPage'
 import { EditorSettingsPage } from './EditorSettingsPage'
 import { ProjectFoldersPage } from './ProjectFoldersPage'
 import { ProviderAccountsPage } from './ProviderAccountsPage'
@@ -13,7 +14,8 @@ const pageByName: Record<SettingsPageId, () => ReactElement> = {
   editor: () => <EditorSettingsPage />,
   snippets: () => <SnippetsPage />,
   terminal: () => <TerminalSettingsPage />,
-  storage: () => <StoragePage />
+  storage: () => <StoragePage />,
+  about: () => <AboutPage />
 }
 
 export function SettingsPage() {

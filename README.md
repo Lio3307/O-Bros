@@ -6,7 +6,7 @@ A terminal-first desktop workspace for the **Claude** and **Codex** command-line
 
 o-bros puts real terminals, a code editor, git changes, session history and your usage limits in one window, and it keeps memory use low by doing most work only when you ask for it.
 
-> **Status:** early version. Built and tested on Windows 11. macOS and Linux code paths exist but have not been tested. There is no installer yet; you run it from source.
+> **Status:** early version. Built and tested on Windows 11. macOS and Linux code paths exist but have not been tested. Installers are built by a release workflow once a version is published; until then you run it from source.
 
 ## What you get
 
@@ -18,6 +18,10 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 - **Development helpers.** Run `package.json` scripts, see problems from the linter, see and stop listening ports, and get a notification when a long command finishes.
 - **Resource Manager.** See how much memory and CPU each terminal and the app use.
 - **Storage and memory.** One settings page that shows what is safe to clear (app cache, leftover temp files, terminal history, recent files) and clears it with a button.
+
+## Download
+
+Installers for Windows, macOS and Linux are attached to each version on the [Releases page](https://github.com/Lio3307/O-Bros/releases). The app is not code-signed yet, so Windows may show a SmartScreen warning and macOS will ask you to confirm opening it. Updates are checked only when you press the button in Settings → About and updates.
 
 ## Quick start
 
@@ -42,6 +46,7 @@ If `npm install` leaves Electron without its binary, run `node node_modules/elec
 | `npm run build` | Builds the main, preload and renderer bundles into `out/` |
 | `npm run typecheck` | Type-checks the main side and the renderer |
 | `npm test` | Runs the unit tests |
+| `npm run package` | Builds installers into `release/` |
 
 ## Keyboard shortcuts
 
@@ -75,7 +80,7 @@ o-bros never asks for your password and never stores your tokens. It reads the l
 - Usage numbers come from endpoints the providers do not document. They may change or stop working.
 - Formatting uses `oxfmt`, which is not yet 1.0, and supports JavaScript, TypeScript, JSON, CSS, HTML, Markdown and YAML only.
 - Resume starts `claude --resume` or `codex resume` in a terminal and relies on the CLI finding the session; if the project folder was moved or deleted, resume will not work.
-- No installer or auto-update. Packaging needs extra setup (see [Development](docs/DEVELOPMENT.md)).
+- Installers are not code-signed. macOS cannot auto-update an unsigned app (download manually). See [Development](docs/DEVELOPMENT.md).
 
 ## License
 

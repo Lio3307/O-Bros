@@ -30,7 +30,8 @@ import type {
   SessionMessage,
   SessionStorageReport,
   SessionSummary,
-  StorageReport
+  StorageReport,
+  UpdateStatus
 } from './types'
 
 export const IpcChannel = {
@@ -77,9 +78,16 @@ export const IpcChannel = {
   appListRunningTasks: 'app:listRunningTasks',
   appConfirmClose: 'app:confirmClose',
   appCloseRequested: 'app:closeRequested',
+  appLog: 'app:log',
+  appOpenLogFolder: 'app:openLogFolder',
   storageReport: 'storage:report',
   storageClearAppCache: 'storage:clearAppCache',
-  storageClearLeftoverTemp: 'storage:clearLeftoverTemp'
+  storageClearLeftoverTemp: 'storage:clearLeftoverTemp',
+  updaterStatus: 'updater:status',
+  updaterCheck: 'updater:check',
+  updaterDownload: 'updater:download',
+  updaterOpenReleases: 'updater:openReleases',
+  updaterStatusChanged: 'updater:statusChanged'
 } as const
 
 export interface PtyCreateRequest {
@@ -167,10 +175,19 @@ export interface DesktopApi {
     listRunningTasks(): Promise<RunningTask[]>
     confirmClose(): Promise<void>
     onCloseRequested(listener: () => void): () => void
+    log(level: 'error' | 'warning' | 'info', message: string): void
+    openLogFolder(): Promise<void>
   }
   storage: {
     report(): Promise<StorageReport>
     clearAppCache(): Promise<void>
     clearLeftoverTemp(): Promise<void>
+  }
+  updater: {
+    status(): Promise<UpdateStatus>
+    check(): Promise<void>
+    download(): Promise<void>
+    openReleases(): Promise<void>
+    onStatusChanged(listener: (status: UpdateStatus) => void): () => void
   }
 }

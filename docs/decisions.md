@@ -155,3 +155,63 @@
 - Implementation / validation / outcome: Written / typecheck and 123 tests pass / not observed by the user.
 - Result acceptance: Pending user feedback.
 - Learning: Say what a setting deliberately does not do (auto save does not format) in the setting itself.
+
+### Storage and memory cleanup page
+- Scope and goal: Give the user one place in Settings to see and clear what is safe to delete, without leaving the app.
+- Choice and authority: User-requested. Four items only: the Electron web and code cache (session.clearCache and clearCodeCaches), old o-bros-lint-* folders in the system temp folder, the terminal scrollback held in memory (written as the erase-scrollback escape, so running programs are untouched), and the recent files list. Each has its own button plus one that runs all four. No confirmation dialog, because every item is rebuilt on demand.
+- Evidence: Directory size helper covered by unit tests (125 total). The page, the cache sizes and the freed amounts were not run in the app.
+- Alternatives and sacrifice: Not offered: deleting Claude or Codex data (conversations, snapshots, logs), because o-bros treats provider folders as read-only and those hold user data; deleting localStorage wholesale, because that holds settings and open tabs. Session history stays in the History panel, which already moves items to the Recycle Bin.
+- Residual risk/debt: getCacheSize reports only the web cache, so the app cache number can be small while the user-data folder holds more (GPU and shader caches). Temp folders newer than a minute are skipped so a running lint is not broken.
+- Mitigation and revisit trigger: Add the user-data folder size if users report the number does not match what Windows shows.
+- Recovery and ownership: src/main/services/storage, src/renderer/features/settings/StoragePage.tsx; owner not assigned.
+- Implementation / validation / outcome: Written / typecheck, 125 tests and build pass / not observed by the user.
+- Result acceptance: Pending user feedback.
+- Learning: Only offer a delete button for data o-bros itself created; link to the owning panel for anything else.
+
+### Resume and saved conversation control (Claude and Codex)
+- Scope and goal: Let the user resume a Claude or Codex conversation from inside o-bros and see and control what saved conversations cost, because Codex alone held 3.2 GB (451 files, the largest 344 MB) on the development machine.
+- Choice and authority: User-requested. History now reads both providers through one TranscriptFormat per provider (where the files live, how deep, how to read the header and messages). Resume opens a terminal in the session folder with the session account and runs claude --resume or codex resume with the id taken from the file name (Claude) or session_meta (Codex). Storage and memory lists count, size and age per provider with a Delete button per age bucket, each showing what it removes, and a confirmation that states the trade-off. The Recycle Bin is the default; permanent delete is an explicit checkbox because trash does not free disk until emptied.
+- Evidence: Parsers run against fixtures in unit tests, and the Codex reader was run against the real 344 MB file (streamed, 162 messages in about 2 s). Age buckets and messages covered by unit tests (139 total). The buttons, confirmations and resume were not run in the app.
+- Alternatives and sacrifice: Not offered: deleting the per-project memory notes Claude keeps (user-curated, not a cache) or Codex memories and logs. Messages are now streamed instead of loaded whole, which keeps memory flat but the replay still renders every message.
+- Residual risk/debt: Resume depends on the CLI finding the session; a moved project folder breaks it and the terminal then fails to start in a missing folder. The Codex file layout is not documented by OpenAI and may change. Deleting thousands of sessions to the Recycle Bin runs one operating-system call per file.
+- Mitigation and revisit trigger: Reopen if Codex changes its session_meta or message shape, or if trash deletes feel slow.
+- Recovery and ownership: src/main/services/sessions, src/shared/sessionStorage.ts, src/renderer/features/settings/SavedSessionsSection.tsx; owner not assigned.
+- Implementation / validation / outcome: Written / typecheck, 139 tests and build pass / not observed by the user.
+- Result acceptance: Pending user feedback.
+- Learning: Say what a delete costs in the user's terms (what you lose, what is freed, when) before the confirm button.
+
+### Packaging and updater
+- Scope and goal: Let people download installers from GitHub and let the app update itself, with a manual build step the user will run later.
+- Choice and authority: User-requested. electron-builder for installers and electron-updater for updates, both reading GitHub Releases, because that needs no server. Updates are never automatic: check, download and install are each a button, and a downloaded update installs on close through the existing close confirmation. asar is off so oxlint, oxfmt and node-pty stay real files at the paths the app already uses. Renderer-only packages moved to devDependencies so the installer carries only four runtime packages.
+- Evidence: electron-builder --dir --win built an unpacked app that contains only the Windows node-pty, oxlint and oxfmt bindings. The packaged app was not launched, the updater was not exercised, and the macOS and Linux targets were not built.
+- Alternatives and sacrifice: Squirrel, a custom update server and silent background updates were not chosen. No code signing: Windows shows SmartScreen and macOS cannot auto-update. Automatic update checks were left out to match the privacy statement that nothing is contacted without a button.
+- Residual risk/debt: The release workflow has never run. npm audit reports 8 moderate findings inside electron-builder (sprintf-js through global-agent), build-time only. The logo is a white-background square used as the icon on every platform.
+- Mitigation and revisit trigger: Run the workflow on a test tag before announcing. Add signing when the app is shared widely, and a transparent icon.
+- Recovery and ownership: electron-builder.yml, .github/workflows/release.yml, src/main/services/updater; owner not assigned.
+- Implementation / validation / outcome: Written / typecheck, 139 tests, build and a Windows unpacked package pass / not observed by the user.
+- Result acceptance: Pending user feedback.
+- Learning: Keep every network call behind a visible button and say so in the privacy document in the same change.
+
+### Production hardening pass
+- Scope and goal: Close the cheap gaps from the production-readiness review: hidden errors, window navigation, IPC trust, CI coverage, dependency updates and a changelog.
+- Choice and authority: User-approved list. A local log file records crashes, helper-process exits and every error that friendlyErrorMessage replaces with a fallback, which resolves the earlier risk that the real cause is invisible. The window now denies new windows and any navigation away from the app, so a file dropped outside a terminal cannot replace the interface. The CSP adds object-src, base-uri and form-action as none. The usage lookup only accepts accounts the scanner detected. Dependabot, macOS in CI and a changelog were added.
+- Evidence: Audit of every IPC handler found the project path guard on files, git, scripts, tools and reveal, ports limited to terminal-owned pids and history paths limited to known session folders. Unit tests cover the log line format (142 total). Navigation blocking, the log file and the CSP change were not observed in the running app.
+- Alternatives and sacrifice: Not done: validating the sender frame on every handler (one window, no remote content), a permission request handler (could break notifications or clipboard and cannot be checked without running the app), and any telemetry. The terminal can still be started in any folder by design.
+- Residual risk/debt: style-src keeps unsafe-inline because xterm and CodeMirror set inline styles. The hidden-error reporter is module state in the shared friendlyError file. The log may contain file paths.
+- Mitigation and revisit trigger: Reopen the permission handler when someone can run the app and test notifications and paste. Reopen the sender check if the app ever loads remote content.
+- Recovery and ownership: src/main/services/logging, src/main/window.ts, src/renderer/diagnostics.ts; owner not assigned.
+- Implementation / validation / outcome: Written / typecheck, 142 tests and build pass / not observed by the user.
+- Result acceptance: Pending user feedback.
+- Learning: When a friendly message replaces a real error, record the real one somewhere the user can find.
+
+### End-to-end smoke tests
+- Scope and goal: Cover the interface, which unit tests do not, with the smallest set that proves the app starts and the main paths work.
+- Choice and authority: User-approved. Playwright with its Electron support, four tests, a temporary user-data folder seeded with settings.json so the native folder dialog is never needed, and a file written by the shell as proof that the terminal works.
+- Evidence: The tests list correctly and typecheck. They have not been run, because running them opens a window and the app has never been launched in this session.
+- Alternatives and sacrifice: Reading terminal text was rejected because the WebGL renderer draws to a canvas. Testing the real folder dialog and Claude or Codex sessions was left out. Tests use Control or Meta plus P and S and were only written with Windows in mind.
+- Residual risk/debt: Selectors rely on button titles and the CodeMirror class names, so a UI rename breaks them. The CI job is allowed to fail until it has passed a few times.
+- Mitigation and revisit trigger: Run npm run test:e2e once locally, fix the first failures, then remove continue-on-error.
+- Recovery and ownership: e2e/, playwright.config.ts; owner not assigned.
+- Implementation / validation / outcome: Written / typecheck and test listing pass / not run.
+- Result acceptance: Pending user feedback.
+- Learning: Prove terminal behaviour through a side effect on disk, not through pixels.
