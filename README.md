@@ -21,8 +21,8 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 You need [Node.js](https://nodejs.org) and [git](https://git-scm.com). The Claude and Codex command-line tools are optional but are the point of the app.
 
 ```
-git clone <your-repository-url>
-cd o-bros
+git clone https://github.com/Lio3307/O-Bros.git
+cd O-Bros
 npm install
 npm run dev
 ```
