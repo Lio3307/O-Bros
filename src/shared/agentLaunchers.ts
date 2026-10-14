@@ -69,6 +69,17 @@ export function parseShownIds(raw: string | null, launchers: AgentLauncher[]): s
   }
 }
 
+const REDUNDANT_NAME_ENDINGS = [' Agent', ' CLI']
+
+export function shortAgentName(name: string): string {
+  const trimmed = name.trim()
+  const ending = REDUNDANT_NAME_ENDINGS.find((candidate) => trimmed.endsWith(candidate))
+  if (ending === undefined || trimmed.length === ending.length) {
+    return trimmed
+  }
+  return trimmed.slice(0, trimmed.length - ending.length)
+}
+
 export function programOf(command: string): string {
   return command.trim().split(' ')[0]
 }

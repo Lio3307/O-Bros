@@ -5,6 +5,7 @@ import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
 import { PaneLayoutView } from './PaneLayoutView'
 import { TabBar } from './TabBar'
 import './terminal.css'
+import { Button } from '../../ui/Button'
 
 const CodeEditor = lazy(() => import('../editor/CodeEditor').then((module) => ({ default: module.CodeEditor })))
 
@@ -32,9 +33,9 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
         {projectTabs.length === 0 && (
           <div className="empty-state">
             <p>No terminal is open in this project.</p>
-            <button type="button" className="button-primary" onClick={() => openTerminal(null)}>
+            <Button variant="primary" onClick={() => openTerminal(null)}>
               New terminal
-            </button>
+            </Button>
           </div>
         )}
         {terminalTabs

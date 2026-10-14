@@ -9,6 +9,7 @@ import { FileTree } from './FileTree'
 import { buildRootMenuItems } from './fileTreeMenu'
 import { mergeSearchHits, type MergedHit } from './mergeSearchHits'
 import './files.css'
+import { Button } from '../../ui/Button'
 
 const SEARCH_DEBOUNCE_MS = 200
 
@@ -95,9 +96,9 @@ export function FilesPanel() {
       {searchScopePath !== null && (
         <div className="search-scope">
           <span className="muted search-scope-text">In {lastPathSegment(searchScopePath)}</span>
-          <button type="button" className="icon-button" title="Search the whole project" onClick={() => setSearchScope(null)}>
+          <Button variant="icon" title="Search the whole project" onClick={() => setSearchScope(null)}>
             <X size={14} />
-          </button>
+          </Button>
         </div>
       )}
       <div className="files-tree" onContextMenu={showRootMenu}>

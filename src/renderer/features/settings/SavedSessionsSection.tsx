@@ -6,6 +6,7 @@ import { useStorageStore } from '../../state/storageStore'
 import { CleanupRow, pluralize } from './CleanupRow'
 import './settings.css'
 import './settingsControls.css'
+import { SettingsSection } from '../../ui/SettingsSection'
 
 const PROVIDER_NAMES: Record<ProviderId, string> = { claude: 'Claude', codex: 'Codex' }
 
@@ -46,13 +47,15 @@ export function SavedSessionsSection() {
   const setDeletePermanently = useHistoryStore((state) => state.setDeletePermanently)
 
   return (
-    <section className="settings-section">
-      <h2 className="settings-subtitle">Saved conversations (what Resume uses)</h2>
-      <p className="muted">
-        Claude and Codex save every conversation as a file so you can resume it. o-bros lists them in History, where
-        each one has a Resume button. Nothing here is loaded into memory until you open one.
-      </p>
-
+    <SettingsSection
+      title="Saved conversations (what Resume uses)"
+      description={
+        <>
+          Claude and Codex save every conversation as a file so you can resume it. o-bros lists them in History, where
+          each one has a Resume button. Nothing here is loaded into memory until you open one.
+        </>
+      }
+    >
       <label className="toggle-row">
         <input
           type="checkbox"
@@ -80,6 +83,6 @@ export function SavedSessionsSection() {
         Deleting never touches your project files, git history, logins, or the notes the tools keep about your
         projects.
       </p>
-    </section>
+    </SettingsSection>
   )
 }

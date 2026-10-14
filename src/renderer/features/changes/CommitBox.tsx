@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useChangesStore } from '../../state/changesStore'
+import { Button } from '../../ui/Button'
 
 export function CommitBox({ repoPath, stagedCount }: { repoPath: string; stagedCount: number }) {
   const isWorking = useChangesStore((state) => state.isWorking)
@@ -32,9 +33,9 @@ export function CommitBox({ repoPath, stagedCount }: { repoPath: string; stagedC
           }
         }}
       />
-      <button type="button" className="button-primary" disabled={!canCommit} onClick={() => void submit()}>
+      <Button variant="primary" disabled={!canCommit} onClick={() => void submit()}>
         Commit {stagedCount > 0 ? `${stagedCount} ${stagedCount === 1 ? 'file' : 'files'}` : ''}
-      </button>
+      </Button>
     </div>
   )
 }

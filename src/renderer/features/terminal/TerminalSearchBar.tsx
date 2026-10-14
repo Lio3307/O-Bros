@@ -41,8 +41,10 @@ export function TerminalSearchBar({ searchAddon, onClose }: TerminalSearchBarPro
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
-    if (event.key === 'Enter') {
-      event.shiftKey ? findPrevious() : findNext()
+    if (event.key === 'Enter' && event.shiftKey) {
+      findPrevious()
+    } else if (event.key === 'Enter') {
+      findNext()
     } else if (event.key === 'Escape') {
       onClose()
     }

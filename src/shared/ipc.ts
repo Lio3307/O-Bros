@@ -92,6 +92,7 @@ export const IpcChannel = {
   updaterStatus: 'updater:status',
   updaterCheck: 'updater:check',
   updaterDownload: 'updater:download',
+  updaterInstall: 'updater:install',
   updaterOpenReleases: 'updater:openReleases',
   updaterStatusChanged: 'updater:statusChanged'
 } as const
@@ -199,6 +200,7 @@ export interface DesktopApi {
     status(): Promise<UpdateStatus>
     check(): Promise<void>
     download(): Promise<void>
+    install(): Promise<void>
     openReleases(): Promise<void>
     onStatusChanged(listener: (status: UpdateStatus) => void): () => void
   }

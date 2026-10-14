@@ -1,6 +1,9 @@
 import { SCROLLBACK_CHOICES, useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import './settings.css'
 import './settingsControls.css'
+import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
+import { SettingsSection } from '../../ui/SettingsSection'
+import { SegmentedControl } from '../../ui/SegmentedControl'
 
 export function TerminalSettingsPage() {
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
@@ -9,33 +12,26 @@ export function TerminalSettingsPage() {
   const setNotifyWhenFinished = useTerminalSettingsStore((state) => state.setNotifyWhenFinished)
 
   return (
-    <div className="settings-page">
-      <header className="settings-header">
-        <div>
-          <h1 className="settings-title">Terminal</h1>
-          <p className="muted">Zoom the terminal text with Ctrl and + or -. Search inside a terminal with Ctrl+F.</p>
-        </div>
-      </header>
-
-      <section className="settings-section">
-        <h2 className="settings-subtitle">History kept per terminal</h2>
-        <p className="muted">
-          Lines you can scroll back to. Every terminal keeps its own history in memory, so a smaller number uses less
-          memory when you have many terminals open.
-        </p>
-        <div className="segmented settings-segmented">
-          {SCROLLBACK_CHOICES.map((lines) => (
-            <button
-              key={lines}
-              type="button"
-              className={lines === scrollback ? 'segment segment-active' : 'segment'}
-              onClick={() => setScrollback(lines)}
-            >
-              {lines.toLocaleString()} lines
-            </button>
-          ))}
-        </div>
-      </section>
+    <SettingsPageLayout
+      title="Terminal"
+      description="Zoom the terminal text with Ctrl and + or -. Search inside a terminal with Ctrl+F."
+    >
+      <SettingsSection
+        title="History kept per terminal"
+        description={
+          <>
+            Lines you can scroll back to. Every terminal keeps its own history in memory, so a smaller number uses less
+            memory when you have many terminals open.
+          </>
+        }
+      >
+        <SegmentedControl
+          className="settings-segmented"
+          options={SCROLLBACK_CHOICES.map((lines) => ({ value: lines, label: `${lines.toLocaleString()} lines` }))}
+          value={scrollback}
+          onChange={setScrollback}
+        />
+      </SettingsSection>
 
       <section className="settings-section">
         <h2 className="settings-subtitle">Notifications</h2>
@@ -52,6 +48,6 @@ export function TerminalSettingsPage() {
           seconds, you get a notification and a dot on its tab.
         </p>
       </section>
-    </div>
+    </SettingsPageLayout>
   )
 }

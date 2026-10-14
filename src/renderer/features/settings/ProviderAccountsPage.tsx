@@ -15,6 +15,8 @@ import { UsageBar } from '../../ui/UsageBar'
 import { useNow } from '../../ui/useNow'
 import './settings.css'
 import './settingsControls.css'
+import { Button } from '../../ui/Button'
+import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 
 const USAGE_TEXT_REFRESH_MS = 30_000
 const SYSTEM_DEFAULT_TITLE = 'System default'
@@ -82,9 +84,9 @@ function AccountCard({ account, isActive, now }: { account: DetectedAccount; isA
       <UsageCell label="5 hours" window={usage?.fiveHour ?? null} now={now} />
       <UsageCell label="Weekly" window={usage?.weekly ?? null} now={now} />
       {!isActive && (
-        <button type="button" className="button-outline" onClick={() => selectAccount(account.provider, account.id)}>
+        <Button variant="outline" onClick={() => selectAccount(account.provider, account.id)}>
           Use
-        </button>
+        </Button>
       )}
     </div>
   )
@@ -132,9 +134,9 @@ function ProviderBlock({ section }: { section: ProviderSection }) {
           <h2 className="settings-subtitle">Accounts</h2>
           <p className="muted">Found on this computer. New accounts are added here too.</p>
         </div>
-        <button type="button" className="button-outline" onClick={() => setIsNaming(true)}>
+        <Button variant="outline" onClick={() => setIsNaming(true)}>
           <Plus size={14} /> Add account
-        </button>
+        </Button>
       </div>
       {isNaming && (
         <div className="add-account-form">
@@ -161,12 +163,12 @@ function ProviderBlock({ section }: { section: ProviderSection }) {
                 }
               }}
             />
-            <button type="button" className="button-primary" disabled={!canCreate} onClick={() => void addAccount()}>
+            <Button variant="primary" disabled={!canCreate} onClick={() => void addAccount()}>
               Create and sign in
-            </button>
-            <button type="button" className="button-outline" onClick={cancelNaming}>
+            </Button>
+            <Button variant="outline" onClick={cancelNaming}>
               Cancel
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -200,23 +202,24 @@ function LastUpdatedText() {
 
 export function ProviderAccountsPage() {
   return (
-    <div className="settings-page">
-      <header className="settings-header">
-        <div>
-          <h1 className="settings-title">Provider accounts</h1>
-          <p className="muted">
-            o-bros reads the CLI logins on this computer and never stores credentials. Adding an account creates an
-            empty folder in your home directory and opens a terminal where the official CLI signs you in.
-          </p>
-        </div>
-        <div className="settings-header-actions">
+    <SettingsPageLayout
+      title="Provider accounts"
+      description={
+        <>
+          o-bros reads the CLI logins on this computer and never stores credentials. Adding an account creates an
+          empty folder in your home directory and opens a terminal where the official CLI signs you in.
+        </>
+      }
+      actions={
+        <>
           <LastUpdatedText />
           <AccountsRefreshButton variant="labeled" label="Rescan" />
-        </div>
-      </header>
+        </>
+      }
+    >
       {providerSections.map((section) => (
         <ProviderBlock key={section.provider} section={section} />
       ))}
-    </div>
+    </SettingsPageLayout>
   )
 }

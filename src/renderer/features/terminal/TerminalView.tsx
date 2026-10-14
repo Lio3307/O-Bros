@@ -14,6 +14,7 @@ import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMo
 import { registerTerminal, unregisterTerminal } from './terminalRegistry'
 import { TerminalSearchBar } from './TerminalSearchBar'
 import { terminalOptions } from './terminalTheme'
+import { routePaneOutput } from './ptyOutputRouter'
 
 interface TerminalViewProps {
   paneId: string
@@ -96,16 +97,12 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
       window.api.pty.resize(paneId, terminal.cols, terminal.rows)
     }
 
-    const stopListeningToOutput = window.api.pty.onData((event) => {
-      if (event.id === paneId) {
-        terminal.write(event.chunk)
+    const stopRoutingOutput = routePaneOutput(paneId, {
+      onOutput: (chunk) => {
+        terminal.write(chunk)
         noteTerminalOutput(paneId)
-      }
-    })
-    const stopListeningToExit = window.api.pty.onExit((event) => {
-      if (event.id === paneId) {
-        terminal.write('\r\n[process exited]\r\n')
-      }
+      },
+      onExit: () => terminal.write('\r\n[process exited]\r\n')
     })
     const stopListeningToTyping = terminal.onData((data) => window.api.pty.input(paneId, data))
     const resizeObserver = new ResizeObserver(fitToHost)
@@ -115,8 +112,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
 
     return () => {
       resizeObserver.disconnect()
-      stopListeningToOutput()
-      stopListeningToExit()
+      stopRoutingOutput()
       stopListeningToTyping.dispose()
       forgetTerminalActivity(paneId)
       unregisterTerminal(paneId)

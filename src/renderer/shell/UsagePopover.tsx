@@ -11,6 +11,7 @@ import { UsageBar } from '../ui/UsageBar'
 import { listUsageWindows, nearestReset } from '../ui/usageText'
 import { useNow } from '../ui/useNow'
 import './usagePopover.css'
+import { SegmentedControl } from '../ui/SegmentedControl'
 
 type UsageViewMode = 'detailed' | 'compact'
 
@@ -83,6 +84,11 @@ function NavigationRow({ label, onClick }: { label: string; onClick: () => void 
   )
 }
 
+const USAGE_MODE_OPTIONS = [
+  { value: 'detailed' as const, label: 'Detailed' },
+  { value: 'compact' as const, label: 'Compact' }
+]
+
 export function UsagePopover({ onNavigate }: UsagePopoverProps) {
   const [mode, setMode] = useState<UsageViewMode>('detailed')
   const openSection = useLayoutStore((state) => state.openSection)
@@ -107,22 +113,12 @@ export function UsagePopover({ onNavigate }: UsagePopoverProps) {
           <AccountsRefreshButton variant="icon" />
         </span>
       </header>
-      <div className="segmented usage-popover-modes">
-        <button
-          type="button"
-          className={mode === 'detailed' ? 'segment segment-active' : 'segment'}
-          onClick={() => setMode('detailed')}
-        >
-          Detailed
-        </button>
-        <button
-          type="button"
-          className={mode === 'compact' ? 'segment segment-active' : 'segment'}
-          onClick={() => setMode('compact')}
-        >
-          Compact
-        </button>
-      </div>
+      <SegmentedControl
+        className="usage-popover-modes"
+        options={USAGE_MODE_OPTIONS}
+        value={mode}
+        onChange={setMode}
+      />
       <div className="usage-providers">
         {providerOrder.map((provider) => (
           <ProviderUsageRow key={provider} provider={provider} mode={mode} onOpen={goToAccounts} />

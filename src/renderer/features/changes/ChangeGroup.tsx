@@ -3,6 +3,7 @@ import { lastPathSegment } from '../../../shared/paths'
 import type { GitFileChange } from '../../../shared/types'
 import { useChangesStore } from '../../state/changesStore'
 import { askToConfirm } from '../../state/confirmStore'
+import { Button } from '../../ui/Button'
 
 const kindMark: Record<GitFileChange['kind'], string> = {
   modified: 'M',
@@ -53,14 +54,13 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
     <section>
       <div className="change-group-header">
         <h3 className="section-label change-group-title">{title}</h3>
-        <button
-          type="button"
-          className="link-button"
+        <Button
+          variant="link"
           disabled={isWorking}
           onClick={() => void (isStagedGroup ? unstage(repoPath, allPaths) : stage(repoPath, allPaths))}
         >
           {isStagedGroup ? 'Unstage all' : 'Stage all'}
-        </button>
+        </Button>
       </div>
       {changes.map((change) => {
         const isSelected = selectedChange?.path === change.path && selectedChange.isStaged === change.isStaged

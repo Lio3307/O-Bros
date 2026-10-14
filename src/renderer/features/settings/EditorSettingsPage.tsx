@@ -4,6 +4,9 @@ import { LANGUAGES } from '../editor/languageRegistry'
 import { AutoSaveSetting } from './AutoSaveSetting'
 import './settings.css'
 import './settingsControls.css'
+import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
+import { SettingsSection } from '../../ui/SettingsSection'
+import { SegmentedControl } from '../../ui/SegmentedControl'
 
 const LINT_MODE_LABELS: Record<LintMode, string> = {
   off: 'Off',
@@ -15,43 +18,33 @@ export function EditorSettingsPage() {
   const settings = useEditorSettingsStore()
 
   return (
-    <div className="settings-page">
-      <header className="settings-header">
-        <div>
-          <h1 className="settings-title">Editor</h1>
-          <p className="muted">
-            Languages, the Oxc linter and the Oxc formatter. Changes apply to files you open afterwards. Turning a
-            language off opens its files as plain text, which uses less memory.
-          </p>
-        </div>
-      </header>
-
+    <SettingsPageLayout
+      title="Editor"
+      description={
+        <>
+          Languages, the Oxc linter and the Oxc formatter. Changes apply to files you open afterwards. Turning a
+          language off opens its files as plain text, which uses less memory.
+        </>
+      }
+    >
       <AutoSaveSetting />
 
-      <section className="settings-section">
-        <h2 className="settings-subtitle">Linter (oxlint)</h2>
-        <p className="muted">
-          Checks JavaScript and TypeScript. Uses a .oxlintrc.json in your project folder when there is one.
-        </p>
-        <div className="segmented settings-segmented">
-          {LINT_MODES.map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              className={mode === settings.lintMode ? 'segment segment-active' : 'segment'}
-              onClick={() => settings.setLintMode(mode)}
-            >
-              {LINT_MODE_LABELS[mode]}
-            </button>
-          ))}
-        </div>
-      </section>
+      <SettingsSection
+        title="Linter (oxlint)"
+        description="Checks JavaScript and TypeScript. Uses a .oxlintrc.json in your project folder when there is one."
+      >
+        <SegmentedControl
+          className="settings-segmented"
+          options={LINT_MODES.map((mode) => ({ value: mode, label: LINT_MODE_LABELS[mode] }))}
+          value={settings.lintMode}
+          onChange={settings.setLintMode}
+        />
+      </SettingsSection>
 
-      <section className="settings-section">
-        <h2 className="settings-subtitle">Formatter (oxfmt)</h2>
-        <p className="muted">
-          Format a file with Shift+Alt+F. Available for JavaScript, TypeScript, JSON, CSS, HTML, Markdown and YAML.
-        </p>
+      <SettingsSection
+        title="Formatter (oxfmt)"
+        description="Format a file with Shift+Alt+F. Available for JavaScript, TypeScript, JSON, CSS, HTML, Markdown and YAML."
+      >
         <label className="toggle-row">
           <input
             type="checkbox"
@@ -60,7 +53,7 @@ export function EditorSettingsPage() {
           />
           <span>Format when saving (Ctrl+S)</span>
         </label>
-      </section>
+      </SettingsSection>
 
       <section className="settings-section">
         <h2 className="settings-subtitle">Languages</h2>
@@ -83,6 +76,6 @@ export function EditorSettingsPage() {
           ))}
         </div>
       </section>
-    </div>
+    </SettingsPageLayout>
   )
 }

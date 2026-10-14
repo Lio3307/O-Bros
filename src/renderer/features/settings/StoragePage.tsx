@@ -8,6 +8,8 @@ import { DataLocationsSection } from './DataLocationsSection'
 import { SavedSessionsSection } from './SavedSessionsSection'
 import './settings.css'
 import './settingsControls.css'
+import { Button } from '../../ui/Button'
+import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 
 export function StoragePage() {
   const report = useStorageStore((state) => state.report)
@@ -30,25 +32,25 @@ export function StoragePage() {
   const leftoverTempBytes = report?.leftoverTempBytes ?? 0
 
   return (
-    <div className="settings-page">
-      <header className="settings-header">
-        <div>
-          <h1 className="settings-title">Storage and memory</h1>
-          <p className="muted">
-            Everything listed here is safe to clear. It is rebuilt when needed, so the worst case is that something
-            loads a little slower once.
-          </p>
-        </div>
-        <div className="settings-header-actions">
-          <button type="button" className="button-outline" onClick={() => void refresh()}>
+    <SettingsPageLayout
+      title="Storage and memory"
+      description={
+        <>
+          Everything listed here is safe to clear. It is rebuilt when needed, so the worst case is that something
+          loads a little slower once.
+        </>
+      }
+      actions={
+        <>
+          <Button variant="outline" onClick={() => void refresh()}>
             <RefreshCw size={14} /> Measure again
-          </button>
-          <button type="button" className="button-outline" onClick={() => void clearEverything()}>
+          </Button>
+          <Button variant="outline" onClick={() => void clearEverything()}>
             Clear everything below
-          </button>
-        </div>
-      </header>
-
+          </Button>
+        </>
+      }
+    >
       <div className="table">
         <CleanupRow
           title="App cache"
@@ -108,6 +110,6 @@ export function StoragePage() {
           you no longer use. The Resource Manager shows what each one costs.
         </p>
       </section>
-    </div>
+    </SettingsPageLayout>
   )
 }

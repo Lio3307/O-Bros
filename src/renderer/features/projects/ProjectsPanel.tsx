@@ -6,7 +6,7 @@ import { formatAge } from '../../../shared/time'
 import type { ProjectRoot } from '../../../shared/types'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useAttentionStore } from '../../state/attentionStore'
-import { agentStatusOf, programOf, shownLaunchers, type AgentLauncher } from '../../../shared/agentLaunchers'
+import { agentStatusOf, programOf, shortAgentName, shownLaunchers, type AgentLauncher } from '../../../shared/agentLaunchers'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
 import { useInstalledCommandsStore } from '../../state/installedCommandsStore'
 import { useLayoutStore } from '../../state/layoutStore'
@@ -20,6 +20,7 @@ import { PanelHeader } from '../../ui/PanelHeader'
 import { ScriptsList } from './ScriptsList'
 import { useNow } from '../../ui/useNow'
 import './projects.css'
+import { Button } from '../../ui/Button'
 
 const SESSION_AGE_REFRESH_MS = 60_000
 
@@ -121,9 +122,9 @@ function RootBlock({ root }: { root: ProjectRoot }) {
   return (
     <section className="root-block">
       <div className={headerClassName}>
-        <button type="button" className="icon-button" title="Show or hide folders" onClick={() => setIsCollapsed(!isCollapsed)}>
+        <Button variant="icon" title="Show or hide folders" onClick={() => setIsCollapsed(!isCollapsed)}>
           <Chevron size={14} />
-        </button>
+        </Button>
         <button type="button" className="root-name" title={root.path} onClick={() => selectProject(root.path)}>
           {root.name}
         </button>
@@ -171,32 +172,35 @@ export function ProjectsPanel() {
 
   return (
     <div className="panel-content">
-      <PanelHeader title="Projects">
-        <button type="button" className="icon-button" title="Open a folder" onClick={() => void addRoot()}>
-          <FolderPlus size={16} />
-        </button>
-      </PanelHeader>
-      <div className="start-buttons">
-        {launchers.map((launcher) => (
-          <button
-            key={launcher.id}
-            type="button"
-            className="button-outline"
-            title={`Run "${launcher.command}" in the selected folder`}
-            onClick={() => void startAgent(launcher)}
-          >
-            <AgentIcon command={launcher.command} /> {launcher.name}
-            <AgentStatusBadge command={launcher.command} showLabel={false} />
-          </button>
-        ))}
-        {launchers.length === 0 && (
-          <button type="button" className="button-outline" title="Choose agent buttons" onClick={chooseAgents}>
-            <Bot size={14} /> Agents
-          </button>
-        )}
-        <button type="button" className="button-outline" title="Plain terminal in the selected folder" onClick={() => openTerminal(null)}>
-          <Terminal size={14} />
-        </button>
+      <div className="panel-sticky">
+        <PanelHeader title="Projects">
+          <Button variant="icon" title="Open a folder" onClick={() => void addRoot()}>
+            <FolderPlus size={16} />
+          </Button>
+        </PanelHeader>
+        <div className="start-buttons">
+          {launchers.map((launcher) => (
+            <Button
+              key={launcher.id}
+              variant="outline"
+              className="agent-button"
+              title={`${shortAgentName(launcher.name)}: run "${launcher.command}" in the selected folder`}
+              aria-label={shortAgentName(launcher.name)}
+              onClick={() => void startAgent(launcher)}
+            >
+              <AgentIcon command={launcher.command} size={16} />
+              <AgentStatusBadge command={launcher.command} showLabel={false} />
+            </Button>
+          ))}
+          {launchers.length === 0 && (
+            <Button variant="outline" title="Choose agent buttons" onClick={chooseAgents}>
+              <Bot size={14} /> Agents
+            </Button>
+          )}
+          <Button variant="outline" title="Plain terminal in the selected folder" onClick={() => openTerminal(null)}>
+            <Terminal size={14} />
+          </Button>
+        </div>
       </div>
       {roots.length === 0 && <p className="panel-empty">Open a folder to see your projects.</p>}
       {roots.map((root) => (

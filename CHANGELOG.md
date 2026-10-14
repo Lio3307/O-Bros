@@ -4,10 +4,27 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-10-14
+
+### Added
+- Settings → About and updates: after an update is downloaded, **Restart and install** closes o-bros, installs the update and opens it again by itself. If terminals are running something or files are not saved, it tells you first. Your tabs come back as new terminals in the same folders.
+- The update section is one card: a green dot and a **Latest** tag when you are up to date, **New** when a version is available, a progress bar while downloading, and **Ready** when it can be installed.
+- Stress tests in the end-to-end suite: several terminals at once, closing while terminals print, and a responsive window under heavy output.
+
+### Changed
+- Agent buttons in Projects show only the brand icon with a status dot in the corner, so they fit any sidebar width. The name is in the tooltip. Agent names also drop a trailing "Agent" or "CLI" ("Claude Agent" is "Claude").
+- The Projects header, agent buttons and the folder row stay in place while you scroll the project list.
+- The buttons, dialogs, settings pages and choice rows share one set of components, so they look and behave the same everywhere. The Agents settings page is split into one component per file.
+
+### Fixed
+- Terminal output now goes through one listener instead of one per terminal, so many open terminals no longer add work for every chunk of output.
+- Opening session replays quickly one after another could show the earlier session's messages. A long session now shows the first 200 messages with a button for more, instead of drawing every message at once.
+
 ## [0.1.1] - 2026-10-14
 
 ### Fixed
 - Agent buttons in Projects no longer lose their icon when the sidebar is narrow, and the terminal button keeps its size.
+- Closing the window while a terminal was printing could show a JavaScript error dialog.
 
 ### Changed
 - Agents found on your computer use the short built-in name ("Claude", "Codex", "Gemini") when we know the command. The registry name is used only for agents we have no name for.

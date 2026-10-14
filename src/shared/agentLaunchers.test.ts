@@ -6,6 +6,7 @@ import {
   parseShownIds,
   programOf,
   providerOfCommand,
+  shortAgentName,
   shownLaunchers,
   toggleShownId,
   type AgentLauncher
@@ -135,5 +136,17 @@ describe('parseAgentLaunchers', () => {
     expect(parseAgentLaunchers(null)).toBeNull()
     expect(parseAgentLaunchers('{not json')).toBeNull()
     expect(parseAgentLaunchers('{}')).toBeNull()
+  })
+})
+
+describe('shortAgentName', () => {
+  it('drops a redundant Agent or CLI ending', () => {
+    expect(shortAgentName('Claude Agent')).toBe('Claude')
+    expect(shortAgentName('Gemini CLI')).toBe('Gemini')
+  })
+
+  it('keeps names without that ending and a name that is only the ending', () => {
+    expect(shortAgentName('Codex')).toBe('Codex')
+    expect(shortAgentName('Agent')).toBe('Agent')
   })
 })

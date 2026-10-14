@@ -1,3 +1,5 @@
+import { Button } from '../../ui/Button'
+
 interface CleanupRowProps {
   title: string
   description: string
@@ -19,9 +21,9 @@ export function CleanupRow({ title, description, amount, buttonLabel, isDisabled
         <span className="muted">{description}</span>
       </div>
       <span className="muted cleanup-amount">{amount}</span>
-      <button type="button" className="button-outline" disabled={isDisabled} onClick={onClean}>
+      <Button variant="outline" disabled={isDisabled} onClick={onClean}>
         {buttonLabel}
-      </button>
+      </Button>
     </div>
   )
 }

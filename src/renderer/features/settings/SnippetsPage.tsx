@@ -4,6 +4,9 @@ import { useEditorSettingsStore } from '../../state/editorSettingsStore'
 import { LANGUAGES, type LanguageId } from '../editor/languageRegistry'
 import './settings.css'
 import './settingsControls.css'
+import { Button } from '../../ui/Button'
+import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
+import { SegmentedControl } from '../../ui/SegmentedControl'
 
 const JUMP_PLACE_EXAMPLE = '${1}'
 const NAMED_PLACE_EXAMPLE = '${2:name}'
@@ -19,37 +22,31 @@ export function SnippetsPage() {
   const resetSnippets = useEditorSettingsStore((state) => state.resetSnippets)
 
   return (
-    <div className="settings-page">
-      <header className="settings-header">
-        <div>
-          <h1 className="settings-title">Snippets</h1>
-          <p className="muted">
-            Type a prefix in the editor and pick it from the suggestions. In a body, use {JUMP_PLACE_EXAMPLE} or{' '}
-            {NAMED_PLACE_EXAMPLE} for places to jump to with Tab.
-          </p>
-        </div>
-        <div className="settings-header-actions">
-          <button type="button" className="button-outline" onClick={() => resetSnippets(languageId)}>
+    <SettingsPageLayout
+      title="Snippets"
+      description={
+        <>
+          Type a prefix in the editor and pick it from the suggestions. In a body, use {JUMP_PLACE_EXAMPLE} or{' '}
+          {NAMED_PLACE_EXAMPLE} for places to jump to with Tab.
+        </>
+      }
+      actions={
+        <>
+          <Button variant="outline" onClick={() => resetSnippets(languageId)}>
             <RotateCcw size={14} /> Reset
-          </button>
-          <button type="button" className="button-outline" onClick={() => addSnippet(languageId)}>
+          </Button>
+          <Button variant="outline" onClick={() => addSnippet(languageId)}>
             <Plus size={14} /> Add snippet
-          </button>
-        </div>
-      </header>
-
-      <div className="segmented settings-segmented settings-wrap">
-        {LANGUAGES.map((language) => (
-          <button
-            key={language.id}
-            type="button"
-            className={language.id === languageId ? 'segment segment-active' : 'segment'}
-            onClick={() => setLanguageId(language.id)}
-          >
-            {language.label}
-          </button>
-        ))}
-      </div>
+          </Button>
+        </>
+      }
+    >
+      <SegmentedControl
+        className="settings-segmented settings-wrap"
+        options={LANGUAGES.map((language) => ({ value: language.id, label: language.label }))}
+        value={languageId}
+        onChange={setLanguageId}
+      />
 
       <div className="table">
         {snippets.length === 0 && <p className="panel-empty">No snippets for this language yet.</p>}
@@ -79,17 +76,16 @@ export function SnippetsPage() {
                 onChange={(event) => updateSnippet(languageId, index, { body: event.target.value })}
               />
             </div>
-            <button
-              type="button"
-              className="button-remove"
+            <Button
+              variant="remove"
               title="Remove snippet"
               onClick={() => removeSnippet(languageId, index)}
             >
               <Trash2 size={14} />
-            </button>
+            </Button>
           </div>
         ))}
       </div>
-    </div>
+    </SettingsPageLayout>
   )
 }

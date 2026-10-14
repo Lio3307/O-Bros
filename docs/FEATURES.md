@@ -118,17 +118,19 @@ Settings → Storage and memory lists everything o-bros can clear for you, how b
 
 ## About and updates
 
-Settings → About and updates shows the version and updates the installed app.
+Settings → About and updates shows the version and updates the installed app. One card shows the state: a green dot and a **Latest** tag when you are up to date, a **New** tag when a version is available, a progress bar while it downloads, and **Ready** when it can be installed.
 
 | Action | What happens |
 |---|---|
 | Check for updates | Asks GitHub whether a newer release exists. Nothing is sent but the request itself. |
 | Download | Fetches the new version. The running app is not changed. |
-| Close and install | Uses the normal close confirmation, then the update installs. Start o-bros again. |
+| Restart and install | Closes o-bros, installs the update and opens it again by itself. If terminals are running something or files are unsaved, it tells you first. |
 | Releases page | Opens the releases on GitHub in your browser, for a manual download. |
 | Open log folder | Opens the folder holding `o-bros.log`, to attach to a bug report. |
 
 Updates never run by themselves, and are unavailable when you run from source.
+
+**What happens to running terminals:** they stop, because a terminal belongs to the app and the installer replaces the app. Your tabs come back as new terminals in the same folders, and Claude and Codex keep their conversations, so you can resume them from History. Save your files first.
 
 ## Notifications and messages
 

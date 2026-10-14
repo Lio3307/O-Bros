@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { IpcChannel } from '../../../shared/ipc'
+import { allowEveryWindowToClose } from '../../closeGuard'
 import type { UpdateStatus } from '../../../shared/types'
 
 const RELEASES_URL = 'https://github.com/Lio3307/O-Bros/releases'
@@ -51,6 +52,14 @@ export async function downloadUpdate(): Promise<void> {
     return
   }
   await autoUpdater.downloadUpdate()
+}
+
+export async function installUpdateAndRestart(): Promise<void> {
+  if (status.state !== 'ready') {
+    return
+  }
+  await allowEveryWindowToClose()
+  autoUpdater.quitAndInstall(true, true)
 }
 
 export async function openReleasesPage(): Promise<void> {

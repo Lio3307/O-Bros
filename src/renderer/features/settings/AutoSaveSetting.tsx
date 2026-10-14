@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useEditorSettingsStore } from '../../state/editorSettingsStore'
+import { SettingsSection } from '../../ui/SettingsSection'
 import {
   AUTO_SAVE_DELAY_PRESETS_MS,
   AUTO_SAVE_MAX_DELAY_MS,
   AUTO_SAVE_MIN_DELAY_MS
 } from '../editor/editorSettings'
+import { SegmentedControl } from '../../ui/SegmentedControl'
 
 function describeDelay(delayMs: number): string {
   return delayMs >= 1000 && delayMs % 1000 === 0 ? `${delayMs / 1000} s` : `${delayMs} ms`
@@ -26,31 +28,28 @@ export function AutoSaveSetting() {
   }
 
   return (
-    <section className="settings-section">
-      <h2 className="settings-subtitle">Auto save</h2>
-      <p className="muted">
-        Saves a file after you stop typing for the delay below. Auto save does not format the file, so your cursor
-        never jumps. Use Ctrl+S when you want format on save to run.
-      </p>
+    <SettingsSection
+      title="Auto save"
+      description={
+        <>
+          Saves a file after you stop typing for the delay below. Auto save does not format the file, so your cursor
+          never jumps. Use Ctrl+S when you want format on save to run.
+        </>
+      }
+    >
       <label className="toggle-row">
         <input type="checkbox" checked={isEnabled} onChange={(event) => setEnabled(event.target.checked)} />
         <span>Save files automatically</span>
       </label>
 
       <div className={isEnabled ? 'auto-save-controls' : 'auto-save-controls auto-save-controls-off'}>
-        <div className="segmented settings-segmented">
-          {AUTO_SAVE_DELAY_PRESETS_MS.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              disabled={!isEnabled}
-              className={preset === delayMs ? 'segment segment-active' : 'segment'}
-              onClick={() => setDelay(preset)}
-            >
-              {describeDelay(preset)}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          className="settings-segmented"
+          options={AUTO_SAVE_DELAY_PRESETS_MS.map((preset) => ({ value: preset, label: describeDelay(preset) }))}
+          value={delayMs}
+          disabled={!isEnabled}
+          onChange={setDelay}
+        />
         <label className="auto-save-custom">
           <span className="muted">Custom delay</span>
           <input
@@ -69,6 +68,6 @@ export function AutoSaveSetting() {
           <span className="muted">milliseconds ({AUTO_SAVE_MIN_DELAY_MS} to {AUTO_SAVE_MAX_DELAY_MS.toLocaleString()})</span>
         </label>
       </div>
-    </section>
+    </SettingsSection>
   )
 }

@@ -5,6 +5,8 @@ import type { DataLocation, DataLocationKind } from '../../../shared/types'
 import { toast } from '../../state/toastStore'
 import './settings.css'
 import './settingsControls.css'
+import { Button } from '../../ui/Button'
+import { SettingsSection } from '../../ui/SettingsSection'
 
 interface LocationCopy {
   title: string
@@ -57,9 +59,9 @@ function LocationRow({ location }: { location: DataLocation }) {
         <span className="muted">{copy.note}</span>
         <span className="muted mono location-path">{location.path}</span>
       </div>
-      <button type="button" className="button-outline" onClick={() => void open()}>
+      <Button variant="outline" onClick={() => void open()}>
         <FolderOpen size={14} /> Open folder
-      </button>
+      </Button>
     </div>
   )
 }
@@ -75,12 +77,15 @@ export function DataLocationsSection() {
   }, [])
 
   return (
-    <section className="settings-section">
-      <h2 className="settings-subtitle">Where your data lives</h2>
-      <p className="muted">
-        o-bros keeps very little of its own. Your conversations stay where Claude and Codex put them, and your
-        projects stay in their own folders: o-bros never copies them. Nothing here is uploaded anywhere.
-      </p>
+    <SettingsSection
+      title="Where your data lives"
+      description={
+        <>
+          o-bros keeps very little of its own. Your conversations stay where Claude and Codex put them, and your
+          projects stay in their own folders: o-bros never copies them. Nothing here is uploaded anywhere.
+        </>
+      }
+    >
       {locations === null && <p className="panel-empty">Looking…</p>}
       {locations !== null && (
         <div className="table">
@@ -89,6 +94,6 @@ export function DataLocationsSection() {
           ))}
         </div>
       )}
-    </section>
+    </SettingsSection>
   )
 }

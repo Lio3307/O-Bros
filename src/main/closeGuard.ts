@@ -1,4 +1,4 @@
-import type { BrowserWindow } from 'electron'
+import { BrowserWindow } from 'electron'
 import { IpcChannel } from '../shared/ipc'
 import { stopAllRunningTasks } from './services/resources/runningTasks'
 
@@ -13,6 +13,11 @@ export function guardWindowClose(window: BrowserWindow): void {
     event.preventDefault()
     window.webContents.send(IpcChannel.appCloseRequested)
   })
+}
+
+export async function allowEveryWindowToClose(): Promise<void> {
+  await stopAllRunningTasks()
+  BrowserWindow.getAllWindows().forEach((window) => windowsReadyToClose.add(window))
 }
 
 export async function closeWindowAndStopTasks(window: BrowserWindow): Promise<void> {

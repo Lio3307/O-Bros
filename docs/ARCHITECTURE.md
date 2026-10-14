@@ -58,6 +58,22 @@ Adding a capability always touches the same four places: the contract, the prelo
 | `src/renderer/ui` | Small shared components: popup menu, toasts, confirm dialog, buttons. |
 | `src/renderer/styles` | Design tokens and base styles (black and white, no gradients). |
 
+### Shared components (`src/renderer/ui`)
+
+Use these before writing new markup, so every screen looks and behaves the same.
+
+| Component | Use it for |
+|---|---|
+| `Button` | Every button. Variants: `outline`, `primary`, `icon`, `link`, `remove`. Defaults to `type="button"`. |
+| `Modal` | Every dialog: backdrop, title, content, action buttons and the Escape key. Pass `onSubmit` for a form. |
+| `SettingsPageLayout` | The title, description and header buttons of a settings page. |
+| `SettingsSection` | A titled block inside a settings page, with an optional description and action. |
+| `SegmentedControl` | A row of choices where one is selected (lint mode, history lines, usage view). |
+| `PanelHeader`, `PopupMenu`, `RefreshButton`, `EditableTitle` | Side panel header, right-click and popup menus, refresh buttons, rename in place. |
+| `AgentIcon`, `AgentStatusBadge`, `ProviderMark` | Brand marks and the Connected / Signed in status. |
+
+A page with more than about 150 lines is split into one component per file in a folder next to it, as `features/settings/agents/` does for the Agents page.
+
 ### State
 
 Each store is a small Zustand store with one job (`workspaceStore` for tabs, `projectsStore` for folders, `changesStore` for git, `toastStore` for messages, and so on). Components read from stores with selectors; stores call `window.api`.

@@ -11,6 +11,7 @@ import { PanelHeader } from '../../ui/PanelHeader'
 import { ProviderMark } from '../../ui/ProviderMark'
 import './history.css'
 import './historyFilter.css'
+import { Button } from '../../ui/Button'
 
 const dayGroupOrder: DayGroup[] = ['Today', 'Yesterday', 'Earlier']
 
@@ -84,18 +85,14 @@ function DateFilter() {
         onChange={(event) => void setDay(event.target.value)}
       />
       {day !== null && (
-        <button type="button" className="icon-button" title="Show all days" onClick={() => void setDay(null)}>
+        <Button variant="icon" title="Show all days" onClick={() => void setDay(null)}>
           <X size={14} />
-        </button>
+        </Button>
       )}
       {day !== null && sessions.length > 0 && (
-        <button
-          type="button"
-          className="button-remove history-delete-all"
-          onClick={() => void removeAfterConfirm(sessions)}
-        >
+        <Button variant="remove" className="history-delete-all" onClick={() => void removeAfterConfirm(sessions)}>
           Delete {sessions.length}
-        </button>
+        </Button>
       )}
     </div>
   )
