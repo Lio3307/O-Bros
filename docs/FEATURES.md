@@ -18,6 +18,19 @@ A reference for everything o-bros does and where its settings live.
 
 Terminals only start when their tab is first shown, and the GPU renderer is released for hidden terminals, so many open tabs stay cheap.
 
+### Splitting
+
+Split the focused terminal right or down from the buttons in the tab bar, or with the keyboard. Splitting never restarts a terminal: the shell you were typing in keeps its folder, its variables and its history, and the new pane opens next to it. Drag the line between two panes to resize them; the sizes are remembered.
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl+Shift+D` | Split right |
+| `Ctrl+Shift+E` | Split down |
+| `Ctrl+Shift+W` | Close the focused pane |
+| `Ctrl+Shift+T` | New terminal in the selected folder |
+
+On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → Shortcuts**: click a shortcut, then press the keys. A shortcut must include Ctrl, Cmd or Alt, so typing in a terminal is never taken over, and a shortcut already used for copy, paste, save, search or quick open is refused.
+
 ## Tabs
 
 - Close with the X, the middle mouse button, or right-click → Close.
@@ -147,4 +160,5 @@ Short messages (toasts) appear bottom right, with an icon for success, warning o
 | Snippets | Per-language snippets, reset to defaults |
 | Terminal | History size, finished notification |
 | Storage and memory | Clear app cache, leftover temporary files, terminal history, recent files, saved conversations |
+| Shortcuts | Change the keys that split, close and open terminals |
 | About and updates | Version, check for updates, download, releases page |

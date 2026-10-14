@@ -1,5 +1,6 @@
 import { Columns2, Rows2, X } from 'lucide-react'
 import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
+import { useShortcutLabel } from '../../state/shortcutsStore'
 import { EditableTitle } from '../../ui/EditableTitle'
 import { TerminalView } from './TerminalView'
 
@@ -14,6 +15,9 @@ export function PaneFrame({ tab, paneId, isVisible }: PaneFrameProps) {
   const closePane = useWorkspaceStore((state) => state.closePane)
   const renamePane = useWorkspaceStore((state) => state.renamePane)
   const focusPane = useWorkspaceStore((state) => state.focusPane)
+  const splitRightLabel = useShortcutLabel('splitRight')
+  const splitDownLabel = useShortcutLabel('splitDown')
+  const closePaneLabel = useShortcutLabel('closePane')
 
   const pane = tab.panes[paneId]
   const hasSeveralPanes = Object.keys(tab.panes).length > 1
@@ -30,13 +34,13 @@ export function PaneFrame({ tab, paneId, isVisible }: PaneFrameProps) {
             onCommit={(title) => renamePane(tab.id, paneId, title)}
           />
           <div className="pane-actions">
-            <button type="button" title="Split right" onClick={() => splitPane(tab.id, paneId, 'horizontal')}>
+            <button type="button" title={`Split right (${splitRightLabel})`} onClick={() => splitPane(tab.id, paneId, 'horizontal')}>
               <Columns2 size={14} />
             </button>
-            <button type="button" title="Split down" onClick={() => splitPane(tab.id, paneId, 'vertical')}>
+            <button type="button" title={`Split down (${splitDownLabel})`} onClick={() => splitPane(tab.id, paneId, 'vertical')}>
               <Rows2 size={14} />
             </button>
-            <button type="button" title="Close pane" onClick={() => closePane(tab.id, paneId)}>
+            <button type="button" title={`Close pane (${closePaneLabel})`} onClick={() => closePane(tab.id, paneId)}>
               <X size={14} />
             </button>
           </div>

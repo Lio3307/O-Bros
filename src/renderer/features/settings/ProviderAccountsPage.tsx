@@ -163,7 +163,7 @@ function ProviderBlock({ section }: { section: ProviderSection }) {
                 }
               }}
             />
-            <Button variant="primary" disabled={!canCreate} onClick={() => void addAccount()}>
+            <Button variant="primary" disabled={!canCreate} onClick={() => addAccount()}>
               Create and sign in
             </Button>
             <Button variant="outline" onClick={cancelNaming}>

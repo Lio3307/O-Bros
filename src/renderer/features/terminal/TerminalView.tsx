@@ -15,6 +15,7 @@ import { registerTerminal, unregisterTerminal } from './terminalRegistry'
 import { TerminalSearchBar } from './TerminalSearchBar'
 import { terminalOptions } from './terminalTheme'
 import { routePaneOutput } from './ptyOutputRouter'
+import { trimTerminalToHost } from './terminalFit'
 
 interface TerminalViewProps {
   paneId: string
@@ -94,8 +95,10 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
 
     function fitToHost(): void {
       fitAddon.fit()
+      trimTerminalToHost(terminal, host as HTMLElement)
       window.api.pty.resize(paneId, terminal.cols, terminal.rows)
     }
+
 
     const stopRoutingOutput = routePaneOutput(paneId, {
       onOutput: (chunk) => {
@@ -107,6 +110,11 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
     const stopListeningToTyping = terminal.onData((data) => window.api.pty.input(paneId, data))
     const resizeObserver = new ResizeObserver(fitToHost)
     resizeObserver.observe(host)
+    void document.fonts.ready.then(() => {
+      if (terminalRef.current === terminal) {
+        fitToHost()
+      }
+    })
 
     void window.api.pty.create({ id: paneId, cwd, account, startCommand }).then(fitToHost)
 

@@ -42,10 +42,10 @@ export function StoragePage() {
       }
       actions={
         <>
-          <Button variant="outline" onClick={() => void refresh()}>
+          <Button variant="outline" onClick={() => refresh()}>
             <RefreshCw size={14} /> Measure again
           </Button>
-          <Button variant="outline" onClick={() => void clearEverything()}>
+          <Button variant="outline" onClick={() => clearEverything()}>
             Clear everything below
           </Button>
         </>
@@ -58,7 +58,7 @@ export function StoragePage() {
           amount={isMeasuring ? 'Measuring' : formatBytes(appCacheBytes)}
           buttonLabel="Clear"
           isDisabled={isMeasuring || appCacheBytes === 0}
-          onClean={() => void clearAppCache()}
+          onClean={() => clearAppCache()}
         />
         <CleanupRow
           title="Leftover temporary files"
@@ -70,7 +70,7 @@ export function StoragePage() {
           }
           buttonLabel="Remove"
           isDisabled={isMeasuring || leftoverTempFolders === 0}
-          onClean={() => void clearLeftoverTemp()}
+          onClean={() => clearLeftoverTemp()}
         />
         <CleanupRow
           title="Terminal history in memory"

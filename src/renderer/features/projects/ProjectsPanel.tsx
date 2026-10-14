@@ -174,7 +174,7 @@ export function ProjectsPanel() {
     <div className="panel-content">
       <div className="panel-sticky">
         <PanelHeader title="Projects">
-          <Button variant="icon" title="Open a folder" onClick={() => void addRoot()}>
+          <Button variant="icon" title="Open a folder" onClick={() => addRoot()}>
             <FolderPlus size={16} />
           </Button>
         </PanelHeader>
@@ -186,7 +186,7 @@ export function ProjectsPanel() {
               className="agent-button"
               title={`${shortAgentName(launcher.name)}: run "${launcher.command}" in the selected folder`}
               aria-label={shortAgentName(launcher.name)}
-              onClick={() => void startAgent(launcher)}
+              onClick={() => startAgent(launcher)}
             >
               <AgentIcon command={launcher.command} size={16} />
               <AgentStatusBadge command={launcher.command} showLabel={false} />

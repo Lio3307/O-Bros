@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { access } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { launchApp, type RunningApp } from './launchApp'
 
@@ -75,6 +75,32 @@ test('keeps the window responsive while a terminal prints a lot of output', asyn
     await app.window.getByTitle('Settings', { exact: true }).click()
     await app.window.getByText('Storage and memory', { exact: true }).first().click()
     await expect(app.window.getByText('App cache', { exact: true })).toBeVisible({ timeout: 10_000 })
+  } finally {
+    await app.close()
+  }
+})
+
+test('keeps a terminal and its shell state when it is split', async () => {
+  const app = await launchApp()
+  try {
+    await openTerminalInProject(app)
+    const isWindows = process.platform === 'win32'
+    await app.window.keyboard.type(isWindows ? "$env:KEPT_BEFORE_SPLIT='yes'" :'export KEPT_BEFORE_SPLIT=yes')
+    await app.window.keyboard.press('Enter')
+
+    await app.window.keyboard.press('ControlOrMeta+Shift+D')
+    await expect(app.window.locator('.pane-frame')).toHaveCount(2)
+
+    const firstTerminalInput = app.window.locator('.xterm-helper-textarea').first()
+    await firstTerminalInput.focus()
+    await app.window.keyboard.type(isWindows ? '$env:KEPT_BEFORE_SPLIT | Out-File -Encoding ascii kept.txt' : 'echo $KEPT_BEFORE_SPLIT > kept.txt')
+    await app.window.keyboard.press('Enter')
+
+    await expect
+      .poll(async () => (await readFile(join(app.projectFolder, 'kept.txt'), 'utf8').catch(() => '')).trim(), {
+        timeout: 20_000
+      })
+      .toBe('yes')
   } finally {
     await app.close()
   }

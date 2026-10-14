@@ -15,7 +15,7 @@ export function ProjectFoldersPage() {
       description="o-bros only reads and edits files inside the folders listed here."
       actions={
         <>
-          <Button variant="outline" onClick={() => void addRoot()}>
+          <Button variant="outline" onClick={() => addRoot()}>
             <FolderPlus size={14} /> Add folder
           </Button>
         </>
@@ -32,7 +32,7 @@ export function ProjectFoldersPage() {
             <Button
               variant="remove"
               title="Remove from this list. Your files are not deleted."
-              onClick={() => void removeRoot(root.path)}
+              onClick={() => removeRoot(root.path)}
             >
               Remove
             </Button>

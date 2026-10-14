@@ -90,7 +90,7 @@ function DeleteDialog({ dialog }: { dialog: Extract<FileDialog, { kind: 'delete'
           <Button variant="outline" autoFocus onClick={close} disabled={isWorking}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={() => void confirmDelete()} disabled={isWorking}>
+          <Button variant="primary" onClick={() => confirmDelete()} disabled={isWorking}>
             Delete
           </Button>
         </>

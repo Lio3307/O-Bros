@@ -57,7 +57,7 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
         <Button
           variant="link"
           disabled={isWorking}
-          onClick={() => void (isStagedGroup ? unstage(repoPath, allPaths) : stage(repoPath, allPaths))}
+          onClick={() => (isStagedGroup ? unstage(repoPath, allPaths) : stage(repoPath, allPaths))}
         >
           {isStagedGroup ? 'Unstage all' : 'Stage all'}
         </Button>
@@ -84,7 +84,7 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
                   type="button"
                   title="Discard changes"
                   disabled={isWorking}
-                  onClick={() => void discardAfterConfirm(repoPath, change)}
+                  onClick={() => discardAfterConfirm(repoPath, change)}
                 >
                   <Undo2 size={14} />
                 </button>
@@ -93,7 +93,7 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
                 type="button"
                 title={isStagedGroup ? 'Unstage' : 'Stage'}
                 disabled={isWorking}
-                onClick={() => void (isStagedGroup ? unstage(repoPath, [change.path]) : stage(repoPath, [change.path]))}
+                onClick={() => (isStagedGroup ? unstage(repoPath, [change.path]) : stage(repoPath, [change.path]))}
               >
                 {isStagedGroup ? <Minus size={14} /> : <Plus size={14} />}
               </button>

@@ -8,6 +8,7 @@ import { requestCloseOtherTabs, requestCloseTab } from '../../state/requestClose
 import { useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore'
 import { EditableTitle } from '../../ui/EditableTitle'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
+import { useShortcutLabel } from '../../state/shortcutsStore'
 
 const MIDDLE_MOUSE_BUTTON = 1
 
@@ -106,6 +107,8 @@ export function TabBar() {
   const tabs = useActiveProjectTabs()
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
   const splitPane = useWorkspaceStore((state) => state.splitPane)
+  const splitRightLabel = useShortcutLabel('splitRight')
+  const splitDownLabel = useShortcutLabel('splitDown')
   const activateTab = useWorkspaceStore((state) => state.activateTab)
   const clearAttention = useAttentionStore((state) => state.clear)
   const [openMenu, setOpenMenu] = useState<OpenMenu | null>(null)
@@ -171,14 +174,14 @@ export function TabBar() {
           <>
             <button
               type="button"
-              title="Split right"
+              title={`Split right (${splitRightLabel})`}
               onClick={() => splitPane(splittableTab.id, splittableTab.focusedPaneId, 'horizontal')}
             >
               <Columns2 size={16} />
             </button>
             <button
               type="button"
-              title="Split down"
+              title={`Split down (${splitDownLabel})`}
               onClick={() => splitPane(splittableTab.id, splittableTab.focusedPaneId, 'vertical')}
             >
               <Rows2 size={16} />

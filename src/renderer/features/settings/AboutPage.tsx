@@ -32,10 +32,10 @@ export function AboutPage() {
       }
       actions={
         <>
-          <Button variant="outline" onClick={() => void window.api.app.openLogFolder()}>
+          <Button variant="outline" onClick={() => window.api.app.openLogFolder()}>
             <FileText size={14} /> Open log folder
           </Button>
-          <Button variant="outline" onClick={() => void openReleases()}>
+          <Button variant="outline" onClick={() => openReleases()}>
             <ExternalLink size={14} /> Releases page
           </Button>
         </>
@@ -44,9 +44,9 @@ export function AboutPage() {
       <SettingsSection title="Updates">
         <UpdateCard
           status={status}
-          onCheck={() => void check()}
-          onDownload={() => void download()}
-          onRestart={() => void restartToUpdate()}
+          onCheck={check}
+          onDownload={download}
+          onRestart={restartToUpdate}
         />
       </SettingsSection>
     </SettingsPageLayout>

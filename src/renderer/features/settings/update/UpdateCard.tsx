@@ -6,9 +6,9 @@ import './update.css'
 
 interface UpdateCardProps {
   status: UpdateStatus | null
-  onCheck: () => void
-  onDownload: () => void
-  onRestart: () => void
+  onCheck: () => Promise<unknown>
+  onDownload: () => Promise<unknown>
+  onRestart: () => Promise<unknown>
 }
 
 function UpdateAction({ status, onCheck, onDownload, onRestart }: UpdateCardProps) {

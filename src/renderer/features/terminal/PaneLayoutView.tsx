@@ -1,7 +1,8 @@
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
-import type { TerminalTab } from '../../state/workspaceStore'
+import { useRef } from 'react'
+import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
+import { PaneDivider } from './PaneDivider'
 import { PaneFrame } from './PaneFrame'
-import type { PaneLayout } from './paneTree'
+import { computePaneRects, listDividers, type PaneLayout, type PaneRect } from './paneTree'
 
 interface PaneLayoutViewProps {
   tab: TerminalTab
@@ -9,22 +10,32 @@ interface PaneLayoutViewProps {
   isVisible: boolean
 }
 
-const MIN_PANE_SIZE_PERCENT = 15
+function placement(rect: PaneRect) {
+  return { left: `${rect.left}%`, top: `${rect.top}%`, width: `${rect.width}%`, height: `${rect.height}%` }
+}
 
 export function PaneLayoutView({ tab, layout, isVisible }: PaneLayoutViewProps) {
-  if (layout.kind === 'pane') {
-    return <PaneFrame tab={tab} paneId={layout.paneId} isVisible={isVisible} />
-  }
+  const containerRef = useRef<HTMLDivElement>(null)
+  const resizeSplit = useWorkspaceStore((state) => state.resizeSplit)
+
+  const rectByPaneId = computePaneRects(layout)
+  const dividers = listDividers(layout)
 
   return (
-    <PanelGroup direction={layout.direction}>
-      <Panel minSize={MIN_PANE_SIZE_PERCENT}>
-        <PaneLayoutView tab={tab} layout={layout.first} isVisible={isVisible} />
-      </Panel>
-      <PanelResizeHandle className={`resize-handle resize-handle-${layout.direction}`} />
-      <Panel minSize={MIN_PANE_SIZE_PERCENT}>
-        <PaneLayoutView tab={tab} layout={layout.second} isVisible={isVisible} />
-      </Panel>
-    </PanelGroup>
+    <div className="pane-layout" ref={containerRef}>
+      {Object.entries(rectByPaneId).map(([paneId, rect]) => (
+        <div key={paneId} className="pane-slot" style={placement(rect)}>
+          <PaneFrame tab={tab} paneId={paneId} isVisible={isVisible} />
+        </div>
+      ))}
+      {dividers.map((divider) => (
+        <PaneDivider
+          key={divider.path.join('.')}
+          divider={divider}
+          containerRef={containerRef}
+          onRatioChange={(ratio) => resizeSplit(tab.id, divider.path, ratio)}
+        />
+      ))}
+    </div>
   )
 }

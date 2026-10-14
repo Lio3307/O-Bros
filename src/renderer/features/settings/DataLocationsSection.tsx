@@ -59,7 +59,7 @@ function LocationRow({ location }: { location: DataLocation }) {
         <span className="muted">{copy.note}</span>
         <span className="muted mono location-path">{location.path}</span>
       </div>
-      <Button variant="outline" onClick={() => void open()}>
+      <Button variant="outline" onClick={() => open()}>
         <FolderOpen size={14} /> Open folder
       </Button>
     </div>

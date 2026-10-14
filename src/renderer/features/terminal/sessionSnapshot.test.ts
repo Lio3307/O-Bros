@@ -53,4 +53,30 @@ describe('session snapshot', () => {
     expect(restored?.tabs).toHaveLength(1)
     expect(restored?.activeTabId).toBe('tab-2')
   })
+
+  it('keeps the size of a split across a restart', () => {
+    const resized: TerminalTab = {
+      ...terminalTab,
+      layout: { ...(terminalTab.layout as Extract<TerminalTab['layout'], { kind: 'split' }>), ratio: 0.3 }
+    }
+    const restored = parseSession(serializeSession({ tabs: [resized], activeTabId: 'tab-1' }))
+    const layout = restored?.tabs[0].kind === 'terminal' ? restored.tabs[0].layout : null
+    expect(layout?.kind === 'split' && layout.ratio).toBe(0.3)
+  })
+
+  it('limits a saved split size that is out of range and ignores one that is not a number', () => {
+    const raw = JSON.stringify({
+      tabs: [{ ...terminalTab, layout: { ...terminalTab.layout, ratio: 5 } }],
+      activeTabId: 'tab-1'
+    })
+    const tooLarge = parseSession(raw)?.tabs[0]
+    expect(tooLarge?.kind === 'terminal' && tooLarge.layout.kind === 'split' && tooLarge.layout.ratio).toBe(0.85)
+
+    const notANumber = JSON.stringify({
+      tabs: [{ ...terminalTab, layout: { ...terminalTab.layout, ratio: 'wide' } }],
+      activeTabId: 'tab-1'
+    })
+    const ignored = parseSession(notANumber)?.tabs[0]
+    expect(ignored?.kind === 'terminal' && ignored.layout.kind === 'split' && ignored.layout.ratio).toBeUndefined()
+  })
 })

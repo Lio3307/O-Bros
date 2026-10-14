@@ -1,6 +1,6 @@
 import type { AccountRef } from '../../../shared/types'
 import type { FileTab, TerminalPaneInfo, TerminalTab, WorkspaceTab } from '../../state/workspaceStore'
-import { listPaneIds, type PaneLayout } from './paneTree'
+import { clampSplitRatio, listPaneIds, type PaneLayout } from './paneTree'
 
 export interface SessionSnapshot {
   tabs: WorkspaceTab[]
@@ -40,7 +40,11 @@ function toLayout(value: unknown): PaneLayout | null {
   }
   const first = toLayout(value.first)
   const second = toLayout(value.second)
-  return first !== null && second !== null ? { kind: 'split', direction, first, second } : null
+  if (first === null || second === null) {
+    return null
+  }
+  const ratio = typeof value.ratio === 'number' ? clampSplitRatio(value.ratio) : undefined
+  return ratio === undefined ? { kind: 'split', direction, first, second } : { kind: 'split', direction, ratio, first, second }
 }
 
 function toPane(value: unknown): TerminalPaneInfo | null {

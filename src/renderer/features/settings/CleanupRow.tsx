@@ -6,7 +6,7 @@ interface CleanupRowProps {
   amount: string
   buttonLabel: string
   isDisabled: boolean
-  onClean: () => void
+  onClean: () => void | Promise<unknown>
 }
 
 export function pluralize(count: number, singular: string, plural: string): string {

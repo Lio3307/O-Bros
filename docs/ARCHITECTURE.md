@@ -64,7 +64,7 @@ Use these before writing new markup, so every screen looks and behaves the same.
 
 | Component | Use it for |
 |---|---|
-| `Button` | Every button. Variants: `outline`, `primary`, `icon`, `link`, `remove`. Defaults to `type="button"`. |
+| `Button` | Every button. Variants: `outline`, `primary`, `icon`, `link`, `remove`, `plain`. Defaults to `type="button"`. Spam-safe: it ignores a second click within 350 ms, and when `onClick` returns a promise it is disabled until that promise settles, so return the promise from long actions (`onClick={() => save()}`, not `void save()`). |
 | `Modal` | Every dialog: backdrop, title, content, action buttons and the Escape key. Pass `onSubmit` for a form. |
 | `SettingsPageLayout` | The title, description and header buttons of a settings page. |
 | `SettingsSection` | A titled block inside a settings page, with an optional description and action. |

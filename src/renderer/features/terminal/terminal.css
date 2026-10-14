@@ -178,21 +178,22 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border: 1px solid transparent;
-}
-
-.pane-frame-focused {
-  border-color: var(--color-white);
 }
 
 .pane-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 24px;
+  height: 26px;
   padding: 0 8px;
   background: var(--color-chrome);
+  border-top: 2px solid transparent;
   border-bottom: 1px solid var(--color-border);
+}
+
+.pane-frame-focused .pane-header {
+  background: var(--color-terminal);
+  border-top-color: var(--color-white);
 }
 
 .pane-title {
@@ -208,38 +209,65 @@
 .pane-actions {
   display: flex;
   gap: 2px;
+  opacity: 0.6;
+}
+
+.pane-frame-focused .pane-actions,
+.pane-header:hover .pane-actions {
+  opacity: 1;
 }
 
 .terminal-host {
+  box-sizing: content-box;
   flex: 1;
   min-height: 0;
   padding: 8px 12px;
 }
 
-.resize-handle {
+.pane-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.pane-slot {
+  position: absolute;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+}
+
+.pane-divider {
+  position: absolute;
+  z-index: 2;
   background: var(--color-border);
   background-clip: padding-box;
   border: 0 solid transparent;
 }
 
-.resize-handle-horizontal {
+.pane-divider-horizontal {
   width: 5px;
-  margin: 0 -2px;
+  margin-left: -2px;
   border-left-width: 2px;
   border-right-width: 2px;
   cursor: col-resize;
 }
 
-.resize-handle-vertical {
+.pane-divider-vertical {
   height: 5px;
-  margin: -2px 0;
+  margin-top: -2px;
   border-top-width: 2px;
   border-bottom-width: 2px;
   cursor: row-resize;
 }
 
-.resize-handle:hover {
+.pane-divider:hover {
   background-color: var(--color-faint);
+}
+
+.is-resizing-panes {
+  cursor: grabbing;
+  user-select: none;
 }
 
 .empty-state {

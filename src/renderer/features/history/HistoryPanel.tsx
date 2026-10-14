@@ -61,7 +61,7 @@ function SessionItem({ session, isSelected }: { session: SessionSummary; isSelec
           type="button"
           className="session-action"
           title="Delete this session"
-          onClick={() => void removeAfterConfirm([session])}
+          onClick={() => removeAfterConfirm([session])}
         >
           <Trash2 size={14} />
         </button>
@@ -85,12 +85,12 @@ function DateFilter() {
         onChange={(event) => void setDay(event.target.value)}
       />
       {day !== null && (
-        <Button variant="icon" title="Show all days" onClick={() => void setDay(null)}>
+        <Button variant="icon" title="Show all days" onClick={() => setDay(null)}>
           <X size={14} />
         </Button>
       )}
       {day !== null && sessions.length > 0 && (
-        <Button variant="remove" className="history-delete-all" onClick={() => void removeAfterConfirm(sessions)}>
+        <Button variant="remove" className="history-delete-all" onClick={() => removeAfterConfirm(sessions)}>
           Delete {sessions.length}
         </Button>
       )}

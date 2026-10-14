@@ -4,6 +4,17 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Added
+- Keyboard shortcuts to split the focused terminal right (`Ctrl+Shift+D`) and down (`Ctrl+Shift+E`), close the pane (`Ctrl+Shift+W`) and open a new terminal (`Ctrl+Shift+T`). Settings → Shortcuts changes them, and the split buttons show the current keys in their tooltip.
+- Dragging the line between split panes is remembered with the session.
+
+### Fixed
+- Clicking a button again and again no longer repeats the action. A button is disabled while its action runs (check, download, install, clean up, commit, add account and so on), and a button ignores a second click within a third of a second. Holding down a shortcut such as split no longer opens a stream of terminals.
+- Update download and install can only start once, even if triggered twice, and the card shows Downloading at once.
+- Reading the process list for the Resource Manager is shared between callers and runs at a lower priority, so it no longer starts several copies of PowerShell or competes with your typing.
+- A terminal could run a few columns past the right edge of its pane, over the pane next to it. It now always stays inside its pane.
+- Splitting a terminal, or closing one pane of several, restarted the other terminals and lost what you had typed and the shell state (the folder you had changed to, variables). Terminals now stay running when the layout changes.
+
 ## [0.1.2] - 2026-10-14
 
 ### Added

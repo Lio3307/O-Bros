@@ -5,7 +5,7 @@ import { useInstalledCommandsStore } from '../../../state/installedCommandsStore
 export interface AgentCatalog {
   commands: string[] | null
   registry: AcpAgent[]
-  scan: () => void
+  scan: () => Promise<void>
 }
 
 export function useAgentCatalog(): AgentCatalog {
@@ -13,14 +13,16 @@ export function useAgentCatalog(): AgentCatalog {
   const loadCommands = useInstalledCommandsStore((state) => state.load)
   const [registry, setRegistry] = useState<AcpAgent[]>([])
 
-  function scan(): void {
-    void loadCommands()
-    window.api.agents
+  async function scan(): Promise<void> {
+    const registryLoad = window.api.agents
       .registry()
       .then(setRegistry)
       .catch(() => setRegistry([]))
+    await Promise.all([loadCommands(), registryLoad])
   }
 
-  useEffect(scan, [])
+  useEffect(() => {
+    void scan()
+  }, [])
   return { commands, registry, scan }
 }

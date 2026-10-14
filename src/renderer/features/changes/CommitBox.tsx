@@ -33,7 +33,7 @@ export function CommitBox({ repoPath, stagedCount }: { repoPath: string; stagedC
           }
         }}
       />
-      <Button variant="primary" disabled={!canCommit} onClick={() => void submit()}>
+      <Button variant="primary" disabled={!canCommit} onClick={() => submit()}>
         Commit {stagedCount > 0 ? `${stagedCount} ${stagedCount === 1 ? 'file' : 'files'}` : ''}
       </Button>
     </div>

@@ -41,7 +41,7 @@ export function CloseConfirmModal() {
           <Button variant="outline" autoFocus disabled={isStopping} onClick={cancel}>
             Cancel
           </Button>
-          <Button variant="primary" disabled={isStopping} onClick={() => void confirm()}>
+          <Button variant="primary" disabled={isStopping} onClick={() => confirm()}>
             {isStopping ? 'Stopping...' : hasTasks ? 'Stop everything and close' : 'Close without saving'}
           </Button>
         </>

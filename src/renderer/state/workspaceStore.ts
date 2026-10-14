@@ -5,7 +5,15 @@ import type { AccountRef } from '../../shared/types'
 import { forgetEditorState } from '../features/editor/editorSessions'
 import { useRecentFilesStore } from './recentFilesStore'
 import { useProjectsStore } from './projectsStore'
-import { listPaneIds, removePaneFromLayout, splitPaneInLayout, type PaneLayout, type SplitDirection } from '../features/terminal/paneTree'
+import {
+  listPaneIds,
+  removePaneFromLayout,
+  setSplitRatio,
+  splitPaneInLayout,
+  type PaneLayout,
+  type SplitDirection,
+  type SplitPath
+} from '../features/terminal/paneTree'
 import { belongsToProject, neighbourTabId, tabLocation } from '../features/terminal/projectTabs'
 import { moveItem } from '../features/terminal/tabOrder'
 
@@ -59,6 +67,7 @@ interface WorkspaceState {
   renameTab: (tabId: string, title: string) => void
   splitPane: (tabId: string, paneId: string, direction: SplitDirection) => void
   closePane: (tabId: string, paneId: string) => void
+  resizeSplit: (tabId: string, path: SplitPath, ratio: number) => void
   renamePane: (tabId: string, paneId: string, title: string) => void
   focusPane: (tabId: string, paneId: string) => void
   setFileModified: (tabId: string, isModified: boolean) => void
@@ -243,6 +252,12 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
         panes: remainingPanes,
         focusedPaneId: nextFocusedPaneId
       }))
+    })
+  },
+
+  resizeSplit: (tabId, path, ratio) => {
+    set({
+      tabs: mapTerminalTab(get().tabs, tabId, (tab) => ({ ...tab, layout: setSplitRatio(tab.layout, path, ratio) }))
     })
   },
 

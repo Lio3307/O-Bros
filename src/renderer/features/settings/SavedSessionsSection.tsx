@@ -33,7 +33,7 @@ function ProviderSessions({ report }: { report: SessionStorageReport }) {
             amount={pluralize(bucket.sessionCount, 'session', 'sessions') + ', ' + formatBytes(bucket.totalBytes)}
             buttonLabel="Delete"
             isDisabled={bucket.sessionCount === 0}
-            onClean={() => void removeOldSessions(report.provider, bucket)}
+            onClean={() => removeOldSessions(report.provider, bucket)}
           />
         ))}
       </div>

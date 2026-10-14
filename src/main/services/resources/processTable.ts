@@ -30,7 +30,10 @@ interface WindowsProcessRow {
   UserModeTime: number | null
 }
 
+const LOWER_PRIORITY = "[System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal'; "
+
 const WINDOWS_QUERY =
+  LOWER_PRIORITY +
   'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CommandLine,WorkingSetSize,PrivatePageCount,KernelModeTime,UserModeTime | ConvertTo-Json -Compress'
 
 async function readWindowsProcessTable(): Promise<ProcessEntry[]> {
@@ -77,8 +80,16 @@ async function readUnixProcessTable(): Promise<ProcessEntry[]> {
     })
 }
 
+let tableInFlight: Promise<ProcessEntry[]> | null = null
+
 export function readProcessTable(): Promise<ProcessEntry[]> {
-  return process.platform === 'win32' ? readWindowsProcessTable() : readUnixProcessTable()
+  if (tableInFlight === null) {
+    const read = process.platform === 'win32' ? readWindowsProcessTable() : readUnixProcessTable()
+    tableInFlight = read.finally(() => {
+      tableInFlight = null
+    })
+  }
+  return tableInFlight
 }
 
 export function collectProcessTree(table: ProcessEntry[], rootPid: number): ProcessEntry[] {

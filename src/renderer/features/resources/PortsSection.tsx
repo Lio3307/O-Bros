@@ -2,6 +2,7 @@ import { Square } from 'lucide-react'
 import { useEffect } from 'react'
 import { usePortsStore } from '../../state/portsStore'
 import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
+import { Button } from '../../ui/Button'
 
 const PORTS_POLL_MS = 5000
 
@@ -40,9 +41,9 @@ export function PortsSection() {
               {entry.processName} · {terminalTitle(entry.paneId)}
             </span>
           </span>
-          <button type="button" className="port-stop" title="Stop this process" onClick={() => void stop(entry)}>
+          <Button variant="plain" className="port-stop" title="Stop this process" onClick={() => stop(entry)}>
             <Square size={12} /> Stop
-          </button>
+          </Button>
         </div>
       ))}
     </div>

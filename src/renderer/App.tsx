@@ -5,6 +5,7 @@ import { QuickOpen } from './features/files/QuickOpen'
 import { CloseConfirmModal } from './features/shutdown/CloseConfirmModal'
 import { useQuickOpenShortcut } from './features/files/useQuickOpenShortcut'
 import { useTerminalZoomShortcuts } from './features/terminal/useTerminalZoomShortcuts'
+import { useWorkspaceShortcuts } from './features/terminal/useWorkspaceShortcuts'
 import { MainArea } from './shell/MainArea'
 import { Rail } from './shell/Rail'
 import { SidePanel } from './shell/SidePanel'
@@ -69,6 +70,7 @@ export function App() {
   useStartupData()
   useCloseRequests()
   useTerminalZoomShortcuts()
+  useWorkspaceShortcuts()
   useQuickOpenShortcut()
   const sidebarMode = useLayoutStore((state) => state.sidebarMode)
   const section = useLayoutStore((state) => state.section)

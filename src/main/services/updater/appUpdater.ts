@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import { IpcChannel } from '../../../shared/ipc'
+import { createSingleFlight } from '../../../shared/singleFlight'
 import { allowEveryWindowToClose } from '../../closeGuard'
 import type { UpdateStatus } from '../../../shared/types'
 
@@ -40,26 +41,37 @@ export function setUpUpdater(): void {
   autoUpdater.on('error', () => publish({ state: 'failed', message: FAILURE_MESSAGE }))
 }
 
+const checkOnce = createSingleFlight()
+const downloadOnce = createSingleFlight()
+const installOnce = createSingleFlight()
+
+const STATES_THAT_BLOCK_A_CHECK: UpdateStatus['state'][] = ['unavailable', 'checking', 'downloading', 'ready']
+
 export async function checkForUpdate(): Promise<void> {
-  if (status.state === 'unavailable' || status.state === 'checking' || status.state === 'downloading') {
+  if (STATES_THAT_BLOCK_A_CHECK.includes(status.state)) {
     return
   }
-  await autoUpdater.checkForUpdates()
+  await checkOnce(() => autoUpdater.checkForUpdates())
 }
 
 export async function downloadUpdate(): Promise<void> {
   if (status.state !== 'available') {
     return
   }
-  await autoUpdater.downloadUpdate()
+  await downloadOnce(async () => {
+    publish({ state: 'downloading', percent: 0 })
+    await autoUpdater.downloadUpdate()
+  })
 }
 
 export async function installUpdateAndRestart(): Promise<void> {
   if (status.state !== 'ready') {
     return
   }
-  await allowEveryWindowToClose()
-  autoUpdater.quitAndInstall(true, true)
+  await installOnce(async () => {
+    await allowEveryWindowToClose()
+    autoUpdater.quitAndInstall(true, true)
+  })
 }
 
 export async function openReleasesPage(): Promise<void> {

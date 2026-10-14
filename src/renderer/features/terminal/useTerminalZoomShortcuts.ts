@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useShortcutsStore } from '../../state/shortcutsStore'
 import { useTerminalFontStore } from '../../state/terminalFontStore'
 
 const ZOOM_IN_KEYS = ['=', '+']
@@ -8,7 +9,7 @@ const ZOOM_RESET_KEY = '0'
 export function useTerminalZoomShortcuts(): void {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent): void {
-      if (!(event.ctrlKey || event.metaKey)) {
+      if (useShortcutsStore.getState().isRecording || !(event.ctrlKey || event.metaKey)) {
         return
       }
       const { increase, decrease, reset } = useTerminalFontStore.getState()
