@@ -59,12 +59,18 @@ export function createTerminal(owner: WebContents, request: PtyCreateRequest): v
   })
   runningTerminals.set(request.id, terminal)
 
-  const output = createBatchedSender((chunk) => owner.send(IpcChannel.ptyData, { id: request.id, chunk }))
+  function sendToWindow(channel: string, payload: unknown): void {
+    if (!owner.isDestroyed()) {
+      owner.send(channel, payload)
+    }
+  }
+
+  const output = createBatchedSender((chunk) => sendToWindow(IpcChannel.ptyData, { id: request.id, chunk }))
   terminal.onData(output.push)
   terminal.onExit(({ exitCode }) => {
     output.flush()
     runningTerminals.delete(request.id)
-    owner.send(IpcChannel.ptyExit, { id: request.id, exitCode })
+    sendToWindow(IpcChannel.ptyExit, { id: request.id, exitCode })
   })
 
   if (request.startCommand !== null) {
