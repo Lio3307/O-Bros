@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { promisify } from 'node:util'
 import type { GitDiffRequest, GitFileChange, GitStatus } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
+import { isCommitHash } from './gitLogParser'
 import { parseNumstat, parseStatusOutput } from './gitStatusParser'
 
 const execFileAsync = promisify(execFile)
@@ -46,7 +47,7 @@ export async function readGitStatus(repoPath: string): Promise<GitStatus | null>
   }
 
   const [statusOutput, lineCounts, lastFetchedAt] = await Promise.all([
-    runGit(repoPath, ['status', '--porcelain=v2', '--branch']),
+    runGit(repoPath, ['status', '--porcelain=v2', '--branch', '--untracked-files=all']),
     readLineCounts(repoPath),
     readLastFetchedAt(repoPath)
   ])
@@ -76,8 +77,19 @@ export async function fetchAndReadStatus(repoPath: string): Promise<GitStatus | 
 export async function readGitDiff(request: GitDiffRequest): Promise<string> {
   await assertInsideProjectRoots(request.repoPath)
 
+  if (request.commitHash !== undefined) {
+    if (!isCommitHash(request.commitHash)) {
+      throw new Error('That is not a commit.')
+    }
+    return runGit(request.repoPath, ['show', '--format=', request.commitHash, '--', request.filePath])
+  }
+
   if (request.isUntracked) {
-    const content = await readFile(join(request.repoPath, request.filePath), 'utf8')
+    const untrackedPath = join(request.repoPath, request.filePath)
+    if ((await stat(untrackedPath)).isDirectory()) {
+      return ''
+    }
+    const content = await readFile(untrackedPath, 'utf8')
     return content
       .split('\n')
       .map((line) => `+${line}`)

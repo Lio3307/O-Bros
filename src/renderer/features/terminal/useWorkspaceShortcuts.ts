@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { findShortcutAction, type ShortcutAction } from '../../../shared/shortcuts'
+import { useLayoutStore } from '../../state/layoutStore'
 import { openTerminal } from '../../state/openTerminal'
 import { useShortcutsStore } from '../../state/shortcutsStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
@@ -29,7 +30,9 @@ const RUN_ACTION: Record<ShortcutAction, () => void> = {
       useWorkspaceStore.getState().closePane(tab.id, tab.focusedPaneId)
     }
   },
-  newTerminal: () => openTerminal(null)
+  newTerminal: () => openTerminal(null),
+  openPrompts: () => useLayoutStore.getState().openPromptPicker(),
+  openCommandPalette: () => useLayoutStore.getState().openCommandPalette()
 }
 
 export function useWorkspaceShortcuts(): void {

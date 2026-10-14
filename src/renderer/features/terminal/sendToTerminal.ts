@@ -2,6 +2,7 @@ import { quotePathForShell } from '../../../shared/shellQuote'
 import { tabsInActiveProject } from '../../state/activeProjectTabs'
 import { toast } from '../../state/toastStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
+import { pasteIntoTerminal } from './terminalRegistry'
 
 function findTargetPaneId(): string | null {
   const tabs = tabsInActiveProject()
@@ -12,6 +13,20 @@ function findTargetPaneId(): string | null {
   }
   const lastTerminal = [...tabs].reverse().find((tab) => tab.kind === 'terminal')
   return lastTerminal?.kind === 'terminal' ? lastTerminal.focusedPaneId : null
+}
+
+const ENTER_KEY = '\r'
+
+export function sendPromptToTerminal(text: string, pressEnter: boolean): boolean {
+  const paneId = findTargetPaneId()
+  if (paneId === null || !pasteIntoTerminal(paneId, text)) {
+    toast.warning('Open a terminal first, then send the prompt.')
+    return false
+  }
+  if (pressEnter) {
+    window.api.pty.input(paneId, ENTER_KEY)
+  }
+  return true
 }
 
 export function sendPathToTerminal(path: string): void {

@@ -17,6 +17,15 @@ export function unregisterTerminal(paneId: string): void {
   terminalsByPaneId.delete(paneId)
 }
 
+export function pasteIntoTerminal(paneId: string, text: string): boolean {
+  const terminal = terminalsByPaneId.get(paneId)
+  if (terminal === undefined) {
+    return false
+  }
+  terminal.paste(text)
+  return true
+}
+
 export function readTerminalMemory(): TerminalMemory {
   const terminals = [...terminalsByPaneId.values()]
   const bufferedLines = terminals.reduce((total, terminal) => total + terminal.buffer.active.length, 0)

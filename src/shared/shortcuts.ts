@@ -1,4 +1,4 @@
-export type ShortcutAction = 'splitRight' | 'splitDown' | 'closePane' | 'newTerminal'
+export type ShortcutAction = 'splitRight' | 'splitDown' | 'closePane' | 'newTerminal' | 'openPrompts' | 'openCommandPalette'
 
 export interface Shortcut {
   mod: boolean
@@ -17,20 +17,24 @@ export interface KeyEventLike {
 
 export type ShortcutMap = Record<ShortcutAction, Shortcut>
 
-export const SHORTCUT_ACTIONS: ShortcutAction[] = ['splitRight', 'splitDown', 'closePane', 'newTerminal']
+export const SHORTCUT_ACTIONS: ShortcutAction[] = ['splitRight', 'splitDown', 'closePane', 'newTerminal', 'openPrompts', 'openCommandPalette']
 
 export const SHORTCUT_LABELS: Record<ShortcutAction, { title: string; description: string }> = {
   splitRight: { title: 'Split right', description: 'Splits the focused terminal into two side by side.' },
   splitDown: { title: 'Split down', description: 'Splits the focused terminal into two, one above the other.' },
   closePane: { title: 'Close pane', description: 'Closes the focused terminal pane.' },
-  newTerminal: { title: 'New terminal', description: 'Opens a plain terminal in the selected folder.' }
+  newTerminal: { title: 'New terminal', description: 'Opens a plain terminal in the selected folder.' },
+  openPrompts: { title: 'Prompts', description: 'Opens the prompt list to send a saved prompt to the terminal.' },
+  openCommandPalette: { title: 'Command palette', description: 'Opens the list of every command, to search and run.' }
 }
 
 export const DEFAULT_SHORTCUTS: ShortcutMap = {
   splitRight: { mod: true, shift: true, alt: false, key: 'd' },
   splitDown: { mod: true, shift: true, alt: false, key: 'e' },
   closePane: { mod: true, shift: true, alt: false, key: 'w' },
-  newTerminal: { mod: true, shift: true, alt: false, key: 't' }
+  newTerminal: { mod: true, shift: true, alt: false, key: 't' },
+  openPrompts: { mod: true, shift: true, alt: false, key: 'l' },
+  openCommandPalette: { mod: true, shift: true, alt: false, key: 'p' }
 }
 
 const RESERVED_SHORTCUTS: Shortcut[] = ['p', 'f', 's', 'c', 'v', 'x', 'a', 'z', 'y'].map((key) => ({

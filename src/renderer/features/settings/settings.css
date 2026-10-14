@@ -129,3 +129,15 @@
   margin: 0 16px;
   text-align: right;
 }
+
+.settings-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 12px;
+}
+
+.settings-nav-label {
+  margin: 8px 0 4px;
+  padding: 0 8px;
+}

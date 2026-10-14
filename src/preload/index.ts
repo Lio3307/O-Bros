@@ -28,7 +28,8 @@ const api: DesktopApi = {
     list: () => ipcRenderer.invoke(IpcChannel.projectsList),
     addRoot: () => ipcRenderer.invoke(IpcChannel.projectsAddRoot),
     removeRoot: (rootPath) => ipcRenderer.invoke(IpcChannel.projectsRemoveRoot, rootPath),
-    scripts: (rootPath) => ipcRenderer.invoke(IpcChannel.projectsScripts, rootPath)
+    scripts: (rootPath) => ipcRenderer.invoke(IpcChannel.projectsScripts, rootPath),
+    repositories: (folderPath) => ipcRenderer.invoke(IpcChannel.projectsRepositories, folderPath)
   },
   files: {
     list: (directoryPath) => ipcRenderer.invoke(IpcChannel.fsList, directoryPath),
@@ -49,7 +50,21 @@ const api: DesktopApi = {
     commit: (request) => ipcRenderer.invoke(IpcChannel.gitCommit, request),
     discard: (request) => ipcRenderer.invoke(IpcChannel.gitDiscard, request),
     branches: (repoPath) => ipcRenderer.invoke(IpcChannel.gitBranches, repoPath),
-    switchBranch: (request) => ipcRenderer.invoke(IpcChannel.gitSwitch, request)
+    log: (request) => ipcRenderer.invoke(IpcChannel.gitLog, request),
+    commitFiles: (request) => ipcRenderer.invoke(IpcChannel.gitCommitFiles, request),
+    switchBranch: (request) => ipcRenderer.invoke(IpcChannel.gitSwitch, request),
+    createBranch: (request) => ipcRenderer.invoke(IpcChannel.gitCreateBranch, request),
+    renameBranch: (request) => ipcRenderer.invoke(IpcChannel.gitRenameBranch, request),
+    deleteBranch: (request) => ipcRenderer.invoke(IpcChannel.gitDeleteBranch, request),
+    undoCommit: (repoPath) => ipcRenderer.invoke(IpcChannel.gitUndoCommit, repoPath),
+    lastMessage: (repoPath) => ipcRenderer.invoke(IpcChannel.gitLastMessage, repoPath),
+    amendCommit: (request) => ipcRenderer.invoke(IpcChannel.gitAmendCommit, request),
+    pull: (repoPath) => ipcRenderer.invoke(IpcChannel.gitPull, repoPath),
+    push: (repoPath) => ipcRenderer.invoke(IpcChannel.gitPush, repoPath),
+    stash: (request) => ipcRenderer.invoke(IpcChannel.gitStash, request),
+    stashList: (repoPath) => ipcRenderer.invoke(IpcChannel.gitStashList, repoPath),
+    stashApply: (request) => ipcRenderer.invoke(IpcChannel.gitStashApply, request),
+    stashDrop: (request) => ipcRenderer.invoke(IpcChannel.gitStashDrop, request)
   },
   history: {
     list: (day) => ipcRenderer.invoke(IpcChannel.historyList, day),

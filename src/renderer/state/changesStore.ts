@@ -3,15 +3,30 @@ import { friendlyErrorMessage } from '../../shared/friendlyError'
 import type { GitFileChange, GitStatus } from '../../shared/types'
 import { toast } from './toastStore'
 
+export interface CommitFileSelection {
+  hash: string
+  path: string
+  addedLines: number
+  removedLines: number
+}
+
+export type ChangesView = 'diff' | 'graph'
+
 interface ChangesState {
+  view: ChangesView
   status: GitStatus | null
   selectedChange: GitFileChange | null
+  selectedCommitFile: CommitFileSelection | null
   isFetching: boolean
   isWorking: boolean
   errorMessage: string | null
   load: (repoPath: string) => Promise<void>
   fetchRemote: (repoPath: string) => Promise<void>
+  pull: (repoPath: string) => Promise<boolean>
+  push: (repoPath: string) => Promise<boolean>
   select: (change: GitFileChange) => void
+  selectCommitFile: (file: CommitFileSelection) => void
+  setView: (view: ChangesView) => void
   stage: (repoPath: string, filePaths: string[]) => Promise<void>
   unstage: (repoPath: string, filePaths: string[]) => Promise<void>
   discard: (repoPath: string, change: GitFileChange) => Promise<void>
@@ -47,8 +62,10 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
   }
 
   return {
+    view: 'diff',
     status: null,
     selectedChange: null,
+    selectedCommitFile: null,
     isFetching: false,
     isWorking: false,
     errorMessage: null,
@@ -56,9 +73,9 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
     load: async (repoPath) => {
       try {
         const status = await window.api.git.status(repoPath)
-        set({ status, selectedChange: status?.changes[0] ?? null, errorMessage: null })
+        set({ status, selectedChange: status?.changes[0] ?? null, selectedCommitFile: null, errorMessage: null })
       } catch (error) {
-        set({ status: null, selectedChange: null, errorMessage: friendlyErrorMessage(error, LOAD_FAILED_MESSAGE) })
+        set({ status: null, selectedChange: null, selectedCommitFile: null, errorMessage: friendlyErrorMessage(error, LOAD_FAILED_MESSAGE) })
       }
     },
 
@@ -76,7 +93,27 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
       }
     },
 
-    select: (selectedChange) => set({ selectedChange }),
+    pull: async (repoPath) => {
+      const isDone = await runAction(repoPath, () => window.api.git.pull(repoPath), 'Could not pull from the remote.')
+      if (isDone) {
+        toast.success('Pulled the latest changes.')
+      }
+      return isDone
+    },
+
+    push: async (repoPath) => {
+      const isDone = await runAction(repoPath, () => window.api.git.push(repoPath), 'Could not push to the remote.')
+      if (isDone) {
+        toast.success('Pushed to the remote.')
+      }
+      return isDone
+    },
+
+    select: (selectedChange) => set({ selectedChange, selectedCommitFile: null, view: 'diff' }),
+
+    selectCommitFile: (selectedCommitFile) => set({ selectedCommitFile, view: 'diff' }),
+
+    setView: (view) => set({ view }),
 
     stage: async (repoPath, filePaths) => {
       await runAction(repoPath, () => window.api.git.stage({ repoPath, filePaths }), 'Could not stage the changes.')

@@ -4,6 +4,7 @@ import type { GitFileChange } from '../../../shared/types'
 import { useChangesStore } from '../../state/changesStore'
 import { askToConfirm } from '../../state/confirmStore'
 import { Button } from '../../ui/Button'
+import { LineCounts } from './LineCounts'
 
 const kindMark: Record<GitFileChange['kind'], string> = {
   modified: 'M',
@@ -72,11 +73,9 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
               title={change.path}
               onClick={() => select(change)}
             >
-              <span className="change-mark">{kindMark[change.kind]}</span>
-              <span className="change-name">{lastPathSegment(change.path)}</span>
-              <span className="change-counts">
-                +{change.addedLines} −{change.removedLines}
-              </span>
+              <span className={`change-mark change-mark-${change.kind}`}>{kindMark[change.kind]}</span>
+              <span className="change-name">{lastPathSegment(change.path) || change.path}</span>
+              <LineCounts addedLines={change.addedLines} removedLines={change.removedLines} />
             </button>
             <div className="change-actions">
               {!isStagedGroup && (

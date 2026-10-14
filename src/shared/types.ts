@@ -30,6 +30,13 @@ export interface ProjectFolder {
   branch: string | null
 }
 
+export interface RepositoryEntry {
+  name: string
+  path: string
+  branch: string
+  relativePath: string
+}
+
 export interface ProjectRoot {
   name: string
   path: string
@@ -61,6 +68,35 @@ export interface GitDiffRequest {
   filePath: string
   isStaged: boolean
   isUntracked: boolean
+  commitHash?: string
+}
+
+export interface GitCommit {
+  hash: string
+  shortHash: string
+  parents: string[]
+  author: string
+  authoredAt: number
+  refs: string[]
+  subject: string
+}
+
+export interface GitCommitFile {
+  path: string
+  addedLines: number
+  removedLines: number
+}
+
+export interface GitLogRequest {
+  repoPath: string
+  limit: number
+  allBranches?: boolean
+  branch?: string
+}
+
+export interface GitCommitFilesRequest {
+  repoPath: string
+  hash: string
 }
 
 export interface DirectoryEntry {
@@ -218,6 +254,44 @@ export interface GitDiscardRequest {
 export interface GitBranchList {
   current: string | null
   branches: string[]
+}
+
+export interface GitStashEntry {
+  ref: string
+  message: string
+  createdAt: number
+}
+
+export interface GitStashRequest {
+  repoPath: string
+  message?: string
+}
+
+export interface GitStashRefRequest {
+  repoPath: string
+  ref: string
+}
+
+export interface GitCreateBranchRequest {
+  repoPath: string
+  name: string
+}
+
+export interface GitRenameBranchRequest {
+  repoPath: string
+  from: string
+  to: string
+}
+
+export interface GitDeleteBranchRequest {
+  repoPath: string
+  name: string
+  force: boolean
+}
+
+export interface GitAmendRequest {
+  repoPath: string
+  message: string
 }
 
 export interface GitCheckoutRequest {

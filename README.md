@@ -63,6 +63,8 @@ If `npm install` leaves Electron without its binary, run `node node_modules/elec
 | `Shift+Alt+F` | Format the open file |
 | `Ctrl+Shift+D` / `Ctrl+Shift+E` | Split the focused terminal right / down (change them in Settings, Shortcuts) |
 | `Ctrl+Shift+W` / `Ctrl+Shift+T` | Close the focused pane / open a new terminal |
+| `Ctrl+Shift+L` | Open the prompt list and send a saved prompt to the terminal |
+| `Ctrl+Shift+P` | Command palette: search and run any action |
 | `F2` / `Del` | Rename / delete the selected item in the file tree |
 
 ## Documentation

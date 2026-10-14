@@ -209,12 +209,11 @@
 .pane-actions {
   display: flex;
   gap: 2px;
-  opacity: 0.6;
+  visibility: hidden;
 }
 
-.pane-frame-focused .pane-actions,
-.pane-header:hover .pane-actions {
-  opacity: 1;
+.pane-frame-focused .pane-actions {
+  visibility: visible;
 }
 
 .terminal-host {

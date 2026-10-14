@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 export type Section = 'projects' | 'history' | 'changes' | 'settings'
 export type SidebarMode = 'expanded' | 'rail' | 'hidden'
-export type SettingsPage = 'accounts' | 'agents' | 'folders' | 'editor' | 'snippets' | 'terminal' | 'shortcuts' | 'storage' | 'about'
+export type SettingsPage = 'accounts' | 'agents' | 'folders' | 'editor' | 'snippets' | 'terminal' | 'prompts' | 'shortcuts' | 'storage' | 'about'
 
 interface LayoutState {
   section: Section
@@ -10,6 +10,8 @@ interface LayoutState {
   settingsPage: SettingsPage
   isFilesPanelOpen: boolean
   isQuickOpenVisible: boolean
+  isPromptPickerVisible: boolean
+  isCommandPaletteVisible: boolean
   selectSection: (section: Section) => void
   openSection: (section: Section) => void
   showSection: (section: Section) => void
@@ -17,6 +19,10 @@ interface LayoutState {
   toggleFilesPanel: () => void
   openQuickOpen: () => void
   closeQuickOpen: () => void
+  openPromptPicker: () => void
+  closePromptPicker: () => void
+  openCommandPalette: () => void
+  closeCommandPalette: () => void
   selectSettingsPage: (page: SettingsPage) => void
 }
 
@@ -26,6 +32,8 @@ export const useLayoutStore = create<LayoutState>()((set, get) => ({
   settingsPage: 'accounts',
   isFilesPanelOpen: false,
   isQuickOpenVisible: false,
+  isPromptPickerVisible: false,
+  isCommandPaletteVisible: false,
 
   selectSection: (section) => {
     const { section: currentSection, sidebarMode } = get()
@@ -46,6 +54,14 @@ export const useLayoutStore = create<LayoutState>()((set, get) => ({
   openQuickOpen: () => set({ isQuickOpenVisible: true }),
 
   closeQuickOpen: () => set({ isQuickOpenVisible: false }),
+
+  openPromptPicker: () => set({ isPromptPickerVisible: true }),
+
+  closePromptPicker: () => set({ isPromptPickerVisible: false }),
+
+  openCommandPalette: () => set({ isCommandPaletteVisible: true }),
+
+  closeCommandPalette: () => set({ isCommandPaletteVisible: false }),
 
   selectSettingsPage: (settingsPage) => set({ settingsPage })
 }))

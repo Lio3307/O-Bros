@@ -9,7 +9,10 @@ import { isLanguageEnabled, useEditorSettingsStore } from '../../state/editorSet
 import { useEditorNavigationStore } from '../../state/editorNavigationStore'
 import { toast } from '../../state/toastStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
+import { PopupMenu } from '../../ui/PopupMenu'
 import { autoSaveExtension } from './autoSaveExtension'
+import { useEditorContextMenuStore } from './editorContextMenuStore'
+import { hasSelection, sendEditorContentToAgent } from './sendFromEditor'
 import { getSavedEditorState, saveEditorState } from './editorSessions'
 import { codeHighlighting, editorTheme } from './editorTheme'
 import { formatDocument } from './formatDocument'
@@ -97,8 +100,33 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
         void formatWithNotice(view, filePath, language)
         return true
       }
+    },
+    {
+      key: 'Mod-Shift-Enter',
+      run: (view) => {
+        sendEditorContentToAgent(view, filePath, false)
+        return true
+      }
     }
   ])
+
+  const contextMenu = EditorView.domEventHandlers({
+    contextmenu: (event, view) => {
+      event.preventDefault()
+      const items = [
+        {
+          label: hasSelection(view) ? 'Send selection to terminal…' : 'Send file to terminal…',
+          hint: 'Ctrl+Shift+Enter',
+          onSelect: () => sendEditorContentToAgent(view, filePath, false)
+        },
+        ...(hasSelection(view)
+          ? [{ label: 'Send whole file to terminal…', onSelect: () => sendEditorContentToAgent(view, filePath, true) }]
+          : [])
+      ]
+      useEditorContextMenuStore.getState().open({ x: event.clientX, y: event.clientY, items })
+      return true
+    }
+  })
 
   const reportModification = EditorView.updateListener.of((update) => {
     if (update.docChanged) {
@@ -115,6 +143,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
       editorTheme,
       codeHighlighting,
       fileShortcuts,
+      contextMenu,
       reportModification,
       autoSave,
       ...languageExtensions
@@ -139,6 +168,8 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   const viewRef = useRef<EditorView | null>(null)
   const target = useEditorNavigationStore((state) => state.target)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const contextMenu = useEditorContextMenuStore((state) => state.menu)
+  const closeContextMenu = useEditorContextMenuStore((state) => state.close)
 
   useEffect(() => {
     if (viewRef.current !== null) {
@@ -181,6 +212,11 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
     return <div className="editor-error">{errorMessage}</div>
   }
   return (
-    <div className="editor-host" ref={hostRef} />
+    <>
+      <div className="editor-host" ref={hostRef} />
+      {contextMenu !== null && (
+        <PopupMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} onClose={closeContextMenu} />
+      )}
+    </>
   )
 }

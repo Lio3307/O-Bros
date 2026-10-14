@@ -1,0 +1,38 @@
+.prompt-picker-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.prompt-fields {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.prompt-text {
+  min-height: 72px;
+  padding: 8px 10px;
+  font-family: inherit;
+  color: var(--color-text);
+  resize: vertical;
+}
+
+.command-group {
+  min-width: 64px;
+  font-size: 11px;
+  color: var(--color-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.command-shortcut {
+  margin-left: auto;
+  white-space: nowrap;
+}

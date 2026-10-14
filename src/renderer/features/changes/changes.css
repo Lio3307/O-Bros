@@ -53,7 +53,35 @@
 
 .change-mark {
   width: 14px;
+  font-weight: 600;
   color: var(--color-muted);
+}
+
+.change-mark-added,
+.change-mark-untracked {
+  color: var(--color-success);
+}
+
+.change-mark-deleted {
+  color: var(--color-danger);
+}
+
+.change-mark-modified {
+  color: var(--color-info);
+}
+
+.line-counts {
+  display: inline-flex;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.count-added {
+  color: var(--color-success);
+}
+
+.count-removed {
+  color: var(--color-danger);
 }
 
 .change-name {
@@ -111,21 +139,26 @@
   color: var(--color-muted);
 }
 
-.diff-line-header,
+.diff-line-header {
+  color: var(--color-faint);
+}
+
 .diff-line-hunk {
-  color: var(--color-muted);
-  background: var(--color-panel);
+  margin-top: 8px;
+  color: var(--color-info);
+  background: var(--color-hunk-bg);
 }
 
 .diff-line-removed {
   color: var(--color-text);
-  background: var(--color-hover);
+  background: var(--color-removed-bg);
+  box-shadow: inset 3px 0 0 var(--color-danger);
 }
 
 .diff-line-added {
-  font-weight: 700;
-  color: var(--color-white);
-  background: var(--color-selected);
+  color: var(--color-text);
+  background: var(--color-added-bg);
+  box-shadow: inset 3px 0 0 var(--color-success);
 }
 
 .diff-placeholder {
@@ -173,7 +206,7 @@
   display: flex;
 }
 
-.change-item:hover .change-counts {
+.change-item:hover .line-counts {
   visibility: hidden;
 }
 
@@ -216,4 +249,334 @@
 
 .branch-switch:hover {
   color: var(--color-white);
+}
+
+.commit-item {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.commit-graph {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding-left: 4px;
+}
+
+.commit-graph svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+.commit-graph .commit-graph-tail {
+  flex: 1;
+  min-height: 22px;
+  height: auto;
+}
+
+.commit-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.commit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+  color: var(--color-text);
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+}
+
+.commit-row:hover {
+  background: var(--color-hover);
+}
+
+.commit-row-open {
+  background: var(--color-selected);
+}
+
+.commit-subject {
+  overflow: hidden;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--color-white);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commit-meta {
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--color-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.commit-refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.commit-ref {
+  color: var(--color-info);
+  border-color: var(--color-info);
+}
+
+.commit-ref-tag {
+  color: #d29922;
+  border-color: #d29922;
+}
+
+.commit-files {
+  padding: 2px 0 6px 8px;
+}
+
+.diff-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.changes-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.changes-tabs {
+  display: flex;
+  height: var(--tabbar-height);
+  background: var(--color-chrome);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.changes-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  border-top: 2px solid transparent;
+  border-right: 1px solid var(--color-border);
+}
+
+.changes-tab:hover {
+  color: var(--color-white);
+  background: var(--color-hover);
+}
+
+.changes-tab-active,
+.changes-tab-active:hover {
+  font-weight: 600;
+  color: var(--color-white);
+  background: var(--color-terminal);
+  border-top-color: var(--color-white);
+}
+
+.changes-main-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.diff-message {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 24px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.graph-view {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+}
+
+.graph-title {
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.graph-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+}
+
+.graph-body {
+  flex: 1;
+  padding: 0 24px 24px;
+  overflow: auto;
+}
+
+.graph-empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 120px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.graph-item {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.graph-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.graph-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0 10px;
+  color: var(--color-text);
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+}
+
+.graph-row:hover {
+  background: var(--color-hover);
+}
+
+.graph-row-open {
+  background: var(--color-selected);
+}
+
+.graph-subject {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 500;
+  color: var(--color-white);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.graph-author {
+  width: 140px;
+  overflow: hidden;
+  color: var(--color-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.graph-hash {
+  width: 64px;
+  color: var(--color-faint);
+}
+
+.graph-age {
+  width: 64px;
+  color: var(--color-muted);
+  text-align: right;
+}
+
+.graph-files {
+  padding: 0 0 8px 24px;
+}
+
+.graph-more {
+  display: grid;
+  place-items: center;
+  padding: 16px 0;
+}
+
+.graph-branch-select {
+  min-width: 180px;
+  max-width: 280px;
+  height: 28px;
+}
+
+.branch-card-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.branch-card-actions > * {
+  flex: 1;
+  justify-content: center;
+}
+
+.stash-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+}
+
+.stash-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.stash-message {
+  overflow: hidden;
+  color: var(--color-white);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.branch-more {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+}
+
+.branch-more:hover {
+  color: var(--color-white);
+  background: var(--color-selected);
+}
+
+.text-prompt-multiline {
+  min-height: 120px;
+  padding: 8px 10px;
+  font-family: inherit;
+  resize: vertical;
 }

@@ -4,6 +4,34 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-10-14
+
+### Added
+
+Git
+- **History** list in the Changes panel with the latest commits of the current branch: message, short hash, author, age, branches and tags. Open a commit to see its files, and select a file to read the diff of that commit.
+- **Graph** view in the main area (press Graph under History, or use the Changes / Graph tabs). It draws branches and merges as colored lanes, with the message, branch and tag labels, author, hash and age. A **Branch** dropdown picks All branches or one branch, and the list is read from the repository.
+- **Repository picker.** When the selected folder is a folder of repositories, the Changes panel lists the repositories inside it, up to three folders deep, and a back button returns to the list.
+- **Pull, Push and Stash.** Pull only fast-forwards, so it never creates a merge by itself, and tells you when your branch and the remote have both moved. Push publishes a branch that has no upstream yet. Stash puts changed and new files aside; Apply brings them back and removes the stash, and Delete asks first. Git never asks for a password in the app: if it needs one, you are told to sign in once from a terminal.
+- **Branch and commit actions** (the ... button on the branch card): create a branch from the current commit, rename the current branch, delete another branch (with a second confirmation if it has commits that are not merged), change the message of the last commit, and undo the last commit (its changes go back to staged). o-bros never force pushes, and it tells you when a change would need one.
+
+Working with agents
+- **Prompt library.** Save the prompts you send often to Claude, Codex or any agent (Settings → Prompts). Press the Prompts button in the tab bar or `Ctrl+Shift+L`, search, and press Enter to insert it into the focused terminal, or Ctrl+Enter to insert it and press Enter. A few examples are included.
+- **Send to terminal.** Select code in the editor and press `Ctrl+Shift+Enter` (or right-click) to insert it, with its file path and line range, into the focused terminal. The diff view has a **Send to terminal** button for a diff. You can add a question first. It is inserted as one block for you to read before pressing Enter, and it is limited to 20,000 characters.
+
+Everywhere
+- **Command palette** (`Ctrl+Shift+P`, changeable in Settings → Shortcuts). One search box for every action: terminals, splits, prompts, Git, going to a section or a settings page, and updates. Each command shows its shortcut.
+
+### Changed
+- Diffs are colored: added lines green, removed lines red, and hunk headers blue. The +/− counts and the file marks use the same colors.
+- A new folder with files is listed as its files in Changes, instead of as one folder row.
+- The settings pages are grouped under labels (AI tools, Workspace, App).
+- Pane buttons are hidden on a pane that is not focused, and the split buttons in the tab bar only show while a tab has a single pane.
+- The Changes and Graph switch looks like the terminal tabs.
+
+### Fixed
+- Selecting an untracked folder in Changes raised an error in the log.
+
 ## [0.1.3] - 2026-10-14
 
 ### Added

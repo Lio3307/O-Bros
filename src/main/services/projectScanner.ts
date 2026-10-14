@@ -7,7 +7,7 @@ const HEAD_REFERENCE_PREFIX = 'ref: refs/heads/'
 const DETACHED_HASH_LENGTH = 7
 const HIDDEN_OR_GENERATED_FOLDERS = new Set(['node_modules', 'dist', 'out'])
 
-async function readCurrentBranch(folderPath: string): Promise<string | null> {
+export async function readCurrentBranch(folderPath: string): Promise<string | null> {
   const head = await readTextIfExists(join(folderPath, '.git', 'HEAD'))
   if (head === null) {
     return null
@@ -18,7 +18,7 @@ async function readCurrentBranch(folderPath: string): Promise<string | null> {
     : trimmed.slice(0, DETACHED_HASH_LENGTH)
 }
 
-function isVisibleFolder(name: string): boolean {
+export function isVisibleFolder(name: string): boolean {
   return !name.startsWith('.') && !HIDDEN_OR_GENERATED_FOLDERS.has(name)
 }
 

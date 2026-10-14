@@ -1,4 +1,4 @@
-import { ChevronDown, Columns2, File, Plus, Rows2, Terminal, X } from 'lucide-react'
+import { BookText, ChevronDown, Columns2, File, Plus, Rows2, Terminal, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useAttentionStore } from '../../state/attentionStore'
@@ -9,6 +9,7 @@ import { useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore
 import { EditableTitle } from '../../ui/EditableTitle'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { useShortcutLabel } from '../../state/shortcutsStore'
+import { useLayoutStore } from '../../state/layoutStore'
 
 const MIDDLE_MOUSE_BUTTON = 1
 
@@ -109,6 +110,8 @@ export function TabBar() {
   const splitPane = useWorkspaceStore((state) => state.splitPane)
   const splitRightLabel = useShortcutLabel('splitRight')
   const splitDownLabel = useShortcutLabel('splitDown')
+  const promptsLabel = useShortcutLabel('openPrompts')
+  const openPromptPicker = useLayoutStore((state) => state.openPromptPicker)
   const activateTab = useWorkspaceStore((state) => state.activateTab)
   const clearAttention = useAttentionStore((state) => state.clear)
   const [openMenu, setOpenMenu] = useState<OpenMenu | null>(null)
@@ -116,7 +119,8 @@ export function TabBar() {
   const closeMenu = useCallback(() => setOpenMenu(null), [])
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId)
-  const splittableTab = activeTab?.kind === 'terminal' ? activeTab : null
+  const splittableTab =
+    activeTab?.kind === 'terminal' && Object.keys(activeTab.panes).length === 1 ? activeTab : null
 
   useEffect(() => {
     function clearActiveTabAttention(): void {
@@ -165,6 +169,9 @@ export function TabBar() {
         </button>
       </div>
       <div className="tab-bar-actions">
+        <button type="button" title={`Prompts (${promptsLabel})`} onClick={openPromptPicker}>
+          <BookText size={16} />
+        </button>
         {tabs.length > 1 && (
           <button type="button" title="All tabs" onClick={showAllTabs}>
             <ChevronDown size={16} />

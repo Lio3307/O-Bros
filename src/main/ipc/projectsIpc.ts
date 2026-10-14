@@ -3,6 +3,7 @@ import { IpcChannel } from '../../shared/ipc'
 import { classifyNewRoot } from '../../shared/projectRoots'
 import type { AddRootResult } from '../../shared/types'
 import { listProjectRoots } from '../services/projectScanner'
+import { findRepositories } from '../services/repositoryFinder'
 import { readProjectScripts } from '../services/scriptService'
 import { loadSettings, saveSettings } from '../settings'
 
@@ -41,4 +42,5 @@ export function registerProjectsIpc(): void {
   ipcMain.handle(IpcChannel.projectsAddRoot, () => addProjectRoot())
   ipcMain.handle(IpcChannel.projectsRemoveRoot, (_event, rootPath: string) => removeProjectRoot(rootPath))
   ipcMain.handle(IpcChannel.projectsScripts, (_event, rootPath: string) => readProjectScripts(rootPath))
+  ipcMain.handle(IpcChannel.projectsRepositories, (_event, folderPath: string) => findRepositories(folderPath))
 }

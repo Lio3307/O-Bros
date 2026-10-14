@@ -9,13 +9,25 @@ import type {
   DirectoryEntry,
   FormatRequest,
   FormatResult,
+  GitAmendRequest,
   GitBranchList,
+  GitCreateBranchRequest,
+  GitDeleteBranchRequest,
+  GitRenameBranchRequest,
   GitCheckoutRequest,
+  GitCommit,
+  GitCommitFile,
+  GitCommitFilesRequest,
   GitCommitRequest,
   GitDiffRequest,
   GitDiscardRequest,
+  GitLogRequest,
   GitPathsRequest,
+  GitStashEntry,
+  GitStashRefRequest,
+  GitStashRequest,
   GitStatus,
+  RepositoryEntry,
   LintRequest,
   LintResult,
   ListeningPort,
@@ -50,6 +62,7 @@ export const IpcChannel = {
   projectsAddRoot: 'projects:addRoot',
   projectsRemoveRoot: 'projects:removeRoot',
   projectsScripts: 'projects:scripts',
+  projectsRepositories: 'projects:repositories',
   fsList: 'fs:list',
   fsRead: 'fs:read',
   fsWrite: 'fs:write',
@@ -65,7 +78,21 @@ export const IpcChannel = {
   gitCommit: 'git:commit',
   gitDiscard: 'git:discard',
   gitBranches: 'git:branches',
+  gitLog: 'git:log',
+  gitCommitFiles: 'git:commitFiles',
   gitSwitch: 'git:switch',
+  gitCreateBranch: 'git:createBranch',
+  gitRenameBranch: 'git:renameBranch',
+  gitDeleteBranch: 'git:deleteBranch',
+  gitUndoCommit: 'git:undoCommit',
+  gitLastMessage: 'git:lastMessage',
+  gitAmendCommit: 'git:amendCommit',
+  gitPull: 'git:pull',
+  gitPush: 'git:push',
+  gitStash: 'git:stash',
+  gitStashList: 'git:stashList',
+  gitStashApply: 'git:stashApply',
+  gitStashDrop: 'git:stashDrop',
   historyList: 'history:list',
   historyGet: 'history:get',
   historyRemove: 'history:remove',
@@ -135,6 +162,7 @@ export interface DesktopApi {
     addRoot(): Promise<AddRootResult>
     removeRoot(rootPath: string): Promise<ProjectRoot[]>
     scripts(rootPath: string): Promise<ProjectScripts>
+    repositories(folderPath: string): Promise<RepositoryEntry[]>
   }
   files: {
     list(directoryPath: string): Promise<DirectoryEntry[]>
@@ -155,7 +183,21 @@ export interface DesktopApi {
     commit(request: GitCommitRequest): Promise<void>
     discard(request: GitDiscardRequest): Promise<void>
     branches(repoPath: string): Promise<GitBranchList>
+    log(request: GitLogRequest): Promise<GitCommit[]>
+    commitFiles(request: GitCommitFilesRequest): Promise<GitCommitFile[]>
     switchBranch(request: GitCheckoutRequest): Promise<void>
+    createBranch(request: GitCreateBranchRequest): Promise<void>
+    renameBranch(request: GitRenameBranchRequest): Promise<void>
+    deleteBranch(request: GitDeleteBranchRequest): Promise<void>
+    undoCommit(repoPath: string): Promise<void>
+    lastMessage(repoPath: string): Promise<string>
+    amendCommit(request: GitAmendRequest): Promise<void>
+    pull(repoPath: string): Promise<void>
+    push(repoPath: string): Promise<void>
+    stash(request: GitStashRequest): Promise<void>
+    stashList(repoPath: string): Promise<GitStashEntry[]>
+    stashApply(request: GitStashRefRequest): Promise<void>
+    stashDrop(request: GitStashRefRequest): Promise<void>
   }
   history: {
     list(day: string | null): Promise<SessionSummary[]>
