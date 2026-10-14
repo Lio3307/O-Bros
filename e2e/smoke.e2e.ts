@@ -46,7 +46,8 @@ test('runs a command in a plain terminal', async () => {
 test('edits and saves a file opened with quick open', async () => {
   await selectSampleProject()
   await app.window.keyboard.press('ControlOrMeta+P')
-  await app.window.keyboard.type('notes')
+  await app.window.getByPlaceholder('Go to file by name').fill('notes')
+  await app.window.locator('.quick-open-row').first().waitFor({ state: 'visible' })
   await app.window.keyboard.press('Enter')
 
   const editor = app.window.locator('.cm-content')
@@ -64,7 +65,7 @@ test('opens the storage and update settings pages', async () => {
   await app.window.getByTitle('Settings', { exact: true }).click()
 
   await app.window.getByText('Storage and memory', { exact: true }).first().click()
-  await expect(app.window.getByText('App cache')).toBeVisible()
+  await expect(app.window.getByText('App cache', { exact: true })).toBeVisible()
 
   await app.window.getByText('About and updates', { exact: true }).first().click()
   await expect(app.window.getByText('Updates are only available in the installed app')).toBeVisible()
