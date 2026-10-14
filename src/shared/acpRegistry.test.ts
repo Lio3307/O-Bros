@@ -66,11 +66,16 @@ describe('buildAgentSuggestions', () => {
   const registry = [{ id: 'gemini', name: 'Gemini CLI', commands: ['gemini', 'gemini-cli'] }]
   const known = [{ name: 'Gemini', command: 'gemini' }, { name: 'Aider', command: 'aider' }]
 
-  it('suggests installed agents and prefers the registry name', () => {
+  it('suggests installed agents and prefers the short built-in name', () => {
     expect(buildAgentSuggestions(registry, known, ['gemini', 'aider', 'git'], [])).toEqual([
-      { name: 'Gemini CLI', command: 'gemini' },
+      { name: 'Gemini', command: 'gemini' },
       { name: 'Aider', command: 'aider' }
     ])
+  })
+
+  it('uses the registry name for agents the built-in list does not know', () => {
+    const unknownRegistry = [{ id: 'nova', name: 'Nova Agent', commands: ['nova'] }]
+    expect(buildAgentSuggestions(unknownRegistry, known, ['nova'], [])).toEqual([{ name: 'Nova Agent', command: 'nova' }])
   })
 
   it('skips agents that are already added or not installed', () => {

@@ -11,6 +11,15 @@
   white-space: nowrap;
 }
 
+.start-buttons .button-outline svg,
+.start-buttons .agent-status {
+  flex-shrink: 0;
+}
+
+.start-buttons .button-outline:last-child {
+  flex-shrink: 0;
+}
+
 .root-block {
   display: flex;
   flex-direction: column;

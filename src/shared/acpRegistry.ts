@@ -109,8 +109,8 @@ export function buildAgentSuggestions(
   const installed = new Set(installedCommands)
   const added = new Set(addedCommands)
   const catalog = [
-    ...registryAgents.map((agent) => ({ name: agent.name, commands: agent.commands })),
-    ...knownAgents.map((agent) => ({ name: agent.name, commands: [agent.command] }))
+    ...knownAgents.map((agent) => ({ name: agent.name, commands: [agent.command] })),
+    ...registryAgents.map((agent) => ({ name: agent.name, commands: agent.commands }))
   ]
   const suggestions = new Map<string, AgentSuggestion>()
   for (const entry of catalog) {

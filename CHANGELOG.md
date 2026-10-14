@@ -4,6 +4,14 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-14
+
+### Fixed
+- Agent buttons in Projects no longer lose their icon when the sidebar is narrow, and the terminal button keeps its size.
+
+### Changed
+- Agents found on your computer use the short built-in name ("Claude", "Codex", "Gemini") when we know the command. The registry name is used only for agents we have no name for.
+
 ## [0.1.0] - 2026-10-14
 
 First public version.
