@@ -10,8 +10,34 @@ permissions:
   contents: write
 
 jobs:
+  create-release:
+    name: Create the draft release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Create the draft once, before the builds start
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
+          if gh release list --limit 100 --json tagName --jq '.[].tagName' | grep -qx "${TAG}"; then
+            echo "A release for ${TAG} already exists."
+            exit 0
+          fi
+          NOTES="docs/releases/${TAG}.md"
+          if [ -f "${NOTES}" ]; then
+            gh release create "${TAG}" --draft --title "O-BROS ${VERSION}" --notes-file "${NOTES}"
+          else
+            gh release create "${TAG}" --draft --title "O-BROS ${VERSION}" --notes ""
+          fi
+
   release:
     name: Build on ${{ matrix.os }}
+    needs: create-release
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
