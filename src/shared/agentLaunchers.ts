@@ -78,6 +78,29 @@ export function providerOfCommand(command: string): ProviderId | null {
   return program === 'claude' || program === 'codex' ? program : null
 }
 
+export type AgentStatus = 'checking' | 'connected' | 'signed-in' | 'signed-out' | 'missing' | 'custom-path'
+
+export function agentStatusOf(
+  command: string,
+  installedCommands: string[] | null,
+  hasLogin: boolean | null = null
+): AgentStatus {
+  if (installedCommands === null) {
+    return 'checking'
+  }
+  const program = programOf(command)
+  if (program.includes('/') || program.includes('\\')) {
+    return 'custom-path'
+  }
+  if (!installedCommands.includes(program.toLowerCase())) {
+    return 'missing'
+  }
+  if (providerOfCommand(command) === null || hasLogin === null) {
+    return 'connected'
+  }
+  return hasLogin ? 'signed-in' : 'signed-out'
+}
+
 export function isUsableLauncher(name: string, command: string): boolean {
   return name.trim() !== '' && command.trim() !== ''
 }

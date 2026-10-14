@@ -36,9 +36,10 @@ Deleting a file, a history session or a discarded new file moves it to the Recyc
 | `api.anthropic.com` | Your saved Claude token, to read your usage | Every few minutes and when you press refresh |
 | `chatgpt.com` | Your saved Codex token, to read your usage | Every few minutes and when you press refresh |
 | Your git remote | Whatever `git fetch` does | Only when you press fetch |
+| `cdn.agentclientprotocol.com` | A plain request for the public ACP Registry list of agents. Nothing about you is sent | When you open Settings → Agents, at most once an hour |
 | `github.com` (the o-bros releases) | A request for the latest release information, and then the installer file | Only when you press **Check for updates** or **Download** in Settings → About and updates |
 
-Nothing else. There is no analytics and no crash reporting. Updates are only checked when you press the button.
+Nothing else. There is no analytics and no crash reporting. Updates are only checked when you press the button. If the ACP Registry cannot be reached, o-bros uses its built-in list of agents and nothing breaks.
 
 Usage requests identify themselves honestly as `o-bros`. The two usage endpoints are not documented by the providers, so they may change or be restricted.
 

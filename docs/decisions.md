@@ -263,3 +263,27 @@
 - Implementation / validation / outcome: Written / unit tests and typecheck / not yet seen running.
 - Result acceptance: Pending user feedback.
 - Learning: Let the user confirm what is an agent; the app only needs to make every installed command findable.
+
+### ACP Registry as the default agent catalog
+- Scope and goal: Suggest the agent CLIs a user has without hand-maintaining the list of agents.
+- Choice and authority: User-directed: use the Agent Client Protocol registry by default, not as an option. The main process fetches the public registry JSON when Settings, Agents opens (cached for an hour, 8 second timeout) and the page suggests every registry agent whose command is found in PATH. Registry entries describe how to launch the ACP server, not the terminal command, so a small id-to-command table plus names taken from the launch method turn them into command candidates.
+- Evidence: acpRegistry.test.ts passes. The real registry (42 agents) was parsed with no malformed or generic command names. The page was not launched.
+- Alternatives and sacrifice: Spawning every program in PATH to ask whether it speaks ACP was rejected as slow and unsafe. Using ACP itself to run agents in a chat view was not done because the app is terminal-first. Registry icons are not shown, because loading them from the network would need a looser content security policy.
+- Residual risk/debt: One new outbound request to cdn.agentclientprotocol.com. The registry lists ACP adapters, so an agent whose terminal command differs from its ACP name is missed until added to the alias table or by hand. The registry has only agents with ACP support, so the built-in list stays as a fallback.
+- Mitigation and revisit trigger: Offline or blocked networks fall back to the built-in list, and the search covers any command. Revisit if the registry schema changes or a chat view over ACP is wanted.
+- Recovery and ownership: src/shared/acpRegistry.ts, src/main/services/agents/acpRegistryClient.ts.
+- Implementation / validation / outcome: Written / unit tests, typecheck and a parse of the live registry / not yet seen running.
+- Result acceptance: Pending user feedback.
+- Learning: A registry says what exists, the PATH says what is installed; the useful answer needs both.
+
+### Product name O-BROS, data folder stays o-bros
+- Scope and goal: Show the app as O-BROS in the header bar, installer, Start menu and file names.
+- Choice and authority: User-requested. productName is O-BROS; the installer file name is fixed by artifactName so GitHub does not rewrite it. The data folder is pinned to %APPDATA%\o-bros in code, unless a user-data-dir switch is given, so a name change can never move the settings.
+- Evidence: Typecheck and tests pass. The packaged app was not rebuilt or launched.
+- Alternatives and sacrifice: Renaming the data folder too was rejected because users would lose settings and tabs. appId stays com.lio3307.obros so upgrades keep working.
+- Residual risk/debt: The program folder and shortcut will be named O-BROS, so anyone who installed an earlier test build may get a second entry until the old one is removed.
+- Mitigation and revisit trigger: Not released yet, so no real installs exist.
+- Recovery and ownership: electron-builder.yml and src/main/index.ts.
+- Implementation / validation / outcome: Written / typecheck and tests / not packaged.
+- Result acceptance: Pending user feedback.
+- Learning: Pin where data lives separately from what the app is called.

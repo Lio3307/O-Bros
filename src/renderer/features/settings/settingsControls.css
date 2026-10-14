@@ -248,3 +248,12 @@
 .agent-show input[type='checkbox'] {
   accent-color: var(--color-white);
 }
+
+.location-row {
+  align-items: flex-start;
+  padding: 14px 16px;
+}
+
+.location-path {
+  overflow-wrap: anywhere;
+}

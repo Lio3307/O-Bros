@@ -242,6 +242,15 @@ export interface ListeningPort {
   paneId: string
 }
 
+export type DataLocationKind = 'program' | 'appData' | 'logs' | 'updater' | 'claudeSessions' | 'codexSessions'
+
+export interface DataLocation {
+  id: string
+  kind: DataLocationKind
+  path: string
+  accountLabel: string | null
+}
+
 export interface StorageReport {
   appCacheBytes: number
   leftoverTempBytes: number

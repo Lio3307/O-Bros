@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  agentStatusOf,
   isUsableLauncher,
   parseAgentLaunchers,
   parseShownIds,
@@ -16,6 +17,39 @@ const launchers: AgentLauncher[] = [
   { id: 'c', name: 'OpenCode', command: 'opencode' },
   { id: 'd', name: '', command: 'blank' }
 ]
+
+describe('agentStatusOf', () => {
+  const installed = ['claude', 'opencode']
+
+  it('is checking until the PATH has been read', () => {
+    expect(agentStatusOf('claude', null)).toBe('checking')
+  })
+
+  it('is connected when the program is in PATH, ignoring arguments and case', () => {
+    expect(agentStatusOf('opencode --fast', installed)).toBe('connected')
+    expect(agentStatusOf('Claude', installed)).toBe('connected')
+  })
+
+  it('is missing when the program is not in PATH or the command is empty', () => {
+    expect(agentStatusOf('aider', installed)).toBe('missing')
+    expect(agentStatusOf('   ', installed)).toBe('missing')
+  })
+
+  it('tells signed in from signed out for Claude and Codex only', () => {
+    expect(agentStatusOf('claude', installed, true)).toBe('signed-in')
+    expect(agentStatusOf('claude', installed, false)).toBe('signed-out')
+    expect(agentStatusOf('opencode', installed, false)).toBe('connected')
+  })
+
+  it('is missing, not signed out, when the program is not installed', () => {
+    expect(agentStatusOf('codex', installed, true)).toBe('missing')
+  })
+
+  it('cannot check a command given as a file path', () => {
+    expect(agentStatusOf('C:\\tools\\agent.exe', installed)).toBe('custom-path')
+    expect(agentStatusOf('./agent', installed)).toBe('custom-path')
+  })
+})
 
 describe('toggleShownId', () => {
   it('adds an agent while there is room', () => {

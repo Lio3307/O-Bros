@@ -1,6 +1,8 @@
+import type { AcpAgent } from './acpRegistry'
 import type {
   AccountRef,
   AddRootResult,
+  DataLocation,
   CreateEntryRequest,
   AccountUsage,
   DetectedAccount,
@@ -73,6 +75,7 @@ export const IpcChannel = {
   toolsLint: 'tools:lint',
   toolsFormat: 'tools:format',
   agentsCommands: 'agents:commands',
+  agentsRegistry: 'agents:registry',
   shellReveal: 'shell:reveal',
   portsList: 'ports:list',
   portsStop: 'ports:stop',
@@ -84,6 +87,8 @@ export const IpcChannel = {
   storageReport: 'storage:report',
   storageClearAppCache: 'storage:clearAppCache',
   storageClearLeftoverTemp: 'storage:clearLeftoverTemp',
+  storageLocations: 'storage:locations',
+  storageOpenLocation: 'storage:openLocation',
   updaterStatus: 'updater:status',
   updaterCheck: 'updater:check',
   updaterDownload: 'updater:download',
@@ -167,6 +172,7 @@ export interface DesktopApi {
   }
   agents: {
     listCommands(): Promise<string[]>
+    registry(): Promise<AcpAgent[]>
   }
   shell: {
     reveal(path: string): Promise<void>
@@ -186,6 +192,8 @@ export interface DesktopApi {
     report(): Promise<StorageReport>
     clearAppCache(): Promise<void>
     clearLeftoverTemp(): Promise<void>
+    locations(): Promise<DataLocation[]>
+    openLocation(id: string): Promise<void>
   }
   updater: {
     status(): Promise<UpdateStatus>

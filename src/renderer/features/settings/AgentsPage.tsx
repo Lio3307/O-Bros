@@ -1,11 +1,14 @@
 import { Plus, RotateCcw, Search, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { KNOWN_AGENTS, MAX_SHOWN_AGENTS } from '../../../shared/agentLaunchers'
+import { buildAgentSuggestions, type AcpAgent, type AgentSuggestion } from '../../../shared/acpRegistry'
+import { isUsableLauncher, KNOWN_AGENTS, MAX_SHOWN_AGENTS } from '../../../shared/agentLaunchers'
+import type { ProviderId } from '../../../shared/types'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
+import { useInstalledCommandsStore } from '../../state/installedCommandsStore'
 import { useUsageVisibilityStore } from '../../state/usageVisibilityStore'
 import { AgentIcon } from '../../ui/AgentIcon'
+import { AgentStatusBadge } from '../../ui/AgentStatusBadge'
 import { ProviderMark } from '../../ui/ProviderMark'
-import type { ProviderId } from '../../../shared/types'
 import './settings.css'
 import './settingsControls.css'
 
@@ -16,27 +19,30 @@ const USAGE_PROVIDERS: { id: ProviderId; name: string }[] = [
   { id: 'codex', name: 'Codex' }
 ]
 
-function usePathCommands(): { commands: string[] | null; scan: () => void } {
-  const [commands, setCommands] = useState<string[] | null>(null)
+interface AgentCatalog {
+  commands: string[] | null
+  registry: AcpAgent[]
+  scan: () => void
+}
+
+function useAgentCatalog(): AgentCatalog {
+  const commands = useInstalledCommandsStore((state) => state.commands)
+  const loadCommands = useInstalledCommandsStore((state) => state.load)
+  const [registry, setRegistry] = useState<AcpAgent[]>([])
 
   function scan(): void {
-    setCommands(null)
+    void loadCommands()
     window.api.agents
-      .listCommands()
-      .then(setCommands)
-      .catch(() => setCommands([]))
+      .registry()
+      .then(setRegistry)
+      .catch(() => setRegistry([]))
   }
 
   useEffect(scan, [])
-  return { commands, scan }
+  return { commands, registry, scan }
 }
 
-interface Suggestion {
-  name: string
-  command: string
-}
-
-function SuggestionRows({ suggestions }: { suggestions: Suggestion[] }) {
+function SuggestionRows({ suggestions }: { suggestions: AgentSuggestion[] }) {
   const add = useAgentLaunchersStore((state) => state.add)
 
   return (
@@ -49,12 +55,62 @@ function SuggestionRows({ suggestions }: { suggestions: Suggestion[] }) {
             </span>
             <span className="muted mono">{suggestion.command}</span>
           </div>
+          <AgentStatusBadge command={suggestion.command} />
           <button type="button" className="button-outline" onClick={() => add(suggestion.name, suggestion.command)}>
             <Plus size={14} /> Add
           </button>
         </div>
       ))}
     </div>
+  )
+}
+
+function CustomAgentForm({ onDone }: { onDone: () => void }) {
+  const add = useAgentLaunchersStore((state) => state.add)
+  const [name, setName] = useState('')
+  const [command, setCommand] = useState('')
+  const canAdd = isUsableLauncher(name, command)
+
+  function submit(): void {
+    if (canAdd) {
+      add(name.trim(), command.trim())
+      onDone()
+    }
+  }
+
+  return (
+    <section className="add-account-form">
+      <h2 className="settings-subtitle">Add a custom agent</h2>
+      <p className="muted">
+        For an agent CLI that is not in the lists below, such as your own tool. The command runs in a new terminal in
+        the selected folder, so you can include arguments.
+      </p>
+      <div className="add-account-row">
+        <input
+          className="field field-prefix"
+          placeholder="Button name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+        />
+        <input
+          className="field field-command"
+          placeholder="Command, for example my-agent --fast"
+          spellCheck={false}
+          value={command}
+          onChange={(event) => setCommand(event.target.value)}
+          onKeyDown={(event) => event.key === 'Enter' && submit()}
+        />
+        {command.trim() !== '' && <AgentStatusBadge command={command} />}
+      </div>
+      <div className="add-account-row">
+        <button type="button" className="button-primary" disabled={!canAdd} onClick={submit}>
+          <Plus size={14} /> Add agent
+        </button>
+        <button type="button" className="button-outline" onClick={onDone}>
+          Cancel
+        </button>
+      </div>
+    </section>
   )
 }
 
@@ -84,19 +140,20 @@ function UsageVisibility() {
   )
 }
 
-function FoundAgents({ commands, scan }: { commands: string[] | null; scan: () => void }) {
+function FoundAgents({ commands, registry, scan }: AgentCatalog) {
   const launchers = useAgentLaunchersStore((state) => state.launchers)
   const addedCommands = launchers.map((launcher) => launcher.command.trim())
-  const suggestions = KNOWN_AGENTS.filter(
-    (agent) => commands?.includes(agent.command) === true && !addedCommands.includes(agent.command)
-  )
+  const suggestions = buildAgentSuggestions(registry, KNOWN_AGENTS, commands ?? [], addedCommands)
+  const catalogName = registry.length > 0 ? 'ACP Registry' : 'built-in list (the ACP Registry could not be reached)'
 
   return (
     <section className="settings-section">
       <div className="accounts-heading">
         <div>
           <h2 className="settings-subtitle">Found on this computer</h2>
-          <p className="muted">Well-known agents that o-bros found in your PATH and that are not in your list yet.</p>
+          <p className="muted">
+            Agents from the {catalogName} that o-bros found in your PATH and that are not in your list yet.
+          </p>
         </div>
         <button type="button" className="button-outline" onClick={scan}>
           <Search size={14} /> Scan again
@@ -149,12 +206,12 @@ function CommandSearch({ commands }: { commands: string[] | null }) {
 export function AgentsPage() {
   const launchers = useAgentLaunchersStore((state) => state.launchers)
   const shownIds = useAgentLaunchersStore((state) => state.shownIds)
-  const add = useAgentLaunchersStore((state) => state.add)
   const update = useAgentLaunchersStore((state) => state.update)
   const remove = useAgentLaunchersStore((state) => state.remove)
   const toggleShown = useAgentLaunchersStore((state) => state.toggleShown)
   const reset = useAgentLaunchersStore((state) => state.reset)
-  const { commands, scan } = usePathCommands()
+  const { commands, registry, scan } = useAgentCatalog()
+  const [isCustomFormOpen, setIsCustomFormOpen] = useState(false)
   const canShowMore = shownIds.length < MAX_SHOWN_AGENTS
 
   return (
@@ -172,14 +229,18 @@ export function AgentsPage() {
           <button type="button" className="button-outline" onClick={reset}>
             <RotateCcw size={14} /> Clear
           </button>
-          <button type="button" className="button-outline" onClick={() => add('', '')}>
-            <Plus size={14} /> Add by hand
+          <button type="button" className="button-outline" onClick={() => setIsCustomFormOpen(true)}>
+            <Plus size={14} /> Custom agent
           </button>
         </div>
       </header>
 
+      {isCustomFormOpen && <CustomAgentForm onDone={() => setIsCustomFormOpen(false)} />}
+
       <div className="table">
-        {launchers.length === 0 && <p className="panel-empty">No agents yet. Add one from the lists below, or by hand.</p>}
+        {launchers.length === 0 && (
+          <p className="panel-empty">No agents yet. Add one from the lists below, or add a custom agent.</p>
+        )}
         {launchers.map((launcher) => {
           const isShown = shownIds.includes(launcher.id)
           const hint = isShown || canShowMore ? 'Show as a button in Projects' : 'Two buttons fit. Hide another first.'
@@ -210,6 +271,7 @@ export function AgentsPage() {
                 value={launcher.command}
                 onChange={(event) => update(launcher.id, { command: event.target.value })}
               />
+              <AgentStatusBadge command={launcher.command} />
               <button type="button" className="button-remove" title="Remove" onClick={() => remove(launcher.id)}>
                 <Trash2 size={14} />
               </button>
@@ -219,7 +281,7 @@ export function AgentsPage() {
       </div>
 
       <UsageVisibility />
-      <FoundAgents commands={commands} scan={scan} />
+      <FoundAgents commands={commands} registry={registry} scan={scan} />
       <CommandSearch commands={commands} />
     </div>
   )

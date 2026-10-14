@@ -95,6 +95,8 @@ Press the memory figure in the status bar.
 
 ## Storage and memory
 
+**Where your data lives** (at the bottom of the page) lists every folder o-bros uses, in plain words, with an **Open folder** button: the program folder and the downloaded updates folder (installed app only), its own settings and cache folder, its log file, and the Claude and Codex conversation folders that History reads. o-bros keeps very little of its own; your conversations stay where the providers wrote them, and your projects are never copied.
+
 Settings → Storage and memory lists everything o-bros can clear for you, how big it is, and a button for each. Everything on the page is safe: it is rebuilt when needed.
 
 | Item | What it is | What clearing does |
@@ -137,7 +139,7 @@ Short messages (toasts) appear bottom right, with an icon for success, warning o
 | Page | Setting |
 |---|---|
 | Provider accounts | Rescan, Use, Add account |
-| Agents | Your list of agent CLIs (add, rename, change the command, remove), well-known agents found in your PATH, a search over every program in PATH, and up to two shown as buttons. Known agents get their own logo |
+| Agents | Your list of agent CLIs (add, rename, change the command, remove), well-known agents found in your PATH, a search over every program in PATH, and up to two shown as buttons. Known agents get their own logo. Each agent shows a status: a green dot and **Connected** when its command is found in your PATH (for Claude and Codex, **Signed in** when a login is detected, or a hollow dot and **Not signed in** when it is not), and a hollow dot and **Not found** when the command is missing. **Custom agent** adds your own command. o-bros looks at your PATH again when the window gets focus (at most every 30 seconds) and when you press a button of an agent that is **Not found**, so a tool you just installed is picked up. If it is still missing, Settings → Agents opens with a message instead of running a command that would fail. The list of well-known agents comes from the [ACP Registry](https://agentclientprotocol.com/get-started/registry), fetched when the page opens, with a built-in list as a fallback |
 | Project folders | Add and remove folders |
 | Editor | Auto save and delay, linter mode, format on save, enabled languages |
 | Snippets | Per-language snippets, reset to defaults |

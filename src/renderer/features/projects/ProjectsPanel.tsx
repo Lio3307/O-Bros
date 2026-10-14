@@ -6,12 +6,15 @@ import { formatAge } from '../../../shared/time'
 import type { ProjectRoot } from '../../../shared/types'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useAttentionStore } from '../../state/attentionStore'
-import { shownLaunchers } from '../../../shared/agentLaunchers'
+import { agentStatusOf, programOf, shownLaunchers, type AgentLauncher } from '../../../shared/agentLaunchers'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
+import { useInstalledCommandsStore } from '../../state/installedCommandsStore'
 import { useLayoutStore } from '../../state/layoutStore'
 import { openAgent, openTerminal } from '../../state/openTerminal'
 import { AgentIcon } from '../../ui/AgentIcon'
+import { AgentStatusBadge } from '../../ui/AgentStatusBadge'
 import { useProjectsStore } from '../../state/projectsStore'
+import { toast } from '../../state/toastStore'
 import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
 import { PanelHeader } from '../../ui/PanelHeader'
 import { ScriptsList } from './ScriptsList'
@@ -146,9 +149,24 @@ export function ProjectsPanel() {
   const openSection = useLayoutStore((state) => state.openSection)
   const selectSettingsPage = useLayoutStore((state) => state.selectSettingsPage)
 
+  const installedCommands = useInstalledCommandsStore((state) => state.commands)
+
   function chooseAgents(): void {
     selectSettingsPage('agents')
     openSection('settings')
+  }
+
+  async function startAgent(launcher: AgentLauncher): Promise<void> {
+    if (agentStatusOf(launcher.command, installedCommands) === 'missing') {
+      await useInstalledCommandsStore.getState().load()
+    }
+    const latestCommands = useInstalledCommandsStore.getState().commands
+    if (agentStatusOf(launcher.command, latestCommands) === 'missing') {
+      toast.warning(`"${programOf(launcher.command)}" was not found in your PATH. Check it in Settings, Agents.`)
+      chooseAgents()
+      return
+    }
+    openAgent(launcher)
   }
 
   return (
@@ -165,9 +183,10 @@ export function ProjectsPanel() {
             type="button"
             className="button-outline"
             title={`Run "${launcher.command}" in the selected folder`}
-            onClick={() => openAgent(launcher)}
+            onClick={() => void startAgent(launcher)}
           >
             <AgentIcon command={launcher.command} /> {launcher.name}
+            <AgentStatusBadge command={launcher.command} showLabel={false} />
           </button>
         ))}
         {launchers.length === 0 && (

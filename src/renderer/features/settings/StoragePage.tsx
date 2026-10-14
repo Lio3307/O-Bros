@@ -4,6 +4,7 @@ import { formatBytes } from '../../../shared/format'
 import { useRecentFilesStore } from '../../state/recentFilesStore'
 import { useStorageStore } from '../../state/storageStore'
 import { CleanupRow, pluralize } from './CleanupRow'
+import { DataLocationsSection } from './DataLocationsSection'
 import { SavedSessionsSection } from './SavedSessionsSection'
 import './settings.css'
 import './settingsControls.css'
@@ -51,7 +52,7 @@ export function StoragePage() {
       <div className="table">
         <CleanupRow
           title="App cache"
-          description="Files the app window keeps so it starts faster."
+          description="Files the app window keeps so it starts faster. A few small graphics caches are separate; the system rebuilds them and they are about 10 MB."
           amount={isMeasuring ? 'Measuring' : formatBytes(appCacheBytes)}
           buttonLabel="Clear"
           isDisabled={isMeasuring || appCacheBytes === 0}
@@ -92,6 +93,8 @@ export function StoragePage() {
       </div>
 
       <SavedSessionsSection />
+
+      <DataLocationsSection />
 
       <section className="settings-section">
         <h2 className="settings-subtitle">What is never deleted here</h2>

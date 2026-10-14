@@ -13,6 +13,7 @@ import { TitleBar } from './shell/TitleBar'
 import { ConfirmHost } from './ui/ConfirmHost'
 import { ToastHost } from './ui/ToastHost'
 import { useCloseRequestStore } from './state/closeRequestStore'
+import { useInstalledCommandsStore } from './state/installedCommandsStore'
 import { useLayoutStore } from './state/layoutStore'
 import { startProjectTabSync } from './state/projectTabSync'
 import { useProjectsStore } from './state/projectsStore'
@@ -20,9 +21,12 @@ import { useRefreshStore } from './state/refreshStore'
 import { restoreSavedSession, startSessionPersistence } from './state/sessionPersistence'
 
 const USAGE_REFRESH_MS = 5 * 60_000
+const COMMANDS_RESCAN_AFTER_MS = 30_000
 
 function useStartupData(): void {
   const loadProjects = useProjectsStore((state) => state.load)
+  const loadInstalledCommands = useInstalledCommandsStore((state) => state.load)
+  const rescanInstalledCommands = useInstalledCommandsStore((state) => state.refreshIfOlderThan)
   const refreshAccountsAndUsage = useRefreshStore((state) => state.refresh)
 
   useEffect(() => {
@@ -38,6 +42,15 @@ function useStartupData(): void {
   useEffect(() => {
     void loadProjects()
   }, [loadProjects])
+
+  useEffect(() => {
+    void loadInstalledCommands()
+    function rescanWhenWindowIsFocused(): void {
+      void rescanInstalledCommands(COMMANDS_RESCAN_AFTER_MS)
+    }
+    window.addEventListener('focus', rescanWhenWindowIsFocused)
+    return () => window.removeEventListener('focus', rescanWhenWindowIsFocused)
+  }, [loadInstalledCommands, rescanInstalledCommands])
 
   useEffect(() => {
     void refreshAccountsAndUsage()

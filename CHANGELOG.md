@@ -18,7 +18,10 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - Installer packaging for Windows, macOS and Linux through a release workflow.
 
 ### Added (agents)
-- Settings → Agents: keep a list of agents (Claude, Codex, OpenCode, Gemini, Aider or any command), find them in your PATH (including a search over every program), give them their own logos, and choose up to two to show as buttons in Projects. No agent button is shown until you choose.
+- Settings → Agents: keep a list of agents (Claude, Codex, OpenCode, Gemini, Aider or any command), find them in your PATH using the ACP Registry as the catalog (including a search over every program), give them their own logos, and choose up to two to show as buttons in Projects. No agent button is shown until you choose. Each agent shows whether its command is found (green dot, Connected), and a Custom agent form adds your own command.
+
+### Added (storage)
+- Settings → Storage and memory → Where your data lives: every folder o-bros uses, explained, with an Open folder button.
 
 ### Added (terminal links)
 - Ctrl+click a `file:line:column` reference in a terminal to open that file at that line.

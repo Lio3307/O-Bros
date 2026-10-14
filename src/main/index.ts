@@ -1,4 +1,5 @@
 import { app, BrowserWindow, Menu } from 'electron'
+import { join } from 'node:path'
 import { buildApplicationMenu } from './applicationMenu'
 import { registerAccountsIpc } from './ipc/accountsIpc'
 import { registerAgentsIpc } from './ipc/agentsIpc'
@@ -19,6 +20,16 @@ import { writeLog } from './services/logging/logFile'
 import { setUpUpdater } from './services/updater/appUpdater'
 import { guardWindowClose } from './closeGuard'
 import { createMainWindow } from './window'
+
+const DATA_FOLDER_NAME = 'o-bros'
+
+function keepDataFolderName(): void {
+  if (!app.commandLine.hasSwitch('user-data-dir')) {
+    app.setPath('userData', join(app.getPath('appData'), DATA_FOLDER_NAME))
+  }
+}
+
+keepDataFolderName()
 
 function registerAllIpc(): void {
   registerPtyIpc()

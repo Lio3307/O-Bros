@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="resources/logo.png" alt="o-bros logo" width="120">
+  <img src="resources/logo.png" alt="O-BROS logo" width="140">
 </p>
 
-# o-bros
+<h1 align="center">O-BROS</h1>
 
 [![CI](https://github.com/Lio3307/O-Bros/actions/workflows/ci.yml/badge.svg)](https://github.com/Lio3307/O-Bros/actions/workflows/ci.yml)
 
@@ -25,7 +25,7 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 
 ## Download
 
-Installers for Windows, macOS and Linux are attached to each version on the [Releases page](https://github.com/Lio3307/O-Bros/releases). The app is not code-signed yet, so Windows may show a SmartScreen warning and macOS will ask you to confirm opening it. Updates are checked only when you press the button in Settings → About and updates.
+Installers for Windows, macOS and Linux are attached to each version on the [Releases page](https://github.com/Lio3307/O-Bros/releases). The app is not code-signed yet, so Windows may show a SmartScreen warning and macOS will ask you to confirm opening it. Updates are checked only when you press the button in Settings → About and updates. Uninstalling removes the program but keeps your settings, so a reinstall keeps your setup. Settings → Storage and memory shows every folder o-bros uses.
 
 ## Quick start
 

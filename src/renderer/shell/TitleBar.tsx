@@ -25,7 +25,7 @@ export function TitleBar() {
           <PanelLeft size={16} />
         </button>
       </div>
-      <span className="title-bar-title">o-bros{projectName}</span>
+      <span className="title-bar-title">O-BROS{projectName}</span>
       <div className="title-bar-side title-bar-side-right">
         {section === 'projects' && (
           <button

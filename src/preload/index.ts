@@ -66,7 +66,8 @@ const api: DesktopApi = {
     format: (request) => ipcRenderer.invoke(IpcChannel.toolsFormat, request)
   },
   agents: {
-    listCommands: () => ipcRenderer.invoke(IpcChannel.agentsCommands)
+    listCommands: () => ipcRenderer.invoke(IpcChannel.agentsCommands),
+    registry: () => ipcRenderer.invoke(IpcChannel.agentsRegistry)
   },
   shell: {
     reveal: (path) => ipcRenderer.invoke(IpcChannel.shellReveal, path)
@@ -85,7 +86,9 @@ const api: DesktopApi = {
   storage: {
     report: () => ipcRenderer.invoke(IpcChannel.storageReport),
     clearAppCache: () => ipcRenderer.invoke(IpcChannel.storageClearAppCache),
-    clearLeftoverTemp: () => ipcRenderer.invoke(IpcChannel.storageClearLeftoverTemp)
+    clearLeftoverTemp: () => ipcRenderer.invoke(IpcChannel.storageClearLeftoverTemp),
+    locations: () => ipcRenderer.invoke(IpcChannel.storageLocations),
+    openLocation: (id) => ipcRenderer.invoke(IpcChannel.storageOpenLocation, id)
   },
   updater: {
     status: () => ipcRenderer.invoke(IpcChannel.updaterStatus),
