@@ -4,6 +4,10 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-14
+
+First public version.
+
 ### Added
 - Real terminals with tabs, splits, search, zoom and a finished-command notification.
 - Accounts and usage for Claude and Codex, with account switching and Add account.
