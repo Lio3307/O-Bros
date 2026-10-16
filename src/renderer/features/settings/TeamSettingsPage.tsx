@@ -90,7 +90,7 @@ function InstalledAgentsSection() {
       title="Agents on this computer"
       description={
         <>
-          wot is not only for Claude and Codex: it works with every agent CLI installed on this computer. O-BROS found the
+          wot works with every agent CLI installed on this computer. O-BROS found the
           ones below, and any of them can join a team as a member. To let an agent bring in others, install wot for it
           above. Install another agent CLI and it shows up here.
         </>

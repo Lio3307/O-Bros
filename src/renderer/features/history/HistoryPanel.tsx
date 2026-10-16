@@ -169,7 +169,7 @@ export function HistoryPanel() {
   const groups = groupSessions(visibleSessions, Date.now())
   const emptyText = isTeamOnly
     ? 'No team member conversations here.'
-    : 'No sessions found yet. Conversations you have with Claude or Codex appear here.'
+    : 'No sessions found yet. History shows Claude and Codex conversations, the formats O-BROS can read; other agents keep their history in their own folders (Settings → Storage and memory).'
 
   return (
     <div className="panel-content">

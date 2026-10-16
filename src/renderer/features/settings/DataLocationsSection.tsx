@@ -94,7 +94,7 @@ export function DataLocationsSection() {
       title="Where your data lives"
       description={
         <>
-          o-bros keeps very little of its own. Your conversations stay where Claude and Codex put them, and your
+          o-bros keeps very little of its own. Your conversations stay where each agent saves them, and your
           projects stay in their own folders: o-bros never copies them. Nothing here is uploaded anywhere. Other agents'
           conversation folders are listed when they exist; o-bros only opens them and never deletes them, because each
           agent saves history its own way.

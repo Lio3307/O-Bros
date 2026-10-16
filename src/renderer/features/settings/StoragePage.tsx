@@ -107,7 +107,7 @@ export function StoragePage() {
       <section className="settings-section">
         <h2 className="settings-subtitle">What is never deleted here</h2>
         <p className="muted">
-          Your project files, git history, Claude and Codex logins, your project folders list, and your editor and
+          Your project files, git history, agent logins, your project folders list, and your editor and
           terminal settings. Conversations are only deleted from the section above or the History panel, after you
           confirm.
         </p>

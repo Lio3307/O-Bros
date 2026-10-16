@@ -14,7 +14,7 @@ describe('describeRestartImpact', () => {
   it('names unsaved files and explains what comes back', () => {
     const message = describeRestartImpact(0, 2)
     expect(message).toContain('2 files have changes that are not saved')
-    expect(message).toContain('resume them from History')
+    expect(message).toContain('can be resumed from History')
   })
 
   it('combines both when both apply', () => {

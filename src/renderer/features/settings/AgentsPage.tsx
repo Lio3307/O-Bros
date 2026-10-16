@@ -27,8 +27,8 @@ export function AgentsPage() {
       description={
         <>
           Keep the agent CLIs you use here, and tick up to {MAX_SHOWN_AGENTS} to show as buttons at the top of
-          Projects. A button runs its command in a new terminal in the selected folder. Claude and Codex also use
-          the account you picked.
+          Projects. A button runs its command in a new terminal in the selected folder. Agents with several accounts
+          (Claude and Codex) use the account you picked in Provider accounts.
         </>
       }
       actions={

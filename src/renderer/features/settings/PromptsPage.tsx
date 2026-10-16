@@ -16,7 +16,7 @@ export function PromptsPage() {
   return (
     <SettingsPageLayout
       title="Prompts"
-      description="Texts you send often to Claude, Codex or any agent. Press the Prompts button in the tab bar, or its shortcut, pick one and it is inserted into the focused terminal."
+      description="Texts you send often to any agent. Press the Prompts button in the tab bar, or its shortcut, pick one and it is inserted into the focused terminal."
       actions={
         <>
           <Button variant="outline" onClick={reset}>

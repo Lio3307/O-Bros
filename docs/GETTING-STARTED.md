@@ -46,7 +46,7 @@ Press the panel icon at the top right of the window to show the **Files** panel.
 
 ## 5. Choose your account
 
-Open **Settings → Provider accounts**. o-bros lists every Claude and Codex login it finds on this computer, with the 5-hour and weekly usage for each.
+Open **Settings → Provider accounts**. o-bros lists every agent CLI it finds on this computer and how each signs in. Claude and Codex logins also show the 5-hour and weekly usage.
 
 - Press **Use** on an account to make new terminals run with that login.
 - Press **Add account** to create another login. o-bros asks for a short name, creates an empty folder (for example `~/.claude-work`) and opens a terminal where the official tool signs you in. Then press **Rescan**.

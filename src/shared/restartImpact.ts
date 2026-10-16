@@ -13,5 +13,5 @@ export function describeRestartImpact(runningTaskCount: number, unsavedFileCount
   if (parts.length === 0) {
     return null
   }
-  return `${parts.join(' ')} Your tabs come back after the restart as new terminals in the same folders. Claude and Codex keep their conversations, so you can resume them from History.`
+  return `${parts.join(' ')} Your tabs come back after the restart as new terminals in the same folders. Agents keep their own conversations; Claude and Codex ones can be resumed from History.`
 }

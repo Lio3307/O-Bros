@@ -35,6 +35,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Snippets.** Settings → Snippets and the snippet suggestions are gone; language servers provide completions instead.
 
 ### Changed
+- **Written for every agent, not only Claude and Codex.** Texts across the app, the README and the getting-started guide now speak of the agent CLIs you have installed. Where a feature really is limited to Claude and Codex (History and saved sessions, plan usage limits, switching accounts), the text says so and explains what other agents do instead.
 - **Language servers count in the memory figures.** The Resource Manager lists each running language server with its CPU and memory, and the status bar total includes them.
 - **Less background work.** Agents typed into a plain terminal are looked for a few seconds after you press Enter instead of every 20 seconds, so an idle terminal no longer starts a process scan; agents the git guard sees are noted at once.
 - **Outdated wot skills are noticed.** When an installed wot skill is older than the one O-BROS ships, a notice at start says which ones and offers Update all; nothing is written until you press it. wot status also tells the agent that its skill is outdated, so it reminds you. Older skills keep working: the git rules are enforced by O-BROS, not by the skill.

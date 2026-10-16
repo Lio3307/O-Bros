@@ -10,7 +10,7 @@ function askForQuestion(subject: string): Promise<string | null> {
   return askForText({
     title: `Send ${subject} to the terminal`,
     message:
-      'It is inserted into the focused terminal as one block, so press Enter yourself. Use it with an agent such as Claude or Codex: a plain shell would run each line. Add a question if you like.',
+      'It is inserted into the focused terminal as one block, so press Enter yourself. Use it with an agent CLI: a plain shell would run each line. Add a question if you like.',
     placeholder: 'For example: why does this fail when the list is empty?',
     confirmLabel: 'Send',
     isMultiline: true,

@@ -1,6 +1,6 @@
 # o-bros
 
-Electron + React + TypeScript desktop app: a terminal-first workspace for the Claude and Codex CLIs.
+Electron + React + TypeScript desktop app: a terminal-first workspace for any agent CLI the user has installed (Claude, Codex, Gemini CLI, OpenCode and others).
 Design source: the `Design 4` page of the Framer project (frames 1 to 8).
 
 Technical decisions and their rationale live in `docs/decisions.md`. Read it before changing the stack, the account model, or the IPC contract.
@@ -42,6 +42,12 @@ Technical decisions and their rationale live in `docs/decisions.md`. Read it bef
   Reason: The user asked for square boxes everywhere and consistent, reusable components.
   Evidence: User request with a screenshot of the rounded lint tooltip.
   Status: User-directed; implementation awaiting feedback.
+
+- Scope: whole repository
+  Convention: Agent-agnostic. Never design, word, test or document a feature for Claude and Codex only. Build agent lists from detection (ACP registry, PATH, launchers) and write examples with names from the installed list or "your agent". When a feature really is limited to some agents (History and saved sessions read only Claude and Codex transcripts; plan usage limits and account switching exist only for them), say so in the UI and say what other agents do instead.
+  Reason: O-BROS users run whatever agents they have installed.
+  Evidence: Explicit user instruction ("any agent not only focused on claude or codex but it depends what user have in their computer").
+  Status: User-directed.
 
 - Scope: dependencies
   Convention: Prefer packages that ship prebuilt binaries. Do not add a package that needs node-gyp or Python to install.
