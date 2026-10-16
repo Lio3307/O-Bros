@@ -77,8 +77,14 @@ export async function freshTypedAgents(): Promise<Map<string, TypedAgent>> {
   return typedAgents
 }
 
-export function typedAgentOf(paneId: string): TypedAgent | undefined {
-  return typedAgents.get(paneId)
+export function noteAgentSeen(paneId: string, program: string): void {
+  const facts = terminalFactsOf(paneId)
+  if (facts === undefined || facts.agentCommand !== null || facts.hasExited || typedAgents.has(paneId)) {
+    return
+  }
+  const agent = { program, since: Date.now(), cwd: facts.cwd }
+  typedAgents.set(paneId, agent)
+  recordSession(agent, 'started', null)
 }
 
 export function startTypedAgentWatch(): void {

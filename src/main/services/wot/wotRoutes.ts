@@ -1,6 +1,7 @@
 import { isValidCommitIdentity, type CommitIdentity } from '../../../shared/commitIdentity'
 import { decideGit } from './gitDecision'
-import { isWotInstalled } from './skillInstaller'
+import { isWotInstalled, listSkillTargets } from './skillInstaller'
+import { skillUpdateNoteForAgents } from '../../../shared/skillUpdates'
 import { removeAgentCredits } from './commitCredits'
 import { terminalFactsOf } from '../terminalFacts'
 import {
@@ -73,7 +74,8 @@ function callerPaneOf(body: RequestBody): string {
 export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>> = {
   '/status': async (body) => {
     const paneId = teamCallerPaneOf(body)
-    return { paneId, isMember: isTeamMember(paneId), memberCount: listMembers().length }
+    const skillNote = skillUpdateNoteForAgents(await listSkillTargets().catch(() => []))
+    return { paneId, isMember: isTeamMember(paneId), memberCount: listMembers().length, skillNote }
   },
 
   '/agents': async (body) => {

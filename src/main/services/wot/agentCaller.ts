@@ -79,13 +79,22 @@ export function agentAncestorOf(
   return null
 }
 
-export async function isAgentCaller(paneId: string, guardPid: number | null, catalog: AgentCatalog): Promise<boolean> {
-  if (isTeamMember(paneId) || (terminalFactsOf(paneId)?.agentCommand ?? null) !== null) {
-    return true
+export interface AgentCaller {
+  command: string | null
+}
+
+export async function findAgentCaller(paneId: string, guardPid: number | null, catalog: AgentCatalog): Promise<AgentCaller | null> {
+  const knownCommand = terminalFactsOf(paneId)?.agentCommand ?? null
+  if (knownCommand !== null) {
+    return { command: knownCommand }
+  }
+  if (isTeamMember(paneId)) {
+    return { command: null }
   }
   if (guardPid === null) {
-    return false
+    return null
   }
   const table = await readProcessTable()
-  return agentAncestorOf(table, guardPid, terminalPidOf(paneId), catalog.programs) !== null
+  const ancestor = agentAncestorOf(table, guardPid, terminalPidOf(paneId), catalog.programs)
+  return ancestor === null ? null : { command: agentProgramOf(ancestor, catalog.programs) }
 }

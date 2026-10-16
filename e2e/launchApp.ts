@@ -1,7 +1,7 @@
 import { _electron as electron, type ElectronApplication, type Page } from '@playwright/test'
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { delimiter, join, resolve } from 'node:path'
+import { delimiter, dirname, join, resolve } from 'node:path'
 
 export interface RunningApp {
   application: ElectronApplication
@@ -20,6 +20,7 @@ export interface LaunchOptions {
   extraArgs?: string[]
   settings?: Record<string, unknown>
   environment?: Record<string, string>
+  homeFiles?: Record<string, string>
 }
 
 export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp> {
@@ -38,6 +39,10 @@ export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp
     await mkdir(homeFolder)
     environment.USERPROFILE = homeFolder
     environment.HOME = homeFolder
+    for (const [relativePath, content] of Object.entries(options.homeFiles ?? {})) {
+      await mkdir(dirname(join(homeFolder, relativePath)), { recursive: true })
+      await writeFile(join(homeFolder, relativePath), content, 'utf8')
+    }
   }
   if (options.binFiles !== undefined) {
     const binFolder = join(workFolder, 'bin')

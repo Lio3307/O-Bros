@@ -11,11 +11,10 @@ import {
 } from '../../../shared/gitGuard'
 import type { AgentGitAnswer } from '../../../shared/types'
 import { recordActivity } from '../activity/activityLog'
+import { noteAgentSeen } from '../activity/typedAgents'
 import { writeLog } from '../logging/logFile'
-import { freshTypedAgents } from '../activity/typedAgents'
-import { terminalFactsOf } from '../terminalFacts'
 import { loadAgentCatalog, type AgentCatalog } from './agentCatalog'
-import { isAgentCaller } from './agentCaller'
+import { findAgentCaller } from './agentCaller'
 import { findPushTraces } from './pushTraces'
 import { askInterface } from './rendererBridge'
 
@@ -88,11 +87,10 @@ async function askUser(call: GitCall, details: ConfirmDetails): Promise<AgentGit
   }
 }
 
-async function recordAgentGit(call: GitCall, action: string, answer: AgentGitAnswer): Promise<void> {
-  const typedAgent = (await freshTypedAgents()).get(call.paneId)
+async function recordAgentGit(call: GitCall, action: string, answer: AgentGitAnswer, agentCommand: string | null): Promise<void> {
   await recordActivity({
     kind: 'git',
-    agentCommand: terminalFactsOf(call.paneId)?.agentCommand ?? typedAgent?.program ?? null,
+    agentCommand,
     folder: call.cwd,
     text: `tried to ${action}`,
     detail: shortDetail(['git', ...call.gitArguments].join(' ')),
@@ -113,7 +111,11 @@ export async function decideGit(call: GitCall): Promise<GitDecision> {
   }
 
   const catalog = await loadAgentCatalog()
-  const fromAgent = await isAgentCaller(call.paneId, call.guardPid, catalog)
+  const caller = await findAgentCaller(call.paneId, call.guardPid, catalog)
+  const fromAgent = caller !== null
+  if (caller?.command !== null && caller?.command !== undefined) {
+    noteAgentSeen(call.paneId, caller.command)
+  }
   const warnings = [
     ...(isPush ? await pushWarnings(call, catalog) : []),
     ...(fromAgent ? branchNameWarnings(call.gitArguments, guardedAction, catalog) : [])
@@ -128,7 +130,7 @@ export async function decideGit(call: GitCall): Promise<GitDecision> {
   }
   const answer = await askUser(call, { action, fromAgent, isGuarded: guardedAction !== null, createsCommit, warnings })
   if (fromAgent) {
-    void recordAgentGit(call, action, answer).catch(() => undefined)
+    void recordAgentGit(call, action, answer, caller?.command ?? null).catch(() => undefined)
   }
   const appliesIdentity = fromAgent && createsCommit
   return {

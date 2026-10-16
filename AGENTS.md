@@ -26,7 +26,7 @@ Technical decisions and their rationale live in `docs/decisions.md`. Read it bef
   Status: User-directed; implementation awaiting feedback.
 
 - Scope: whole repository
-  Convention: Provider accounts are read-only. o-bros detects logins on the computer and never signs in, stores tokens, or edits CLI config. The only writes are Add account, which creates an empty `~/.claude-N` or `~/.codex-N` folder and opens a terminal where the official CLI signs in, and the wot skill, which writes `<Claude account folder>/skills/wot/SKILL.md` or `~/.agents/skills/wot/SKILL.md` only when the user presses Install in Settings → Team (wot). A non-default account is selected only through `CLAUDE_CONFIG_DIR` or `CODEX_HOME` on the spawned PTY.
+  Convention: Provider accounts are read-only. o-bros detects logins on the computer and never signs in, stores tokens, or edits CLI config. The only writes are Add account, which creates an empty `~/.claude-N` or `~/.codex-N` folder and opens a terminal where the official CLI signs in, and the wot skill, which writes `<Claude account folder>/skills/wot/SKILL.md` or `~/.agents/skills/wot/SKILL.md` only when the user presses Install in Settings → Team (wot) or Update all in the update notice O-BROS shows at start when an installed skill is older than the one it ships. A non-default account is selected only through `CLAUDE_CONFIG_DIR` or `CODEX_HOME` on the spawned PTY.
   Reason: The app only reads the user's computer; credentials must stay with the official CLIs.
   Evidence: Explicit user instruction; example in `src/main/services/accountEnvironment.ts`.
   Status: User-directed; implementation awaiting feedback.

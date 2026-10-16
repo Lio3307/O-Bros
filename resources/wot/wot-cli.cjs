@@ -206,7 +206,8 @@ async function showStatus() {
   const role = status.isMember
     ? 'You are a TEAM MEMBER. You cannot summon agents. Just do the task you were given.'
     : 'You are the LEAD agent. You can summon team members.'
-  finish(EXIT_CODES.ok, `OK: O-BROS is running and wot is ready.\n${role}\nTeam members right now: ${status.memberCount}`)
+  const note = status.skillNote ? `\n${status.skillNote}` : ''
+  finish(EXIT_CODES.ok, `OK: O-BROS is running and wot is ready.\n${role}\nTeam members right now: ${status.memberCount}${note}`)
 }
 
 async function showAgents() {

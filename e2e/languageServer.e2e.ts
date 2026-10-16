@@ -59,7 +59,10 @@ test('gives TypeScript code intelligence from the installed language server', as
     await expect(app.window.locator('.cm-tooltip-autocomplete')).toContainText('toUpperCase', { timeout: SERVER_TIMEOUT_MS })
 
     await app.window.keyboard.press('Escape')
+    await expect(app.window.locator('.cm-tooltip-autocomplete')).toHaveCount(0)
+    await app.window.locator('.cm-content').click()
     await app.window.keyboard.press('ControlOrMeta+S')
+    await expect(app.window.locator('.toast', { hasText: 'Saved main.ts.' })).toBeVisible({ timeout: 15_000 })
     await expect(app.window.locator('.tab-modified-dot')).toHaveCount(0)
     await app.window.getByTitle('Settings').click()
     await app.window.locator('.side-panel').getByRole('button', { name: 'Language servers' }).click()
