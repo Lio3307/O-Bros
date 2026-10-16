@@ -3,7 +3,7 @@ import { askToConfirm } from './confirmStore'
 import { useWorkspaceStore } from './workspaceStore'
 
 export async function restartToUpdate(): Promise<void> {
-  const runningTasks = await window.api.app.listRunningTasks()
+  const runningTasks = await window.api.app.listRunningTasks().catch(() => [])
   const unsavedFileCount = useWorkspaceStore
     .getState()
     .tabs.filter((tab) => tab.kind === 'file' && tab.isModified).length

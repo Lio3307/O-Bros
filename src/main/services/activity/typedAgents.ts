@@ -14,10 +14,13 @@ export interface TypedAgent {
 
 const SCAN_EVERY_MS = 20_000
 const FRESH_ENOUGH_MS = 10_000
+const SCAN_AFTER_ENTER_MS = 3000
+const ENTER_KEY = '\r'
 
 const typedAgents = new Map<string, TypedAgent>()
 let lastScanAt = 0
 let scanning: Promise<void> | null = null
+let enterScanTimer: NodeJS.Timeout | null = null
 
 function recordSession(agent: TypedAgent, text: string, durationMs: number | null): void {
   void recordActivity({ kind: 'session', agentCommand: agent.program, folder: agent.cwd, text, detail: null, outcome: null, durationMs })
@@ -87,6 +90,20 @@ export function noteAgentSeen(paneId: string, program: string): void {
   recordSession(agent, 'started', null)
 }
 
+export function noteTerminalInputForAgents(paneId: string, data: string): void {
+  if (!data.includes(ENTER_KEY) || enterScanTimer !== null || (terminalFactsOf(paneId)?.agentCommand ?? null) !== null) {
+    return
+  }
+  enterScanTimer = setTimeout(() => {
+    enterScanTimer = null
+    void freshTypedAgents()
+  }, SCAN_AFTER_ENTER_MS)
+}
+
 export function startTypedAgentWatch(): void {
-  setInterval(() => void scanTypedAgents(), SCAN_EVERY_MS)
+  setInterval(() => {
+    if (typedAgents.size > 0) {
+      void scanTypedAgents()
+    }
+  }, SCAN_EVERY_MS)
 }

@@ -182,6 +182,14 @@ export function stopAllLanguageServers(): void {
   ;[...sessions.values()].forEach(stopSession)
 }
 
+export function listLanguageServerProcesses(): { sessionId: string; title: string; rootPath: string; pid: number }[] {
+  return [...sessions.values()].flatMap((session) =>
+    session.child.pid === undefined
+      ? []
+      : [{ sessionId: session.info.sessionId, title: session.info.serverTitle, rootPath: session.rootPath, pid: session.child.pid }]
+  )
+}
+
 export function listRunningLanguageServers(): RunningLanguageServer[] {
   return [...sessions.values()].map((session) => ({
     sessionId: session.info.sessionId,

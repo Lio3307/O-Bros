@@ -16,6 +16,8 @@ export function AboutPage() {
   const check = useUpdateStore((state) => state.check)
   const download = useUpdateStore((state) => state.download)
   const openReleases = useUpdateStore((state) => state.openReleases)
+  const isAutoCheckEnabled = useUpdateStore((state) => state.isAutoCheckEnabled)
+  const setAutoCheckEnabled = useUpdateStore((state) => state.setAutoCheckEnabled)
 
   useEffect(() => {
     void load()
@@ -27,7 +29,7 @@ export function AboutPage() {
       title="About and updates"
       description={
         <>
-          o-bros {status?.currentVersion ?? ''}. Updates are never checked or downloaded unless you press a button here.
+          o-bros {status?.currentVersion ?? ''}. O-BROS checks GitHub for a new version 30 seconds after it starts and every 6 hours, and tells you when there is one. Nothing is downloaded or installed unless you press a button.
         </>
       }
       actions={
@@ -48,6 +50,14 @@ export function AboutPage() {
           onDownload={download}
           onRestart={restartToUpdate}
         />
+        <label className="toggle-row">
+          <input
+            type="checkbox"
+            checked={isAutoCheckEnabled}
+            onChange={(event) => setAutoCheckEnabled(event.target.checked)}
+          />
+          <span>Check for new versions automatically and tell me</span>
+        </label>
       </SettingsSection>
     </SettingsPageLayout>
   )

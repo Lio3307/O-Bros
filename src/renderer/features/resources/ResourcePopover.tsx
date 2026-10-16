@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight, MemoryStick } from 'lucide-react'
 import { useState } from 'react'
 import { formatBytes, formatPercent } from '../../../shared/format'
+import { lastPathSegment } from '../../../shared/paths'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useResourcesStore } from '../../state/resourcesStore'
 import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
@@ -99,6 +100,21 @@ export function ResourcePopover() {
             {groups.map((group) => (
               <WorkspaceRows key={group.name} group={group} />
             ))}
+            {snapshot.languageServers.length > 0 && (
+              <div className="resource-row resource-row-group">
+                <span className="resource-name">Language servers</span>
+              </div>
+            )}
+            {snapshot.languageServers.map((server) => (
+              <div key={server.sessionId} className="resource-row resource-row-terminal" title={server.rootPath}>
+                <span className="resource-name">
+                  <span className="resource-dot" />
+                  {server.title} · {lastPathSegment(server.rootPath)}
+                </span>
+                <span className="resource-number">{formatPercent(server.cpuPercent)}</span>
+                <span className="resource-number resource-number-strong">{formatBytes(server.privateBytes)}</span>
+              </div>
+            ))}
             <div className="resource-row resource-row-app">
               <span className="resource-name">o-bros app</span>
               <span className="resource-number">{formatPercent(snapshot.app.cpuPercent)}</span>
@@ -111,7 +127,7 @@ export function ResourcePopover() {
           <p className="resource-footnote">
             Memory is what each process uses by itself, like the Memory column in Task Manager. &quot;With shared&quot; also
             counts the system libraries every process loads, once per process, so it is larger. Terminal rows include the
-            shell and everything it started.
+            shell and everything it started, and language servers include the helpers they start.
           </p>
         </>
       )}

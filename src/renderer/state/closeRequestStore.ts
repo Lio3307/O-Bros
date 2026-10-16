@@ -30,7 +30,7 @@ export const useCloseRequestStore = create<CloseRequestState>()((set, get) => ({
     if (get().pending !== null) {
       return
     }
-    const tasks = await window.api.app.listRunningTasks()
+    const tasks = await window.api.app.listRunningTasks().catch(() => [])
     const unsavedTitles = unsavedFileTitles()
     if (tasks.length === 0 && unsavedTitles.length === 0) {
       await window.api.app.confirmClose()

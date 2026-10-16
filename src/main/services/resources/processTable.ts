@@ -8,6 +8,7 @@ const HUNDRED_NANOSECONDS_PER_MILLISECOND = 10_000
 const BYTES_PER_KILOBYTE = 1024
 const UNIX_COLUMN_COUNT = 4
 const FIRST_PRINTABLE_CODE = 32
+const READ_TIMEOUT_MS = 20_000
 
 export interface ProcessEntry {
   pid: number
@@ -48,7 +49,8 @@ export function withoutControlCharacters(text: string): string {
 async function readWindowsProcessTable(): Promise<ProcessEntry[]> {
   const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_QUERY], {
     maxBuffer: MAX_OUTPUT_BYTES,
-    windowsHide: true
+    windowsHide: true,
+    timeout: READ_TIMEOUT_MS
   })
   const parsed = JSON.parse(withoutControlCharacters(stdout)) as WindowsProcessRow | WindowsProcessRow[]
   const rows = Array.isArray(parsed) ? parsed : [parsed]
@@ -67,7 +69,8 @@ async function readWindowsProcessTable(): Promise<ProcessEntry[]> {
 
 async function readUnixProcessTable(): Promise<ProcessEntry[]> {
   const { stdout } = await execFileAsync('ps', ['-A', '-o', 'pid=,ppid=,rss=,pcpu=,args='], {
-    maxBuffer: MAX_OUTPUT_BYTES
+    maxBuffer: MAX_OUTPUT_BYTES,
+    timeout: READ_TIMEOUT_MS
   })
 
   return stdout

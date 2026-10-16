@@ -134,7 +134,7 @@ The Activity page is one full-width monitor (no side list):
 - **Running now:** a card for every agent running in O-BROS, including team members, with its state (working pulses blue, idle green, waiting for you red), where it runs, who summoned it, how long it has run, and its CPU and memory. Click a card to open its terminal.
 - **Today:** agent time, sessions started, git actions asked (allowed and denied) and team members summoned.
 - **Activity by hour** (hover a bar for its count) and **Time per agent today**.
-- **Agents you start by typing their name** (for example `claude` in a plain terminal) are recognised by the program running in the terminal, checked every 20 seconds (every 10 while the monitor is open), so they appear on the monitor and in the log too.
+- **Agents you start by typing their name** (for example `claude` in a plain terminal) are recognised by the program running in the terminal, checked a few seconds after you press Enter in a plain terminal and every 20 seconds while such an agent runs, so they appear on the monitor and in the log too.
 - **Team members** count with the time they ran.
 - **Log:** a timeline of what agents did, newest first, grouped by Today, Yesterday and older days.
 - **Sessions:** when an agent started in O-BROS and how long it ran before it closed.
@@ -166,6 +166,7 @@ Press the memory figure in the status bar.
 The figures are the memory each process uses by itself, like the Memory column in Windows Task Manager. The larger "with shared" total also counts the system libraries every process loads.
 
 - Total CPU and memory for the app and every terminal, grouped by project.
+- **Language servers** that are running, with their CPU and memory.
 - **Listening ports** opened by programs inside your terminals, with Open (opens `http://localhost:<port>` in your browser) and Stop for each.
 
 ## Storage and memory
@@ -203,7 +204,7 @@ Settings → Storage and memory lists everything o-bros can clear for you, how b
 
 ## About and updates
 
-Settings → About and updates shows the version and updates the installed app. One card shows the state: a green dot and a **Latest** tag when you are up to date, a **New** tag when a version is available, a progress bar while it downloads, and **Ready** when it can be installed.
+Settings → About and updates shows the version and updates the installed app. O-BROS checks for a new version by itself 30 seconds after it starts and every 6 hours (turn it off with "Check for new versions automatically"). When one exists, a notice says so with a **Download** button; when the download is done, a second notice offers **Restart to update**. Each version is announced once. Failed checks, for example without internet, stay quiet. One card shows the state: a green dot and a **Latest** tag when you are up to date, a **New** tag when a version is available, a progress bar while it downloads, and **Ready** when it can be installed.
 
 | Action | What happens |
 |---|---|

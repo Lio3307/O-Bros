@@ -50,9 +50,9 @@ Language servers are programs you installed (for example typescript-language-ser
 | `openrouter.ai` | The OpenRouter key saved in OpenCode (or `OPENROUTER_API_KEY`), to read that key's spending and credit | Every few minutes and when you press refresh, only if such a key exists |
 | Your git remote | Whatever `git fetch` does | Only when you press fetch |
 | `cdn.agentclientprotocol.com` | A plain request for the public ACP Registry list of agents. Nothing about you is sent | When you open Settings → Agents, at most once an hour |
-| `github.com` (the o-bros releases) | A request for the latest release information, and then the installer file | Only when you press **Check for updates** or **Download** in Settings → About and updates |
+| `github.com` (the o-bros releases) | A request for the latest release information, and then the installer file | Release information: 30 seconds after start and every 6 hours, unless you turn off "Check for new versions automatically" in Settings → About and updates, and when you press **Check for updates**. The installer: only when you press **Download** |
 
-Nothing else leaves your computer. There is no analytics and no crash reporting. Updates are only checked when you press the button. If the ACP Registry cannot be reached, o-bros uses its built-in list of agents and nothing breaks.
+Nothing else leaves your computer. There is no analytics and no crash reporting. Update checks only ask GitHub which version is the latest; they send no information about you or your projects. If the ACP Registry cannot be reached, o-bros uses its built-in list of agents and nothing breaks.
 
 Usage requests identify themselves honestly as `o-bros`. The two usage endpoints are not documented by the providers, so they may change or be restricted.
 

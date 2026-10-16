@@ -28,13 +28,17 @@ function stopProcess(pid: number): void {
   }
 }
 
-export async function stopAllRunningTasks(): Promise<void> {
-  const terminals = listRunningTerminals()
-  if (terminals.length > 0) {
-    const table = await readProcessTable()
-    for (const { pid } of terminals) {
-      listBackgroundProcesses(collectProcessTree(table, pid), pid).forEach((entry) => stopProcess(entry.pid))
-    }
+async function stopBackgroundProcesses(terminals: { pid: number }[]): Promise<void> {
+  if (terminals.length === 0) {
+    return
   }
+  const table = await readProcessTable()
+  for (const { pid } of terminals) {
+    listBackgroundProcesses(collectProcessTree(table, pid), pid).forEach((entry) => stopProcess(entry.pid))
+  }
+}
+
+export async function stopAllRunningTasks(): Promise<void> {
+  await stopBackgroundProcesses(listRunningTerminals()).catch(() => undefined)
   killAllTerminals()
 }

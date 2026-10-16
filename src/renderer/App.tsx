@@ -27,6 +27,7 @@ import { useProjectsStore } from './state/projectsStore'
 import { useRefreshStore } from './state/refreshStore'
 import { restoreSavedSession, startSessionPersistence } from './state/sessionPersistence'
 import { offerSkillUpdates } from './features/team/skillUpdateNotice'
+import { startAutomaticUpdates } from './features/settings/update/automaticUpdates'
 
 const USAGE_REFRESH_MS = 5 * 60_000
 const COMMANDS_RESCAN_AFTER_MS = 30_000
@@ -45,6 +46,7 @@ function useStartupData(): void {
     const stopProjectTabSync = startProjectTabSync()
     const stopReviewBaselines = startReviewBaselines()
     const stopTeamBridge = startTeamBridge()
+    const stopAutomaticUpdates = startAutomaticUpdates()
     void useAgentCatalogStore.getState().load()
     PROVIDER_COMMANDS.forEach((command) => void useAgentCatalogStore.getState().loadLogo(command))
     void offerSkillUpdates()
@@ -53,6 +55,7 @@ function useStartupData(): void {
       stopProjectTabSync()
       stopReviewBaselines()
       stopTeamBridge()
+      stopAutomaticUpdates()
     }
   }, [])
 

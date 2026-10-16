@@ -1,7 +1,8 @@
 import { app } from 'electron'
 import { cpus } from 'node:os'
 import { sumUsage } from '../../../shared/processUsage'
-import type { ProcessUsage, ResourceSnapshot, TerminalResource } from '../../../shared/types'
+import type { LanguageServerResource, ProcessUsage, ResourceSnapshot, TerminalResource } from '../../../shared/types'
+import { listLanguageServerProcesses } from '../languageServers/languageServerSessions'
 import { listRunningTerminals } from '../ptyManager'
 import { collectProcessTree, readProcessTable, type ProcessEntry } from './processTable'
 
@@ -51,6 +52,10 @@ function measureTerminal(paneId: string, pid: number, table: ProcessEntry[], cpu
   }
 }
 
+function languageServerSampleKey(sessionId: string): string {
+  return `language-server:${sessionId}`
+}
+
 export function readAppUsageNow(): ProcessUsage {
   return readAppUsage(cpus().length)
 }
@@ -59,11 +64,19 @@ export async function readResourceSnapshot(): Promise<ResourceSnapshot> {
   const cpuCount = cpus().length
   const now = Date.now()
   const runningTerminals = listRunningTerminals()
-  const table = runningTerminals.length > 0 ? await readProcessTable() : []
+  const runningServers = listLanguageServerProcesses()
+  const table = runningTerminals.length + runningServers.length > 0 ? await readProcessTable() : []
 
   const terminals = runningTerminals.map(({ id, pid }) => measureTerminal(id, pid, table, cpuCount, now))
+  const languageServers: LanguageServerResource[] = runningServers.map((server) => {
+    const { paneId: _sampleKey, ...usage } = measureTerminal(languageServerSampleKey(server.sessionId), server.pid, table, cpuCount, now)
+    return { sessionId: server.sessionId, title: server.title, rootPath: server.rootPath, ...usage }
+  })
 
-  const runningIds = new Set(runningTerminals.map((terminal) => terminal.id))
+  const runningIds = new Set([
+    ...runningTerminals.map((terminal) => terminal.id),
+    ...runningServers.map((server) => languageServerSampleKey(server.sessionId))
+  ])
   for (const trackedId of previousCpuSamples.keys()) {
     if (!runningIds.has(trackedId)) {
       previousCpuSamples.delete(trackedId)
@@ -71,5 +84,5 @@ export async function readResourceSnapshot(): Promise<ResourceSnapshot> {
   }
 
   const appUsage = readAppUsage(cpuCount)
-  return { total: sumUsage([appUsage, ...terminals]), app: appUsage, terminals }
+  return { total: sumUsage([appUsage, ...terminals, ...languageServers]), app: appUsage, terminals, languageServers }
 }

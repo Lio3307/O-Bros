@@ -64,6 +64,10 @@ test('gives TypeScript code intelligence from the installed language server', as
     await app.window.keyboard.press('ControlOrMeta+S')
     await expect(app.window.locator('.toast', { hasText: 'Saved main.ts.' })).toBeVisible({ timeout: 15_000 })
     await expect(app.window.locator('.tab-modified-dot')).toHaveCount(0)
+    await app.window.locator('.status-resources').click()
+    await expect(app.window.locator('.resource-row', { hasText: 'TypeScript and JavaScript' })).toContainText('MB', { timeout: 20_000 })
+    await app.window.keyboard.press('Escape')
+
     await app.window.getByTitle('Settings').click()
     await app.window.locator('.side-panel').getByRole('button', { name: 'Language servers' }).click()
     await expect(app.window.locator('.language-server-row', { hasText: 'open file' })).toContainText('TypeScript and JavaScript')

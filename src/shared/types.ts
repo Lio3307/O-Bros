@@ -183,10 +183,17 @@ export interface TerminalResource extends ProcessUsage {
   paneId: string
 }
 
+export interface LanguageServerResource extends ProcessUsage {
+  sessionId: string
+  title: string
+  rootPath: string
+}
+
 export interface ResourceSnapshot {
   total: ProcessUsage
   app: ProcessUsage
   terminals: TerminalResource[]
+  languageServers: LanguageServerResource[]
 }
 
 export type LintSeverity = 'error' | 'warning'
