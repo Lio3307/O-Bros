@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ -z "$O_BROS_WOT_NODE" ] || [ -z "$O_BROS_WOT_CLI" ]; then
+  echo "WOT_UNAVAILABLE: wot only works inside a terminal that O-BROS opened, and O-BROS must be running." >&2
+  exit 2
+fi
+ELECTRON_RUN_AS_NODE=1 exec "$O_BROS_WOT_NODE" "$O_BROS_WOT_CLI" "$@"

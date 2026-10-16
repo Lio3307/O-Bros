@@ -78,7 +78,7 @@ function newId(): string {
 }
 
 function terminalTitleFor(cwd: string | null, existingCount: number): string {
-  return cwd === null ? `Terminal ${existingCount + 1}` : lastPathSegment(cwd)
+  return cwd === null ? (existingCount === 0 ? 'Home' : `Home ${existingCount + 1}`) : lastPathSegment(cwd)
 }
 
 function buildTerminalTab(options: NewTerminalOptions, existingTerminalCount: number): TerminalTab {

@@ -3,6 +3,7 @@ import type { AgentSuggestion } from '../../../../shared/acpRegistry'
 import { shortAgentName } from '../../../../shared/agentLaunchers'
 import { useAgentLaunchersStore } from '../../../state/agentLaunchersStore'
 import { AgentIcon } from '../../../ui/AgentIcon'
+import { AgentUsageNote } from '../../../ui/AgentUsageNote'
 import { AgentStatusBadge } from '../../../ui/AgentStatusBadge'
 import { Button } from '../../../ui/Button'
 
@@ -19,7 +20,10 @@ export function SuggestionRows({ suggestions }: { suggestions: AgentSuggestion[]
             </span>
             <span className="muted mono">{suggestion.command}</span>
           </div>
-          <AgentStatusBadge command={suggestion.command} />
+          <span className="agent-status-cell">
+            <AgentStatusBadge command={suggestion.command} />
+            <AgentUsageNote command={suggestion.command} />
+          </span>
           <Button variant="outline" onClick={() => add(shortAgentName(suggestion.name), suggestion.command)}>
             <Plus size={14} /> Add
           </Button>

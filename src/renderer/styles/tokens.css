@@ -9,13 +9,14 @@
   --color-muted: #8c8c8c;
   --color-faint: #5a5a5a;
   --color-white: #ffffff;
-  --color-claude: #d97757;
   --color-success: #3fb950;
   --color-danger: #f85149;
   --color-info: #58a6ff;
   --color-added-bg: rgba(63, 185, 80, 0.14);
   --color-removed-bg: rgba(248, 81, 73, 0.14);
   --color-hunk-bg: rgba(88, 166, 255, 0.1);
+
+  --radius: 0px;
 
   --font-ui: 'Inter Variable', 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', monospace;

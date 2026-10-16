@@ -8,7 +8,7 @@
   color: var(--color-text);
   background: var(--color-panel);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
   font-size: 13px;
 }
@@ -83,7 +83,7 @@
   height: 32px;
   color: var(--color-white);
   background: var(--color-selected);
-  border-radius: 8px;
+  border-radius: var(--radius);
 }
 
 .usage-provider-body {

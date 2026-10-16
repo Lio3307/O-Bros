@@ -6,7 +6,7 @@
   margin: 4px 0 8px;
   background: var(--color-hover);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
 .branch-card-name {
@@ -217,7 +217,7 @@
   color: var(--color-muted);
   background: var(--color-panel);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .change-actions button:hover:not(:disabled) {
@@ -293,7 +293,7 @@
   text-align: left;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
 .commit-row:hover {
@@ -468,7 +468,7 @@
   text-align: left;
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
 .graph-row:hover {
@@ -566,7 +566,7 @@
   color: var(--color-muted);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .branch-more:hover {
@@ -579,4 +579,9 @@
   padding: 8px 10px;
   font-family: inherit;
   resize: vertical;
+}
+
+.review-empty {
+  padding: 4px 8px 8px;
+  font-size: 12px;
 }

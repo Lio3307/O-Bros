@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { withAppUsage } from '../../shared/processUsage'
 import type { ResourceSnapshot } from '../../shared/types'
 
 const MIN_FEEDBACK_MS = 500
@@ -8,6 +9,7 @@ interface ResourcesState {
   isRefreshing: boolean
   hasFailed: boolean
   poll: () => Promise<void>
+  pollApp: () => Promise<void>
   refresh: () => Promise<void>
 }
 
@@ -25,6 +27,18 @@ export const useResourcesStore = create<ResourcesState>()((set, get) => ({
       set({ snapshot: await window.api.resources.get() })
     } catch {
       set({ hasFailed: true })
+    }
+  },
+
+  pollApp: async () => {
+    try {
+      const app = await window.api.resources.app()
+      const snapshot = get().snapshot
+      if (snapshot !== null) {
+        set({ snapshot: withAppUsage(snapshot, app) })
+      }
+    } catch {
+      return
     }
   },
 

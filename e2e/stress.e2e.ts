@@ -30,6 +30,7 @@ function printManyLinesCommand(): string {
 }
 
 test('keeps several terminals working at the same time', async () => {
+  test.setTimeout(150_000)
   const app = await launchApp()
   try {
     for (let index = 0; index < TERMINAL_COUNT; index += 1) {

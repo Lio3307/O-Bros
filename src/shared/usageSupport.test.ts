@@ -1,0 +1,33 @@
+import { describe, expect, it } from 'vitest'
+import { usageSupportFor, type UsageFacts } from './usageSupport'
+
+const FACTS: UsageFacts = {
+  claudeHasLoginFile: true,
+  claudePlan: 'pro',
+  codexLoginMode: 'chatgpt',
+  codexPlan: 'pro',
+  geminiAuthType: 'gemini-api-key',
+  openRouterVia: 'OpenCode'
+}
+
+describe('usageSupportFor', () => {
+  it('shows usage for subscriptions', () => {
+    expect(usageSupportFor('claude', FACTS).label).toBe('Usage shown · Claude Pro')
+    expect(usageSupportFor('codex', FACTS).label).toBe('Usage shown · ChatGPT Pro')
+    expect(usageSupportFor('opencode', FACTS).kind).toBe('shown')
+  })
+
+  it('asks for a login or a subscription when there is none', () => {
+    expect(usageSupportFor('claude', { ...FACTS, claudeHasLoginFile: false }).kind).toBe('needs-login')
+    expect(usageSupportFor('claude', { ...FACTS, claudePlan: null }).kind).toBe('needs-subscription')
+    expect(usageSupportFor('codex', { ...FACTS, codexLoginMode: 'api-key' }).kind).toBe('needs-subscription')
+    expect(usageSupportFor('codex', { ...FACTS, codexLoginMode: null }).kind).toBe('needs-login')
+  })
+
+  it('explains pay-per-use keys and providers without a usage service', () => {
+    expect(usageSupportFor('gemini', FACTS).kind).toBe('pay-per-use')
+    expect(usageSupportFor('gemini', { ...FACTS, geminiAuthType: 'oauth-personal' }).kind).toBe('not-supported')
+    expect(usageSupportFor('opencode', { ...FACTS, openRouterVia: null }).kind).toBe('pay-per-use')
+    expect(usageSupportFor('cline', FACTS).kind).toBe('not-supported')
+  })
+})

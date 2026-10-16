@@ -1,0 +1,18 @@
+{
+  "description": "The ACP registry describes ACP adapters. This maps a registry id to the command people type in a terminal when it cannot be derived from the registry entry.",
+  "commandByRegistryId": {
+    "claude-acp": "claude",
+    "codex-acp": "codex",
+    "github-copilot-cli": "copilot",
+    "cursor": "cursor-agent",
+    "factory-droid": "droid",
+    "qoder": "qodercli",
+    "codebuddy-code": "codebuddy",
+    "mistral-vibe": "vibe",
+    "qwen-code": "qwen",
+    "grok-build": "grok",
+    "amp-acp": "amp",
+    "cortex-code": "cortex",
+    "pi-acp": "pi"
+  }
+}

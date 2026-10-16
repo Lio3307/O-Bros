@@ -40,7 +40,7 @@ input {
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 5px;
+  border-radius: var(--radius);
 }
 
 .muted {
@@ -57,7 +57,7 @@ input {
   line-height: 16px;
   color: var(--color-muted);
   border: 1px solid var(--color-border);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 .chip-current {
@@ -74,7 +74,7 @@ input {
   color: var(--color-muted);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .icon-button:hover {
@@ -87,6 +87,16 @@ input {
   background: var(--color-selected);
 }
 
+.hover-positive:hover:not(:disabled) {
+  color: var(--color-success);
+  background: rgba(63, 185, 80, 0.12);
+}
+
+.hover-danger:hover:not(:disabled) {
+  color: var(--color-danger);
+  background: rgba(248, 81, 73, 0.12);
+}
+
 .button-outline,
 .button-primary {
   display: inline-flex;
@@ -94,7 +104,8 @@ input {
   gap: 6px;
   height: 28px;
   padding: 0 12px;
-  border-radius: 4px;
+  white-space: nowrap;
+  border-radius: var(--radius);
 }
 
 .button-outline {
@@ -116,6 +127,7 @@ input {
 
 .link-button {
   padding: 0;
+  white-space: nowrap;
   color: var(--color-muted);
   background: transparent;
   border: none;
@@ -135,7 +147,7 @@ input {
   color: var(--color-text);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
   text-align: left;
 }
 
@@ -166,7 +178,7 @@ input {
   padding: 2px;
   background: var(--color-terminal);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .segment {
@@ -175,7 +187,7 @@ input {
   color: var(--color-muted);
   background: transparent;
   border: none;
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 .segment-active {
@@ -185,8 +197,13 @@ input {
 }
 
 .panel-empty {
-  padding: 8px;
+  display: grid;
+  flex: 1;
+  place-content: center;
+  min-height: 120px;
+  padding: 16px;
   color: var(--color-muted);
+  text-align: center;
 }
 
 .section-label {
@@ -199,16 +216,27 @@ input {
   color: var(--color-faint);
 }
 
-.provider-mark-claude {
-  color: var(--color-claude);
-}
-
-.provider-mark-codex {
-  color: var(--color-white);
-}
-
 .spinning {
   animation: spin 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinning {
+    animation-duration: 2.4s;
+  }
+}
+
+.spinner {
+  flex-shrink: 0;
+  color: var(--color-muted);
+}
+
+.loading-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--color-muted);
 }
 
 @keyframes spin {
@@ -247,7 +275,7 @@ input {
   width: 64px;
   height: 4px;
   background: var(--color-selected);
-  border-radius: 2px;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
@@ -255,7 +283,7 @@ input {
   min-width: 2px;
   height: 100%;
   background: var(--color-white);
-  border-radius: 2px;
+  border-radius: var(--radius);
 }
 
 .agent-status {

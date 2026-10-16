@@ -1,12 +1,35 @@
 import { app, shell } from 'electron'
+import { readFile, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { dirname, join, normalize } from 'node:path'
+import { parseHistoryFolders } from '../../../shared/historyFolders'
 import type { DataLocation, DataLocationKind } from '../../../shared/types'
 import { logDirectory } from '../logging/logFile'
 import { readSessionSources } from '../sessions/sessionSources'
+import { listSkillTargets } from '../wot/skillInstaller'
+import { WOT_TASK_FOLDER } from '../wot/wotTaskFiles'
+
+const HISTORY_FOLDERS_PATH = join(__dirname, '../../resources/agents/history-folders.json')
 
 function locationOf(kind: DataLocationKind, path: string, accountLabel: string | null): DataLocation {
-  return { id: `${kind}:${path}`, kind, path, accountLabel }
+  return { id: `${kind}:${path}`, kind, path, accountLabel, copy: null }
+}
+
+async function isFolder(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isDirectory()
+  } catch {
+    return false
+  }
+}
+
+async function listAgentHistoryLocations(): Promise<DataLocation[]> {
+  const raw: unknown = JSON.parse(await readFile(HISTORY_FOLDERS_PATH, 'utf8'))
+  const folders = parseHistoryFolders(raw, homedir()).map((folder) => ({ ...folder, path: normalize(folder.path) }))
+  const existing = await Promise.all(folders.map((folder) => isFolder(folder.path)))
+  return folders
+    .filter((_folder, index) => existing[index])
+    .map((folder) => ({ ...locationOf('agentHistory', folder.path, null), copy: { title: folder.title, note: folder.note, command: folder.command } }))
 }
 
 function userCacheDirectory(): string {
@@ -20,7 +43,14 @@ function userCacheDirectory(): string {
 }
 
 export async function listDataLocations(): Promise<DataLocation[]> {
-  const sources = await readSessionSources()
+  const [sources, skillTargets, agentHistoryLocations] = await Promise.all([
+    readSessionSources(),
+    listSkillTargets().catch(() => []),
+    listAgentHistoryLocations().catch(() => [])
+  ])
+  const skillLocations = skillTargets
+    .filter((target) => target.status !== 'missing')
+    .map((target) => locationOf('wotSkill', dirname(target.skillPath), target.title))
   const sessionLocations = sources.map((source) =>
     locationOf(
       source.account.provider === 'claude' ? 'claudeSessions' : 'codexSessions',
@@ -38,7 +68,10 @@ export async function listDataLocations(): Promise<DataLocation[]> {
     locationOf('appData', app.getPath('userData'), null),
     locationOf('logs', logDirectory(), null),
     ...updaterLocations,
-    ...sessionLocations
+    ...sessionLocations,
+    ...agentHistoryLocations,
+    locationOf('teamTaskFiles', WOT_TASK_FOLDER, null),
+    ...skillLocations
   ]
 }
 

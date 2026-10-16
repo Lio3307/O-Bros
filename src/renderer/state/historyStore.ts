@@ -1,23 +1,28 @@
 import { create } from 'zustand'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
-import type { SessionSummary } from '../../shared/types'
+import type { SessionSearchHit, SessionSummary } from '../../shared/types'
+import { summarizeRemoval } from '../../shared/sessionRemovalResult'
 import { toast } from './toastStore'
 
 interface HistoryState {
   sessions: SessionSummary[]
   selectedFilePath: string | null
-  day: string | null
   deletePermanently: boolean
+  searchHits: SessionSearchHit[] | null
+  isSearching: boolean
+  search: (query: string) => Promise<void>
+  clearSearch: () => void
   setDeletePermanently: (deletePermanently: boolean) => void
   load: () => Promise<void>
   select: (filePath: string) => void
-  setDay: (day: string | null) => Promise<void>
   remove: (filePaths: string[]) => Promise<void>
 }
 
+let latestSearchId = 0
+
 export const useHistoryStore = create<HistoryState>()((set, get) => {
   async function reload(): Promise<void> {
-    const sessions = await window.api.history.list(get().day)
+    const sessions = await window.api.history.list()
     const selectedStillListed = sessions.some((session) => session.filePath === get().selectedFilePath)
     set({
       sessions,
@@ -28,8 +33,35 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
   return {
     sessions: [],
     selectedFilePath: null,
-    day: null,
     deletePermanently: false,
+    searchHits: null,
+    isSearching: false,
+
+    search: async (query) => {
+      latestSearchId += 1
+      const searchId = latestSearchId
+      if (query.trim() === '') {
+        set({ searchHits: null, isSearching: false })
+        return
+      }
+      set({ isSearching: true })
+      try {
+        const searchHits = await window.api.history.search(query)
+        if (searchId === latestSearchId) {
+          set({ searchHits, isSearching: false })
+        }
+      } catch (error) {
+        if (searchId === latestSearchId) {
+          set({ searchHits: [], isSearching: false })
+          toast.error(friendlyErrorMessage(error, 'Could not search your sessions.'))
+        }
+      }
+    },
+
+    clearSearch: () => {
+      latestSearchId += 1
+      set({ searchHits: null, isSearching: false })
+    },
 
     setDeletePermanently: (deletePermanently) => set({ deletePermanently }),
 
@@ -37,23 +69,19 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
 
     select: (selectedFilePath) => set({ selectedFilePath }),
 
-    setDay: async (day) => {
-      set({ day: day === '' ? null : day })
-      await reload()
-    },
-
     remove: async (filePaths) => {
       try {
         const permanently = get().deletePermanently
-        const removedCount = await window.api.history.remove(filePaths, permanently)
-        const noun = removedCount === 1 ? 'session' : 'sessions'
-        const outcome = permanently ? 'Deleted ' : 'Moved '
-        const destination = permanently ? '.' : ' to the Recycle Bin or Trash.'
-        toast.success(outcome + removedCount + ' ' + noun + destination)
+        const summary = summarizeRemoval(await window.api.history.remove(filePaths, permanently), permanently)
+        toast[summary.kind](summary.message)
       } catch (error) {
         toast.error(friendlyErrorMessage(error, 'Could not delete the session.'))
       }
       await reload()
+      const activeHits = get().searchHits
+      if (activeHits !== null) {
+        set({ searchHits: activeHits.filter((hit) => !filePaths.includes(hit.filePath)) })
+      }
     }
   }
 })

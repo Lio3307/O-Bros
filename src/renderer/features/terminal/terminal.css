@@ -62,7 +62,7 @@
 
 .tab-scroller::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 2px;
+  border-radius: var(--radius);
 }
 
 .tab-scroller::-webkit-scrollbar-thumb:hover {
@@ -131,7 +131,7 @@
   color: var(--color-muted);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .tab-close {
@@ -169,7 +169,7 @@
   color: var(--color-text);
   background: var(--color-panel);
   border: 1px solid var(--color-white);
-  border-radius: 2px;
+  border-radius: var(--radius);
   outline: none;
 }
 
@@ -289,7 +289,7 @@
   padding: 4px;
   background: var(--color-panel);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
 .terminal-search input {
@@ -299,7 +299,7 @@
   color: var(--color-text);
   background: var(--color-terminal);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   outline: none;
 }
 
@@ -314,10 +314,22 @@
   color: var(--color-muted);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .terminal-search button:hover {
   color: var(--color-white);
   background: var(--color-hover);
+}
+
+.empty-state-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.empty-state-text {
+  margin: 0 0 4px;
+  text-align: center;
 }

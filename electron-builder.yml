@@ -9,6 +9,8 @@ directories:
 files:
   - out/**
   - resources/logo.png
+  - resources/wot/**
+  - resources/agents/**
   - package.json
 
 asar: false

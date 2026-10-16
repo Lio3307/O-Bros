@@ -1,11 +1,13 @@
-import { basename, join } from 'node:path'
+import { join } from 'node:path'
+import { lastPathSegment } from '../../shared/paths'
 import type { ProjectFolder, ProjectRoot } from '../../shared/types'
 import { loadSettings } from '../settings'
 import { readDirectoryIfExists, readTextIfExists } from './fileSystem'
 
 const HEAD_REFERENCE_PREFIX = 'ref: refs/heads/'
 const DETACHED_HASH_LENGTH = 7
-const HIDDEN_OR_GENERATED_FOLDERS = new Set(['node_modules', 'dist', 'out'])
+const HIDDEN_OR_GENERATED_FOLDERS = new Set(['node_modules', 'dist', 'out', 'System Volume Information'])
+const SYSTEM_FOLDER_PREFIXES = ['.', '$']
 
 export async function readCurrentBranch(folderPath: string): Promise<string | null> {
   const head = await readTextIfExists(join(folderPath, '.git', 'HEAD'))
@@ -19,7 +21,7 @@ export async function readCurrentBranch(folderPath: string): Promise<string | nu
 }
 
 export function isVisibleFolder(name: string): boolean {
-  return !name.startsWith('.') && !HIDDEN_OR_GENERATED_FOLDERS.has(name)
+  return !SYSTEM_FOLDER_PREFIXES.some((prefix) => name.startsWith(prefix)) && !HIDDEN_OR_GENERATED_FOLDERS.has(name)
 }
 
 async function describeFolder(parentPath: string, name: string): Promise<ProjectFolder> {
@@ -34,7 +36,7 @@ async function describeRoot(rootPath: string): Promise<ProjectRoot> {
     .map((entry) => entry.name)
 
   return {
-    name: basename(rootPath),
+    name: lastPathSegment(rootPath),
     path: rootPath,
     branch: await readCurrentBranch(rootPath),
     folders: await Promise.all(folderNames.map((name) => describeFolder(rootPath, name)))

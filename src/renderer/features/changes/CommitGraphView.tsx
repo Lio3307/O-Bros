@@ -9,6 +9,7 @@ import { buildCommitGraph, laneCount } from './commitGraph'
 import { CommitFiles } from './CommitFiles'
 import { CommitGraphCell } from './CommitGraphCell'
 import { CommitRefs } from './CommitRefs'
+import { LoadingText } from '../../ui/LoadingText'
 
 const AGE_REFRESH_MS = 60_000
 const ROW_HEIGHT = 36
@@ -67,7 +68,7 @@ export function CommitGraphView() {
         </label>
       </header>
       <div className="graph-body">
-        {commits === null && <div className="graph-empty">{isLoading ? 'Loading…' : ''}</div>}
+        {commits === null && <div className="graph-empty">{isLoading && <LoadingText text="Loading the history…" />}</div>}
         {commits?.length === 0 && <div className="graph-empty">No commits yet.</div>}
         {commits?.map((commit, index) => {
           const isExpanded = expandedHash === commit.hash

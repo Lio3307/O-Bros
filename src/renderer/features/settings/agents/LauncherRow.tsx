@@ -2,6 +2,7 @@ import { Trash2 } from 'lucide-react'
 import type { AgentLauncher } from '../../../../shared/agentLaunchers'
 import { useAgentLaunchersStore } from '../../../state/agentLaunchersStore'
 import { AgentIcon } from '../../../ui/AgentIcon'
+import { AgentUsageNote } from '../../../ui/AgentUsageNote'
 import { AgentStatusBadge } from '../../../ui/AgentStatusBadge'
 import { Button } from '../../../ui/Button'
 
@@ -44,7 +45,10 @@ export function LauncherRow({ launcher, isShown, canShowMore }: LauncherRowProps
         value={launcher.command}
         onChange={(event) => update(launcher.id, { command: event.target.value })}
       />
-      <AgentStatusBadge command={launcher.command} />
+      <span className="agent-status-cell">
+        <AgentStatusBadge command={launcher.command} />
+        <AgentUsageNote command={launcher.command} />
+      </span>
       <Button variant="remove" title="Remove" onClick={() => remove(launcher.id)}>
         <Trash2 size={14} />
       </Button>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatAge, formatResetsIn, groupByDay, dayRangeFromInput } from './time'
+import { formatAge, formatResetsIn, groupByDay } from './time'
 
 const NOW = new Date(2026, 9, 13, 12, 0, 0).getTime()
 const HOUR = 3_600_000
@@ -38,19 +38,5 @@ describe('groupByDay', () => {
     expect(groupByDay(NOW - HOUR, NOW)).toBe('Today')
     expect(groupByDay(NOW - 15 * HOUR, NOW)).toBe('Yesterday')
     expect(groupByDay(NOW - 3 * DAY, NOW)).toBe('Earlier')
-  })
-})
-
-describe('dayRangeFromInput', () => {
-  it('covers one local calendar day', () => {
-    const range = dayRangeFromInput('2026-03-05')
-    expect(range?.start).toBe(new Date(2026, 2, 5).getTime())
-    expect(range?.end).toBe(new Date(2026, 2, 6).getTime())
-  })
-
-  it('rejects text that is not a real date', () => {
-    expect(dayRangeFromInput('')).toBeNull()
-    expect(dayRangeFromInput('2026-02-31')).toBeNull()
-    expect(dayRangeFromInput('hello')).toBeNull()
   })
 })

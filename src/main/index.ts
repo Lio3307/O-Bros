@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu } from 'electron'
 import { join } from 'node:path'
 import { buildApplicationMenu } from './applicationMenu'
 import { registerAccountsIpc } from './ipc/accountsIpc'
+import { registerActivityIpc } from './ipc/activityIpc'
 import { registerAgentsIpc } from './ipc/agentsIpc'
 import { registerAppIpc } from './ipc/appIpc'
 import { registerFilesIpc } from './ipc/filesIpc'
@@ -15,9 +16,13 @@ import { registerShellIpc } from './ipc/shellIpc'
 import { registerStorageIpc } from './ipc/storageIpc'
 import { registerUpdaterIpc } from './ipc/updaterIpc'
 import { registerToolsIpc } from './ipc/toolsIpc'
+import { registerWotIpc } from './ipc/wotIpc'
+import { registerSettingsBackupIpc } from './ipc/settingsBackupIpc'
 import { killAllTerminals } from './services/ptyManager'
 import { writeLog } from './services/logging/logFile'
-import { setUpUpdater } from './services/updater/appUpdater'
+import { setBridgeTarget } from './services/wot/rendererBridge'
+import { startTypedAgentWatch } from './services/activity/typedAgents'
+import { startWotServer, stopWotServer } from './services/wot/wotServer'
 import { guardWindowClose } from './closeGuard'
 import { createMainWindow } from './window'
 
@@ -44,19 +49,29 @@ function registerAllIpc(): void {
   registerShellIpc()
   registerAppIpc()
   registerPortsIpc()
+  registerActivityIpc()
   registerStorageIpc()
   registerUpdaterIpc()
+  registerWotIpc()
+  registerSettingsBackupIpc()
+}
+
+function openMainWindow(): void {
+  const window = createMainWindow()
+  setBridgeTarget(window.webContents)
+  guardWindowClose(window)
 }
 
 app.whenReady().then(() => {
   Menu.setApplicationMenu(buildApplicationMenu())
   registerAllIpc()
-  setUpUpdater()
-  guardWindowClose(createMainWindow())
+  startWotServer()
+  openMainWindow()
+  startTypedAgentWatch()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      guardWindowClose(createMainWindow())
+      openMainWindow()
     }
   })
 })
@@ -71,7 +86,10 @@ app.on('child-process-gone', (_event, details) =>
   writeLog('error', 'A helper process stopped: ' + details.type + ' (' + details.reason + ')')
 )
 
-app.on('before-quit', killAllTerminals)
+app.on('before-quit', () => {
+  stopWotServer()
+  killAllTerminals()
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

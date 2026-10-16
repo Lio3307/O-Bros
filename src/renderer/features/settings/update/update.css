@@ -5,7 +5,7 @@
   padding: 14px 16px;
   background: var(--color-panel);
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: var(--radius);
 }
 
 .update-card-success {
@@ -71,7 +71,7 @@
   line-height: 18px;
   color: var(--color-muted);
   border: 1px solid var(--color-border);
-  border-radius: 9px;
+  border-radius: var(--radius);
 }
 
 .update-card-success .update-tag {
@@ -90,12 +90,12 @@
   margin-top: 6px;
   overflow: hidden;
   background: var(--color-selected);
-  border-radius: 2px;
+  border-radius: var(--radius);
 }
 
 .update-progress-fill {
   height: 100%;
   background: var(--color-white);
-  border-radius: 2px;
+  border-radius: var(--radius);
   transition: width 0.2s ease;
 }

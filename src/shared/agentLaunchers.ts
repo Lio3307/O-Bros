@@ -1,3 +1,4 @@
+import type { AcpAgent } from './acpRegistry'
 import type { ProviderId } from './types'
 
 export interface AgentLauncher {
@@ -5,38 +6,6 @@ export interface AgentLauncher {
   name: string
   command: string
 }
-
-export interface KnownAgent {
-  name: string
-  command: string
-}
-
-export const KNOWN_AGENTS: KnownAgent[] = [
-  { name: 'Claude', command: 'claude' },
-  { name: 'Codex', command: 'codex' },
-  { name: 'OpenCode', command: 'opencode' },
-  { name: 'Gemini', command: 'gemini' },
-  { name: 'Aider', command: 'aider' },
-  { name: 'Amp', command: 'amp' },
-  { name: 'Goose', command: 'goose' },
-  { name: 'Qwen Code', command: 'qwen' },
-  { name: 'Cursor Agent', command: 'cursor-agent' },
-  { name: 'Copilot', command: 'copilot' },
-  { name: 'Cline', command: 'cline' },
-  { name: 'Kimi', command: 'kimi' },
-  { name: 'Grok', command: 'grok' },
-  { name: 'Junie', command: 'junie' },
-  { name: 'OpenHands', command: 'openhands' },
-  { name: 'Kiro', command: 'kiro-cli' },
-  { name: 'Qoder', command: 'qodercli' },
-  { name: 'CodeBuddy', command: 'codebuddy' },
-  { name: 'Droid', command: 'droid' },
-  { name: 'Crush', command: 'crush' },
-  { name: 'Auggie', command: 'auggie' },
-  { name: 'Devin', command: 'devin' },
-  { name: 'Mistral Vibe', command: 'vibe' },
-  { name: 'Ollama', command: 'ollama' }
-]
 
 export const DEFAULT_AGENT_LAUNCHERS: AgentLauncher[] = []
 
@@ -82,6 +51,15 @@ export function shortAgentName(name: string): string {
 
 export function programOf(command: string): string {
   return command.trim().split(' ')[0]
+}
+
+export function isAgentCommand(command: string | null, launchers: AgentLauncher[], registry: AcpAgent[]): boolean {
+  if (command === null || command.trim() === '') {
+    return false
+  }
+  const program = programOf(command).toLowerCase()
+  const launcherPrograms = launchers.map((launcher) => programOf(launcher.command).toLowerCase())
+  return launcherPrograms.includes(program) || registry.some((agent) => agent.commands.includes(program))
 }
 
 export function providerOfCommand(command: string): ProviderId | null {

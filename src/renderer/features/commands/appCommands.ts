@@ -1,5 +1,6 @@
 import { useLayoutStore } from '../../state/layoutStore'
 import { useUpdateStore } from '../../state/updateStore'
+import { exportSettings, importSettings } from '../settings/backup/settingsBackupActions'
 import type { AppCommand } from './commandTypes'
 
 export const APP_COMMANDS: AppCommand[] = [
@@ -21,5 +22,19 @@ export const APP_COMMANDS: AppCommand[] = [
     group: 'App',
     keywords: ['errors', 'debug'],
     run: () => window.api.app.openLogFolder()
+  },
+  {
+    id: 'app.exportSettings',
+    title: 'Export settings to a JSON file',
+    group: 'App',
+    keywords: ['backup', 'save', 'json', 'export'],
+    run: () => exportSettings(true)
+  },
+  {
+    id: 'app.importSettings',
+    title: 'Import settings from a JSON file',
+    group: 'App',
+    keywords: ['restore', 'load', 'json', 'import'],
+    run: () => importSettings()
   }
 ]

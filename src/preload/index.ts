@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
 import { IpcChannel, type DesktopApi, type PtyDataEvent, type PtyExitEvent } from '../shared/ipc'
-import type { UpdateStatus } from '../shared/types'
+import type { ActivityEntry } from '../shared/activity'
+import type { TeamMember, UpdateStatus, WotRendererEnvelope } from '../shared/types'
 
 function subscribe<Payload>(channel: string, listener: (payload: Payload) => void): () => void {
   const handler = (_event: IpcRendererEvent, payload: Payload) => listener(payload)
@@ -19,14 +20,17 @@ const api: DesktopApi = {
   },
   accounts: {
     scan: () => ipcRenderer.invoke(IpcChannel.accountsScan),
-    createFolder: (provider, accountName) => ipcRenderer.invoke(IpcChannel.accountsCreateFolder, provider, accountName)
+    createFolder: (provider, accountName) => ipcRenderer.invoke(IpcChannel.accountsCreateFolder, provider, accountName),
+    agentLogins: () => ipcRenderer.invoke(IpcChannel.accountsAgentLogins)
   },
   usage: {
-    get: (account) => ipcRenderer.invoke(IpcChannel.usageGet, account)
+    get: (account) => ipcRenderer.invoke(IpcChannel.usageGet, account),
+    credits: () => ipcRenderer.invoke(IpcChannel.usageCredits),
+    facts: () => ipcRenderer.invoke(IpcChannel.usageFacts)
   },
   projects: {
     list: () => ipcRenderer.invoke(IpcChannel.projectsList),
-    addRoot: () => ipcRenderer.invoke(IpcChannel.projectsAddRoot),
+    addRoot: (dialogTitle) => ipcRenderer.invoke(IpcChannel.projectsAddRoot, dialogTitle),
     removeRoot: (rootPath) => ipcRenderer.invoke(IpcChannel.projectsRemoveRoot, rootPath),
     scripts: (rootPath) => ipcRenderer.invoke(IpcChannel.projectsScripts, rootPath),
     repositories: (folderPath) => ipcRenderer.invoke(IpcChannel.projectsRepositories, folderPath)
@@ -64,17 +68,46 @@ const api: DesktopApi = {
     stash: (request) => ipcRenderer.invoke(IpcChannel.gitStash, request),
     stashList: (repoPath) => ipcRenderer.invoke(IpcChannel.gitStashList, repoPath),
     stashApply: (request) => ipcRenderer.invoke(IpcChannel.gitStashApply, request),
-    stashDrop: (request) => ipcRenderer.invoke(IpcChannel.gitStashDrop, request)
+    stashDrop: (request) => ipcRenderer.invoke(IpcChannel.gitStashDrop, request),
+    agentTraces: (repoPath) => ipcRenderer.invoke(IpcChannel.gitAgentTraces, repoPath),
+    reviewBaseline: (repoPath) => ipcRenderer.invoke(IpcChannel.gitReviewBaseline, repoPath),
+    reviewChanges: (baseline) => ipcRenderer.invoke(IpcChannel.gitReviewChanges, baseline),
+    reviewDiff: (request) => ipcRenderer.invoke(IpcChannel.gitReviewDiff, request),
+    reviewRevert: (request) => ipcRenderer.invoke(IpcChannel.gitReviewRevert, request)
+  },
+  backup: {
+    save: (text, suggestedName) => ipcRenderer.invoke(IpcChannel.backupSave, text, suggestedName),
+    open: () => ipcRenderer.invoke(IpcChannel.backupOpen),
+    addProjectFolders: (folderPaths) => ipcRenderer.invoke(IpcChannel.backupAddProjectFolders, folderPaths)
+  },
+  wot: {
+    listMembers: () => ipcRenderer.invoke(IpcChannel.wotListMembers),
+    closeMember: (memberId) => ipcRenderer.invoke(IpcChannel.wotCloseMember, memberId),
+    onMembers: (listener) => subscribe<TeamMember[]>(IpcChannel.wotMembers, listener),
+    onRequest: (listener) => subscribe<WotRendererEnvelope>(IpcChannel.wotRequest, listener),
+    respond: (requestId, answer, errorMessage) => ipcRenderer.send(IpcChannel.wotRespond, requestId, answer, errorMessage),
+    skillTargets: () => ipcRenderer.invoke(IpcChannel.wotSkillTargets),
+    installSkill: (targetId) => ipcRenderer.invoke(IpcChannel.wotInstallSkill, targetId),
+    removeSkill: (targetId) => ipcRenderer.invoke(IpcChannel.wotRemoveSkill, targetId),
+    isInstalled: () => ipcRenderer.invoke(IpcChannel.wotIsInstalled),
+    onNotice: (listener) => subscribe<string>(IpcChannel.wotNotice, listener),
+    setPolicy: (policy) => ipcRenderer.invoke(IpcChannel.wotSetPolicy, policy),
+    stopAll: () => ipcRenderer.invoke(IpcChannel.wotStopAll),
+    agents: () => ipcRenderer.invoke(IpcChannel.wotAgents)
   },
   history: {
-    list: (day) => ipcRenderer.invoke(IpcChannel.historyList, day),
+    list: () => ipcRenderer.invoke(IpcChannel.historyList),
     get: (filePath) => ipcRenderer.invoke(IpcChannel.historyGet, filePath),
+    search: (query) => ipcRenderer.invoke(IpcChannel.historySearch, query),
     remove: (filePaths, permanently) => ipcRenderer.invoke(IpcChannel.historyRemove, filePaths, permanently),
     storage: () => ipcRenderer.invoke(IpcChannel.historyStorage),
-    removeOlderThan: (request) => ipcRenderer.invoke(IpcChannel.historyRemoveOlder, request)
+    removeOlderThan: (request) => ipcRenderer.invoke(IpcChannel.historyRemoveOlder, request),
+    teamChats: () => ipcRenderer.invoke(IpcChannel.historyTeamChats),
+    removeTeamChats: (permanently) => ipcRenderer.invoke(IpcChannel.historyRemoveTeamChats, permanently)
   },
   resources: {
-    get: () => ipcRenderer.invoke(IpcChannel.resourcesGet)
+    get: () => ipcRenderer.invoke(IpcChannel.resourcesGet),
+    app: () => ipcRenderer.invoke(IpcChannel.resourcesApp)
   },
   tools: {
     lint: (request) => ipcRenderer.invoke(IpcChannel.toolsLint, request),
@@ -82,14 +115,22 @@ const api: DesktopApi = {
   },
   agents: {
     listCommands: () => ipcRenderer.invoke(IpcChannel.agentsCommands),
-    registry: () => ipcRenderer.invoke(IpcChannel.agentsRegistry)
+    registry: () => ipcRenderer.invoke(IpcChannel.agentsRegistry),
+    logo: (command) => ipcRenderer.invoke(IpcChannel.agentsLogo, command)
   },
   shell: {
     reveal: (path) => ipcRenderer.invoke(IpcChannel.shellReveal, path)
   },
   ports: {
     list: () => ipcRenderer.invoke(IpcChannel.portsList),
-    stop: (pid) => ipcRenderer.invoke(IpcChannel.portsStop, pid)
+    stop: (pid) => ipcRenderer.invoke(IpcChannel.portsStop, pid),
+    open: (port) => ipcRenderer.invoke(IpcChannel.portsOpen, port)
+  },
+  activity: {
+    list: () => ipcRenderer.invoke(IpcChannel.activityList),
+    clear: () => ipcRenderer.invoke(IpcChannel.activityClear),
+    onAdded: (listener) => subscribe<ActivityEntry>(IpcChannel.activityAdded, listener),
+    live: () => ipcRenderer.invoke(IpcChannel.activityLive)
   },
   app: {
     listRunningTasks: () => ipcRenderer.invoke(IpcChannel.appListRunningTasks),
@@ -102,6 +143,7 @@ const api: DesktopApi = {
     report: () => ipcRenderer.invoke(IpcChannel.storageReport),
     clearAppCache: () => ipcRenderer.invoke(IpcChannel.storageClearAppCache),
     clearLeftoverTemp: () => ipcRenderer.invoke(IpcChannel.storageClearLeftoverTemp),
+    clearTeamTaskFiles: () => ipcRenderer.invoke(IpcChannel.storageClearTeamTaskFiles),
     locations: () => ipcRenderer.invoke(IpcChannel.storageLocations),
     openLocation: (id) => ipcRenderer.invoke(IpcChannel.storageOpenLocation, id)
   },

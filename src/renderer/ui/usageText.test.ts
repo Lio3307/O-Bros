@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { describeCompactWindow, listUsageWindows, nearestReset } from './usageText'
+import { describeCompactWindow, listUsageWindows, mostPressingWindow, nearestReset } from './usageText'
 
 const NOW = 1_000_000_000_000
 const HOUR = 3_600_000
@@ -41,5 +41,31 @@ describe('nearestReset', () => {
 
   it('is null without windows', () => {
     expect(nearestReset([])).toBeNull()
+  })
+})
+
+describe('mostPressingWindow', () => {
+  it('picks the window with the highest use across providers', () => {
+    const claudeWeekly = { percentUsed: 54, resetsAt: NOW + 72 * HOUR }
+    const codexWeekly = { percentUsed: 49, resetsAt: NOW + 24 * HOUR }
+    const tracked = [
+      { key: 'claude', windows: [{ label: '5h', window: { percentUsed: 6, resetsAt: NOW + HOUR } }, { label: 'wk', window: claudeWeekly }] },
+      { key: 'codex', windows: [{ label: 'wk', window: codexWeekly }] }
+    ]
+    expect(mostPressingWindow(tracked)).toEqual({ key: 'claude', label: 'wk', window: claudeWeekly })
+  })
+
+  it('prefers the window that resets sooner on a tie', () => {
+    const later = { percentUsed: 30, resetsAt: NOW + 48 * HOUR }
+    const sooner = { percentUsed: 30, resetsAt: NOW + 2 * HOUR }
+    const tracked = [
+      { key: 'a', windows: [{ label: 'wk', window: later }] },
+      { key: 'b', windows: [{ label: '5h', window: sooner }] }
+    ]
+    expect(mostPressingWindow(tracked)?.key).toBe('b')
+  })
+
+  it('is null when nothing is known', () => {
+    expect(mostPressingWindow([{ key: 'a', windows: [] }])).toBeNull()
   })
 })

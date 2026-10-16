@@ -1,5 +1,5 @@
 import { accountToRef } from '../../shared/accounts'
-import { providerOfCommand, type AgentLauncher } from '../../shared/agentLaunchers'
+import { providerOfCommand, shortAgentName, type AgentLauncher } from '../../shared/agentLaunchers'
 import { resumeCommandFor } from '../../shared/resumeCommand'
 import type { ProviderId, SessionSummary } from '../../shared/types'
 import { selectActiveAccount, useAccountsStore } from './accountsStore'
@@ -12,8 +12,20 @@ const startCommandByProvider: Record<ProviderId, string> = {
   codex: 'codex'
 }
 
-function openInActiveProject(startCommand: string | undefined): void {
-  const cwd = useProjectsStore.getState().activeProjectPath
+const AGENT_NAME_BY_PROVIDER: Record<ProviderId, string> = {
+  claude: 'Claude',
+  codex: 'Codex'
+}
+
+async function folderForAgent(agentName: string): Promise<string | null> {
+  const selected = useProjectsStore.getState().activeProjectPath
+  if (selected !== null) {
+    return selected
+  }
+  return useProjectsStore.getState().addRoot(`Choose a project folder for ${agentName}`)
+}
+
+function openIn(cwd: string | null, startCommand: string | undefined): void {
   const provider = startCommand === undefined ? null : providerOfCommand(startCommand)
   const account = provider === null ? null : selectActiveAccount(useAccountsStore.getState(), provider)
 
@@ -21,12 +33,23 @@ function openInActiveProject(startCommand: string | undefined): void {
   useLayoutStore.getState().showSection('projects')
 }
 
-export function openTerminal(provider: ProviderId | null): void {
-  openInActiveProject(provider === null ? undefined : startCommandByProvider[provider])
+async function openAgentIn(agentName: string, startCommand: string): Promise<void> {
+  const cwd = await folderForAgent(agentName)
+  if (cwd !== null) {
+    openIn(cwd, startCommand)
+  }
 }
 
-export function openAgent(launcher: AgentLauncher): void {
-  openInActiveProject(launcher.command.trim())
+export async function openTerminal(provider: ProviderId | null): Promise<void> {
+  if (provider === null) {
+    openIn(useProjectsStore.getState().activeProjectPath, undefined)
+    return
+  }
+  await openAgentIn(AGENT_NAME_BY_PROVIDER[provider], startCommandByProvider[provider])
+}
+
+export async function openAgent(launcher: AgentLauncher): Promise<void> {
+  await openAgentIn(shortAgentName(launcher.name), launcher.command.trim())
 }
 
 export async function openAccountSignInTerminal(

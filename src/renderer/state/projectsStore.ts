@@ -7,7 +7,7 @@ interface ProjectsState {
   roots: ProjectRoot[]
   activeProjectPath: string | null
   load: () => Promise<void>
-  addRoot: () => Promise<void>
+  addRoot: (dialogTitle?: string) => Promise<string | null>
   removeRoot: (rootPath: string) => Promise<void>
   selectProject: (projectPath: string) => void
 }
@@ -25,6 +25,13 @@ function announceAddResult(result: AddRootResult): void {
   }
 }
 
+function folderToWorkIn(result: AddRootResult): string | null {
+  if (result.outcome === 'added' || result.outcome === 'inside-existing') {
+    return result.chosenPath
+  }
+  return result.outcome === 'already-added' ? result.matchedRootPath : null
+}
+
 export const useProjectsStore = create<ProjectsState>()((set, get) => {
   return {
     roots: [],
@@ -35,11 +42,13 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => {
       set({ roots, activeProjectPath: get().activeProjectPath ?? roots[0]?.path ?? null })
     },
 
-    addRoot: async () => {
-      const result = await window.api.projects.addRoot()
-      const selectedPath = result.matchedRootPath ?? get().activeProjectPath ?? result.roots[0]?.path ?? null
+    addRoot: async (dialogTitle) => {
+      const result = await window.api.projects.addRoot(dialogTitle)
+      const chosenFolder = folderToWorkIn(result)
+      const selectedPath = chosenFolder ?? get().activeProjectPath ?? result.roots[0]?.path ?? null
       set({ roots: result.roots, activeProjectPath: selectedPath })
       announceAddResult(result)
+      return chosenFolder
     },
 
     removeRoot: async (rootPath) => {

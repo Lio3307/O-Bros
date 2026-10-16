@@ -9,8 +9,9 @@ import { loadSettings, saveSettings } from '../settings'
 
 const IS_PATH_CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin'
 
-async function addProjectRoot(): Promise<AddRootResult> {
-  const choice = await dialog.showOpenDialog({ properties: ['openDirectory'] })
+async function addProjectRoot(title: unknown): Promise<AddRootResult> {
+  const dialogTitle = typeof title === 'string' && title.trim() !== '' ? title : undefined
+  const choice = await dialog.showOpenDialog({ title: dialogTitle, properties: ['openDirectory'] })
   const [chosenPath] = choice.filePaths
   if (choice.canceled || chosenPath === undefined) {
     return { roots: await listProjectRoots(), outcome: 'cancelled', matchedRootPath: null, chosenPath: null }
@@ -39,7 +40,7 @@ async function removeProjectRoot(rootPath: string) {
 
 export function registerProjectsIpc(): void {
   ipcMain.handle(IpcChannel.projectsList, () => listProjectRoots())
-  ipcMain.handle(IpcChannel.projectsAddRoot, () => addProjectRoot())
+  ipcMain.handle(IpcChannel.projectsAddRoot, (_event, title: unknown) => addProjectRoot(title))
   ipcMain.handle(IpcChannel.projectsRemoveRoot, (_event, rootPath: string) => removeProjectRoot(rootPath))
   ipcMain.handle(IpcChannel.projectsScripts, (_event, rootPath: string) => readProjectScripts(rootPath))
   ipcMain.handle(IpcChannel.projectsRepositories, (_event, folderPath: string) => findRepositories(folderPath))

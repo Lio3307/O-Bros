@@ -58,7 +58,7 @@
   height: 32px;
   padding-right: 8px;
   background: var(--color-panel);
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .root-header-selected {
@@ -109,5 +109,37 @@
 }
 
 .branch-label-feature {
+  color: var(--color-white);
+}
+
+.folder-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0 0 4px 16px;
+  padding-left: 6px;
+  border-left: 1px solid var(--color-border);
+}
+
+.folder-sessions .row {
+  height: 24px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.folder-sessions .row-selected {
+  color: var(--color-white);
+}
+
+.folder-sessions-more {
+  padding: 2px 8px;
+  font-size: 11px;
+  color: var(--color-faint);
+  text-align: left;
+  background: transparent;
+  border: none;
+}
+
+.folder-sessions-more:hover {
   color: var(--color-white);
 }

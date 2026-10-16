@@ -6,6 +6,7 @@ import { useStorageStore } from '../../state/storageStore'
 import { CleanupRow, pluralize } from './CleanupRow'
 import { DataLocationsSection } from './DataLocationsSection'
 import { SavedSessionsSection } from './SavedSessionsSection'
+import { TeamStorageSection } from './TeamStorageSection'
 import './settings.css'
 import './settingsControls.css'
 import { Button } from '../../ui/Button'
@@ -55,7 +56,7 @@ export function StoragePage() {
         <CleanupRow
           title="App cache"
           description="Files the app window keeps so it starts faster. A few small graphics caches are separate; the system rebuilds them and they are about 10 MB."
-          amount={isMeasuring ? 'Measuring' : formatBytes(appCacheBytes)}
+          amount={isMeasuring ? null : formatBytes(appCacheBytes)}
           buttonLabel="Clear"
           isDisabled={isMeasuring || appCacheBytes === 0}
           onClean={() => clearAppCache()}
@@ -65,7 +66,7 @@ export function StoragePage() {
           description="Short-lived lint folders that a crash left in the system temp folder."
           amount={
             isMeasuring
-              ? 'Measuring'
+              ? null
               : pluralize(leftoverTempFolders, 'folder', 'folders') + ', ' + formatBytes(leftoverTempBytes)
           }
           buttonLabel="Remove"
@@ -95,6 +96,8 @@ export function StoragePage() {
       </div>
 
       <SavedSessionsSection />
+
+      <TeamStorageSection />
 
       <DataLocationsSection />
 

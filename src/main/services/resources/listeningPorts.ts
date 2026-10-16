@@ -1,3 +1,4 @@
+import { shell } from 'electron'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { ListeningPort } from '../../../shared/types'
@@ -13,6 +14,7 @@ import { collectProcessTree, readProcessTable } from './processTable'
 
 const execFileAsync = promisify(execFile)
 const MAX_OUTPUT_BYTES = 10 * 1024 * 1024
+const HIGHEST_PORT = 65_535
 
 async function readListeningSockets(): Promise<ListeningSocket[]> {
   if (process.platform === 'win32') {
@@ -59,4 +61,11 @@ export async function stopListeningProcess(pid: number): Promise<void> {
     throw new Error('That process is not one of your terminals.')
   }
   process.kill(pid)
+}
+
+export async function openListeningPort(port: number): Promise<void> {
+  if (!Number.isInteger(port) || port < 1 || port > HIGHEST_PORT) {
+    throw new Error('That is not a valid port.')
+  }
+  await shell.openExternal(`http://localhost:${port}`)
 }

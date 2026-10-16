@@ -5,6 +5,7 @@ import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { formatAge, formatResetsIn } from '../../../shared/time'
 import type { DetectedAccount, ProviderId, UsageWindow } from '../../../shared/types'
 import { selectActiveAccount, useAccountsStore } from '../../state/accountsStore'
+import { useInstalledCommandsStore } from '../../state/installedCommandsStore'
 import { openAccountSignInTerminal } from '../../state/openTerminal'
 import { useRefreshStore } from '../../state/refreshStore'
 import { toast } from '../../state/toastStore'
@@ -17,6 +18,7 @@ import './settings.css'
 import './settingsControls.css'
 import { Button } from '../../ui/Button'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
+import { OtherAgentLogins } from './OtherAgentLogins'
 
 const USAGE_TEXT_REFRESH_MS = 30_000
 const SYSTEM_DEFAULT_TITLE = 'System default'
@@ -190,6 +192,17 @@ function ProviderBlock({ section }: { section: ProviderSection }) {
   )
 }
 
+function useVisibleProviderSections(): ProviderSection[] {
+  const accounts = useAccountsStore((state) => state.accounts)
+  const installedCommands = useInstalledCommandsStore((state) => state.commands)
+  return providerSections.filter(
+    (section) =>
+      installedCommands === null ||
+      installedCommands.includes(section.provider) ||
+      accounts.some((account) => account.provider === section.provider)
+  )
+}
+
 function LastUpdatedText() {
   const lastRefreshedAt = useRefreshStore((state) => state.lastRefreshedAt)
   const now = useNow(USAGE_TEXT_REFRESH_MS)
@@ -201,13 +214,16 @@ function LastUpdatedText() {
 }
 
 export function ProviderAccountsPage() {
+  const sections = useVisibleProviderSections()
+
   return (
     <SettingsPageLayout
       title="Provider accounts"
       description={
         <>
-          o-bros reads the CLI logins on this computer and never stores credentials. Adding an account creates an
-          empty folder in your home directory and opens a terminal where the official CLI signs you in.
+          o-bros reads the logins of the agent CLIs installed on this computer and never stores or shows credentials.
+          Claude and Codex can have several accounts: adding one creates an empty folder in your home directory and opens
+          a terminal where the official CLI signs you in. The other agents are listed with the login they use.
         </>
       }
       actions={
@@ -217,9 +233,10 @@ export function ProviderAccountsPage() {
         </>
       }
     >
-      {providerSections.map((section) => (
+      {sections.map((section) => (
         <ProviderBlock key={section.provider} section={section} />
       ))}
+      <OtherAgentLogins />
     </SettingsPageLayout>
   )
 }

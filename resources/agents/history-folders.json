@@ -1,0 +1,53 @@
+{
+  "description": "Where agent CLIs other than Claude and Codex keep their conversation history. {home} is the home folder. O-BROS only lists the folders that exist on the computer and opens them; it never deletes them, because each agent stores history in its own format.",
+  "folders": [
+    {
+      "command": "gemini",
+      "title": "Gemini CLI conversations",
+      "path": "{home}/.gemini/tmp",
+      "note": "Saved chats, checkpoints and logs, one folder per project. Deleting it frees the space, but you can no longer resume those chats or restore checkpoints. Your Google login and settings are elsewhere in .gemini and stay."
+    },
+    {
+      "command": "qwen",
+      "title": "Qwen Code conversations",
+      "path": "{home}/.qwen/tmp",
+      "note": "Saved chats, checkpoints and logs, one folder per project. Deleting it frees the space, but you can no longer resume those chats. Your login and settings are elsewhere in .qwen and stay."
+    },
+    {
+      "command": "opencode",
+      "title": "OpenCode conversations",
+      "path": "{home}/.local/share/opencode",
+      "note": "OpenCode keeps every session in opencode.db and the storage folder here, and it can grow large. Delete old sessions from inside OpenCode. Do not delete the whole folder: it also holds auth.json, your OpenCode logins and API keys."
+    },
+    {
+      "command": "kilo",
+      "title": "Kilo Code conversations",
+      "path": "{home}/.local/share/kilo",
+      "note": "Kilo keeps its sessions in kilo.db here. Delete old sessions from inside Kilo. Do not delete the whole folder: it also holds auth.json, your Kilo login."
+    },
+    {
+      "command": "cline",
+      "title": "Cline conversations",
+      "path": "{home}/.cline/data/sessions",
+      "note": "One folder per Cline task. Delete old tasks from inside Cline so its task list stays correct. Deleting this folder by hand frees the space but leaves the tasks listed in Cline without their history. Your Cline settings stay."
+    },
+    {
+      "command": "copilot",
+      "title": "GitHub Copilot CLI sessions",
+      "path": "{home}/.copilot/session-state",
+      "note": "Saved Copilot CLI sessions. Deleting it frees the space, but you can no longer resume them. Your GitHub login and Copilot settings are elsewhere in .copilot and stay."
+    },
+    {
+      "command": "goose",
+      "title": "Goose sessions",
+      "path": "{home}/.local/share/goose/sessions",
+      "note": "Saved Goose sessions. Deleting it frees the space, but you can no longer resume them. Your Goose settings stay."
+    },
+    {
+      "command": "cursor-agent",
+      "title": "Cursor Agent chats",
+      "path": "{home}/.cursor/chats",
+      "note": "Saved Cursor Agent CLI chats. Deleting it frees the space, but you can no longer resume them. Your Cursor login stays."
+    }
+  ]
+}

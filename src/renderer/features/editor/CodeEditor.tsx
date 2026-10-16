@@ -6,15 +6,18 @@ import { EditorView, keymap } from '@codemirror/view'
 import { basicSetup } from 'codemirror'
 import { useEffect, useRef, useState } from 'react'
 import { isLanguageEnabled, useEditorSettingsStore } from '../../state/editorSettingsStore'
+import { useColorThemeStore } from '../../state/colorThemeStore'
 import { useEditorNavigationStore } from '../../state/editorNavigationStore'
+import { findColorTheme } from '../../theme/colorThemes'
 import { toast } from '../../state/toastStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 import { PopupMenu } from '../../ui/PopupMenu'
 import { autoSaveExtension } from './autoSaveExtension'
 import { useEditorContextMenuStore } from './editorContextMenuStore'
 import { hasSelection, sendEditorContentToAgent } from './sendFromEditor'
+import { selectAllOccurrences } from './selectAllOccurrences'
 import { getSavedEditorState, saveEditorState } from './editorSessions'
-import { codeHighlighting, editorTheme } from './editorTheme'
+import { colorThemeCompartment, colorThemeExtension, editorLayoutTheme } from './editorTheme'
 import { formatDocument } from './formatDocument'
 import { findLanguageForFile, type LanguageDefinition } from './languageRegistry'
 import { lintExtensionFor, lintNow } from './lintExtension'
@@ -24,6 +27,10 @@ import './editor.css'
 interface CodeEditorProps {
   tabId: string
   filePath: string
+}
+
+function currentColorThemeExtension(): Extension {
+  return colorThemeExtension(findColorTheme(useColorThemeStore.getState().themeId))
 }
 
 function enabledLanguageFor(filePath: string): LanguageDefinition | null {
@@ -102,6 +109,10 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
       }
     },
     {
+      key: 'F2',
+      run: selectAllOccurrences
+    },
+    {
       key: 'Mod-Shift-Enter',
       run: (view) => {
         sendEditorContentToAgent(view, filePath, false)
@@ -140,8 +151,8 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
     doc: content,
     extensions: [
       basicSetup,
-      editorTheme,
-      codeHighlighting,
+      editorLayoutTheme,
+      colorThemeCompartment.of(currentColorThemeExtension()),
       fileShortcuts,
       contextMenu,
       reportModification,
@@ -170,6 +181,11 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const contextMenu = useEditorContextMenuStore((state) => state.menu)
   const closeContextMenu = useEditorContextMenuStore((state) => state.close)
+  const colorThemeId = useColorThemeStore((state) => state.themeId)
+
+  useEffect(() => {
+    viewRef.current?.dispatch({ effects: colorThemeCompartment.reconfigure(currentColorThemeExtension()) })
+  }, [colorThemeId])
 
   useEffect(() => {
     if (viewRef.current !== null) {
@@ -187,6 +203,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
         return
       }
       view = new EditorView({ state, parent: hostRef.current })
+      view.dispatch({ effects: colorThemeCompartment.reconfigure(currentColorThemeExtension()) })
       viewRef.current = view
       revealPendingTarget(view, filePath)
       const language = enabledLanguageFor(filePath)

@@ -1,0 +1,32 @@
+Add agent teams (wot), git guard, agent monitor and dependency updates
+
+Agents and teams
+- wot: agents summon other installed agent CLIs as team members, with a
+  Team view grouped by lead, auto-stop to free memory and an install
+  page that lists the agents found on this computer (skill 1.2.0)
+- Git guard in every terminal: agents ask before commit, push and
+  branch changes, commit with your identity, and pushes are checked
+  for agent traces
+- Agent monitor: live agents with state, CPU and memory, today's
+  numbers, activity by hour, time per agent and the activity log;
+  agents started by typing their name are detected too
+- Team member conversations are marked in History and can be deleted
+  in Storage, or moved to the Recycle Bin when a member stops
+
+Accounts, usage and storage
+- Provider accounts lists every installed agent and how it signs in;
+  only names and login types are read, never keys or tokens
+- Usage note per agent, OpenRouter credit, last-known usage kept
+- Other agents' history folders explained in Where your data lives
+- Status bar memory refreshes every 5 seconds
+
+Interface
+- Boxy JetBrains-style look through one radius token, shared
+  components (Card, Chip, StatusDot, Spinner and more), loading
+  spinners, green and red hover actions, agent logos, 14 color themes
+- History without the date picker, settings backup and restore,
+  drive roots named in the sidebar, Open for listening ports
+
+Dependencies
+- React 19, Vite 8 with electron-vite 6, xterm 6, TypeScript 6.0,
+  @types/node 24, GitHub Actions v7, grouped Dependabot updates

@@ -22,7 +22,7 @@ export function SettingsSection({ title, description, actions, children }: Setti
       ) : (
         <div className="accounts-heading">
           {heading}
-          {actions}
+          <div className="settings-section-actions">{actions}</div>
         </div>
       )}
       {children}

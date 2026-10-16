@@ -24,7 +24,7 @@ export function ConfirmHost() {
         </>
       }
     >
-      <p className="muted">{options.message}</p>
+      <p className="muted confirm-message">{options.message}</p>
     </Modal>
   )
 }

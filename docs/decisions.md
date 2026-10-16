@@ -287,3 +287,93 @@
 - Implementation / validation / outcome: Written / typecheck and tests / not packaged.
 - Result acceptance: Pending user feedback.
 - Learning: Pin where data lives separately from what the app is called.
+
+### Team of agents (wot)
+- Scope and goal: Let the agent the user talks to summon other installed agent CLIs, watch them in the app, and refuse to work outside O-BROS.
+- Choice and authority: User-requested feature and name. Agent-selected design: the main process runs an HTTP server on 127.0.0.1 with a random port and a random token; every O-BROS terminal gets O_BROS_WOT_URL, O_BROS_WOT_TOKEN, O_BROS_WOT_PANE and a PATH entry for resources/wot/bin. The `wot` command runs resources/wot/wot-cli.cjs with Electron's own Node (ELECTRON_RUN_AS_NODE), so users do not need Node. Members are hidden terminals rendered by the Team view with the normal TerminalView; the main process asks the window for agent launchers and for a member's screen text. Tasks are typed with bracketed paste when the agent enabled it, then Enter.
+- Evidence: e2e/team.e2e.ts drives a fake agent through spawn, task delivery, read and stop, and checks the unknown-agent answer; unit tests cover agent matching, member names and member states. Checked by hand that wot without O-BROS (no variables, or a closed app) exits with code 2 and a WOT_UNAVAILABLE message, and that Git Bash, PowerShell and cmd each pick the right wrapper.
+- Alternatives and sacrifice: A named pipe or file queue was rejected as harder to use from every shell. @xterm/headless in the main process was not added (new dependency); the window's xterm is used instead, so reading a member's screen needs the window open. Writing the skill into the provider folder bends the read-only rule, so it happens only on an explicit Install press and Remove only deletes a skill O-BROS wrote.
+- Residual risk/debt: "Finished its turn" means the member printed nothing for 5 seconds, and "waiting" is found by phrases, so both are heuristics. A task is typed once the agent has been quiet for 2.5 seconds after a 5 second start, which can be too early for a very slow agent. The Codex sandbox may block 127.0.0.1 until the user allows it. Member terminals do not survive a reload of the window.
+- Mitigation and revisit trigger: The skill tells agents to always read the screen and to retry wait. Revisit if real agents miss tasks or if a provider offers a proper agent-to-agent API.
+- Recovery and ownership: src/main/services/wot/*, src/renderer/features/team/*, resources/wot/*.
+- Implementation / validation / outcome: Written / unit tests, e2e with a fake agent / not yet tried with real Claude and Codex by the user.
+- Result acceptance: Pending user feedback.
+- Learning: Electron can run plain Node scripts for helper commands, so no runtime has to be installed.
+
+### Agents need the user's yes for commits, pushes and branches
+- Scope and goal: User-requested. Agents must not commit, push or create a branch on their own.
+- Choice and authority: Agent-selected mechanism. Terminals that run an agent (an agent button, a resume, or a wot member) get a `git` wrapper first on PATH (resources/wot/guard). On macOS and Linux a shell script passes read-only git commands straight to the real git; otherwise resources/wot/git-guard.cjs asks the main process (/git-check). src/shared/gitGuard.ts decides which commands need a yes; the window shows a confirmation with the command and folder; no answer in 100 seconds is a no. Members are always guarded; the user can turn the guard off for their own agent terminals.
+- Evidence: gitGuard.test.ts; e2e/gitGuard.e2e.ts allows one commit and refuses another in an agent terminal and checks the log; the Git Bash wrapper was checked by hand.
+- Alternatives and sacrifice: A git hook (pre-commit, pre-push) was rejected: it does not cover branch creation and can be skipped with --no-verify. Guarding every terminal was rejected because the user would be asked about their own commands. On Windows every git call from an agent's shell starts Electron as Node, which adds a short delay.
+- Residual risk/debt: Not a sandbox. An agent can call git by its full path or unset PATH. Agents started by typing their name in a plain terminal are not guarded.
+- Mitigation and revisit trigger: The skill forbids getting around GIT_BLOCKED. Revisit if an agent is seen bypassing it.
+- Recovery and ownership: src/shared/gitGuard.ts, src/main/services/wot/realGit.ts, wotRoutes.ts, resources/wot/guard/*, resources/wot/git-guard.cjs.
+- Implementation / validation / outcome: Written / unit and e2e tests / not yet tried with real agents.
+- Result acceptance: Pending user feedback.
+- Learning: Put the guard in front of the command the agent actually runs, not in the repository.
+
+### Commits by agents use the user's chosen identity
+- Scope and goal: User-requested. Commits that agents make must show as the user's GitHub account, not the global git config, and agents must not become co-authors unless the user allows it.
+- Choice and authority: Agent-selected mechanism. The name and email live in O-BROS (localStorage); agent terminals get GIT_AUTHOR_* and GIT_COMMITTER_* in their environment, and the git guard sets them again for each allowed commit. If none is saved, O-BROS asks the first time. After an allowed commit, the main process removes "Co-Authored-By" and "Generated with" lines by amending the message (no hooks rerun) unless the user allows co-authors.
+- Evidence: commitIdentity.test.ts; e2e/gitGuard.e2e.ts checks author and committer against a different -c user.name, the removed co-author line, and the first-time prompt.
+- Alternatives and sacrifice: Changing the repository's git config was rejected because it would also change the user's own commits. A commit-msg hook was rejected because core.hooksPath would replace the project's hooks.
+- Residual risk/debt: Only commits made with `git commit` through the guard are cleaned. An agent passing --author overrides the author (not the committer). Commits created by merge, rebase or cherry-pick get the identity from the environment but are not cleaned.
+- Recovery and ownership: src/shared/commitIdentity.ts, src/main/services/wot/commitCredits.ts, resources/wot/git-guard.cjs, src/renderer/features/team/commitIdentityPrompt.ts.
+- Implementation / validation / outcome: Written / unit and e2e tests / not yet tried with real agents.
+- Result acceptance: Pending user feedback.
+- Learning: Environment variables beat git config, so identity can be set per terminal without touching any config file.
+
+### Keep agents out of the GitHub history
+- Scope and goal: User-requested. No agent may appear as author, committer, co-author or branch name in what reaches GitHub.
+- Choice and authority: Agent-selected mechanism. The git guard is now on PATH in every O-BROS terminal. The wrappers only hand commit-related commands to the guard (commit, push, branch, checkout, switch, worktree, merge, cherry-pick, revert, rebase, am, pull); everything else goes straight to git. For those, the main process walks the parent processes of the guard and treats the command as an agent's if one of them is a known agent program (agent buttons, the built-in list and the ACP registry; runtimes such as node are ignored, and only the program and script path are looked at, never later arguments). Agent commands get the user's identity and lose --author; single-commit commands lose agent credit lines. Before any push, the commits that would be pushed are scanned (src/shared/agentTraces.ts) and the user is asked if one mentions an agent; the Push button does the same.
+- Evidence: agentTraces.test.ts, agentCaller.test.ts, gitGuard.test.ts; e2e/agentHistory.e2e.ts starts a fake claude-code script by hand in a plain terminal, checks its commit is asked about and rewritten, checks the user's own commit is untouched, and checks that a push with an agent co-author is stopped.
+- Alternatives and sacrifice: A pre-push hook was rejected because it changes repository configuration and only works for pushes. Reading the process table costs about a second on Windows, so it happens only for the commands above.
+- Residual risk/debt: Still not a sandbox (git by full path). Pushes made outside O-BROS are not checked. Rebased or cherry-picked commits keep their old messages, but the push check catches leftover credits. Detecting an agent depends on its program or script path containing the agent's name.
+- Recovery and ownership: src/main/services/wot/{agentCaller,agentCatalog,gitDecision,pushTraces}.ts, src/shared/agentTraces.ts, resources/wot/guard/*.
+- Implementation / validation / outcome: Written / unit and e2e tests / not yet tried with real agents.
+- Result acceptance: Pending user feedback.
+- Learning: Ask "which program started this command?" instead of "which terminal is it in?".
+
+### Agents come from data, not code
+- Scope and goal: User-requested. No hardcoded agent list; production-ready behaviour offline and online.
+- Choice and authority: Agent-selected. The ACP registry is the source of agents (names, descriptions, launch commands, icons). It is fetched at most once an hour, saved to the user-data folder, and a snapshot ships in resources/agents for a first start without network. resources/agents/cli-commands.json maps registry ids to terminal commands where the registry only describes an ACP adapter, and resources/agents/skill-folders.json says where agents read skills. Icons are fetched only from cdn.agentclientprotocol.com over HTTPS, limited to 64 KB, cached on disk and shown as a CSS mask, so they follow the theme and no SVG code runs.
+- Evidence: acpRegistry.test.ts, skillFolders.test.ts, teamAgents.test.ts; the Settings pages were checked against the live registry.
+- Alternatives and sacrifice: Inline SVG would allow coloured icons but needs a sanitizer; a mask keeps them single-colour, which matches the design.
+- Residual risk/debt: The two data files still need an edit when an agent changes its command name or skill folder. Agent names that are also people's names are only treated as an agent when the whole author name matches.
+- Recovery and ownership: src/main/services/agents/*, resources/agents/*, src/shared/acpRegistry.ts, src/shared/skillFolders.ts.
+- Implementation / validation / outcome: Written / unit tests and screenshots / not yet released.
+- Result acceptance: Pending user feedback.
+- Learning: Keep facts about other products in data files that can change without a code change.
+
+### Memory: terminals drawn without the GPU by default
+- Scope and goal: User-requested. Lower memory use.
+- Choice and authority: Agent-selected after measuring with app.getAppMetrics(): idle 378 MB; four terminals 546 MB with WebGL (GPU process 105 → 197 MB) and 432 MB without it. WebGL is now a setting, off by default. electron-updater loads on first use, the process table is polled every 60 seconds and not while hidden, and spell checking is off.
+- Evidence: Measurements above, taken with the e2e harness on this machine.
+- Alternatives and sacrifice: Running the network service in the main process was not done (unsupported flag). The DOM renderer is slower for very heavy output, which is why the setting exists.
+- Residual risk/debt: The main process (about 120 MB) is mostly Electron's own baseline.
+- Recovery and ownership: src/renderer/features/terminal/TerminalView.tsx, src/main/services/updater/appUpdater.ts.
+- Implementation / validation / outcome: Written / measured / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: Measure per process before optimising; the GPU process was the one that grew.
+
+### Agent logos ship as a data pack
+- Scope and goal: User-requested. Show each detected agent with its original logo and colours.
+- Choice and authority: Agent-selected. Colored SVG logos from @lobehub/icons-static-svg 1.95.1 (MIT) are stored in resources/agents/logos with an index.json that maps the typed command to a file and a style (color or mono). Colour logos render as images; single-colour logos render as a CSS mask in the interface colour so they stay visible on the dark background. Agents missing from the pack fall back to the ACP registry icon, then a generic icon.
+- Evidence: agentLogos.test.ts; every agent installed on this machine resolved to a logo (claude, codex, gemini, opencode, cline, kilo, cursor-agent, and droid through the registry); screenshots of Projects and Settings.
+- Alternatives and sacrifice: Fetching favicons from agent websites was rejected after testing: openai.com and chatgpt.com answer 403, others have no favicon at the usual path, and it would add requests to many websites. The ACP registry icons are single-colour by design.
+- Residual risk/debt: The logos are trademarks of their owners, used only to identify each tool. New agents need a file and an index line to get a colour logo.
+- Recovery and ownership: resources/agents/logos/*, src/main/services/agents/agentLogos.ts, src/renderer/ui/AgentIcon.tsx.
+- Implementation / validation / outcome: Written / unit test, probe and screenshots / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: Do not reuse a class name for two different elements; the wrapper picked up the mask styles.
+
+### Team member conversations are tracked by session ID
+- Scope and goal: User-requested. Let the user find and delete the conversations wot team members had, and explain other agents' history folders.
+- Choice and authority: Agent-selected. A Claude member is started with `claude --session-id <uuid>`, so its conversation is known exactly. Codex has no such flag, so a Codex member is matched by folder, a start time after the summon, and the first 30 characters of the task wot typed in; a matched session is claimed so it is never counted twice. Records live in team-sessions.json. Other agents' history folders come from resources/agents/history-folders.json and are only opened, never deleted.
+- Evidence: teamSessions.test.ts, historyFolders.test.ts, teamChats.e2e.ts with a fake codex that writes a real rollout file; `claude --help` lists --session-id; the folders were checked on this machine (OpenCode 1.3 GB, auth.json next to its database).
+- Alternatives and sacrifice: Deleting other agents' history was rejected: OpenCode and Kilo keep logins next to their databases and the formats are not documented. A Codex member summoned without a task is not marked.
+- Residual risk/debt: A Codex session the user starts in the same folder, after the summon, with the same first 30 characters would be claimed by the member. Records older than a day stop being matched.
+- Recovery and ownership: src/main/services/wot/teamSessions.ts, src/shared/teamSessions.ts, src/main/services/storage/dataLocations.ts.
+- Implementation / validation / outcome: Written / unit and e2e / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: A CLI flag that fixes the ID beats any matching rule; check --help first.

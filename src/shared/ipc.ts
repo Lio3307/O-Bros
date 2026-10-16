@@ -1,3 +1,11 @@
+import type { ActivityEntry, LiveAgent } from './activity'
+import type { AgentLogin } from './agentLogins'
+import type { AgentLogo } from './agentLogos'
+import type { CommitIdentity } from './commitIdentity'
+import type { CreditBalance } from './creditBalance'
+import type { UsageFacts } from './usageSupport'
+import type { TeamPolicy } from './teamPolicy'
+import type { TeamAgentOption } from './teamAgents'
 import type { AcpAgent } from './acpRegistry'
 import type {
   AccountRef,
@@ -25,12 +33,21 @@ import type {
   GitPathsRequest,
   GitStashEntry,
   GitStashRefRequest,
+  ReviewBaseline,
+  SessionSearchHit,
+  OpenedBackupFile,
+  TeamMember,
+  WotRendererEnvelope,
+  WotSkillTarget,
+  ReviewChange,
+  ReviewFileRequest,
   GitStashRequest,
   GitStatus,
   RepositoryEntry,
   LintRequest,
   LintResult,
   ListeningPort,
+  ProcessUsage,
   ProjectRoot,
   ProjectScripts,
   ProviderId,
@@ -44,6 +61,7 @@ import type {
   SessionMessage,
   SessionStorageReport,
   SessionSummary,
+  TeamChatsReport,
   StorageReport,
   UpdateStatus
 } from './types'
@@ -58,6 +76,9 @@ export const IpcChannel = {
   accountsScan: 'accounts:scan',
   accountsCreateFolder: 'accounts:createFolder',
   usageGet: 'usage:get',
+  usageCredits: 'usage:credits',
+  usageFacts: 'usage:facts',
+  accountsAgentLogins: 'accounts:agentLogins',
   projectsList: 'projects:list',
   projectsAddRoot: 'projects:addRoot',
   projectsRemoveRoot: 'projects:removeRoot',
@@ -93,19 +114,51 @@ export const IpcChannel = {
   gitStashList: 'git:stashList',
   gitStashApply: 'git:stashApply',
   gitStashDrop: 'git:stashDrop',
+  historySearch: 'history:search',
+  backupSave: 'backup:save',
+  backupOpen: 'backup:open',
+  backupAddProjectFolders: 'backup:addProjectFolders',
+  wotMembers: 'wot:members',
+  wotListMembers: 'wot:listMembers',
+  wotCloseMember: 'wot:closeMember',
+  wotRequest: 'wot:request',
+  wotRespond: 'wot:respond',
+  wotSkillTargets: 'wot:skillTargets',
+  wotInstallSkill: 'wot:installSkill',
+  wotRemoveSkill: 'wot:removeSkill',
+  wotIsInstalled: 'wot:isInstalled',
+  wotNotice: 'wot:notice',
+  wotSetPolicy: 'wot:setPolicy',
+  wotStopAll: 'wot:stopAll',
+  storageClearTeamTaskFiles: 'storage:clearTeamTaskFiles',
+  gitAgentTraces: 'git:agentTraces',
+  gitReviewBaseline: 'git:reviewBaseline',
+  gitReviewChanges: 'git:reviewChanges',
+  gitReviewDiff: 'git:reviewDiff',
+  gitReviewRevert: 'git:reviewRevert',
   historyList: 'history:list',
   historyGet: 'history:get',
   historyRemove: 'history:remove',
   historyStorage: 'history:storage',
   historyRemoveOlder: 'history:removeOlder',
   resourcesGet: 'resources:get',
+  resourcesApp: 'resources:app',
   toolsLint: 'tools:lint',
   toolsFormat: 'tools:format',
   agentsCommands: 'agents:commands',
   agentsRegistry: 'agents:registry',
+  agentsLogo: 'agents:logo',
   shellReveal: 'shell:reveal',
   portsList: 'ports:list',
   portsStop: 'ports:stop',
+  portsOpen: 'ports:open',
+  wotAgents: 'wot:agents',
+  historyTeamChats: 'history:teamChats',
+  historyRemoveTeamChats: 'history:removeTeamChats',
+  activityList: 'activity:list',
+  activityClear: 'activity:clear',
+  activityAdded: 'activity:added',
+  activityLive: 'activity:live',
   appListRunningTasks: 'app:listRunningTasks',
   appConfirmClose: 'app:confirmClose',
   appCloseRequested: 'app:closeRequested',
@@ -129,6 +182,8 @@ export interface PtyCreateRequest {
   cwd: string | null
   account: AccountRef | null
   startCommand: string | null
+  startsAgent: boolean
+  commitIdentity: CommitIdentity | null
 }
 
 export interface PtyDataEvent {
@@ -153,13 +208,16 @@ export interface DesktopApi {
   accounts: {
     scan(): Promise<DetectedAccount[]>
     createFolder(provider: ProviderId, accountName: string): Promise<string>
+    agentLogins(): Promise<AgentLogin[]>
   }
   usage: {
     get(account: AccountRef): Promise<AccountUsage>
+    credits(): Promise<CreditBalance[]>
+    facts(): Promise<UsageFacts>
   }
   projects: {
     list(): Promise<ProjectRoot[]>
-    addRoot(): Promise<AddRootResult>
+    addRoot(dialogTitle?: string): Promise<AddRootResult>
     removeRoot(rootPath: string): Promise<ProjectRoot[]>
     scripts(rootPath: string): Promise<ProjectScripts>
     repositories(folderPath: string): Promise<RepositoryEntry[]>
@@ -198,16 +256,45 @@ export interface DesktopApi {
     stashList(repoPath: string): Promise<GitStashEntry[]>
     stashApply(request: GitStashRefRequest): Promise<void>
     stashDrop(request: GitStashRefRequest): Promise<void>
+    agentTraces(repoPath: string): Promise<string[]>
+    reviewBaseline(repoPath: string): Promise<ReviewBaseline | null>
+    reviewChanges(baseline: ReviewBaseline): Promise<ReviewChange[]>
+    reviewDiff(request: ReviewFileRequest): Promise<string>
+    reviewRevert(request: ReviewFileRequest): Promise<void>
+  }
+  backup: {
+    save(text: string, suggestedName: string): Promise<string | null>
+    open(): Promise<OpenedBackupFile | null>
+    addProjectFolders(folderPaths: string[]): Promise<number>
+  }
+  wot: {
+    listMembers(): Promise<TeamMember[]>
+    closeMember(memberId: string): Promise<void>
+    onMembers(listener: (members: TeamMember[]) => void): () => void
+    onRequest(listener: (envelope: WotRendererEnvelope) => void): () => void
+    respond(requestId: string, answer: unknown, errorMessage: string | null): void
+    skillTargets(): Promise<WotSkillTarget[]>
+    installSkill(targetId: string): Promise<void>
+    removeSkill(targetId: string): Promise<void>
+    isInstalled(): Promise<boolean>
+    onNotice(listener: (message: string) => void): () => void
+    setPolicy(policy: TeamPolicy): Promise<void>
+    stopAll(): Promise<number>
+    agents(): Promise<TeamAgentOption[]>
   }
   history: {
-    list(day: string | null): Promise<SessionSummary[]>
+    list(): Promise<SessionSummary[]>
     get(filePath: string): Promise<SessionMessage[]>
-    remove(filePaths: string[], permanently: boolean): Promise<number>
+    search(query: string): Promise<SessionSearchHit[]>
+    remove(filePaths: string[], permanently: boolean): Promise<RemoveSessionsResult>
     storage(): Promise<SessionStorageReport[]>
     removeOlderThan(request: RemoveOlderSessionsRequest): Promise<RemoveSessionsResult>
+    teamChats(): Promise<TeamChatsReport>
+    removeTeamChats(permanently: boolean): Promise<RemoveSessionsResult>
   }
   resources: {
     get(): Promise<ResourceSnapshot>
+    app(): Promise<ProcessUsage>
   }
   tools: {
     lint(request: LintRequest): Promise<LintResult>
@@ -216,6 +303,7 @@ export interface DesktopApi {
   agents: {
     listCommands(): Promise<string[]>
     registry(): Promise<AcpAgent[]>
+    logo(command: string): Promise<AgentLogo | null>
   }
   shell: {
     reveal(path: string): Promise<void>
@@ -223,6 +311,13 @@ export interface DesktopApi {
   ports: {
     list(): Promise<ListeningPort[]>
     stop(pid: number): Promise<void>
+    open(port: number): Promise<void>
+  }
+  activity: {
+    list(): Promise<ActivityEntry[]>
+    clear(): Promise<void>
+    onAdded(listener: (entry: ActivityEntry) => void): () => void
+    live(): Promise<LiveAgent[]>
   }
   app: {
     listRunningTasks(): Promise<RunningTask[]>
@@ -235,6 +330,7 @@ export interface DesktopApi {
     report(): Promise<StorageReport>
     clearAppCache(): Promise<void>
     clearLeftoverTemp(): Promise<void>
+    clearTeamTaskFiles(): Promise<void>
     locations(): Promise<DataLocation[]>
     openLocation(id: string): Promise<void>
   }

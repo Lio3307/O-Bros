@@ -3,8 +3,9 @@ function normalizeSeparators(path: string): string {
 }
 
 export function lastPathSegment(path: string): string {
-  const normalized = normalizeSeparators(path)
-  return normalized.slice(normalized.lastIndexOf('/') + 1)
+  const trimmed = comparablePath(path, false)
+  const segment = trimmed.slice(trimmed.lastIndexOf('/') + 1)
+  return segment === '' ? trimmed : segment
 }
 
 export function fileExtension(path: string): string {

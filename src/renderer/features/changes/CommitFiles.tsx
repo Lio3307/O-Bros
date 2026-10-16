@@ -3,6 +3,7 @@ import type { GitCommit } from '../../../shared/types'
 import { useChangesStore } from '../../state/changesStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
 import { LineCounts } from './LineCounts'
+import { LoadingText } from '../../ui/LoadingText'
 
 export function CommitFiles({ commit }: { commit: GitCommit }) {
   const files = useCommitHistoryStore((state) => state.filesByHash[commit.hash])
@@ -10,7 +11,7 @@ export function CommitFiles({ commit }: { commit: GitCommit }) {
   const selectCommitFile = useChangesStore((state) => state.selectCommitFile)
 
   if (files === undefined) {
-    return <p className="panel-empty">Looking…</p>
+    return <p className="panel-empty"><LoadingText text="Loading the changed files…" /></p>
   }
   if (files.length === 0) {
     return <p className="panel-empty">No files changed.</p>

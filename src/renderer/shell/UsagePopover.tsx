@@ -6,6 +6,8 @@ import { selectActiveAccount, useAccountsStore } from '../state/accountsStore'
 import { useLayoutStore, type Section } from '../state/layoutStore'
 import { useUsageStore } from '../state/usageStore'
 import { ProviderMark } from '../ui/ProviderMark'
+import { AgentIcon } from '../ui/AgentIcon'
+import { describeCredit, type CreditBalance } from '../../shared/creditBalance'
 import { AccountsRefreshButton } from '../ui/AccountsRefreshButton'
 import { UsageBar } from '../ui/UsageBar'
 import { listUsageWindows, nearestReset } from '../ui/usageText'
@@ -64,6 +66,12 @@ function ProviderUsageRow({ provider, mode, onOpen }: { provider: ProviderId; mo
           </span>
         )}
         {windows.length === 0 && usage?.errorMessage && <span className="muted">{usage.errorMessage}</span>}
+        {usage?.isStale === true && usage.measuredAt !== null && (
+          <span className="muted">
+            Last known numbers from {new Date(usage.measuredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}. The latest
+            check failed: {usage.errorMessage}
+          </span>
+        )}
         {mode === 'compact' && windows.length > 0 && (
           <span className="muted">
             {windows.map(({ label, window }) => `${label} ${window.percentUsed}%`).join(' · ')}
@@ -72,6 +80,23 @@ function ProviderUsageRow({ provider, mode, onOpen }: { provider: ProviderId; mo
       </span>
       <ChevronRight size={16} className="muted" />
     </button>
+  )
+}
+
+function CreditRow({ balance }: { balance: CreditBalance }) {
+  return (
+    <div className="usage-provider">
+      <span className="usage-provider-mark">
+        <AgentIcon command={balance.logoCommand} size={18} />
+      </span>
+      <span className="usage-provider-body">
+        <span className="usage-provider-heading">
+          <span className="usage-provider-name">{balance.name}</span>
+          <span className="muted">via {balance.viaTool}</span>
+        </span>
+        <span className="muted">{balance.errorMessage ?? describeCredit(balance)}</span>
+      </span>
+    </div>
   )
 }
 
@@ -91,6 +116,7 @@ const USAGE_MODE_OPTIONS = [
 
 export function UsagePopover({ onNavigate }: UsagePopoverProps) {
   const [mode, setMode] = useState<UsageViewMode>('detailed')
+  const credits = useUsageStore((state) => state.credits)
   const openSection = useLayoutStore((state) => state.openSection)
   const selectSettingsPage = useLayoutStore((state) => state.selectSettingsPage)
 
@@ -122,6 +148,9 @@ export function UsagePopover({ onNavigate }: UsagePopoverProps) {
       <div className="usage-providers">
         {providerOrder.map((provider) => (
           <ProviderUsageRow key={provider} provider={provider} mode={mode} onOpen={goToAccounts} />
+        ))}
+        {credits.map((balance) => (
+          <CreditRow key={balance.id} balance={balance} />
         ))}
       </div>
       <NavigationRow label="Usage details & history" onClick={() => goToSection('history')} />

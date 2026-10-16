@@ -20,12 +20,17 @@ import { useCloseRequestStore } from './state/closeRequestStore'
 import { useInstalledCommandsStore } from './state/installedCommandsStore'
 import { useLayoutStore } from './state/layoutStore'
 import { startProjectTabSync } from './state/projectTabSync'
+import { startReviewBaselines } from './state/reviewBaselineWatcher'
+import { startTeamBridge } from './features/team/teamBridge'
+import { useAgentCatalogStore } from './state/agentCatalogStore'
 import { useProjectsStore } from './state/projectsStore'
 import { useRefreshStore } from './state/refreshStore'
 import { restoreSavedSession, startSessionPersistence } from './state/sessionPersistence'
 
 const USAGE_REFRESH_MS = 5 * 60_000
 const COMMANDS_RESCAN_AFTER_MS = 30_000
+
+const PROVIDER_COMMANDS = ['claude', 'codex']
 
 function useStartupData(): void {
   const loadProjects = useProjectsStore((state) => state.load)
@@ -37,9 +42,15 @@ function useStartupData(): void {
     restoreSavedSession()
     const stopPersistence = startSessionPersistence()
     const stopProjectTabSync = startProjectTabSync()
+    const stopReviewBaselines = startReviewBaselines()
+    const stopTeamBridge = startTeamBridge()
+    void useAgentCatalogStore.getState().load()
+    PROVIDER_COMMANDS.forEach((command) => void useAgentCatalogStore.getState().loadLogo(command))
     return () => {
       stopPersistence()
       stopProjectTabSync()
+      stopReviewBaselines()
+      stopTeamBridge()
     }
   }, [])
 

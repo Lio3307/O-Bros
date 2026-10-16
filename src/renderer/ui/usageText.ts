@@ -35,3 +35,27 @@ export function nearestReset(windows: LabeledWindow[]): UsageWindow | null {
   }
   return windows.reduce((nearest, entry) => (entry.window.resetsAt < nearest.resetsAt ? entry.window : nearest), windows[0].window)
 }
+
+export interface TrackedUsage<Key> {
+  key: Key
+  windows: LabeledWindow[]
+}
+
+export interface PressingWindow<Key> extends LabeledWindow {
+  key: Key
+}
+
+export function mostPressingWindow<Key>(tracked: TrackedUsage<Key>[]): PressingWindow<Key> | null {
+  let pressing: PressingWindow<Key> | null = null
+  for (const { key, windows } of tracked) {
+    for (const { label, window } of windows) {
+      const isHigher = pressing === null || window.percentUsed > pressing.window.percentUsed
+      const isTieResettingLater =
+        pressing !== null && window.percentUsed === pressing.window.percentUsed && window.resetsAt < pressing.window.resetsAt
+      if (isHigher || isTieResettingLater) {
+        pressing = { key, label, window }
+      }
+    }
+  }
+  return pressing
+}

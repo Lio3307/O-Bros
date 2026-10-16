@@ -18,6 +18,7 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 - **Accounts and usage.** Detects your Claude and Codex logins on this computer, lets you switch between them, and shows 5-hour and weekly usage in the status bar.
 - **Files and editor.** A file tree with a right-click menu, name and text search, quick open (`Ctrl+P`) and a CodeMirror editor with snippets, linting and formatting for JavaScript and TypeScript, auto save and 14 languages.
 - **Git changes.** Stage, unstage, discard and commit, switch branches, fetch, and read diffs.
+- **Team of agents (wot).** Ask Claude or Codex to bring in another agent ("ask codex to review this"). It summons any agent CLI installed on your computer into a hidden terminal you can watch and stop in the Team view.
 - **Session history and Resume.** Browse your Claude and Codex conversations by day, resume one in a terminal with a click, and delete old ones.
 - **Development helpers.** Run `package.json` scripts, see problems from the linter, see and stop listening ports, and get a notification when a long command finishes.
 - **Resource Manager.** See how much memory and CPU each terminal and the app use.
@@ -81,7 +82,7 @@ If `npm install` leaves Electron without its binary, run `node node_modules/elec
 
 ## Privacy in one paragraph
 
-o-bros never asks for your password and never stores your tokens. It reads the login files your Claude and Codex tools already saved, uses them only to ask each provider for your own usage numbers, and keeps nothing. Everything else stays on your computer. Details are in [Privacy and security](docs/PRIVACY-AND-SECURITY.md).
+o-bros never asks for your password and never stores your tokens. It reads the login files your Claude and Codex tools already saved, uses them only to ask each provider for your own usage numbers, and keeps nothing. Everything else stays on your computer. The Team feature (wot) listens only on `127.0.0.1` with a random key that only O-BROS terminals receive. Details are in [Privacy and security](docs/PRIVACY-AND-SECURITY.md).
 
 ## Known limits
 

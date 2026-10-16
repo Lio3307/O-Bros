@@ -1,21 +1,31 @@
 import { Bot } from 'lucide-react'
-import { programOf, providerOfCommand } from '../../shared/agentLaunchers'
-import { AGENT_ICON_BY_COMMAND, AGENT_ICON_PATHS } from './agentMarks'
-import { ProviderMark } from './ProviderMark'
+import { useEffect } from 'react'
+import { programKeyOf, useAgentCatalogStore } from '../state/agentCatalogStore'
+import './agentIcon.css'
 
 export function AgentIcon({ command, size = 14 }: { command: string; size?: number }) {
-  const provider = providerOfCommand(command)
-  if (provider !== null) {
-    return <ProviderMark provider={provider} size={size} />
-  }
+  const program = programKeyOf(command)
+  const logo = useAgentCatalogStore((state) => state.logoByProgram[program])
+  const loadLogo = useAgentCatalogStore((state) => state.loadLogo)
 
-  const iconPath = AGENT_ICON_PATHS[AGENT_ICON_BY_COMMAND[programOf(command).toLowerCase()]]
-  if (iconPath === undefined) {
+  useEffect(() => {
+    if (logo === undefined) {
+      void loadLogo(program)
+    }
+  }, [program, logo, loadLogo])
+
+  if (logo === undefined || logo === null) {
     return <Bot size={size} />
   }
+  if (logo.style === 'color') {
+    return <img className="agent-logo-image" src={logo.dataUrl} alt="" width={size} height={size} draggable={false} />
+  }
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" fillRule="evenodd" aria-hidden="true">
-      <path d={iconPath} />
-    </svg>
+    <span
+      className="agent-logo-mask"
+      role="img"
+      aria-hidden="true"
+      style={{ width: size, height: size, maskImage: `url("${logo.dataUrl}")`, WebkitMaskImage: `url("${logo.dataUrl}")` }}
+    />
   )
 }

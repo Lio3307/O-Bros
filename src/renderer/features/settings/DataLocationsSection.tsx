@@ -7,6 +7,7 @@ import './settings.css'
 import './settingsControls.css'
 import { Button } from '../../ui/Button'
 import { SettingsSection } from '../../ui/SettingsSection'
+import { LoadingText } from '../../ui/LoadingText'
 
 interface LocationCopy {
   title: string
@@ -37,11 +38,23 @@ const COPY_BY_KIND: Record<DataLocationKind, LocationCopy> = {
   codexSessions: {
     title: 'Codex conversations',
     note: 'Written by Codex, not by o-bros. The History panel only reads these files. To delete them, use History or Saved conversations above so o-bros can ask you first.'
+  },
+  teamTaskFiles: {
+    title: 'Team (wot) task files',
+    note: 'Short task texts agents hand to team members. wot deletes each one after reading it. Safe to delete, also from Team (wot) above.'
+  },
+  agentHistory: {
+    title: 'Agent conversations',
+    note: 'Written by the agent, not by o-bros.'
+  },
+  wotSkill: {
+    title: 'wot skill',
+    note: 'The instruction file you installed for this agent. Remove it in Settings → Team (wot); deleting the folder by hand does the same.'
   }
 }
 
 function LocationRow({ location }: { location: DataLocation }) {
-  const copy = COPY_BY_KIND[location.kind]
+  const copy = location.copy ?? COPY_BY_KIND[location.kind]
   const title = location.accountLabel === null ? copy.title : `${copy.title} (${location.accountLabel})`
 
   async function open(): Promise<void> {
@@ -82,11 +95,13 @@ export function DataLocationsSection() {
       description={
         <>
           o-bros keeps very little of its own. Your conversations stay where Claude and Codex put them, and your
-          projects stay in their own folders: o-bros never copies them. Nothing here is uploaded anywhere.
+          projects stay in their own folders: o-bros never copies them. Nothing here is uploaded anywhere. Other agents'
+          conversation folders are listed when they exist; o-bros only opens them and never deletes them, because each
+          agent saves history its own way.
         </>
       }
     >
-      {locations === null && <p className="panel-empty">Looking…</p>}
+      {locations === null && <p className="panel-empty"><LoadingText text="Looking for your data folders…" /></p>}
       {locations !== null && (
         <div className="table">
           {locations.map((location) => (

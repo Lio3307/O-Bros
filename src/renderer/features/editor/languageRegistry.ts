@@ -1,5 +1,5 @@
 import type { Extension } from '@codemirror/state'
-import { fileExtension } from '../../../shared/paths'
+import { fileExtension, lastPathSegment } from '../../../shared/paths'
 
 export const LANGUAGE_IDS = [
   'javascript',
@@ -15,7 +15,9 @@ export const LANGUAGE_IDS = [
   'java',
   'php',
   'sql',
-  'yaml'
+  'yaml',
+  'env',
+  'text'
 ] as const
 
 export type LanguageId = (typeof LANGUAGE_IDS)[number]
@@ -24,6 +26,7 @@ export interface LanguageDefinition {
   id: LanguageId
   label: string
   extensions: string[]
+  matchesFileName?: (fileName: string) => boolean
   canLint: boolean
   canFormat: boolean
   load: () => Promise<Extension>
@@ -141,12 +144,32 @@ export const LANGUAGES: LanguageDefinition[] = [
     canLint: false,
     canFormat: true,
     load: async () => (await import('@codemirror/lang-yaml')).yaml()
+  },
+  {
+    id: 'env',
+    label: 'Environment and config',
+    extensions: ['env', 'properties', 'ini', 'conf', 'cfg'],
+    matchesFileName: (fileName) => fileName === '.env' || fileName.startsWith('.env.'),
+    canLint: false,
+    canFormat: false,
+    load: async () => (await import('./plainTextLanguages')).envLanguage
+  },
+  {
+    id: 'text',
+    label: 'Plain text and logs',
+    extensions: ['txt', 'text', 'log'],
+    canLint: false,
+    canFormat: false,
+    load: async () => (await import('./plainTextLanguages')).textLanguage
   }
 ]
 
 export function findLanguageForFile(filePath: string): LanguageDefinition | null {
   const extension = fileExtension(filePath)
-  return LANGUAGES.find((language) => language.extensions.includes(extension)) ?? null
+  const fileName = lastPathSegment(filePath).toLowerCase()
+  const matches = (language: LanguageDefinition): boolean =>
+    language.extensions.includes(extension) || (language.matchesFileName?.(fileName) ?? false)
+  return LANGUAGES.find(matches) ?? null
 }
 
 export function findLanguageById(id: LanguageId): LanguageDefinition {

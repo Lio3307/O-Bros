@@ -1,0 +1,17 @@
+{
+  "description": "Where agents read user skills. {home} is the home folder. {account:claude} and {account:codex} repeat the entry for every detected account of that provider. An entry with a command is read only by that agent; the shared entry is read by every other agent that follows the Agent Skills standard.",
+  "folders": [
+    {
+      "id": "claude",
+      "title": "Claude Code",
+      "command": "claude",
+      "path": "{account:claude}/skills"
+    },
+    {
+      "id": "shared",
+      "title": "Shared skills folder",
+      "command": null,
+      "path": "{home}/.agents/skills"
+    }
+  ]
+}

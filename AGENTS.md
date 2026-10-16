@@ -26,9 +26,21 @@ Technical decisions and their rationale live in `docs/decisions.md`. Read it bef
   Status: User-directed; implementation awaiting feedback.
 
 - Scope: whole repository
-  Convention: Provider accounts are read-only. o-bros detects logins on the computer and never signs in, stores tokens, or edits CLI config. The only write is Add account, which creates an empty `~/.claude-N` or `~/.codex-N` folder and opens a terminal where the official CLI signs in. A non-default account is selected only through `CLAUDE_CONFIG_DIR` or `CODEX_HOME` on the spawned PTY.
+  Convention: Provider accounts are read-only. o-bros detects logins on the computer and never signs in, stores tokens, or edits CLI config. The only writes are Add account, which creates an empty `~/.claude-N` or `~/.codex-N` folder and opens a terminal where the official CLI signs in, and the wot skill, which writes `<Claude account folder>/skills/wot/SKILL.md` or `~/.agents/skills/wot/SKILL.md` only when the user presses Install in Settings → Team (wot). A non-default account is selected only through `CLAUDE_CONFIG_DIR` or `CODEX_HOME` on the spawned PTY.
   Reason: The app only reads the user's computer; credentials must stay with the official CLIs.
   Evidence: Explicit user instruction; example in `src/main/services/accountEnvironment.ts`.
+  Status: User-directed; implementation awaiting feedback.
+
+- Scope: Settings → Provider accounts
+  Convention: Show only the agents installed on the computer. Claude and Codex keep switchable accounts and usage. Every other agent CLI is listed read-only with the login it uses, parsed in `src/shared/agentLogins.ts` from its own files; the parsers keep only the account name, the login type and provider names, never a key or token value, and nothing is written. Add a new agent by adding a reader in `src/main/services/agentLogins.ts` and a parser with a test.
+  Reason: The user wants every agent they have to appear, without O-BROS ever touching credentials.
+  Evidence: User request; `src/shared/agentLogins.test.ts` checks that no key value reaches the result.
+  Status: User-directed; implementation awaiting feedback.
+
+- Scope: src/renderer styles
+  Convention: Boxy surfaces in the JetBrains style. Every non-circular corner uses `var(--radius)` from `styles/tokens.css` (0px); do not write pixel radii. Reuse the shared components in `src/renderer/ui` (Card, StatTile, Chip, StatusDot, AgentStateBadge, OutcomeBadge, AgentName, Spinner, LoadingText) instead of new one-off styles. Start actions turn green on hover (`hover-positive`), delete and stop actions red (`hover-danger`).
+  Reason: The user asked for square boxes everywhere and consistent, reusable components.
+  Evidence: User request with a screenshot of the rounded lint tooltip.
   Status: User-directed; implementation awaiting feedback.
 
 - Scope: dependencies

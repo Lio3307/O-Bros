@@ -66,7 +66,7 @@
   color: var(--color-muted);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .rail-button:hover {
@@ -148,7 +148,7 @@
   color: var(--color-muted);
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
 }
 
 .status-usage:hover {
@@ -208,4 +208,39 @@
   margin: -12px -8px 0;
   padding: 12px 8px 0;
   background: var(--color-panel);
+}
+
+.rail-button {
+  position: relative;
+}
+
+.rail-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  color: var(--color-terminal);
+  text-align: center;
+  background: var(--color-white);
+  border-radius: var(--radius);
+}
+
+.rail-badge-waiting {
+  color: var(--color-white);
+  background: var(--color-danger);
+}
+
+.status-other-marks {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 8px;
+  color: var(--color-muted);
+  border-left: 1px solid var(--color-border);
+  opacity: 0.7;
 }

@@ -5,7 +5,9 @@ import type { AppCommand } from './commandTypes'
 const SECTION_COMMANDS: { section: Section; title: string; keywords: string[] }[] = [
   { section: 'projects', title: 'Show Projects', keywords: ['folders', 'terminals'] },
   { section: 'history', title: 'Show conversation History', keywords: ['sessions', 'resume', 'claude', 'codex'] },
-  { section: 'changes', title: 'Show Changes (Git)', keywords: ['git', 'commit', 'diff'] }
+  { section: 'changes', title: 'Show Changes (Git)', keywords: ['git', 'commit', 'diff'] },
+  { section: 'activity', title: 'Show agent Activity', keywords: ['log', 'timeline', 'agents', 'today'] },
+  { section: 'team', title: 'Show Team (wot)', keywords: ['agents', 'team', 'wot', 'summon'] }
 ]
 
 const sectionCommands: AppCommand[] = SECTION_COMMANDS.map(({ section, title, keywords }) => ({

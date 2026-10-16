@@ -31,6 +31,12 @@ describe('lastPathSegment', () => {
     expect(lastPathSegment('C:\\dev\\o-bros')).toBe('o-bros')
     expect(lastPathSegment('/home/me/o-bros')).toBe('o-bros')
   })
+
+  it('names drive roots and ignores a trailing separator', () => {
+    expect(lastPathSegment('E:\\')).toBe('E:')
+    expect(lastPathSegment('/')).toBe('/')
+    expect(lastPathSegment('src/lib/')).toBe('lib')
+  })
 })
 
 describe('fileExtension', () => {

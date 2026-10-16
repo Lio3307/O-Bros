@@ -7,6 +7,7 @@ interface PortsState {
   ports: ListeningPort[] | null
   load: () => Promise<void>
   stop: (port: ListeningPort) => Promise<void>
+  open: (port: ListeningPort) => Promise<void>
 }
 
 export const usePortsStore = create<PortsState>()((set, get) => ({
@@ -28,5 +29,13 @@ export const usePortsStore = create<PortsState>()((set, get) => ({
       toast.error(friendlyErrorMessage(error, 'Could not stop that process.'))
     }
     await get().load()
+  },
+
+  open: async (port) => {
+    try {
+      await window.api.ports.open(port.port)
+    } catch (error) {
+      toast.error(friendlyErrorMessage(error, 'Could not open that port in the browser.'))
+    }
   }
 }))

@@ -50,7 +50,7 @@ export function StashSection({ repoPath }: { repoPath: string }) {
           <Archive size={14} /> Stash changes
         </Button>
       </div>
-      {stashes.length === 0 && <p className="panel-empty">Nothing stashed.</p>}
+      {stashes.length === 0 && <p className="panel-empty">Nothing stashed. Stash puts your changes aside for later.</p>}
       {stashes.map((entry) => (
         <div key={entry.ref} className="stash-item">
           <span className="stash-text">

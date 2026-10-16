@@ -1,4 +1,5 @@
-import { BookText, ChevronDown, Columns2, File, Plus, Rows2, Terminal, X } from 'lucide-react'
+import { BookText, ChevronDown, Columns2, File, Plus, Rows2, X } from 'lucide-react'
+import { TerminalTabIcon } from './TerminalTabIcon'
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useAttentionStore } from '../../state/attentionStore'
@@ -53,7 +54,6 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
   const moveTab = useWorkspaceStore((state) => state.moveTab)
   const needsAttention = useAttentionStore((state) => state.tabIds.includes(tab.id))
 
-  const Icon = tab.kind === 'terminal' ? Terminal : File
   const isModified = tab.kind === 'file' && tab.isModified
 
   function handleMouseDown(event: MouseEvent): void {
@@ -81,7 +81,7 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
         moveTab(event.dataTransfer.getData('text/plain'), tab.id)
       }}
     >
-      <Icon size={14} />
+      {tab.kind === 'terminal' ? <TerminalTabIcon tab={tab} /> : <File size={14} />}
       {tab.kind === 'terminal' ? (
         <EditableTitle className="tab-title" value={tab.title} onCommit={(title) => renameTab(tab.id, title)} />
       ) : (

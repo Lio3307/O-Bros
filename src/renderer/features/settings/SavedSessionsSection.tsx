@@ -7,6 +7,7 @@ import { CleanupRow, pluralize } from './CleanupRow'
 import './settings.css'
 import './settingsControls.css'
 import { SettingsSection } from '../../ui/SettingsSection'
+import { LoadingText } from '../../ui/LoadingText'
 
 const PROVIDER_NAMES: Record<ProviderId, string> = { claude: 'Claude', codex: 'Codex' }
 
@@ -65,7 +66,7 @@ export function SavedSessionsSection() {
         <span>Delete permanently instead of moving to the Recycle Bin or Trash</span>
       </label>
 
-      {reports === null && <p className="muted">Measuring.</p>}
+      {reports === null && <p className="muted"><LoadingText text="Measuring your saved conversations…" /></p>}
       {reports?.map((report) => <ProviderSessions key={report.provider} report={report} />)}
 
       <h3 className="settings-subtitle">What keeping and deleting costs you</h3>

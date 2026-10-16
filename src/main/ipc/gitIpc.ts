@@ -13,7 +13,9 @@ import type {
   GitPathsRequest,
   GitRenameBranchRequest,
   GitStashRefRequest,
-  GitStashRequest
+  GitStashRequest,
+  ReviewBaseline,
+  ReviewFileRequest
 } from '../../shared/types'
 import {
   commitStaged,
@@ -34,6 +36,11 @@ import {
 import { readCommitFiles, readCommitLog } from '../services/gitHistory'
 import { pullFastForward, pushCurrentBranch } from '../services/gitRemote'
 import { applyStash, dropStash, listStashes, stashChanges } from '../services/gitStash'
+import { findPushTraces } from '../services/wot/pushTraces'
+import { loadAgentCatalog } from '../services/wot/agentCatalog'
+import { describeTraces } from '../../shared/agentTraces'
+import { assertInsideProjectRoots } from '../pathGuard'
+import { captureReviewBaseline, readReviewChanges, readReviewDiff, revertReviewFile } from '../services/gitReview'
 import { fetchAndReadStatus, readGitDiff, readGitStatus } from '../services/gitService'
 
 export function registerGitIpc(): void {
@@ -59,5 +66,13 @@ export function registerGitIpc(): void {
   ipcMain.handle(IpcChannel.gitStashList, (_event, repoPath: string) => listStashes(repoPath))
   ipcMain.handle(IpcChannel.gitStashApply, (_event, request: GitStashRefRequest) => applyStash(request))
   ipcMain.handle(IpcChannel.gitStashDrop, (_event, request: GitStashRefRequest) => dropStash(request))
+  ipcMain.handle(IpcChannel.gitAgentTraces, async (_event, repoPath: string) => {
+    await assertInsideProjectRoots(repoPath)
+    return describeTraces(await findPushTraces(repoPath, [], await loadAgentCatalog()))
+  })
+  ipcMain.handle(IpcChannel.gitReviewBaseline, (_event, repoPath: string) => captureReviewBaseline(repoPath))
+  ipcMain.handle(IpcChannel.gitReviewChanges, (_event, baseline: ReviewBaseline) => readReviewChanges(baseline))
+  ipcMain.handle(IpcChannel.gitReviewDiff, (_event, request: ReviewFileRequest) => readReviewDiff(request))
+  ipcMain.handle(IpcChannel.gitReviewRevert, (_event, request: ReviewFileRequest) => revertReviewFile(request))
   ipcMain.handle(IpcChannel.gitSwitch, (_event, request: GitCheckoutRequest) => switchBranch(request))
 }

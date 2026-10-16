@@ -40,6 +40,12 @@ Split the focused terminal right or down from the buttons in the tab bar, or wit
 
 On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → Shortcuts**: click a shortcut, then press the keys. A shortcut must include Ctrl, Cmd or Alt, so typing in a terminal is never taken over, and a shortcut already used for copy, paste, save, search or quick open is refused.
 
+### Starting without a project folder
+
+- With no folders added, the main area shows **Open a project folder to start**, with a smaller **Open a terminal in your home folder**.
+- Agent buttons never start an agent in your home folder. With no folder selected they open a folder picker, add the folder to Projects and start the agent there. Cancel starts nothing.
+- A plain terminal opens right away, in your home folder when no folder is selected. Its tab is called **Home**.
+
 ## Tabs
 
 - Close with the X, the middle mouse button, or right-click → Close.
@@ -91,13 +97,49 @@ Files larger than 2 MB are not opened.
 
 Git must already know your name and email (`git config`). o-bros shows a clear message if it does not.
 
+## Team (wot)
+
+wot (work of teams) lets the agent you talk to summon other agents.
+
+- **Optional:** nothing changes until you install it. Before that, `wot` answers `WOT_NOT_INSTALLED` and the Team button is hidden.
+- **Set up once:** Settings → Team (wot) → **Install** (rows show the installed and available version, with **Update** when a newer one ships). There is one row per Claude Code account (`<account folder>/skills/wot/SKILL.md`) and one for the shared skills folder `~/.agents/skills/wot/SKILL.md`, which Codex, Gemini CLI, GitHub Copilot CLI, OpenCode and other agents that follow the Agent Skills standard read. The row lists the agents found on this computer (from the ACP registry and your PATH). Remove takes the file out again. Restart an agent that is already running.
+- **Any agent you have:** wot is not tied to Claude and Codex. Settings → Team (wot) → Agents on this computer lists every agent CLI O-BROS found (your agent buttons plus the ACP registry, checked against your PATH); any of them can be summoned, and any agent you install wot for can lead.
+- **Use it:** in the terminal of an agent that has wot, ask it in your own words to bring in another agent by name, for example "ask gemini to review src/login.ts". The examples on the settings page use the agents installed on your computer. You do not need to say "wot".
+- The agent runs the `wot` command, which every O-BROS terminal has: `wot agents` lists installed agents (your agent buttons plus the ACP registry, checked against your PATH), `wot spawn` starts a member and types its task, `wot wait` and `wot read` follow it, `wot send` answers it, `wot stop` closes it.
+- **Team view** (rail button with a number): the side panel groups members under the lead that summoned them (the arrow opens the lead's terminal). The main area shows the selected member as a flow, Lead → Team member, with its agent, state pill (starting, working, finished its turn, waiting for an answer, stopped), task and live terminal. You can type into it or stop it.
+- When a member asks a question, the Team button turns red and you get a notification.
+- If you ask for an agent that is not installed, the agent tells you which ones are installed instead of installing anything.
+- Outside O-BROS (or when O-BROS is closed or uninstalled), `wot` answers that it needs the app, and the skill tells the agent not to start other agents another way.
+- **Git needs your yes:** when a team member, or an agent started from an agent button, runs `git commit`, `git push`, or creates, deletes or renames a branch (`git branch <name>`, `checkout -b`, `switch -c`, `worktree add`), O-BROS pauses the command and asks you. No answer in 100 seconds counts as no, and the agent sees `GIT_BLOCKED`. Turn it off for your own agent terminals in Settings → Terminal → Agents and git; team members are always asked about. Agents started by typing their name in a plain terminal are not covered, and an agent that calls the git program by its full path is not stopped.
+- **Commits are yours:** a commit an agent makes is authored and committed with the name and email in Settings → Terminal → Commits made by agents, not your global git config. If they are empty, O-BROS asks the first time. "Co-Authored-By" and "Generated with" lines are removed unless you tick "Let agents add themselves as co-author".
+- **No agents in your GitHub history:** every O-BROS terminal has the git guard. When a git command comes from an agent, including one you started by typing its name in a plain terminal (O-BROS checks which program started the command), it gets your identity, `--author` is dropped, and credit lines are removed. Your own git commands are not changed or asked about. Before any push from an O-BROS terminal or the Push button, O-BROS checks the commits being pushed and asks you if one still has an agent as author or committer, or an agent "Co-Authored-By" or "Generated with" line. Branch names that mention an agent are pointed out in the question.
+- **You stay in control:** type into a member's terminal in the Team view (Esc or Ctrl+C interrupts it), press Stop on one member, or Stop all in Storage and memory. Settings → Team (wot) → Free memory automatically stops members that finished and stayed idle (5, 10 or 30 minutes, or never) and members whose summoning terminal closed. Members asking a question are never stopped automatically.
+- **Where team data lives:** each member's conversation is saved by that agent like any conversation (History and Saved conversations, where you can delete it); wot task files sit in the system temp folder `o-bros-wot` and are deleted after use; both appear in Storage and memory → Where your data lives.
+- Limits: at most six members at a time; members cannot summon more members; the Codex sandbox may ask permission for the local connection.
+
 ## History
 
 - Lists your Claude and Codex conversations, newest first, grouped by Today, Yesterday and Earlier. Each row shows the file size.
-- Pick a date to see one day.
+- **Team only** (shown when team members had conversations) lists only those, with a Delete button for all of them.
 - **Resume** (play button on a row): opens a terminal in the session's project folder, with the right account, and runs `claude --resume <id>` or `codex resume <id>`.
-- Delete one session, or every session of the chosen day. A confirmation says what you lose and how much space it frees.
+- Delete one session from its row. A confirmation says what you lose and how much space it frees.
 - Click a session to read it. It is read-only.
+
+## Activity
+
+Press the Activity button on the left (pulse icon).
+
+The Activity page is one full-width monitor (no side list):
+- **Running now:** a card for every agent running in O-BROS, including team members, with its state (working pulses blue, idle green, waiting for you red), where it runs, who summoned it, how long it has run, and its CPU and memory. Click a card to open its terminal.
+- **Today:** agent time, sessions started, git actions asked (allowed and denied) and team members summoned.
+- **Activity by hour** (hover a bar for its count) and **Time per agent today**.
+- **Agents you start by typing their name** (for example `claude` in a plain terminal) are recognised by the program running in the terminal, checked every 20 seconds (every 10 while the monitor is open), so they appear on the monitor and in the log too.
+- **Team members** count with the time they ran.
+- **Log:** a timeline of what agents did, newest first, grouped by Today, Yesterday and older days.
+- **Sessions:** when an agent started in O-BROS and how long it ran before it closed.
+- **Git:** every commit, push and branch change an agent asked for, with the command and your answer (Allowed or Denied).
+- **Team:** wot members joining and leaving, and why O-BROS stopped one.
+- Hover a row for the full command and folder. The bin button on the Log clears it. The newest 500 entries are kept.
 
 ## Accounts and usage
 
@@ -105,8 +147,9 @@ Git must already know your name and email (`git config`). o-bros shows a clear m
 - Shows the 5-hour and weekly usage of each, with when it resets.
 - **Use** switches which account new terminals run with.
 - **Add account** creates a named login (see [Getting started](GETTING-STARTED.md)).
-- The status bar shows the active Claude and Codex usage as a short line, for example `5h 82% 2h33m  wk 37% 4d16h` (window, percent used, time until it resets). In a narrow window the reset time is dropped first, then the `5h` and `wk` labels; hover it for the full name and reset time, and press it for a detailed or compact popover.
-- Only Claude and Codex report usage, so other agents never show one. Hide either one in Settings → Agents → Usage in the status bar.
+- Claude and Codex are shown only when installed or signed in. **Other agents** lists every other agent CLI installed (Gemini CLI, OpenCode, Kilo Code, Cline, GitHub Copilot CLI) with how it signs in, the providers it has connected and the command to change it. Only names and login types are read, never keys or tokens; these agents keep one login each, so they cannot be switched here.
+- The status bar shows one compact usage item: the provider closest to a limit, for example `wk 57% 4d23h` (window, percent used, time until it resets), followed by small icons for the other logged-in providers. In a narrow window the reset time is dropped first, then the label. Hover it for every provider's numbers, and press it for a detailed or compact popover.
+- Only Claude and Codex report usage. Other agents (Gemini CLI, OpenCode and so on) have no usage endpoint O-BROS can read, and an API key has no 5-hour or weekly limit. Hide either one in Settings → Agents → Usage in the status bar.
 
 ## Projects panel
 
@@ -120,7 +163,7 @@ Git must already know your name and email (`git config`). o-bros shows a clear m
 Press the memory figure in the status bar.
 
 - Total CPU and memory for the app and every terminal, grouped by project.
-- **Listening ports** opened by programs inside your terminals, with a Stop button for each.
+- **Listening ports** opened by programs inside your terminals, with Open (opens `http://localhost:<port>` in your browser) and Stop for each.
 
 ## Storage and memory
 
@@ -143,7 +186,17 @@ Settings → Storage and memory lists everything o-bros can clear for you, how b
 | You can resume with full context and read them in History | You can no longer resume or read them |
 | Resuming a long session reloads its whole conversation, which can use more of your usage limit and be slower | Starting fresh is cheaper but starts without that context |
 
+**Team (wot).** Running team members (Stop all), **Team member conversations** (every Claude and Codex conversation a team member had, with a Delete button) and wot task files. History marks those conversations "Team member · <name>" and has a "Team only" filter. In Settings → Team (wot) you can have a member's conversation moved to the Recycle Bin or Trash as soon as it stops. A Claude member gets its own session ID when it starts, so the match is exact; a Codex member is matched by its folder, start time and the task it was given, so a Codex member summoned without a task is not marked.
+
+**Other agents.** Where your data lives also lists the conversation folders of Gemini CLI, Qwen Code, OpenCode, Kilo Code, Cline, GitHub Copilot CLI, Goose and Cursor Agent when they exist, with what each holds and what deleting it does. O-BROS only opens these; delete old sessions from inside the agent, because OpenCode and Kilo keep your login in the same folder. The list lives in `resources/agents/history-folders.json`.
+
 **Clear everything below** runs the four cleanups above. It does not delete conversations. The page never touches your project files, git history, Claude or Codex logins and conversations, project folders list, or editor and terminal settings. Old conversations are removed from the History panel.
+
+## Backup and restore
+
+- **Export** (Settings → Backup and restore, or "Export settings to a JSON file" in the command palette) saves a JSON file with `format: "o-bros-settings"` and `formatVersion: 1`. It holds your color theme, editor settings and snippets, shortcuts, prompts, agent buttons, terminal options, agent and git options, the name and email for commits made by agents, and, if you tick the box, the list of project folders.
+- Not included: open tabs, recent files, accounts, logins and tokens.
+- **Import** checks the file first. A file that is not an O-BROS export, or that was made by a newer O-BROS, is refused. Otherwise it shows where the file came from and how many settings it has, and asks before applying. Settings in the file replace yours, settings not in the file stay, and project folders are added only if they exist on this computer. The window reloads to apply them, so open terminals restart.
 
 ## About and updates
 

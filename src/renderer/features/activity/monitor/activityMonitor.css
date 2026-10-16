@@ -1,0 +1,220 @@
+.activity-monitor {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 24px;
+  min-height: 0;
+  padding: 24px 32px 32px;
+  overflow-y: auto;
+  background: var(--color-terminal);
+}
+
+.monitor-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.monitor-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.monitor-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.monitor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.monitor-section-title {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-faint);
+  text-transform: uppercase;
+}
+
+.monitor-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.live-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.live-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  color: var(--color-text);
+  text-align: left;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.live-card:hover {
+  border-color: var(--color-faint);
+}
+
+.live-card-waiting {
+  border-color: var(--color-danger);
+}
+
+.live-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.live-card-role,
+.live-card-origin {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-card-numbers {
+  display: flex;
+  gap: 14px;
+  padding-top: 8px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--color-border);
+}
+
+.live-card-numbers span,
+.monitor-tile-split span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.monitor-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.monitor-tile-split {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.monitor-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.hour-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 120px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hour-slot {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  height: 100%;
+  cursor: default;
+}
+
+.hour-bar {
+  width: 100%;
+  min-height: 2px;
+  background: var(--color-muted);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.hour-bar-empty {
+  height: 2px;
+  background: var(--color-border);
+  border-radius: 0;
+}
+
+.hour-bar-now {
+  background: var(--color-white);
+}
+
+.hour-bar-hovered {
+  background: var(--color-text);
+  outline: 1px solid var(--color-white);
+}
+
+.hour-axis {
+  position: relative;
+  height: 14px;
+  font-size: 11px;
+  color: var(--color-faint);
+}
+
+.hour-axis span {
+  position: absolute;
+  top: 0;
+}
+
+.agent-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agent-bar-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 140px) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.agent-bar-track {
+  height: 8px;
+  background: var(--color-hover);
+  border-radius: var(--radius);
+}
+
+.agent-bar-fill {
+  display: block;
+  height: 100%;
+  min-width: 4px;
+  background: var(--color-text);
+  border-radius: var(--radius);
+}
+
+.agent-bar-value {
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}

@@ -1,9 +1,11 @@
-import type { KnownAgent } from './agentLaunchers'
+export type CommandAliases = Record<string, string>
 
 export interface AcpAgent {
   id: string
   name: string
+  description: string
   commands: string[]
+  iconUrl: string | null
 }
 
 export interface AgentSuggestion {
@@ -11,21 +13,6 @@ export interface AgentSuggestion {
   command: string
 }
 
-const COMMAND_BY_REGISTRY_ID: Record<string, string> = {
-  'claude-acp': 'claude',
-  'codex-acp': 'codex',
-  'github-copilot-cli': 'copilot',
-  cursor: 'cursor-agent',
-  'factory-droid': 'droid',
-  qoder: 'qodercli',
-  'codebuddy-code': 'codebuddy',
-  'mistral-vibe': 'vibe',
-  'qwen-code': 'qwen',
-  'grok-build': 'grok',
-  'amp-acp': 'amp',
-  'cortex-code': 'cortex',
-  'pi-acp': 'pi'
-}
 
 const GENERIC_NAMES = ['cli', 'code', 'agent', 'server', 'app']
 const ACP_SUFFIX = '-acp'
@@ -75,8 +62,8 @@ function distributionNames(distribution: unknown): string[] {
   return names
 }
 
-export function candidateCommands(id: string, distribution: unknown): string[] {
-  const alias = COMMAND_BY_REGISTRY_ID[id]
+export function candidateCommands(id: string, distribution: unknown, aliases: CommandAliases = {}): string[] {
+  const alias = aliases[id]
   if (alias !== undefined) {
     return [alias]
   }
@@ -87,14 +74,38 @@ export function candidateCommands(id: string, distribution: unknown): string[] {
   )
 }
 
-export function parseAcpRegistry(raw: unknown): AcpAgent[] {
+export function parseCommandAliases(raw: unknown): CommandAliases {
+  if (!isRecord(raw) || !isRecord(raw.commandByRegistryId)) {
+    return {}
+  }
+  const aliases: CommandAliases = {}
+  for (const [id, command] of Object.entries(raw.commandByRegistryId)) {
+    if (typeof command === 'string' && command.trim() !== '') {
+      aliases[id] = command.trim()
+    }
+  }
+  return aliases
+}
+
+function textOf(value: unknown): string {
+  return typeof value === 'string' ? value : ''
+}
+
+export function parseAcpRegistry(raw: unknown, aliases: CommandAliases = {}): AcpAgent[] {
   if (!isRecord(raw) || !Array.isArray(raw.agents)) {
     return []
   }
   const agents: AcpAgent[] = []
   for (const entry of raw.agents) {
     if (isRecord(entry) && typeof entry.id === 'string' && typeof entry.name === 'string') {
-      agents.push({ id: entry.id, name: entry.name, commands: candidateCommands(entry.id, entry.distribution) })
+      const iconUrl = textOf(entry.icon)
+      agents.push({
+        id: entry.id,
+        name: entry.name,
+        description: textOf(entry.description),
+        commands: candidateCommands(entry.id, entry.distribution, aliases),
+        iconUrl: iconUrl === '' ? null : iconUrl
+      })
     }
   }
   return agents
@@ -102,18 +113,13 @@ export function parseAcpRegistry(raw: unknown): AcpAgent[] {
 
 export function buildAgentSuggestions(
   registryAgents: AcpAgent[],
-  knownAgents: KnownAgent[],
   installedCommands: string[],
   addedCommands: string[]
 ): AgentSuggestion[] {
   const installed = new Set(installedCommands)
   const added = new Set(addedCommands)
-  const catalog = [
-    ...knownAgents.map((agent) => ({ name: agent.name, commands: [agent.command] })),
-    ...registryAgents.map((agent) => ({ name: agent.name, commands: agent.commands }))
-  ]
   const suggestions = new Map<string, AgentSuggestion>()
-  for (const entry of catalog) {
+  for (const entry of registryAgents) {
     const command = entry.commands.find((candidate) => installed.has(candidate))
     if (command !== undefined && !added.has(command) && !suggestions.has(command)) {
       suggestions.set(command, { name: entry.name, command })

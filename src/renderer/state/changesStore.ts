@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
-import type { GitFileChange, GitStatus } from '../../shared/types'
+import type { GitFileChange, GitStatus, ReviewFileRequest } from '../../shared/types'
+import { askToConfirm } from './confirmStore'
 import { toast } from './toastStore'
 
 export interface CommitFileSelection {
@@ -17,6 +18,7 @@ interface ChangesState {
   status: GitStatus | null
   selectedChange: GitFileChange | null
   selectedCommitFile: CommitFileSelection | null
+  selectedReview: ReviewFileRequest | null
   isFetching: boolean
   isWorking: boolean
   errorMessage: string | null
@@ -26,6 +28,7 @@ interface ChangesState {
   push: (repoPath: string) => Promise<boolean>
   select: (change: GitFileChange) => void
   selectCommitFile: (file: CommitFileSelection) => void
+  selectReview: (request: ReviewFileRequest) => void
   setView: (view: ChangesView) => void
   stage: (repoPath: string, filePaths: string[]) => Promise<void>
   unstage: (repoPath: string, filePaths: string[]) => Promise<void>
@@ -66,6 +69,7 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
     status: null,
     selectedChange: null,
     selectedCommitFile: null,
+    selectedReview: null,
     isFetching: false,
     isWorking: false,
     errorMessage: null,
@@ -102,6 +106,17 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
     },
 
     push: async (repoPath) => {
+      const traces = await window.api.git.agentTraces(repoPath).catch(() => [])
+      if (traces.length > 0) {
+        const isConfirmed = await askToConfirm({
+          title: 'Push commits with an agent in them?',
+          message: ['These commits would show an agent on GitHub:', '', ...traces].join('\n'),
+          confirmLabel: 'Push anyway'
+        })
+        if (!isConfirmed) {
+          return false
+        }
+      }
       const isDone = await runAction(repoPath, () => window.api.git.push(repoPath), 'Could not push to the remote.')
       if (isDone) {
         toast.success('Pushed to the remote.')
@@ -109,9 +124,11 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
       return isDone
     },
 
-    select: (selectedChange) => set({ selectedChange, selectedCommitFile: null, view: 'diff' }),
+    select: (selectedChange) => set({ selectedChange, selectedCommitFile: null, selectedReview: null, view: 'diff' }),
 
-    selectCommitFile: (selectedCommitFile) => set({ selectedCommitFile, view: 'diff' }),
+    selectCommitFile: (selectedCommitFile) => set({ selectedCommitFile, selectedReview: null, view: 'diff' }),
+
+    selectReview: (selectedReview) => set({ selectedReview, selectedCommitFile: null, view: 'diff' }),
 
     setView: (view) => set({ view }),
 

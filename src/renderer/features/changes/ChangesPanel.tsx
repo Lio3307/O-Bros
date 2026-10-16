@@ -11,6 +11,7 @@ import { ChangeGroup } from './ChangeGroup'
 import { CommitBox } from './CommitBox'
 import { CommitHistory } from './CommitHistory'
 import { RepositoryPicker } from './RepositoryPicker'
+import { ReviewSection } from './ReviewSection'
 import { StashSection } from './StashSection'
 import { Button } from '../../ui/Button'
 import { ArrowLeft } from 'lucide-react'
@@ -45,7 +46,7 @@ export function ChangesPanel() {
     return (
       <div className="panel-content">
         <PanelHeader title="Changes" />
-        <p className="panel-empty">Open a folder in Projects first.</p>
+        <p className="panel-empty">No folder selected. Open one in Projects first.</p>
       </div>
     )
   }
@@ -91,10 +92,11 @@ export function ChangesPanel() {
       </PanelHeader>
       {backButton}
       <BranchCard status={status} repoPath={activeProjectPath} />
+      <ReviewSection repoPath={activeProjectPath} />
       <CommitBox repoPath={activeProjectPath} stagedCount={stagedChanges.length} />
       <ChangeGroup title="Staged" changes={stagedChanges} repoPath={activeProjectPath} />
       <ChangeGroup title="Unstaged" changes={unstagedChanges} repoPath={activeProjectPath} />
-      {status.changes.length === 0 && <p className="panel-empty">Working tree is clean.</p>}
+      {status.changes.length === 0 && <p className="panel-empty">No changes. Your files match the last commit.</p>}
       <StashSection repoPath={activeProjectPath} />
       <CommitHistory repoPath={activeProjectPath} />
     </div>

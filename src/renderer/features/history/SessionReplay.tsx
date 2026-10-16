@@ -9,12 +9,13 @@ const MESSAGES_SHOWN_FIRST = 200
 
 export function SessionReplay() {
   const sessions = useHistoryStore((state) => state.sessions)
+  const searchHits = useHistoryStore((state) => state.searchHits)
   const selectedFilePath = useHistoryStore((state) => state.selectedFilePath)
   const [messages, setMessages] = useState<SessionMessage[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [shownCount, setShownCount] = useState(MESSAGES_SHOWN_FIRST)
 
-  const session = sessions.find((candidate) => candidate.filePath === selectedFilePath)
+  const session = [...sessions, ...(searchHits ?? [])].find((candidate) => candidate.filePath === selectedFilePath)
 
   useEffect(() => {
     setShownCount(MESSAGES_SHOWN_FIRST)

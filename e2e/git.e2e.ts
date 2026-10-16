@@ -118,7 +118,7 @@ test('stashes changes, applies the stash and pushes a commit to a remote', async
   await expect(app.window.getByText('1 files')).toBeVisible({ timeout: 15_000 })
 
   await app.window.getByRole('button', { name: 'Stash changes' }).click()
-  await expect(app.window.getByText('Working tree is clean.')).toBeVisible({ timeout: 15_000 })
+  await expect(app.window.getByText('No changes. Your files match the last commit.')).toBeVisible({ timeout: 15_000 })
   await expect(app.window.getByRole('button', { name: 'Apply' })).toBeVisible()
 
   await app.window.getByRole('button', { name: 'Apply' }).click()

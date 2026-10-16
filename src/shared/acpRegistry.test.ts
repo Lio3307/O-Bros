@@ -4,14 +4,24 @@ import {
   buildAgentSuggestions,
   candidateCommands,
   packageCommandName,
-  parseAcpRegistry
+  parseAcpRegistry,
+  parseCommandAliases,
+  type AcpAgent
 } from './acpRegistry'
+
+function agent(id: string, name: string, commands: string[]): AcpAgent {
+  return { id, name, description: '', commands, iconUrl: null }
+}
 
 describe('packageCommandName', () => {
   it('drops the scope and the version', () => {
     expect(packageCommandName('@google/gemini-cli@0.64.0')).toBe('gemini-cli')
     expect(packageCommandName('cline@3.0.71')).toBe('cline')
     expect(packageCommandName('@github/copilot')).toBe('copilot')
+  })
+
+  it('ignores version pins written with ==', () => {
+    expect(packageCommandName('fast-agent-acp==0.10.1')).toBe('fast-agent-acp')
   })
 })
 
@@ -22,20 +32,12 @@ describe('binaryCommandName', () => {
     expect(binaryCommandName('./goose')).toBe('goose')
     expect(binaryCommandName('goose-package\\goose.exe')).toBe('goose')
   })
-
-  it('ignores version pins written with ==', () => {
-    expect(packageCommandName('fast-agent-acp==0.10.1')).toBe('fast-agent-acp')
-  })
-
-  it('does not turn very generic package names into commands', () => {
-    expect(candidateCommands('kilo', { npx: { package: '@kilocode/cli@7.8.8' } })).not.toContain('cli')
-    expect(candidateCommands('minimax-code', { npx: { package: '@minimax-ai/code@0.2.7' } })).not.toContain('code')
-  })
 })
 
 describe('candidateCommands', () => {
-  it('uses the known command when the registry id differs from it', () => {
-    expect(candidateCommands('cursor', { binary: { 'linux-x86_64': { cmd: './cursor-agent' } } })).toEqual([
+  it('uses the command from the alias data when the registry id differs from it', () => {
+    const aliases = { cursor: 'cursor-agent' }
+    expect(candidateCommands('cursor', { binary: { 'linux-x86_64': { cmd: './cursor-agent' } } }, aliases)).toEqual([
       'cursor-agent'
     ])
   })
@@ -46,14 +48,43 @@ describe('candidateCommands', () => {
     expect(commands).toContain('gemini-cli')
     expect(new Set(commands).size).toBe(commands.length)
   })
+
+  it('does not turn very generic package names into commands', () => {
+    expect(candidateCommands('kilo', { npx: { package: '@kilocode/cli@7.8.8' } })).not.toContain('cli')
+    expect(candidateCommands('minimax-code', { npx: { package: '@minimax-ai/code@0.2.7' } })).not.toContain('code')
+  })
+})
+
+describe('parseCommandAliases', () => {
+  it('reads the alias data file and skips broken values', () => {
+    expect(parseCommandAliases({ commandByRegistryId: { 'codex-acp': 'codex', bad: 3 } })).toEqual({ 'codex-acp': 'codex' })
+    expect(parseCommandAliases(null)).toEqual({})
+  })
 })
 
 describe('parseAcpRegistry', () => {
-  it('reads agents and skips broken entries', () => {
+  it('reads agents with their description and icon, and skips broken entries', () => {
     const agents = parseAcpRegistry({
-      agents: [{ id: 'opencode', name: 'OpenCode', distribution: { binary: { x: { cmd: './opencode' } } } }, { id: 1 }]
+      agents: [
+        {
+          id: 'opencode',
+          name: 'OpenCode',
+          description: 'Open source agent',
+          icon: 'https://cdn.agentclientprotocol.com/registry/v1/latest/opencode.svg',
+          distribution: { binary: { x: { cmd: './opencode' } } }
+        },
+        { id: 1 }
+      ]
     })
-    expect(agents).toEqual([{ id: 'opencode', name: 'OpenCode', commands: ['opencode'] }])
+    expect(agents).toEqual([
+      {
+        id: 'opencode',
+        name: 'OpenCode',
+        description: 'Open source agent',
+        commands: ['opencode'],
+        iconUrl: 'https://cdn.agentclientprotocol.com/registry/v1/latest/opencode.svg'
+      }
+    ])
   })
 
   it('returns nothing for an unexpected document', () => {
@@ -63,26 +94,16 @@ describe('parseAcpRegistry', () => {
 })
 
 describe('buildAgentSuggestions', () => {
-  const registry = [{ id: 'gemini', name: 'Gemini CLI', commands: ['gemini', 'gemini-cli'] }]
-  const known = [{ name: 'Gemini', command: 'gemini' }, { name: 'Aider', command: 'aider' }]
+  const registry = [agent('gemini', 'Gemini CLI', ['gemini', 'gemini-cli']), agent('nova', 'Nova Agent', ['nova'])]
 
-  it('suggests installed agents and prefers the short built-in name', () => {
-    expect(buildAgentSuggestions(registry, known, ['gemini', 'aider', 'git'], [])).toEqual([
-      { name: 'Gemini', command: 'gemini' },
-      { name: 'Aider', command: 'aider' }
+  it('suggests installed agents from the registry', () => {
+    expect(buildAgentSuggestions(registry, ['gemini', 'nova', 'git'], [])).toEqual([
+      { name: 'Gemini CLI', command: 'gemini' },
+      { name: 'Nova Agent', command: 'nova' }
     ])
   })
 
-  it('uses the registry name for agents the built-in list does not know', () => {
-    const unknownRegistry = [{ id: 'nova', name: 'Nova Agent', commands: ['nova'] }]
-    expect(buildAgentSuggestions(unknownRegistry, known, ['nova'], [])).toEqual([{ name: 'Nova Agent', command: 'nova' }])
-  })
-
   it('skips agents that are already added or not installed', () => {
-    expect(buildAgentSuggestions(registry, known, ['gemini'], ['gemini'])).toEqual([])
-  })
-
-  it('still works from the built-in list when the registry is unavailable', () => {
-    expect(buildAgentSuggestions([], known, ['aider'], [])).toEqual([{ name: 'Aider', command: 'aider' }])
+    expect(buildAgentSuggestions(registry, ['gemini'], ['gemini'])).toEqual([])
   })
 })

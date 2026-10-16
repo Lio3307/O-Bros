@@ -1,0 +1,68 @@
+.status-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--color-faint);
+  border-radius: 50%;
+}
+
+.status-dot-info {
+  background: var(--color-info);
+}
+
+.status-dot-success {
+  background: var(--color-success);
+}
+
+.status-dot-danger {
+  background: var(--color-danger);
+}
+
+.status-dot-pulsing {
+  animation: status-dot-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes status-dot-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(88, 166, 255, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot-pulsing {
+    animation: none;
+  }
+}
+
+.status-label {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.status-label-danger {
+  color: var(--color-danger);
+}
+
+.outcome-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.outcome-badge-allowed {
+  color: var(--color-success);
+}
+
+.outcome-badge-denied {
+  color: var(--color-danger);
+}

@@ -26,6 +26,24 @@ export function pasteIntoTerminal(paneId: string, text: string): boolean {
   return true
 }
 
+export function readTerminalText(paneId: string, lineCount: number): string | null {
+  const terminal = terminalsByPaneId.get(paneId)
+  if (terminal === undefined) {
+    return null
+  }
+  const buffer = terminal.buffer.active
+  const lineAt = (index: number): string => buffer.getLine(index)?.translateToString(true) ?? ''
+  let lastIndex = buffer.length - 1
+  while (lastIndex > 0 && lineAt(lastIndex).trim() === '') {
+    lastIndex -= 1
+  }
+  const lines: string[] = []
+  for (let index = Math.max(0, lastIndex - lineCount + 1); index <= lastIndex; index += 1) {
+    lines.push(lineAt(index))
+  }
+  return lines.join('\n')
+}
+
 export function readTerminalMemory(): TerminalMemory {
   const terminals = [...terminalsByPaneId.values()]
   const bufferedLines = terminals.reduce((total, terminal) => total + terminal.buffer.active.length, 0)

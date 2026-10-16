@@ -58,5 +58,7 @@ export const DEFAULT_SNIPPETS: Record<LanguageId, Snippet[]> = {
   ],
   php: [{ prefix: 'fn', description: 'function', body: 'function ${1:name}(${2}) {\n\t${3}\n}' }],
   sql: [{ prefix: 'sel', description: 'select', body: 'SELECT ${1:*}\nFROM ${2:table}\nWHERE ${3:condition};' }],
-  yaml: []
+  yaml: [],
+  env: [],
+  text: []
 }

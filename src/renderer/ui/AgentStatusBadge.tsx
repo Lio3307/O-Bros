@@ -1,6 +1,7 @@
 import { agentStatusOf, providerOfCommand, type AgentStatus } from '../../shared/agentLaunchers'
 import { selectActiveAccount, useAccountsStore } from '../state/accountsStore'
 import { useInstalledCommandsStore } from '../state/installedCommandsStore'
+import { Spinner } from './Spinner'
 
 const LABELS: Record<AgentStatus, string> = {
   checking: 'Checking…',
@@ -30,7 +31,7 @@ export function AgentStatusBadge({ command, showLabel = true }: { command: strin
 
   return (
     <span className={`agent-status agent-status-${status}`} title={TITLES[status]}>
-      <span className="agent-status-dot" />
+      {status === 'checking' ? <Spinner size={10} /> : <span className="agent-status-dot" />}
       {showLabel && LABELS[status]}
     </span>
   )

@@ -1,0 +1,4 @@
+resources/wot/bin/wot text eol=lf
+resources/wot/bin/wot.cmd text eol=crlf
+resources/wot/guard/git text eol=lf
+resources/wot/guard/git.cmd text eol=crlf

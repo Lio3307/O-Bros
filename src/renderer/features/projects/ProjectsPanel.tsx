@@ -1,5 +1,5 @@
 import { Bot, ChevronDown, ChevronRight, Folder, FolderPlus, GitBranch, Terminal } from 'lucide-react'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { isPrimaryBranch } from '../../../shared/gitSync'
 import { isPathInside } from '../../../shared/paths'
 import { formatAge } from '../../../shared/time'
@@ -15,9 +15,11 @@ import { AgentIcon } from '../../ui/AgentIcon'
 import { AgentStatusBadge } from '../../ui/AgentStatusBadge'
 import { useProjectsStore } from '../../state/projectsStore'
 import { toast } from '../../state/toastStore'
-import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
+import { isTerminalTab, useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { PanelHeader } from '../../ui/PanelHeader'
 import { ScriptsList } from './ScriptsList'
+import { TerminalTabIcon } from '../terminal/TerminalTabIcon'
+import { placeSessions } from './sessionPlacement'
 import { useNow } from '../../ui/useNow'
 import './projects.css'
 import { Button } from '../../ui/Button'
@@ -34,33 +36,61 @@ function BranchLabel({ branch }: { branch: string }) {
   )
 }
 
-function SessionList({ root }: { root: ProjectRoot }) {
-  const projectTabs = useActiveProjectTabs()
+function SessionRow({ session, now }: { session: TerminalTab; now: number }) {
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
   const activateTab = useWorkspaceStore((state) => state.activateTab)
-  const now = useNow(SESSION_AGE_REFRESH_MS)
 
-  const sessions = projectTabs
-    .filter(isTerminalTab)
-    .filter((tab) => tab.cwd !== null && isPathInside(tab.cwd, root.path))
+  return (
+    <button
+      type="button"
+      className={session.id === activeTabId ? 'row row-session row-selected' : 'row row-session'}
+      onClick={() => activateTab(session.id)}
+    >
+      <TerminalTabIcon tab={session} />
+      <span className="row-name">{session.title}</span>
+      <span className="muted">{formatAge(session.createdAt, now)}</span>
+    </button>
+  )
+}
+
+const VISIBLE_NESTED_SESSIONS = 3
+
+function FolderSessions({ sessions, now }: { sessions: TerminalTab[]; now: number }) {
+  const [isExpanded, setIsExpanded] = useState(false)
   if (sessions.length === 0) {
     return null
   }
+  const shown = isExpanded ? sessions : sessions.slice(0, VISIBLE_NESTED_SESSIONS)
+  const hiddenCount = sessions.length - shown.length
 
+  return (
+    <div className="folder-sessions">
+      {shown.map((session) => (
+        <SessionRow key={session.id} session={session} now={now} />
+      ))}
+      {hiddenCount > 0 && (
+        <button type="button" className="folder-sessions-more" onClick={() => setIsExpanded(true)}>
+          Show {hiddenCount} more
+        </button>
+      )}
+      {isExpanded && sessions.length > VISIBLE_NESTED_SESSIONS && (
+        <button type="button" className="folder-sessions-more" onClick={() => setIsExpanded(false)}>
+          Show fewer
+        </button>
+      )}
+    </div>
+  )
+}
+
+function RootSessions({ sessions, now }: { sessions: TerminalTab[]; now: number }) {
+  if (sessions.length === 0) {
+    return null
+  }
   return (
     <div className="root-section">
       <h3 className="section-label">Open sessions</h3>
       {sessions.map((session) => (
-        <button
-          key={session.id}
-          type="button"
-          className={session.id === activeTabId ? 'row row-session row-selected' : 'row row-session'}
-          onClick={() => activateTab(session.id)}
-        >
-          <Terminal size={14} />
-          <span className="row-name">{session.title}</span>
-          <span className="muted">{formatAge(session.createdAt, now)}</span>
-        </button>
+        <SessionRow key={session.id} session={session} now={now} />
       ))}
     </div>
   )
@@ -79,7 +109,13 @@ function useFinishedElsewhere(): (folderPath: string) => boolean {
     })
 }
 
-function FolderList({ root }: { root: ProjectRoot }) {
+interface FolderListProps {
+  root: ProjectRoot
+  sessionsByFolder: Map<string, TerminalTab[]>
+  now: number
+}
+
+function FolderList({ root, sessionsByFolder, now }: FolderListProps) {
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const selectProject = useProjectsStore((state) => state.selectProject)
   const hasFinishedElsewhere = useFinishedElsewhere()
@@ -92,20 +128,22 @@ function FolderList({ root }: { root: ProjectRoot }) {
     <div className="root-section">
       <h3 className="section-label">Folders</h3>
       {root.folders.map((folder) => (
-        <button
-          key={folder.path}
-          type="button"
-          title={folder.path}
-          className={folder.path === activeProjectPath ? 'row row-selected' : 'row'}
-          onClick={() => selectProject(folder.path)}
-        >
-          <Folder size={14} />
-          <span className="row-name">{folder.name}</span>
-          {folder.branch !== null && <BranchLabel branch={folder.branch} />}
-          {hasFinishedElsewhere(folder.path) && (
-            <span className="tab-attention-dot" title="A terminal here finished while you were away" />
-          )}
-        </button>
+        <Fragment key={folder.path}>
+          <button
+            type="button"
+            title={folder.path}
+            className={folder.path === activeProjectPath ? 'row row-selected' : 'row'}
+            onClick={() => selectProject(folder.path)}
+          >
+            <Folder size={14} />
+            <span className="row-name">{folder.name}</span>
+            {folder.branch !== null && <BranchLabel branch={folder.branch} />}
+            {hasFinishedElsewhere(folder.path) && (
+              <span className="tab-attention-dot" title="A terminal here finished while you were away" />
+            )}
+          </button>
+          <FolderSessions sessions={sessionsByFolder.get(folder.path) ?? []} now={now} />
+        </Fragment>
       ))}
     </div>
   )
@@ -115,6 +153,13 @@ function RootBlock({ root }: { root: ProjectRoot }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const selectProject = useProjectsStore((state) => state.selectProject)
+  const projectTabs = useActiveProjectTabs()
+  const now = useNow(SESSION_AGE_REFRESH_MS)
+  const placement = placeSessions(
+    projectTabs.filter(isTerminalTab),
+    root.path,
+    root.folders.map((folder) => folder.path)
+  )
 
   const Chevron = isCollapsed ? ChevronRight : ChevronDown
   const headerClassName = root.path === activeProjectPath ? 'root-header root-header-selected' : 'root-header'
@@ -132,8 +177,8 @@ function RootBlock({ root }: { root: ProjectRoot }) {
       </div>
       {!isCollapsed && (
         <>
-          <SessionList root={root} />
-          <FolderList root={root} />
+          <RootSessions sessions={placement.atRoot} now={now} />
+          <FolderList root={root} sessionsByFolder={placement.byFolderPath} now={now} />
           <ScriptsList root={root} />
         </>
       )}
@@ -167,7 +212,7 @@ export function ProjectsPanel() {
       chooseAgents()
       return
     }
-    openAgent(launcher)
+    await openAgent(launcher)
   }
 
   return (
@@ -202,7 +247,7 @@ export function ProjectsPanel() {
           </Button>
         </div>
       </div>
-      {roots.length === 0 && <p className="panel-empty">Open a folder to see your projects.</p>}
+      {roots.length === 0 && <p className="panel-empty">No projects yet. Press the folder button above to open one.</p>}
       {roots.map((root) => (
         <RootBlock key={root.path} root={root} />
       ))}

@@ -1,0 +1,19 @@
+.agent-status-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.agent-usage-note {
+  font-size: 11px;
+  color: var(--color-faint);
+  white-space: nowrap;
+  cursor: help;
+}
+
+.agent-usage-note-shown {
+  color: var(--color-muted);
+}

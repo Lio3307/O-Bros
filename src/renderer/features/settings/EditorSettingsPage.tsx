@@ -2,6 +2,7 @@ import { isLanguageEnabled, useEditorSettingsStore } from '../../state/editorSet
 import { LINT_MODES, type LintMode } from '../editor/editorSettings'
 import { LANGUAGES } from '../editor/languageRegistry'
 import { AutoSaveSetting } from './AutoSaveSetting'
+import { ColorThemeSetting } from './ColorThemeSetting'
 import './settings.css'
 import './settingsControls.css'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
@@ -27,6 +28,8 @@ export function EditorSettingsPage() {
         </>
       }
     >
+      <ColorThemeSetting />
+
       <AutoSaveSetting />
 
       <SettingsSection

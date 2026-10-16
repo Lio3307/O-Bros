@@ -3,7 +3,7 @@ import { clampSplitRatio, type SplitDivider } from './paneTree'
 
 interface PaneDividerProps {
   divider: SplitDivider
-  containerRef: RefObject<HTMLDivElement>
+  containerRef: RefObject<HTMLDivElement | null>
   onRatioChange: (ratio: number) => void
 }
 

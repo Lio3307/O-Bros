@@ -1,0 +1,90 @@
+{
+  "description": "Brand logos for agent CLIs, matched by the command people type. style 'color' is shown with its own colours; style 'mono' is a single-colour logo drawn in the interface text colour. Files come from @lobehub/icons-static-svg 1.95.1 (MIT). The logos are trademarks of their owners and are used only to identify each tool. Agents without an entry use the icon from the ACP registry.",
+  "source": "https://unpkg.com/@lobehub/icons-static-svg@1.95.1/icons/",
+  "logos": {
+    "claude": {
+      "file": "claude-color.svg",
+      "style": "color"
+    },
+    "codex": {
+      "file": "openai.svg",
+      "style": "mono"
+    },
+    "gemini": {
+      "file": "geminicli-color.svg",
+      "style": "color"
+    },
+    "qwen": {
+      "file": "qwen-color.svg",
+      "style": "color"
+    },
+    "kimi": {
+      "file": "kimi-color.svg",
+      "style": "color"
+    },
+    "amp": {
+      "file": "amp-color.svg",
+      "style": "color"
+    },
+    "junie": {
+      "file": "junie-color.svg",
+      "style": "color"
+    },
+    "devin": {
+      "file": "devin-color.svg",
+      "style": "color"
+    },
+    "vibe": {
+      "file": "mistral-color.svg",
+      "style": "color"
+    },
+    "codebuddy": {
+      "file": "codebuddy-color.svg",
+      "style": "color"
+    },
+    "qodercli": {
+      "file": "qoder-color.svg",
+      "style": "color"
+    },
+    "kiro-cli": {
+      "file": "kiro-color.svg",
+      "style": "color"
+    },
+    "opencode": {
+      "file": "opencode.svg",
+      "style": "mono"
+    },
+    "cline": {
+      "file": "cline.svg",
+      "style": "mono"
+    },
+    "kilo": {
+      "file": "kilocode.svg",
+      "style": "mono"
+    },
+    "kilocode": {
+      "file": "kilocode.svg",
+      "style": "mono"
+    },
+    "cursor-agent": {
+      "file": "cursor.svg",
+      "style": "mono"
+    },
+    "copilot": {
+      "file": "githubcopilot.svg",
+      "style": "mono"
+    },
+    "goose": {
+      "file": "goose.svg",
+      "style": "mono"
+    },
+    "grok": {
+      "file": "grok.svg",
+      "style": "mono"
+    },
+    "openrouter": {
+      "file": "openrouter.svg",
+      "style": "mono"
+    }
+  }
+}

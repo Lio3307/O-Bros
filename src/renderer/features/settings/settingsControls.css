@@ -64,7 +64,7 @@
   color: var(--color-text);
   background: var(--color-terminal);
   border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   outline: none;
 }
 
@@ -121,6 +121,13 @@
   gap: 16px;
 }
 
+.settings-section-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
 .account-list {
   display: flex;
   flex-direction: column;
@@ -134,7 +141,7 @@
   padding: 14px 16px;
   background: var(--color-panel);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius);
 }
 
 .account-card-main {
@@ -176,7 +183,7 @@
   padding: 14px 16px;
   color: var(--color-muted);
   border: 1px dashed var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius);
 }
 
 .settings-wrap {
@@ -196,7 +203,7 @@
   padding: 14px 16px;
   background: var(--color-panel);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: var(--radius);
 }
 
 .add-account-steps {
@@ -256,4 +263,88 @@
 
 .location-path {
   overflow-wrap: anywhere;
+}
+
+.theme-summary {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0 4px;
+  font-size: 12px;
+}
+
+.theme-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  color: var(--color-text);
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+}
+
+.theme-row:hover {
+  background: var(--color-hover);
+}
+
+.theme-row-selected {
+  background: var(--color-selected);
+}
+
+.theme-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+
+.theme-preview {
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  white-space: nowrap;
+  border-radius: var(--radius);
+}
+
+.theme-current {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-white);
+}
+
+.commit-identity-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.agent-login-row {
+  padding: 14px 24px;
+}
+
+.agent-login-row .cell-account {
+  gap: 6px;
+}
+
+.agent-login-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.agent-login-providers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }

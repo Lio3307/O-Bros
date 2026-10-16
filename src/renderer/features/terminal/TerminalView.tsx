@@ -4,9 +4,12 @@ import { WebglAddon } from '@xterm/addon-webgl'
 import { Terminal } from '@xterm/xterm'
 import { useEffect, useRef, useState, type DragEvent } from 'react'
 import type { AccountRef } from '../../../shared/types'
+import { useAgentCommitStore } from '../../state/agentCommitStore'
+import { useColorThemeStore } from '../../state/colorThemeStore'
 import { useTerminalFontStore } from '../../state/terminalFontStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
+import { findColorTheme, terminalThemeOf } from '../../theme/colorThemes'
 import { DRAGGED_PATH_TYPE } from '../files/dragData'
 import { createFileLinkProvider } from './fileLinkProvider'
 import { openFileReference } from './openFileReference'
@@ -22,6 +25,7 @@ interface TerminalViewProps {
   cwd: string | null
   account: AccountRef | null
   startCommand: string | null
+  startsAgent: boolean
   isVisible: boolean
 }
 
@@ -35,7 +39,7 @@ function createWebglAddon(): WebglAddon | null {
   }
 }
 
-export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: TerminalViewProps) {
+export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, isVisible }: TerminalViewProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const terminalRef = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
@@ -44,6 +48,8 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
   const [searchAddon, setSearchAddon] = useState<SearchAddon | null>(null)
   const fontSize = useTerminalFontStore((state) => state.fontSize)
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
+  const useGpuRendering = useTerminalSettingsStore((state) => state.useGpuRendering)
+  const colorThemeId = useColorThemeStore((state) => state.themeId)
 
   async function openSearch(): Promise<void> {
     const terminal = terminalRef.current
@@ -73,6 +79,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
     const terminal = new Terminal({
       ...terminalOptions,
       fontSize: useTerminalFontStore.getState().fontSize,
+      theme: terminalThemeOf(findColorTheme(useColorThemeStore.getState().themeId)),
       scrollback: useTerminalSettingsStore.getState().scrollback
     })
     const fitAddon = new FitAddon()
@@ -103,7 +110,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
     const stopRoutingOutput = routePaneOutput(paneId, {
       onOutput: (chunk) => {
         terminal.write(chunk)
-        noteTerminalOutput(paneId)
+        noteTerminalOutput(paneId, chunk)
       },
       onExit: () => terminal.write('\r\n[process exited]\r\n')
     })
@@ -116,7 +123,8 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
       }
     })
 
-    void window.api.pty.create({ id: paneId, cwd, account, startCommand }).then(fitToHost)
+    void window.api.pty
+      .create({ id: paneId, cwd, account, startCommand, startsAgent, commitIdentity: useAgentCommitStore.getState().identity }).then(fitToHost)
 
     return () => {
       resizeObserver.disconnect()
@@ -138,17 +146,18 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
     if (terminal === null) {
       return
     }
-    if (isVisible && webglAddonRef.current === null) {
+    const wantsWebgl = isVisible && useGpuRendering
+    if (wantsWebgl && webglAddonRef.current === null) {
       const addon = createWebglAddon()
       if (addon !== null) {
         terminal.loadAddon(addon)
         webglAddonRef.current = addon
       }
-    } else if (!isVisible && webglAddonRef.current !== null) {
+    } else if (!wantsWebgl && webglAddonRef.current !== null) {
       webglAddonRef.current.dispose()
       webglAddonRef.current = null
     }
-  }, [isVisible, paneId])
+  }, [isVisible, useGpuRendering, paneId])
 
   useEffect(() => {
     const terminal = terminalRef.current
@@ -166,6 +175,12 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
       terminalRef.current.options.scrollback = scrollback
     }
   }, [scrollback])
+
+  useEffect(() => {
+    if (terminalRef.current !== null) {
+      terminalRef.current.options.theme = terminalThemeOf(findColorTheme(colorThemeId))
+    }
+  }, [colorThemeId])
 
   function acceptsDrop(event: DragEvent): boolean {
     const types = Array.from(event.dataTransfer.types)
@@ -190,6 +205,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, isVisible }: 
     <>
       <div
         className="terminal-host"
+        style={{ backgroundColor: findColorTheme(colorThemeId).background }}
         ref={hostRef}
         onDragOver={(event) => acceptsDrop(event) && event.preventDefault()}
         onDrop={pasteDroppedPath}

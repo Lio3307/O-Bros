@@ -34,7 +34,7 @@ export function CommitHistory({ repoPath }: CommitHistoryProps) {
           <Network size={14} /> Graph
         </Button>
       </div>
-      {commits.length === 0 && <p className="panel-empty">No commits yet.</p>}
+      {commits.length === 0 && <p className="panel-empty">No commits yet. Make your first commit to see it here.</p>}
       {commits.map((commit) => {
         const isExpanded = expandedHash === commit.hash
         return (

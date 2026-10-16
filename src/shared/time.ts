@@ -3,7 +3,15 @@ const HOUR_MS = 60 * MINUTE_MS
 const DAY_MS = 24 * HOUR_MS
 
 export function formatResetsIn(resetsAt: number, now: number): string {
-  const remaining = Math.max(resetsAt - now, 0)
+  return formatDuration(resetsAt - now)
+}
+
+export function formatShortDuration(durationMs: number): string {
+  return durationMs > 0 && durationMs < MINUTE_MS ? '<1m' : formatDuration(durationMs)
+}
+
+export function formatDuration(durationMs: number): string {
+  const remaining = Math.max(durationMs, 0)
   const days = Math.floor(remaining / DAY_MS)
   const hours = Math.floor((remaining % DAY_MS) / HOUR_MS)
   const minutes = Math.floor((remaining % HOUR_MS) / MINUTE_MS)
@@ -40,22 +48,4 @@ export function groupByDay(timestamp: number, now: number): DayGroup {
     return 'Yesterday'
   }
   return 'Earlier'
-}
-
-export interface DayRange {
-  start: number
-  end: number
-}
-
-export function dayRangeFromInput(value: string): DayRange | null {
-  const [year, month, day] = value.split('-').map(Number)
-  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
-    return null
-  }
-  const start = new Date(year, month - 1, day)
-  const isRealDate = start.getFullYear() === year && start.getMonth() === month - 1 && start.getDate() === day
-  if (!isRealDate) {
-    return null
-  }
-  return { start: start.getTime(), end: new Date(year, month - 1, day + 1).getTime() }
 }

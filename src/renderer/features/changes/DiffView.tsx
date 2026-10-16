@@ -1,7 +1,7 @@
 import { FileDiff } from 'lucide-react'
 import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { useEffect, useState } from 'react'
-import type { GitDiffRequest, GitFileChange } from '../../../shared/types'
+import type { GitDiffRequest, GitFileChange, ReviewFileRequest } from '../../../shared/types'
 import { useChangesStore, type CommitFileSelection } from '../../state/changesStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { classifyDiffLine } from './diffLines'
@@ -19,6 +19,18 @@ interface DiffTarget {
   removedLines: number
   stateLabel: string
   request: Omit<GitDiffRequest, 'repoPath'>
+  review: ReviewFileRequest | null
+}
+
+function targetOfReview(review: ReviewFileRequest): DiffTarget {
+  return {
+    path: review.change.path,
+    addedLines: review.change.addedLines,
+    removedLines: review.change.removedLines,
+    stateLabel: 'since the agent started',
+    request: { filePath: review.change.path, isStaged: false, isUntracked: false },
+    review
+  }
 }
 
 function targetOfCommitFile(file: CommitFileSelection): DiffTarget {
@@ -27,7 +39,8 @@ function targetOfCommitFile(file: CommitFileSelection): DiffTarget {
     addedLines: file.addedLines,
     removedLines: file.removedLines,
     stateLabel: `commit ${file.hash.slice(0, SHORT_HASH_LENGTH)}`,
-    request: { filePath: file.path, isStaged: false, isUntracked: false, commitHash: file.hash }
+    request: { filePath: file.path, isStaged: false, isUntracked: false, commitHash: file.hash },
+    review: null
   }
 }
 
@@ -37,11 +50,19 @@ function targetOfChange(change: GitFileChange): DiffTarget {
     addedLines: change.addedLines,
     removedLines: change.removedLines,
     stateLabel: change.isStaged ? 'staged' : 'unstaged',
-    request: { filePath: change.path, isStaged: change.isStaged, isUntracked: change.kind === 'untracked' }
+    request: { filePath: change.path, isStaged: change.isStaged, isUntracked: change.kind === 'untracked' },
+    review: null
   }
 }
 
-function chooseTarget(change: GitFileChange | null, commitFile: CommitFileSelection | null): DiffTarget | null {
+function chooseTarget(
+  change: GitFileChange | null,
+  commitFile: CommitFileSelection | null,
+  review: ReviewFileRequest | null
+): DiffTarget | null {
+  if (review !== null) {
+    return targetOfReview(review)
+  }
   if (commitFile !== null) {
     return targetOfCommitFile(commitFile)
   }
@@ -52,10 +73,11 @@ export function DiffView() {
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const selectedChange = useChangesStore((state) => state.selectedChange)
   const selectedCommitFile = useChangesStore((state) => state.selectedCommitFile)
+  const selectedReview = useChangesStore((state) => state.selectedReview)
   const [diffText, setDiffText] = useState('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const target = chooseTarget(selectedChange, selectedCommitFile)
+  const target = chooseTarget(selectedChange, selectedCommitFile, selectedReview)
 
   useEffect(() => {
     if (activeProjectPath === null || target === null) {
@@ -63,11 +85,14 @@ export function DiffView() {
       return
     }
     setErrorMessage(null)
-    window.api.git
-      .diff({ repoPath: activeProjectPath, ...target.request })
+    const loading =
+      target.review === null
+        ? window.api.git.diff({ repoPath: activeProjectPath, ...target.request })
+        : window.api.git.reviewDiff(target.review)
+    loading
       .then(setDiffText)
       .catch((error: unknown) => setErrorMessage(friendlyErrorMessage(error, 'Could not load this diff.')))
-  }, [activeProjectPath, selectedChange, selectedCommitFile])
+  }, [activeProjectPath, selectedChange, selectedCommitFile, selectedReview])
 
   if (target === null) {
     return (

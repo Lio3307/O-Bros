@@ -15,7 +15,7 @@ export function UsageVisibility() {
   return (
     <SettingsSection
       title="Usage in the status bar"
-      description="Only Claude and Codex report how much of your plan you have used, so only they can show a usage figure. Other agents never show one."
+      description="Claude and Codex report how much of your plan you have used (5-hour and weekly). OpenRouter reports money spent and credit left; O-BROS finds its key in OpenCode or in OPENROUTER_API_KEY. Other API keys, such as Google, NVIDIA or Cloudflare, have no usage service, so they cannot show a figure."
     >
       {USAGE_PROVIDERS.map((provider) => (
         <label key={provider.id} className="toggle-row">

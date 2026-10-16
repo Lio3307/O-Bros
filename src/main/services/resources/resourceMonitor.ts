@@ -1,5 +1,6 @@
 import { app } from 'electron'
 import { cpus } from 'node:os'
+import { sumUsage } from '../../../shared/processUsage'
 import type { ProcessUsage, ResourceSnapshot, TerminalResource } from '../../../shared/types'
 import { listRunningTerminals } from '../ptyManager'
 import { collectProcessTree, readProcessTable, type ProcessEntry } from './processTable'
@@ -13,17 +14,6 @@ interface CpuSample {
 }
 
 const previousCpuSamples = new Map<string, CpuSample>()
-
-function sumUsage(items: ProcessUsage[]): ProcessUsage {
-  return items.reduce(
-    (total, item) => ({
-      cpuPercent: total.cpuPercent + item.cpuPercent,
-      workingSetBytes: total.workingSetBytes + item.workingSetBytes,
-      privateBytes: total.privateBytes + item.privateBytes
-    }),
-    { cpuPercent: 0, workingSetBytes: 0, privateBytes: 0 }
-  )
-}
 
 function readAppUsage(cpuCount: number): ProcessUsage {
   const processes = app.getAppMetrics().map((metrics) => ({
@@ -59,6 +49,10 @@ function measureTerminal(paneId: string, pid: number, table: ProcessEntry[], cpu
     workingSetBytes: tree.reduce((sum, entry) => sum + entry.workingSetBytes, 0),
     privateBytes: tree.reduce((sum, entry) => sum + entry.privateBytes, 0)
   }
+}
+
+export function readAppUsageNow(): ProcessUsage {
+  return readAppUsage(cpus().length)
 }
 
 export async function readResourceSnapshot(): Promise<ResourceSnapshot> {

@@ -1,5 +1,5 @@
 import { app, BrowserWindow, shell } from 'electron'
-import { autoUpdater } from 'electron-updater'
+import type { AppUpdater } from 'electron-updater'
 import { IpcChannel } from '../../../shared/ipc'
 import { createSingleFlight } from '../../../shared/singleFlight'
 import { allowEveryWindowToClose } from '../../closeGuard'
@@ -25,11 +25,9 @@ export function readUpdateStatus(): UpdateStatus {
   return status
 }
 
-export function setUpUpdater(): void {
-  if (!app.isPackaged) {
-    return
-  }
+let updaterLoad: Promise<AppUpdater> | null = null
 
+function configure(autoUpdater: AppUpdater): AppUpdater {
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = true
 
@@ -39,6 +37,14 @@ export function setUpUpdater(): void {
   autoUpdater.on('download-progress', (progress) => publish({ state: 'downloading', percent: progress.percent }))
   autoUpdater.on('update-downloaded', () => publish({ state: 'ready', percent: 100 }))
   autoUpdater.on('error', () => publish({ state: 'failed', message: FAILURE_MESSAGE }))
+  return autoUpdater
+}
+
+function loadUpdater(): Promise<AppUpdater> {
+  if (updaterLoad === null) {
+    updaterLoad = import('electron-updater').then((module) => configure(module.autoUpdater))
+  }
+  return updaterLoad
 }
 
 const checkOnce = createSingleFlight()
@@ -51,7 +57,10 @@ export async function checkForUpdate(): Promise<void> {
   if (STATES_THAT_BLOCK_A_CHECK.includes(status.state)) {
     return
   }
-  await checkOnce(() => autoUpdater.checkForUpdates())
+  await checkOnce(async () => {
+    const autoUpdater = await loadUpdater()
+    await autoUpdater.checkForUpdates()
+  })
 }
 
 export async function downloadUpdate(): Promise<void> {
@@ -60,6 +69,7 @@ export async function downloadUpdate(): Promise<void> {
   }
   await downloadOnce(async () => {
     publish({ state: 'downloading', percent: 0 })
+    const autoUpdater = await loadUpdater()
     await autoUpdater.downloadUpdate()
   })
 }
@@ -69,6 +79,7 @@ export async function installUpdateAndRestart(): Promise<void> {
     return
   }
   await installOnce(async () => {
+    const autoUpdater = await loadUpdater()
     await allowEveryWindowToClose()
     autoUpdater.quitAndInstall(true, true)
   })

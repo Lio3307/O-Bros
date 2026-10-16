@@ -3,10 +3,17 @@ import { useLayoutStore } from '../../state/layoutStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { classifyActivity, recordOutput, type TerminalActivity } from './terminalActivity'
+import { appendToTail, looksLikeWaitingForInput } from '../../../shared/waitingPrompt'
 
 const CHECK_INTERVAL_MS = 1000
+const WAITING_AFTER_QUIET_MS = 1500
 
-const activities = new Map<string, TerminalActivity>()
+interface WatchedTerminal {
+  activity: TerminalActivity
+  tail: string
+}
+
+const activities = new Map<string, WatchedTerminal>()
 let checkTimer: ReturnType<typeof setInterval> | null = null
 
 function findTabOfPane(paneId: string): TerminalTab | null {
@@ -23,9 +30,9 @@ function isUserWatching(tab: TerminalTab): boolean {
   return isTabShown && document.hasFocus()
 }
 
-function showSystemNotification(tab: TerminalTab, paneTitle: string): void {
+function showSystemNotification(tab: TerminalTab, title: string, body: string): void {
   try {
-    const notification = new Notification(`${paneTitle} finished`, { body: 'The terminal output has gone quiet.' })
+    const notification = new Notification(title, { body })
     notification.onclick = () => {
       window.focus()
       useWorkspaceStore.getState().activateTab(tab.id)
@@ -43,14 +50,31 @@ function announceFinished(paneId: string): void {
   }
   useAttentionStore.getState().mark(tab.id)
   if (useTerminalSettingsStore.getState().notifyWhenFinished) {
-    showSystemNotification(tab, tab.panes[paneId].title)
+    showSystemNotification(tab, `${tab.panes[paneId].title} finished`, 'The terminal output has gone quiet.')
+  }
+}
+
+function announceWaiting(paneId: string): void {
+  const tab = findTabOfPane(paneId)
+  if (tab === null || isUserWatching(tab)) {
+    return
+  }
+  useAttentionStore.getState().mark(tab.id)
+  if (useTerminalSettingsStore.getState().notifyWhenFinished) {
+    showSystemNotification(tab, `${tab.panes[paneId].title} is waiting for you`, 'It asked a question and needs your answer.')
   }
 }
 
 function checkActivities(): void {
   const now = Date.now()
-  for (const [paneId, activity] of activities) {
-    const status = classifyActivity(activity, now)
+  for (const [paneId, watched] of activities) {
+    const quietMs = now - watched.activity.lastOutputAt
+    if (quietMs >= WAITING_AFTER_QUIET_MS && looksLikeWaitingForInput(watched.tail)) {
+      activities.delete(paneId)
+      announceWaiting(paneId)
+      continue
+    }
+    const status = classifyActivity(watched.activity, now)
     if (status === 'running') {
       continue
     }
@@ -65,8 +89,12 @@ function checkActivities(): void {
   }
 }
 
-export function noteTerminalOutput(paneId: string): void {
-  activities.set(paneId, recordOutput(activities.get(paneId), Date.now()))
+export function noteTerminalOutput(paneId: string, chunk: string): void {
+  const previous = activities.get(paneId)
+  activities.set(paneId, {
+    activity: recordOutput(previous?.activity, Date.now()),
+    tail: appendToTail(previous?.tail ?? '', chunk)
+  })
   if (checkTimer === null) {
     checkTimer = setInterval(checkActivities, CHECK_INTERVAL_MS)
   }

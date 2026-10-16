@@ -5,6 +5,7 @@ import { useProjectsStore } from '../../state/projectsStore'
 import { useResourcesStore } from '../../state/resourcesStore'
 import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
 import { RefreshButton } from '../../ui/RefreshButton'
+import { LoadingText } from '../../ui/LoadingText'
 import { groupTerminalsByWorkspace, type WorkspaceGroup } from './groupTerminals'
 import { PortsSection } from './PortsSection'
 import './resources.css'
@@ -70,7 +71,7 @@ export function ResourcePopover() {
       </header>
 
       {snapshot === null ? (
-        <p className="panel-empty">Measuring…</p>
+        <p className="panel-empty"><LoadingText text="Measuring…" /></p>
       ) : (
         <>
           <div className="resource-summary">

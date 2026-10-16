@@ -1,3 +1,5 @@
+import type { CommitIdentity } from './commitIdentity'
+
 export type ProviderId = 'claude' | 'codex'
 
 export interface DetectedAccount {
@@ -127,6 +129,16 @@ export interface SessionSummary {
   projectPath: string | null
   lastActiveAt: number
   sizeBytes: number
+  teamMemberName: string | null
+}
+
+export interface TeamChatsReport {
+  sessionCount: number
+  totalBytes: number
+}
+
+export interface SessionSearchHit extends SessionSummary {
+  snippet: string
 }
 
 export interface SessionAgeBucket {
@@ -152,6 +164,8 @@ export interface RemoveOlderSessionsRequest {
 export interface RemoveSessionsResult {
   removedCount: number
   freedBytes: number
+  failedCount: number
+  failureReason: string | null
 }
 
 export interface SessionMessage {
@@ -316,19 +330,37 @@ export interface ListeningPort {
   paneId: string
 }
 
-export type DataLocationKind = 'program' | 'appData' | 'logs' | 'updater' | 'claudeSessions' | 'codexSessions'
+export type DataLocationKind =
+  | 'program'
+  | 'appData'
+  | 'logs'
+  | 'updater'
+  | 'claudeSessions'
+  | 'codexSessions'
+  | 'teamTaskFiles'
+  | 'wotSkill'
+  | 'agentHistory'
+
+export interface DataLocationCopy {
+  title: string
+  note: string
+  command: string
+}
 
 export interface DataLocation {
   id: string
   kind: DataLocationKind
   path: string
   accountLabel: string | null
+  copy: DataLocationCopy | null
 }
 
 export interface StorageReport {
   appCacheBytes: number
   leftoverTempBytes: number
   leftoverTempFolders: number
+  teamTaskFileBytes: number
+  teamTaskFileCount: number
 }
 
 export type UpdateState = 'unavailable' | 'idle' | 'checking' | 'upToDate' | 'available' | 'downloading' | 'ready' | 'failed'
@@ -339,4 +371,83 @@ export interface UpdateStatus {
   latestVersion: string | null
   percent: number
   message: string | null
+}
+
+export interface ReviewBaseline {
+  repoPath: string
+  commit: string
+  untrackedPaths: string[]
+}
+
+export interface ReviewChange {
+  path: string
+  kind: FileChangeKind
+  addedLines: number
+  removedLines: number
+}
+
+export interface ReviewFileRequest {
+  baseline: ReviewBaseline
+  change: ReviewChange
+}
+
+export type TeamMemberState = 'starting' | 'working' | 'idle' | 'waiting' | 'exited'
+
+export interface TeamMember {
+  id: string
+  name: string
+  agentName: string
+  command: string
+  cwd: string | null
+  summonedByPaneId: string
+  task: string
+  createdAt: number
+  state: TeamMemberState
+}
+
+export type WotSkillStatus = 'missing' | 'installed' | 'outdated'
+
+export interface WotSkillTarget {
+  id: string
+  title: string
+  readBy: string[]
+  iconCommand: string
+  skillPath: string
+  status: WotSkillStatus
+  installedVersion: string | null
+  availableVersion: string
+}
+
+export interface AgentGitAnswer {
+  allowed: boolean
+  reason: string
+  identity: CommitIdentity | null
+  keepCoAuthors: boolean
+}
+
+export interface AgentGitRequest {
+  kind: 'confirmGit'
+  paneId: string
+  action: string
+  command: string
+  cwd: string
+  fromAgent: boolean
+  isGuarded: boolean
+  createsCommit: boolean
+  warnings: string[]
+}
+
+export type WotRendererRequest =
+  | { kind: 'listLaunchers' }
+  | { kind: 'readScreen'; memberId: string; lines: number }
+  | AgentGitRequest
+
+export interface WotRendererEnvelope {
+  requestId: string
+  request: WotRendererRequest
+}
+
+export interface OpenedBackupFile {
+  fileName: string
+  text: string
 }
