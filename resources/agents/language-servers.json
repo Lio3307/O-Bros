@@ -1,0 +1,149 @@
+{
+  "description": "Language servers O-BROS looks for. For each language the first server found is used: first in the project's node_modules/.bin when projectLocal is true, then on the PATH. The user can turn a server off or give their own command in Settings → Language servers.",
+  "servers": [
+    {
+      "id": "typescript",
+      "title": "TypeScript and JavaScript",
+      "languages": ["typescript", "javascript"],
+      "command": "typescript-language-server",
+      "args": ["--stdio"],
+      "projectLocal": true,
+      "install": "npm install -g typescript-language-server typescript"
+    },
+    {
+      "id": "vtsls",
+      "title": "TypeScript and JavaScript (vtsls)",
+      "languages": ["typescript", "javascript"],
+      "command": "vtsls",
+      "args": ["--stdio"],
+      "projectLocal": true,
+      "install": "npm install -g @vtsls/language-server"
+    },
+    {
+      "id": "pyright",
+      "title": "Python (Pyright)",
+      "languages": ["python"],
+      "command": "pyright-langserver",
+      "args": ["--stdio"],
+      "projectLocal": true,
+      "install": "npm install -g pyright"
+    },
+    {
+      "id": "basedpyright",
+      "title": "Python (basedpyright)",
+      "languages": ["python"],
+      "command": "basedpyright-langserver",
+      "args": ["--stdio"],
+      "projectLocal": false,
+      "install": "pip install basedpyright"
+    },
+    {
+      "id": "pylsp",
+      "title": "Python (python-lsp-server)",
+      "languages": ["python"],
+      "command": "pylsp",
+      "args": [],
+      "projectLocal": false,
+      "install": "pip install python-lsp-server"
+    },
+    {
+      "id": "rust-analyzer",
+      "title": "Rust (rust-analyzer)",
+      "languages": ["rust"],
+      "command": "rust-analyzer",
+      "args": [],
+      "projectLocal": false,
+      "install": "rustup component add rust-analyzer"
+    },
+    {
+      "id": "gopls",
+      "title": "Go (gopls)",
+      "languages": ["go"],
+      "command": "gopls",
+      "args": [],
+      "projectLocal": false,
+      "install": "go install golang.org/x/tools/gopls@latest"
+    },
+    {
+      "id": "clangd",
+      "title": "C and C++ (clangd)",
+      "languages": ["cpp"],
+      "command": "clangd",
+      "args": [],
+      "projectLocal": false,
+      "install": "Install LLVM, which includes clangd"
+    },
+    {
+      "id": "jdtls",
+      "title": "Java (Eclipse JDT)",
+      "languages": ["java"],
+      "command": "jdtls",
+      "args": [],
+      "projectLocal": false,
+      "install": "Install the Eclipse JDT Language Server and put jdtls on the PATH"
+    },
+    {
+      "id": "intelephense",
+      "title": "PHP (Intelephense)",
+      "languages": ["php"],
+      "command": "intelephense",
+      "args": ["--stdio"],
+      "projectLocal": true,
+      "install": "npm install -g intelephense"
+    },
+    {
+      "id": "css",
+      "title": "CSS",
+      "languages": ["css"],
+      "command": "vscode-css-language-server",
+      "args": ["--stdio"],
+      "projectLocal": true,
+      "install": "npm install -g vscode-langservers-extracted"
+    },
+    {
+      "id": "html",
+      "title": "HTML",
+      "languages": ["html"],
+      "command": "vscode-html-language-server",
+      "args": ["--stdio"],
+      "projectLocal": true,
+      "install": "npm install -g vscode-langservers-extracted"
+    },
+    {
+      "id": "json",
+      "title": "JSON",
+      "languages": ["json"],
+      "command": "vscode-json-language-server",
+      "args": ["--stdio"],
+      "projectLocal": true,
+      "install": "npm install -g vscode-langservers-extracted"
+    },
+    {
+      "id": "yaml",
+      "title": "YAML",
+      "languages": ["yaml"],
+      "command": "yaml-language-server",
+      "args": ["--stdio"],
+      "projectLocal": true,
+      "install": "npm install -g yaml-language-server"
+    },
+    {
+      "id": "marksman",
+      "title": "Markdown (Marksman)",
+      "languages": ["markdown"],
+      "command": "marksman",
+      "args": [],
+      "projectLocal": false,
+      "install": "Download marksman from its GitHub releases and put it on the PATH"
+    },
+    {
+      "id": "sql",
+      "title": "SQL",
+      "languages": ["sql"],
+      "command": "sql-language-server",
+      "args": ["up", "--method", "stdio"],
+      "projectLocal": true,
+      "install": "npm install -g sql-language-server"
+    }
+  ]
+}

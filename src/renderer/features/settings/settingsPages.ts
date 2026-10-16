@@ -7,7 +7,7 @@ import {
   HardDrive,
   Info,
   Keyboard,
-  Scissors,
+  Braces,
   SquareTerminal,
   UserRound,
   UsersRound,
@@ -41,7 +41,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     pages: [
       { page: 'folders', label: 'Project folders', Icon: FolderCog },
       { page: 'editor', label: 'Editor', Icon: Code2 },
-      { page: 'snippets', label: 'Snippets', Icon: Scissors },
+      { page: 'languageServers', label: 'Language servers', Icon: Braces },
       { page: 'terminal', label: 'Terminal', Icon: SquareTerminal },
       { page: 'shortcuts', label: 'Shortcuts', Icon: Keyboard }
     ]

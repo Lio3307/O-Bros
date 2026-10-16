@@ -36,7 +36,7 @@ describe('groupTerminalsByWorkspace', () => {
 
     expect(groups).toHaveLength(1)
     expect(groups[0].name).toBe('PersonalRepo')
-    expect(groups[0].workingSetBytes).toBe(150 * MB)
+    expect(groups[0].memoryBytes).toBe(150 * MB)
     expect(groups[0].cpuPercent).toBe(8)
     expect(groups[0].terminals.map((row) => row.paneId)).toEqual(['1', '2'])
   })

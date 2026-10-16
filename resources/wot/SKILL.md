@@ -3,7 +3,7 @@ name: wot
 description: wot (work of teams) lets you summon other AI coding agents (Claude, Codex, Gemini, OpenCode and any other agent CLI installed on this computer) as hidden team members inside the O-BROS app, give them tasks, wait for them, read their answers and stop them. Use it when the user asks you to "use codex", "ask claude", "get a second opinion from another agent", "summon an agent", "make a team", "work in parallel with other agents", "wot", or names another agent CLI to help. It only works inside a terminal opened by the O-BROS app.
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
   publisher: O-BROS
 ---
 
@@ -43,10 +43,10 @@ Do NOT use wot when:
 7. **Always stop the members you summoned when their work is done** (`wot stop <name>`).
 8. **Never let two members edit the same files at the same time.** Give each member different files or a read-only job.
 9. **You stay responsible.** Check what members did before you tell the user it is done.
-10. **No commits, pushes or branches without the user.** Never run `git commit`, `git push`, or create, delete or rename a branch (this includes `git branch <name>`, `git checkout -b`, `git switch -c` and `git worktree add`) unless the user asked for exactly that in this conversation. Members must never do it. Even when the user asked, O-BROS stops the command and shows the user a question first.
+10. **No commits, pushes, branches or worktrees.** Do not run `git commit`, `git push`, `git merge`, `git cherry-pick`, `git revert`, `git rebase`, or create, delete or rename a branch or worktree (`git branch <name>`, `git checkout -b`, `git switch -c`, `git worktree add`). By default O-BROS refuses all of these for agents, because the user does them. Members must never do it. When your work is ready, tell the user which files changed and suggest a commit message they can use. Only if the user changed the setting in O-BROS and asked you in this conversation may you try; O-BROS then asks the user first.
 11. **Commits are made as the user.** When a commit is allowed, O-BROS sets the author and committer to the name and email the user chose in O-BROS. Never pass `--author`, never set `user.name` or `user.email`, and never add a `Co-Authored-By` line unless the user asked for it. O-BROS removes such lines unless the user allowed them.
 12. **No agent names in history.** Never put an agent name in a branch name (no `claude/...`, `codex-...`), a commit author, or a commit message credit. Name branches after the work, for example `fix/login-timeout`. Before a push, O-BROS checks the commits and asks the user if any of them still mentions an agent.
-13. **If you see `GIT_BLOCKED`, stop.** It means the user refused or did not answer. Tell the user what you wanted to do and ask. Never try another way: no full path to the git program, no other git tool, no script, alias or environment variable to get around it.
+13. **If you see `GIT_BLOCKED`, stop.** It means the user does not let agents do this, refused, or did not answer. Tell the user what you wanted to do and ask. Never try another way: no full path to the git program, no other git tool, no script, alias or environment variable to get around it.
 
 ---
 

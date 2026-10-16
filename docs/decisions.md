@@ -377,3 +377,36 @@
 - Implementation / validation / outcome: Written / unit and e2e / pending user feedback.
 - Result acceptance: Pending user feedback.
 - Learning: A CLI flag that fixes the ID beats any matching rule; check --help first.
+
+### Memory: measured, no leak, most of it is Electron itself
+- Scope and goal: User-requested. Find leaks and lower memory.
+- Choice and authority: Agent-selected. A soak test (e2e/memory.e2e.ts) opens and closes six terminals four times with garbage collection forced and fails if the renderer or main heap keeps growing. Settings, Changes, History, the Activity monitor and the WebGL addon load on demand.
+- Evidence: Ten cycles: app RAM steady at about 410 MB, renderer heap flat at 9.0 MB, main heap at 7.6 MB. Startup bundle 1,649 KB to 1,260 KB. Idle by process: main 125 MB (88 private), GPU 104 (60), window 98 (43), network 46 (12); total working set about 370 MB, private about 203 MB. Lazy loading lowered the renderer heap at start from 6.4 to 5.9 MB and did not change RAM measurably.
+- Alternatives and sacrifice: Turning off hardware acceleration would shrink the GPU process but make scrolling and animation slower; not done without the user deciding.
+- Residual risk/debt: The status bar shows working set, which counts shared Chromium libraries once per process and so overstates real use.
+- Recovery and ownership: e2e/memory.e2e.ts, src/renderer/shell/MainArea.tsx, src/renderer/shell/SidePanel.tsx, src/renderer/features/terminal/TerminalView.tsx.
+- Implementation / validation / outcome: Written / soak test and bundle map / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: Measure per process before optimising code; in Electron most memory belongs to the runtime.
+
+### Memory shown as private bytes, graphics card optional
+- Scope and goal: User-requested follow-up to the memory measurement.
+- Choice and authority: User-approved. Every memory figure shows private bytes, the memory a process uses by itself, instead of the working set, which counts shared Chromium libraries once per process. Hardware acceleration can be turned off in Settings → Storage and memory; it is read from settings.json before the app starts and needs a restart.
+- Evidence: hardwareAcceleration.e2e.ts: private memory at rest 202 MB with the graphics card (GPU process 60 MB) and 167 MB without it (GPU process 23 MB).
+- Alternatives and sacrifice: Hardware acceleration stays on by default because scrolling and animations are smoother.
+- Residual risk/debt: Private bytes on macOS and Linux come from the resident size, which still includes some shared pages.
+- Recovery and ownership: src/main/settings.ts, src/main/index.ts, src/renderer/features/settings/HardwareAccelerationSetting.tsx.
+- Implementation / validation / outcome: Written / e2e with measurement / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: Quote a saving only after measuring it; the guess of 40 to 60 MB was 37 MB in practice.
+
+### Code intelligence through language servers the user already has
+- Scope and goal: User-requested. Real IntelliSense, detected automatically, with the option to give an own command; snippets removed.
+- Choice and authority: User-directed approach, agent-selected design. @codemirror/lsp-client in the editor; servers run in the main process (one per server and workspace folder, found in node_modules/.bin or on the PATH, from resources/agents/language-servers.json) and talk to the editor over IPC with LSP framing. The workspace folder is the nearest folder with a project marker, never above the opened project folder. Server diagnostics and oxlint share one diagnostics board so neither overwrites the other. Hover HTML from servers goes through an allowlist sanitizer. F2 stays "select all occurrences", so rename is not bound. Custom commands are not part of settings backups.
+- Evidence: languageServer.e2e.ts with the real typescript-language-server: type error after about 3 s, hover signature, member completion (toUpperCase), running list; unit tests for framing, file URIs, server choice and the HTML rules.
+- Alternatives and sacrifice: Bundling servers was rejected (size, and the user's own versions match their projects). Rename symbol is left unbound until a free shortcut is chosen.
+- Residual risk/debt: If O-BROS is killed without quitting, a server may outlive it until its input pipe closes. Server memory is not yet counted in the Resource Manager.
+- Recovery and ownership: src/main/services/languageServers/*, src/renderer/features/editor/languageServer/*, src/renderer/features/settings/LanguageServersPage.tsx.
+- Implementation / validation / outcome: Written / unit and e2e / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: Two features that both call setDiagnostics replace each other's results; keep one owner.

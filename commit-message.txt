@@ -1,32 +1,32 @@
-Add agent teams (wot), git guard, agent monitor and dependency updates
+Add language servers, block agent git changes and lower memory use
 
-Agents and teams
-- wot: agents summon other installed agent CLIs as team members, with a
-  Team view grouped by lead, auto-stop to free memory and an install
-  page that lists the agents found on this computer (skill 1.2.0)
-- Git guard in every terminal: agents ask before commit, push and
-  branch changes, commit with your identity, and pushes are checked
-  for agent traces
-- Agent monitor: live agents with state, CPU and memory, today's
-  numbers, activity by hour, time per agent and the activity log;
-  agents started by typing their name are detected too
-- Team member conversations are marked in History and can be deleted
-  in Storage, or moved to the Recycle Bin when a member stops
+Editor
+- Code intelligence from the language servers installed in the project
+  or on the computer: completions, hover, errors as you type, go to
+  definition (F12), find references (Shift+F12), parameter hints
+- Settings -> Language servers: what was found, install hints, turn one
+  off or give your own command, running servers with Stop
+- Server and oxlint errors are shown together; hover HTML is sanitized
+- Snippets removed
 
-Accounts, usage and storage
-- Provider accounts lists every installed agent and how it signs in;
-  only names and login types are read, never keys or tokens
-- Usage note per agent, OpenRouter credit, last-known usage kept
-- Other agents' history folders explained in Where your data lives
-- Status bar memory refreshes every 5 seconds
+Agents
+- Agents may not commit, push or create branches or worktrees by
+  default (Never allow / Ask me / Allow in Settings -> Terminal);
+  wot skill 1.3.0 tells agents to hand the commit to the user
+- Provider accounts lists every installed agent that needs a sign-in
+  or an API key, with its status and how to sign in; API key
+  variables are checked by name only
 
-Interface
-- Boxy JetBrains-style look through one radius token, shared
-  components (Card, Chip, StatusDot, Spinner and more), loading
-  spinners, green and red hover actions, agent logos, 14 color themes
-- History without the date picker, settings backup and restore,
-  drive roots named in the sidebar, Open for listening ports
+Memory
+- Memory leak test; no leak found
+- Settings, Changes, History and the monitor load when first opened;
+  the startup bundle is 24% smaller
+- Memory figures show private memory, like Task Manager
+- Graphics card setting saves about 35 MB
 
-Dependencies
-- React 19, Vite 8 with electron-vite 6, xterm 6, TypeScript 6.0,
-  @types/node 24, GitHub Actions v7, grouped Dependabot updates
+Fixes
+- Reading the Windows process list failed when any program had a
+  control character in its command line, which broke git checks at
+  random
+- Slow git checks are logged, and the git guard tests print the
+  agent's output when they fail

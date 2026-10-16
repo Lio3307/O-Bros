@@ -3,6 +3,8 @@ import { join } from 'node:path'
 import { buildApplicationMenu } from './applicationMenu'
 import { registerAccountsIpc } from './ipc/accountsIpc'
 import { registerActivityIpc } from './ipc/activityIpc'
+import { registerLanguageServersIpc } from './ipc/languageServersIpc'
+import { stopAllLanguageServers } from './services/languageServers/languageServerSessions'
 import { registerAgentsIpc } from './ipc/agentsIpc'
 import { registerAppIpc } from './ipc/appIpc'
 import { registerFilesIpc } from './ipc/filesIpc'
@@ -25,6 +27,7 @@ import { startTypedAgentWatch } from './services/activity/typedAgents'
 import { startWotServer, stopWotServer } from './services/wot/wotServer'
 import { guardWindowClose } from './closeGuard'
 import { createMainWindow } from './window'
+import { loadSettingsBeforeStart } from './settings'
 
 const DATA_FOLDER_NAME = 'o-bros'
 
@@ -35,6 +38,10 @@ function keepDataFolderName(): void {
 }
 
 keepDataFolderName()
+
+if (!loadSettingsBeforeStart().useHardwareAcceleration) {
+  app.disableHardwareAcceleration()
+}
 
 function registerAllIpc(): void {
   registerPtyIpc()
@@ -50,6 +57,7 @@ function registerAllIpc(): void {
   registerAppIpc()
   registerPortsIpc()
   registerActivityIpc()
+  registerLanguageServersIpc()
   registerStorageIpc()
   registerUpdaterIpc()
   registerWotIpc()
@@ -89,6 +97,7 @@ app.on('child-process-gone', (_event, details) =>
 app.on('before-quit', () => {
   stopWotServer()
   killAllTerminals()
+  stopAllLanguageServers()
 })
 
 app.on('window-all-closed', () => {

@@ -15,6 +15,7 @@
     "test:e2e": "electron-vite build && playwright test"
   },
   "dependencies": {
+    "@codemirror/lsp-client": "^6.3.0",
     "@lydell/node-pty": "^1.0.0",
     "electron-updater": "^6.8.9",
     "oxfmt": "^0.72.0",

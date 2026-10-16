@@ -17,7 +17,7 @@ function useTeamMemoryBytes(): number | null {
   const memberIds = new Set(members.map((member) => member.id))
   return snapshot.terminals
     .filter((terminal) => memberIds.has(terminal.paneId))
-    .reduce((total, terminal) => total + terminal.workingSetBytes, 0)
+    .reduce((total, terminal) => total + terminal.privateBytes, 0)
 }
 
 export function TeamStorageSection() {

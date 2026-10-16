@@ -1,6 +1,13 @@
 import type { ActivityEntry, LiveAgent } from './activity'
 import type { AgentLogin } from './agentLogins'
 import type { AgentLogo } from './agentLogos'
+import type {
+  LanguageServerChoices,
+  LanguageServerSession,
+  LanguageServerStartRequest,
+  LanguageServerStatus,
+  RunningLanguageServer
+} from './languageServers'
 import type { CommitIdentity } from './commitIdentity'
 import type { CreditBalance } from './creditBalance'
 import type { UsageFacts } from './usageSupport'
@@ -152,6 +159,14 @@ export const IpcChannel = {
   portsList: 'ports:list',
   portsStop: 'ports:stop',
   portsOpen: 'ports:open',
+  lspStatuses: 'lsp:statuses',
+  lspStart: 'lsp:start',
+  lspSend: 'lsp:send',
+  lspRelease: 'lsp:release',
+  lspMessage: 'lsp:message',
+  lspClosed: 'lsp:closed',
+  lspRunning: 'lsp:running',
+  lspStop: 'lsp:stop',
   wotAgents: 'wot:agents',
   historyTeamChats: 'history:teamChats',
   historyRemoveTeamChats: 'history:removeTeamChats',
@@ -161,6 +176,9 @@ export const IpcChannel = {
   activityLive: 'activity:live',
   appListRunningTasks: 'app:listRunningTasks',
   appConfirmClose: 'app:confirmClose',
+  appHardwareAcceleration: 'app:hardwareAcceleration',
+  appSetHardwareAcceleration: 'app:setHardwareAcceleration',
+  appRestart: 'app:restart',
   appCloseRequested: 'app:closeRequested',
   appLog: 'app:log',
   appOpenLogFolder: 'app:openLogFolder',
@@ -313,6 +331,16 @@ export interface DesktopApi {
     stop(pid: number): Promise<void>
     open(port: number): Promise<void>
   }
+  lsp: {
+    statuses(folderPath: string | null, choices: LanguageServerChoices): Promise<LanguageServerStatus[]>
+    start(request: LanguageServerStartRequest): Promise<LanguageServerSession | null>
+    send(sessionId: string, message: string): void
+    release(sessionId: string): void
+    onMessage(listener: (event: { sessionId: string; message: string }) => void): () => void
+    onClosed(listener: (sessionId: string) => void): () => void
+    running(): Promise<RunningLanguageServer[]>
+    stop(sessionId: string): Promise<void>
+  }
   activity: {
     list(): Promise<ActivityEntry[]>
     clear(): Promise<void>
@@ -322,6 +350,9 @@ export interface DesktopApi {
   app: {
     listRunningTasks(): Promise<RunningTask[]>
     confirmClose(): Promise<void>
+    hardwareAcceleration(): Promise<{ isSaved: boolean; isActive: boolean }>
+    setHardwareAcceleration(isEnabled: boolean): Promise<void>
+    restart(): Promise<void>
     onCloseRequested(listener: () => void): () => void
     log(level: 'error' | 'warning' | 'info', message: string): void
     openLogFolder(): Promise<void>

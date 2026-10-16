@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef } from 'react'
+import { Suspense, useRef } from 'react'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { openTerminal } from '../../state/openTerminal'
 import { useProjectsStore } from '../../state/projectsStore'
@@ -7,6 +7,7 @@ import { PaneLayoutView } from './PaneLayoutView'
 import { TabBar } from './TabBar'
 import './terminal.css'
 import { Button } from '../../ui/Button'
+import { lazyComponent } from '../../ui/lazyComponent'
 
 function FirstRunState() {
   const addRoot = useProjectsStore((state) => state.addRoot)
@@ -25,7 +26,7 @@ function FirstRunState() {
   )
 }
 
-const CodeEditor = lazy(() => import('../editor/CodeEditor').then((module) => ({ default: module.CodeEditor })))
+const CodeEditor = lazyComponent(() => import('../editor/CodeEditor').then((module) => module.CodeEditor))
 
 interface TerminalWorkspaceProps {
   isVisible: boolean

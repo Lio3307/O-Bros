@@ -7,8 +7,17 @@ import { LoadingText } from '../../ui/LoadingText'
 import { SettingsSection } from '../../ui/SettingsSection'
 import { StatusDot, type StatusTone } from '../../ui/StatusDot'
 
-const TONE_BY_KIND: Record<AgentLoginKind, StatusTone> = { account: 'success', 'api-keys': 'info', none: 'neutral' }
-const KIND_LABELS: Record<AgentLoginKind, string> = { account: 'Signed in', 'api-keys': 'API keys', none: 'Not signed in' }
+const TONE_BY_KIND: Record<AgentLoginKind, StatusTone> = { account: 'success', 'api-keys': 'info', none: 'danger', unknown: 'neutral' }
+const KIND_LABELS: Record<AgentLoginKind, string> = {
+  account: 'Signed in',
+  'api-keys': 'API key',
+  none: 'Not signed in',
+  unknown: 'Not checked'
+}
+
+function needsAction(login: AgentLogin): boolean {
+  return login.kind === 'none' || login.kind === 'unknown'
+}
 
 function AgentLoginRow({ login }: { login: AgentLogin }) {
   return (
@@ -22,6 +31,7 @@ function AgentLoginRow({ login }: { login: AgentLogin }) {
           </span>
         </span>
         <span>{login.summary}</span>
+        {login.requirement !== undefined && <span className="muted">{login.requirement}</span>}
         {login.providers.length > 0 && (
           <span className="agent-login-providers">
             {login.providers.map((provider) => (
@@ -29,7 +39,10 @@ function AgentLoginRow({ login }: { login: AgentLogin }) {
             ))}
           </span>
         )}
-        <span className="muted">{login.manageHint}</span>
+        <span className={needsAction(login) ? 'agent-login-action' : 'muted'}>
+          {needsAction(login) ? 'To sign in: ' : 'To change it: '}
+          {login.manageHint}
+        </span>
       </div>
     </div>
   )
@@ -60,7 +73,7 @@ export function OtherAgentLogins() {
       description={
         <>
           The other agent CLIs installed on this computer and how each one signs in. o-bros reads only the account name,
-          the login type and the provider names from their files, never a key or token, and never changes them. Each
+          the login type and the provider names from their files, and only whether an API key variable is set, never a key or token itself, and never changes them. API key variables are read when O-BROS starts, so restart it after you set one. Each
           agent keeps one login, so switching accounts here is only possible for Claude and Codex.
         </>
       }

@@ -17,6 +17,9 @@ export interface LaunchOptions {
   separateHome?: boolean
   withoutProjectFolders?: boolean
   binFiles?: Record<string, string>
+  extraArgs?: string[]
+  settings?: Record<string, unknown>
+  environment?: Record<string, string>
 }
 
 export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp> {
@@ -27,7 +30,7 @@ export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp
   await mkdir(projectFolder)
   await mkdir(userDataFolder)
   await writeFile(join(projectFolder, 'notes.txt'), 'first line\n', 'utf8')
-  await writeFile(join(userDataFolder, 'settings.json'), JSON.stringify({ projectRoots: options.withoutProjectFolders === true ? [] : [projectFolder] }), 'utf8')
+  await writeFile(join(userDataFolder, 'settings.json'), JSON.stringify({ projectRoots: options.withoutProjectFolders === true ? [] : [projectFolder], ...options.settings }), 'utf8')
 
   const environment: Record<string, string | undefined> = { ...process.env }
   const homeFolder = options.separateHome === true ? join(workFolder, 'home') : null
@@ -45,10 +48,11 @@ export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp
     environment.PATH = `${binFolder}${delimiter}${environment.PATH ?? ''}`
     environment.Path = environment.PATH
   }
+  Object.assign(environment, options.environment)
   delete environment.ELECTRON_RENDERER_URL
 
   const application = await electron.launch({
-    args: [PROJECT_ROOT, `--user-data-dir=${userDataFolder}`],
+    args: [...(options.extraArgs ?? []), PROJECT_ROOT, `--user-data-dir=${userDataFolder}`],
     env: environment as Record<string, string>
   })
   const window = await application.firstWindow()

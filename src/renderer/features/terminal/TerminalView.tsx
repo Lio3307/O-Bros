@@ -1,6 +1,6 @@
 import { FitAddon } from '@xterm/addon-fit'
 import type { SearchAddon } from '@xterm/addon-search'
-import { WebglAddon } from '@xterm/addon-webgl'
+import type { WebglAddon } from '@xterm/addon-webgl'
 import { Terminal } from '@xterm/xterm'
 import { useEffect, useRef, useState, type DragEvent } from 'react'
 import type { AccountRef } from '../../../shared/types'
@@ -29,9 +29,9 @@ interface TerminalViewProps {
   isVisible: boolean
 }
 
-function createWebglAddon(): WebglAddon | null {
+function createWebglAddon(WebglAddonClass: typeof WebglAddon): WebglAddon | null {
   try {
-    const addon = new WebglAddon()
+    const addon = new WebglAddonClass()
     addon.onContextLoss(() => addon.dispose())
     return addon
   } catch {
@@ -147,15 +147,26 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       return
     }
     const wantsWebgl = isVisible && useGpuRendering
-    if (wantsWebgl && webglAddonRef.current === null) {
-      const addon = createWebglAddon()
+    if (!wantsWebgl && webglAddonRef.current !== null) {
+      webglAddonRef.current.dispose()
+      webglAddonRef.current = null
+    }
+    if (!wantsWebgl || webglAddonRef.current !== null) {
+      return
+    }
+    let isStillWanted = true
+    void import('@xterm/addon-webgl').then(({ WebglAddon: WebglAddonClass }) => {
+      if (!isStillWanted || terminalRef.current !== terminal || webglAddonRef.current !== null) {
+        return
+      }
+      const addon = createWebglAddon(WebglAddonClass)
       if (addon !== null) {
         terminal.loadAddon(addon)
         webglAddonRef.current = addon
       }
-    } else if (!wantsWebgl && webglAddonRef.current !== null) {
-      webglAddonRef.current.dispose()
-      webglAddonRef.current = null
+    })
+    return () => {
+      isStillWanted = false
     }
   }, [isVisible, useGpuRendering, paneId])
 

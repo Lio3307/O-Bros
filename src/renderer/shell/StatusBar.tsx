@@ -124,11 +124,11 @@ function UsageSummary({ onClick }: { onClick: () => void }) {
 
 function ResourceStatus({ onClick }: { onClick: () => void }) {
   const snapshot = useResourcesStore((state) => state.snapshot)
-  const memoryText = snapshot === null ? '—' : formatBytes(snapshot.total.workingSetBytes)
+  const memoryText = snapshot === null ? '—' : formatBytes(snapshot.total.privateBytes)
   const terminalCount = snapshot === null ? 0 : snapshot.terminals.length
 
   return (
-    <button type="button" className="status-usage status-resources" title="Memory and terminals" onClick={onClick}>
+    <button type="button" className="status-usage status-resources" title="Memory used by O-BROS and its terminals, like Task Manager shows it. Click for details." onClick={onClick}>
       <MemoryStick size={14} />
       <span className="status-percent">{memoryText}</span>
       <span className="status-separator">·</span>

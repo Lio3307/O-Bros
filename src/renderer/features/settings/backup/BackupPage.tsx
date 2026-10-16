@@ -18,7 +18,7 @@ export function BackupPage() {
         title="Export"
         description={
           <>
-            Saves your color theme, editor settings and snippets, shortcuts, prompts, agent buttons, terminal options,
+            Saves your color theme, editor settings, shortcuts, prompts, agent buttons, terminal options,
             agent and git options, and the name and email for commits made by agents. Open tabs and recent files are not
             included. Accounts, logins and tokens are never included.
           </>

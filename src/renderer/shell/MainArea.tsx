@@ -1,10 +1,24 @@
-import { ActivityMonitor } from '../features/activity/monitor/ActivityMonitor'
-import { ChangesMain } from '../features/changes/ChangesMain'
-import { SessionReplay } from '../features/history/SessionReplay'
-import { SettingsPage } from '../features/settings/SettingsPage'
+import { Suspense } from 'react'
 import { TeamWorkspace } from '../features/team/TeamWorkspace'
 import { TerminalWorkspace } from '../features/terminal/TerminalWorkspace'
 import { useLayoutStore } from '../state/layoutStore'
+import { lazyComponent } from '../ui/lazyComponent'
+import { LoadingText } from '../ui/LoadingText'
+
+const SessionReplay = lazyComponent(() => import('../features/history/SessionReplay').then((module) => module.SessionReplay))
+const ChangesMain = lazyComponent(() => import('../features/changes/ChangesMain').then((module) => module.ChangesMain))
+const ActivityMonitor = lazyComponent(() =>
+  import('../features/activity/monitor/ActivityMonitor').then((module) => module.ActivityMonitor)
+)
+const SettingsPage = lazyComponent(() => import('../features/settings/SettingsPage').then((module) => module.SettingsPage))
+
+function MainLoading() {
+  return (
+    <div className="main-loading">
+      <LoadingText text="Loading…" />
+    </div>
+  )
+}
 
 export function MainArea() {
   const section = useLayoutStore((state) => state.section)
@@ -13,10 +27,12 @@ export function MainArea() {
     <main className="main-area">
       <TerminalWorkspace isVisible={section === 'projects'} />
       <TeamWorkspace isVisible={section === 'team'} />
-      {section === 'history' && <SessionReplay />}
-      {section === 'changes' && <ChangesMain />}
-      {section === 'activity' && <ActivityMonitor />}
-      {section === 'settings' && <SettingsPage />}
+      <Suspense fallback={<MainLoading />}>
+        {section === 'history' && <SessionReplay />}
+        {section === 'changes' && <ChangesMain />}
+        {section === 'activity' && <ActivityMonitor />}
+        {section === 'settings' && <SettingsPage />}
+      </Suspense>
     </main>
   )
 }

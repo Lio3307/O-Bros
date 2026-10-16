@@ -1,21 +1,22 @@
 import { create } from 'zustand'
+import { readAgentGitPolicy, type AgentGitPolicy } from '../../shared/agentGitPolicy'
 
 export const SCROLLBACK_CHOICES = [1000, 2000, 5000, 10000]
 
 const DEFAULT_SCROLLBACK = 2000
 const SCROLLBACK_KEY = 'o-bros.terminalScrollback'
 const NOTIFY_KEY = 'o-bros.notifyWhenFinished'
-const GUARD_GIT_KEY = 'o-bros.askBeforeAgentGit'
+const AGENT_GIT_KEY = 'o-bros.agentGitPolicy'
 const GPU_KEY = 'o-bros.terminalGpuRendering'
 
 interface TerminalSettingsState {
   scrollback: number
   notifyWhenFinished: boolean
-  askBeforeAgentGit: boolean
+  agentGitPolicy: AgentGitPolicy
   useGpuRendering: boolean
   setScrollback: (lines: number) => void
   setNotifyWhenFinished: (isEnabled: boolean) => void
-  setAskBeforeAgentGit: (isEnabled: boolean) => void
+  setAgentGitPolicy: (policy: AgentGitPolicy) => void
   setUseGpuRendering: (isEnabled: boolean) => void
 }
 
@@ -43,7 +44,7 @@ function loadScrollback(): number {
 export const useTerminalSettingsStore = create<TerminalSettingsState>()((set) => ({
   scrollback: loadScrollback(),
   notifyWhenFinished: readStorage(NOTIFY_KEY) !== 'false',
-  askBeforeAgentGit: readStorage(GUARD_GIT_KEY) !== 'false',
+  agentGitPolicy: readAgentGitPolicy(readStorage(AGENT_GIT_KEY)),
   useGpuRendering: readStorage(GPU_KEY) === 'true',
 
   setScrollback: (scrollback) => {
@@ -56,9 +57,9 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()((set) =>
     set({ notifyWhenFinished })
   },
 
-  setAskBeforeAgentGit: (askBeforeAgentGit) => {
-    writeStorage(GUARD_GIT_KEY, String(askBeforeAgentGit))
-    set({ askBeforeAgentGit })
+  setAgentGitPolicy: (agentGitPolicy) => {
+    writeStorage(AGENT_GIT_KEY, agentGitPolicy)
+    set({ agentGitPolicy })
   },
 
   setUseGpuRendering: (useGpuRendering) => {

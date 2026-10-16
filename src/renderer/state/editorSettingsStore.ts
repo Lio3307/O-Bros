@@ -1,9 +1,7 @@
 import { create } from 'zustand'
-import type { Snippet } from '../features/editor/defaultSnippets'
 import {
   clampAutoSaveDelay,
   defaultEditorSettings,
-  defaultSnippetsFor,
   normalizeEditorSettings,
   type EditorSettings,
   type LintMode
@@ -18,10 +16,6 @@ interface EditorSettingsState extends EditorSettings {
   setFormatOnSave: (isEnabled: boolean) => void
   setAutoSaveEnabled: (isEnabled: boolean) => void
   setAutoSaveDelay: (delayMs: number) => void
-  addSnippet: (id: LanguageId) => void
-  updateSnippet: (id: LanguageId, index: number, changes: Partial<Snippet>) => void
-  removeSnippet: (id: LanguageId, index: number) => void
-  resetSnippets: (id: LanguageId) => void
 }
 
 function loadSavedSettings(): EditorSettings {
@@ -34,8 +28,8 @@ function loadSavedSettings(): EditorSettings {
 }
 
 function pickSettings(state: EditorSettings): EditorSettings {
-  const { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs, snippets } = state
-  return { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs, snippets }
+  const { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs } = state
+  return { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs }
 }
 
 export function isLanguageEnabled(settings: EditorSettings, id: LanguageId): boolean {
@@ -52,10 +46,6 @@ export const useEditorSettingsStore = create<EditorSettingsState>()((set, get) =
     }
   }
 
-  function changeSnippets(id: LanguageId, snippets: Snippet[]): void {
-    change({ snippets: { ...get().snippets, [id]: snippets } })
-  }
-
   return {
     ...loadSavedSettings(),
 
@@ -70,19 +60,6 @@ export const useEditorSettingsStore = create<EditorSettingsState>()((set, get) =
 
     setAutoSaveEnabled: (autoSaveEnabled) => change({ autoSaveEnabled }),
 
-    setAutoSaveDelay: (delayMs) => change({ autoSaveDelayMs: clampAutoSaveDelay(delayMs) }),
-
-    addSnippet: (id) => changeSnippets(id, [...get().snippets[id], { prefix: '', description: '', body: '' }]),
-
-    updateSnippet: (id, index, changes) => {
-      changeSnippets(
-        id,
-        get().snippets[id].map((snippet, position) => (position === index ? { ...snippet, ...changes } : snippet))
-      )
-    },
-
-    removeSnippet: (id, index) => changeSnippets(id, get().snippets[id].filter((_, position) => position !== index)),
-
-    resetSnippets: (id) => changeSnippets(id, defaultSnippetsFor(id))
+    setAutoSaveDelay: (delayMs) => change({ autoSaveDelayMs: clampAutoSaveDelay(delayMs) })
   }
 })

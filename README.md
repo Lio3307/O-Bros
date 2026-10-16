@@ -16,7 +16,7 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 
 - **Real terminals** with tabs and splits (xterm.js and node-pty). Start `claude`, `codex` or a plain shell in any project folder.
 - **Accounts and usage.** Detects your Claude and Codex logins on this computer, lets you switch between them, and shows 5-hour and weekly usage in the status bar.
-- **Files and editor.** A file tree with a right-click menu, name and text search, quick open (`Ctrl+P`) and a CodeMirror editor with snippets, linting and formatting for JavaScript and TypeScript, auto save and 14 languages.
+- **Files and editor.** A file tree with a right-click menu, name and text search, quick open (`Ctrl+P`) and a CodeMirror editor with code intelligence from the language servers you have installed (completions, hover, errors, go to definition), linting and formatting for JavaScript and TypeScript, auto save and 14 languages.
 - **Git changes.** Stage, unstage, discard and commit, switch branches, fetch, and read diffs.
 - **Team of agents (wot).** Ask Claude or Codex to bring in another agent ("ask codex to review this"). It summons any agent CLI installed on your computer into a hidden terminal you can watch and stop in the Team view.
 - **Session history and Resume.** Browse your Claude and Codex conversations by day, resume one in a terminal with a click, and delete old ones.

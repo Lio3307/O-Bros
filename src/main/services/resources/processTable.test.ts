@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { collectProcessTree, type ProcessEntry } from './processTable'
+import { collectProcessTree, type ProcessEntry, withoutControlCharacters } from './processTable'
 
 function entry(pid: number, parentPid: number): ProcessEntry {
   return { pid, parentPid, workingSetBytes: 0, privateBytes: 0, cpuTimeMs: null, cpuPercent: null, name: '', commandLine: '' }
@@ -25,5 +25,13 @@ describe('collectProcessTree', () => {
   it('survives a process that lists itself as its parent', () => {
     const selfParent = [entry(5, 5)]
     expect(collectProcessTree(selfParent, 5).map((item) => item.pid)).toEqual([5])
+  })
+})
+
+describe('withoutControlCharacters', () => {
+  it('makes PowerShell JSON with raw control characters in a command line readable', () => {
+    const broken = '[{"CommandLine":"tool --name ' + String.fromCharCode(27) + '[0m' + String.fromCharCode(1) + '"}]' + String.fromCharCode(13, 10)
+    expect(() => JSON.parse(broken)).toThrow()
+    expect(JSON.parse(withoutControlCharacters(broken))).toEqual([{ CommandLine: 'tool --name  [0m ' }])
   })
 })

@@ -17,6 +17,7 @@ test.beforeEach(async () => {
       localStorage.setItem('o-bros.agentLaunchers', launchers)
       localStorage.setItem('o-bros.shownAgents', shown)
       localStorage.setItem('o-bros.agentCommitIdentity', identity)
+      localStorage.setItem('o-bros.agentGitPolicy', 'ask')
     },
     {
       launchers: JSON.stringify([{ id: 'shell-agent', name: 'ShellAgent', command: SHELL_AGENT_COMMAND }]),
@@ -78,7 +79,7 @@ test('asks the user before an agent commits, and blocks it when refused', async 
   await app.window.getByTitle('Activity', { exact: true }).click()
   const rows = app.window.locator('.activity-row')
   await expect(rows.filter({ hasText: 'ShellAgent started' })).toHaveCount(1)
-  await expect(rows.filter({ hasText: 'asked to commit' }).filter({ hasText: 'Allowed' })).toHaveCount(1)
+  await expect(rows.filter({ hasText: 'tried to commit' }).filter({ hasText: 'Allowed' })).toHaveCount(1)
   await expect(rows.filter({ hasText: 'second-commit' }).filter({ hasText: 'Denied' })).toHaveCount(1)
 })
 
@@ -105,4 +106,38 @@ test('asks for the commit name and email the first time an agent commits', async
   await expect.poll(() => readProof('commit-proof.txt'), { timeout: 30_000 }).toContain('asked-identity')
   await typeInTerminal(savedOutput('git log --format=fuller', 'log-proof.txt'))
   await expect.poll(() => readProof('log-proof.txt'), { timeout: 30_000 }).toContain('Author:     First Time <first@example.com>')
+})
+
+test('refuses agent commits, branches and worktrees by default without asking', async () => {
+  test.setTimeout(120_000)
+  await app.window.evaluate(() => localStorage.removeItem('o-bros.agentGitPolicy'))
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.getByRole('button', { name: 'ShellAgent' }).click()
+  await app.window.locator('.workspace .xterm-helper-textarea').first().waitFor({ state: 'attached' })
+  await app.window.waitForTimeout(SHELL_AGENT_START_MS)
+
+  await typeInTerminal(savedOutput(`git init -q; git ${IDENTITY} commit --allow-empty -m base`, 'init-proof.txt'))
+  await expect.poll(() => readProof('init-proof.txt'), { timeout: 30_000 }).toContain('GIT_BLOCKED')
+
+  await typeInTerminal(savedOutput(`git ${IDENTITY} commit --allow-empty -m by-agent`, 'commit-proof.txt'))
+  await expect.poll(() => readProof('commit-proof.txt'), { timeout: 30_000 }).toContain('does not let agents commit')
+  await typeInTerminal(savedOutput('git checkout -b agent-branch', 'branch-proof.txt'))
+  await expect.poll(() => readProof('branch-proof.txt'), { timeout: 30_000 }).toContain('GIT_BLOCKED')
+  await typeInTerminal(savedOutput('git worktree add ../agent-tree', 'tree-proof.txt'))
+  await expect.poll(() => readProof('tree-proof.txt'), { timeout: 30_000 }).toContain('GIT_BLOCKED')
+  await expect(app.window.getByText('Allow it to commit?')).toHaveCount(0)
+
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  await app.window.waitForTimeout(SHELL_AGENT_START_MS)
+  const plainTerminal = app.window.locator('.workspace .xterm-helper-textarea').last()
+  await plainTerminal.focus()
+  await app.window.keyboard.type(savedOutput(`git ${IDENTITY} commit --allow-empty -m by-me`, 'mine-proof.txt'))
+  await app.window.keyboard.press('Enter')
+  await expect.poll(() => readProof('mine-proof.txt'), { timeout: 30_000 }).toContain('by-me')
+  expect(await readProof('mine-proof.txt')).not.toContain('GIT_BLOCKED')
+
+  await app.window.getByTitle('Activity', { exact: true }).click()
+  await expect(app.window.locator('.activity-row', { hasText: 'tried to commit' }).filter({ hasText: 'Denied' }).first()).toBeVisible()
 })

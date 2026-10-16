@@ -1,3 +1,4 @@
+import type { AgentGitPolicy } from '../../../shared/agentGitPolicy'
 import { SCROLLBACK_CHOICES, useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import './settings.css'
 import './settingsControls.css'
@@ -7,15 +8,27 @@ import { SegmentedControl } from '../../ui/SegmentedControl'
 import { AgentCommitSetting } from './AgentCommitSetting'
 import { ColorThemeSetting } from './ColorThemeSetting'
 
+const AGENT_GIT_OPTIONS: { value: AgentGitPolicy; label: string }[] = [
+  { value: 'block', label: 'Never allow' },
+  { value: 'ask', label: 'Ask me' },
+  { value: 'allow', label: 'Allow' }
+]
+
+const AGENT_GIT_NOTES: Record<AgentGitPolicy, string> = {
+  block: 'Agents are refused right away and told that you do it yourself. Nothing is asked.',
+  ask: 'O-BROS pauses the agent and asks you. No answer in 100 seconds means no.',
+  allow: 'Agents may do it. Team members are still asked about.'
+}
+
 export function TerminalSettingsPage() {
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
   const setScrollback = useTerminalSettingsStore((state) => state.setScrollback)
   const notifyWhenFinished = useTerminalSettingsStore((state) => state.notifyWhenFinished)
   const setNotifyWhenFinished = useTerminalSettingsStore((state) => state.setNotifyWhenFinished)
-  const askBeforeAgentGit = useTerminalSettingsStore((state) => state.askBeforeAgentGit)
+  const agentGitPolicy = useTerminalSettingsStore((state) => state.agentGitPolicy)
   const useGpuRendering = useTerminalSettingsStore((state) => state.useGpuRendering)
   const setUseGpuRendering = useTerminalSettingsStore((state) => state.setUseGpuRendering)
-  const setAskBeforeAgentGit = useTerminalSettingsStore((state) => state.setAskBeforeAgentGit)
+  const setAgentGitPolicy = useTerminalSettingsStore((state) => state.setAgentGitPolicy)
 
   return (
     <SettingsPageLayout
@@ -60,20 +73,19 @@ export function TerminalSettingsPage() {
         title="Agents and git"
         description={
           <>
-            When an agent started from O-BROS (an agent button, Resume, or a team member) tries to commit, push, or create,
-            delete or rename a branch, O-BROS stops the command and asks you first. Team members are always asked about.
-            Agents you start by typing their name in a plain terminal are not covered.
+            What happens when an agent in an O-BROS terminal tries to commit (also through merge, cherry-pick, revert or
+            rebase), push, or create, delete or rename a branch or worktree. Agents are recognised by the program that runs
+            git, so this also covers agents you start by typing their name. Your own git commands are never stopped.
           </>
         }
       >
-        <label className="toggle-row">
-          <input
-            type="checkbox"
-            checked={askBeforeAgentGit}
-            onChange={(event) => setAskBeforeAgentGit(event.target.checked)}
-          />
-          <span>Ask me before an agent commits, pushes or creates a branch</span>
-        </label>
+        <SegmentedControl
+          className="settings-segmented"
+          options={AGENT_GIT_OPTIONS}
+          value={agentGitPolicy}
+          onChange={setAgentGitPolicy}
+        />
+        <p className="muted">{AGENT_GIT_NOTES[agentGitPolicy]}</p>
       </SettingsSection>
 
       <AgentCommitSetting />

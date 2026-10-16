@@ -8,7 +8,7 @@ export interface TerminalRow {
   paneId: string
   title: string
   cpuPercent: number
-  workingSetBytes: number
+  memoryBytes: number
 }
 
 export interface WorkspaceGroup {
@@ -16,7 +16,7 @@ export interface WorkspaceGroup {
   path: string | null
   isSelectedProject: boolean
   cpuPercent: number
-  workingSetBytes: number
+  memoryBytes: number
   terminals: TerminalRow[]
 }
 
@@ -57,7 +57,7 @@ export function groupTerminalsByWorkspace(
       ...identity,
       isSelectedProject: isSelected(identity.path, selectedProjectPath),
       cpuPercent: 0,
-      workingSetBytes: 0,
+      memoryBytes: 0,
       terminals: []
     }
 
@@ -70,10 +70,10 @@ export function groupTerminalsByWorkspace(
         paneId,
         title: tab.panes[paneId].title,
         cpuPercent: resource.cpuPercent,
-        workingSetBytes: resource.workingSetBytes
+        memoryBytes: resource.privateBytes
       })
       group.cpuPercent += resource.cpuPercent
-      group.workingSetBytes += resource.workingSetBytes
+      group.memoryBytes += resource.privateBytes
     }
 
     groupsByName.set(identity.name, group)
@@ -81,5 +81,5 @@ export function groupTerminalsByWorkspace(
 
   return Array.from(groupsByName.values())
     .filter((group) => group.terminals.length > 0)
-    .sort((first, second) => second.workingSetBytes - first.workingSetBytes)
+    .sort((first, second) => second.memoryBytes - first.memoryBytes)
 }

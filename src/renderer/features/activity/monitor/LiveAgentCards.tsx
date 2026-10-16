@@ -50,7 +50,7 @@ function LiveAgentCard({ agent, now }: { agent: LiveAgent; now: number }) {
           <Cpu size={12} /> {usage === undefined ? '–' : formatPercent(usage.cpuPercent)}
         </span>
         <span title="Memory of this terminal and everything it started">
-          <MemoryStick size={12} /> {usage === undefined ? '–' : formatBytes(usage.workingSetBytes)}
+          <MemoryStick size={12} /> {usage === undefined ? '–' : formatBytes(usage.privateBytes)}
         </span>
       </span>
     </button>

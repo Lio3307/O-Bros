@@ -1,4 +1,4 @@
-export type AgentLoginKind = 'account' | 'api-keys' | 'none'
+export type AgentLoginKind = 'account' | 'api-keys' | 'none' | 'unknown'
 
 export interface AgentLogin {
   command: string
@@ -7,6 +7,7 @@ export interface AgentLogin {
   summary: string
   providers: string[]
   manageHint: string
+  requirement?: string
 }
 
 const KNOWN_PROVIDER_NAMES: Record<string, string> = {

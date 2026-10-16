@@ -23,7 +23,7 @@ function WorkspaceRows({ group }: { group: WorkspaceGroup }) {
           {group.isSelectedProject && <span className="muted"> · selected</span>}
         </span>
         <span className="resource-number">{formatPercent(group.cpuPercent)}</span>
-        <span className="resource-number resource-number-strong">{formatBytes(group.workingSetBytes)}</span>
+        <span className="resource-number resource-number-strong">{formatBytes(group.memoryBytes)}</span>
       </button>
       {!isCollapsed &&
         group.terminals.map((terminal) => (
@@ -33,7 +33,7 @@ function WorkspaceRows({ group }: { group: WorkspaceGroup }) {
               {terminal.title}
             </span>
             <span className="resource-number">{formatPercent(terminal.cpuPercent)}</span>
-            <span className="resource-number resource-number-strong">{formatBytes(terminal.workingSetBytes)}</span>
+            <span className="resource-number resource-number-strong">{formatBytes(terminal.memoryBytes)}</span>
           </div>
         ))}
     </>
@@ -80,18 +80,18 @@ export function ResourcePopover() {
             </span>
             <span className="status-separator">·</span>
             <span>
-              <strong>{formatBytes(snapshot.total.workingSetBytes)}</strong> Σ WS
+              <strong>{formatBytes(snapshot.total.privateBytes)}</strong> memory
             </span>
             <span className="status-separator">·</span>
-            <span>
-              <strong>{formatBytes(snapshot.total.privateBytes)}</strong> Σ Private
+            <span title="Working set: also counts the system libraries the processes share, once per process">
+              {formatBytes(snapshot.total.workingSetBytes)} with shared
             </span>
           </div>
 
           <div className="resource-row resource-head">
             <span className="resource-name">Name</span>
             <span className="resource-number">CPU</span>
-            <span className="resource-number resource-number-strong">WS</span>
+            <span className="resource-number resource-number-strong">Memory</span>
           </div>
 
           <div className="resource-body">
@@ -102,15 +102,16 @@ export function ResourcePopover() {
             <div className="resource-row resource-row-app">
               <span className="resource-name">o-bros app</span>
               <span className="resource-number">{formatPercent(snapshot.app.cpuPercent)}</span>
-              <span className="resource-number resource-number-strong">{formatBytes(snapshot.app.workingSetBytes)}</span>
+              <span className="resource-number resource-number-strong">{formatBytes(snapshot.app.privateBytes)}</span>
             </div>
           </div>
 
           <PortsSection />
 
           <p className="resource-footnote">
-            WS is the memory a process holds in RAM. Private is memory used only by it. Terminal rows include the shell
-            and everything it started.
+            Memory is what each process uses by itself, like the Memory column in Task Manager. &quot;With shared&quot; also
+            counts the system libraries every process loads, once per process, so it is larger. Terminal rows include the
+            shell and everything it started.
           </p>
         </>
       )}

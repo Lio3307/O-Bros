@@ -71,7 +71,7 @@ On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → 
 | Feature | Details |
 |---|---|
 | Languages | JavaScript, TypeScript, JSON, CSS, HTML, Markdown, C/C++, Python, Rust, Go, Java, PHP, SQL, YAML. Each can be turned off in Settings → Editor (the file then opens as plain text). |
-| Snippets | Type a prefix and pick it from the suggestions. Edit them per language in Settings → Snippets. `${1}` and `${2:name}` mark places to jump to with Tab. |
+| Code intelligence | Language servers give completions from the whole project and its packages, type information on hover, errors as you type, go to definition (`F12`), find references (`Shift+F12`) and parameter hints (`Ctrl+Shift+Space`). O-BROS finds the servers installed in the project (`node_modules/.bin`) or on the computer and starts the right one when you open a file: TypeScript/JavaScript, Python, Rust, Go, C/C++, Java, PHP, CSS, HTML, JSON, YAML, Markdown and SQL. Settings → Language servers shows which were found, how to install the others, lets you turn one off or give your own command, and lists the running ones with Stop. A server stops a minute after its last file closes. Its errors appear next to oxlint's. |
 | Linter | `oxlint` for JavaScript and TypeScript. Modes: Off, On save (default), As you type. Uses a `.oxlintrc.json` in your project if there is one. |
 | Formatter | `oxfmt` with `Shift+Alt+F` or on save. Supports JavaScript, TypeScript, JSON, CSS, HTML, Markdown and YAML. |
 | Auto save | Settings → Editor → Auto save. Saves after you stop typing for 200 ms, 500 ms, 1 s, 2 s, 5 s or any delay from 100 ms to 60 s. It never formats, so the cursor does not jump. Pending changes are saved when you leave the tab. |
@@ -110,7 +110,7 @@ wot (work of teams) lets the agent you talk to summon other agents.
 - When a member asks a question, the Team button turns red and you get a notification.
 - If you ask for an agent that is not installed, the agent tells you which ones are installed instead of installing anything.
 - Outside O-BROS (or when O-BROS is closed or uninstalled), `wot` answers that it needs the app, and the skill tells the agent not to start other agents another way.
-- **Git needs your yes:** when a team member, or an agent started from an agent button, runs `git commit`, `git push`, or creates, deletes or renames a branch (`git branch <name>`, `checkout -b`, `switch -c`, `worktree add`), O-BROS pauses the command and asks you. No answer in 100 seconds counts as no, and the agent sees `GIT_BLOCKED`. Turn it off for your own agent terminals in Settings → Terminal → Agents and git; team members are always asked about. Agents started by typing their name in a plain terminal are not covered, and an agent that calls the git program by its full path is not stopped.
+- **Agents and git** (Settings → Terminal): **Never allow** (default) refuses every agent commit (also through merge, cherry-pick, revert or rebase), push, and branch or worktree change at once, and the agent is told that you do it yourself. **Ask me** pauses the command and asks you; no answer in 100 seconds counts as no. **Allow** lets agents do it, but team members are still asked about. Agents are recognised by the program that runs git, including agents started by typing their name; your own git commands are never stopped. An agent that calls the git program by its full path is not stopped.
 - **Commits are yours:** a commit an agent makes is authored and committed with the name and email in Settings → Terminal → Commits made by agents, not your global git config. If they are empty, O-BROS asks the first time. "Co-Authored-By" and "Generated with" lines are removed unless you tick "Let agents add themselves as co-author".
 - **No agents in your GitHub history:** every O-BROS terminal has the git guard. When a git command comes from an agent, including one you started by typing its name in a plain terminal (O-BROS checks which program started the command), it gets your identity, `--author` is dropped, and credit lines are removed. Your own git commands are not changed or asked about. Before any push from an O-BROS terminal or the Push button, O-BROS checks the commits being pushed and asks you if one still has an agent as author or committer, or an agent "Co-Authored-By" or "Generated with" line. Branch names that mention an agent are pointed out in the question.
 - **You stay in control:** type into a member's terminal in the Team view (Esc or Ctrl+C interrupts it), press Stop on one member, or Stop all in Storage and memory. Settings → Team (wot) → Free memory automatically stops members that finished and stayed idle (5, 10 or 30 minutes, or never) and members whose summoning terminal closed. Members asking a question are never stopped automatically.
@@ -147,7 +147,7 @@ The Activity page is one full-width monitor (no side list):
 - Shows the 5-hour and weekly usage of each, with when it resets.
 - **Use** switches which account new terminals run with.
 - **Add account** creates a named login (see [Getting started](GETTING-STARTED.md)).
-- Claude and Codex are shown only when installed or signed in. **Other agents** lists every other agent CLI installed (Gemini CLI, OpenCode, Kilo Code, Cline, GitHub Copilot CLI) with how it signs in, the providers it has connected and the command to change it. Only names and login types are read, never keys or tokens; these agents keep one login each, so they cannot be switched here.
+- Claude and Codex are shown only when installed or signed in. **Other agents** lists every other agent CLI installed that needs an account sign-in, an API key or either (Gemini CLI, Qwen Code, OpenCode, Kilo Code, Cline, GitHub Copilot CLI, Cursor Agent, Amp, Factory Droid, Kimi, Goose, Aider, Crush): what it needs, whether it is set up (Signed in, API key, Not signed in in red, or Not checked when O-BROS cannot read its login), the providers it has connected and the command to sign in. An API key in an environment variable is detected by its name only; restart O-BROS after setting one. Only names and login types are read, never keys or tokens; these agents keep one login each, so they cannot be switched here.
 - The status bar shows one compact usage item: the provider closest to a limit, for example `wk 57% 4d23h` (window, percent used, time until it resets), followed by small icons for the other logged-in providers. In a narrow window the reset time is dropped first, then the label. Hover it for every provider's numbers, and press it for a detailed or compact popover.
 - Only Claude and Codex report usage. Other agents (Gemini CLI, OpenCode and so on) have no usage endpoint O-BROS can read, and an API key has no 5-hour or weekly limit. Hide either one in Settings → Agents → Usage in the status bar.
 
@@ -161,6 +161,8 @@ The Activity page is one full-width monitor (no side list):
 ## Resource Manager
 
 Press the memory figure in the status bar.
+
+The figures are the memory each process uses by itself, like the Memory column in Windows Task Manager. The larger "with shared" total also counts the system libraries every process loads.
 
 - Total CPU and memory for the app and every terminal, grouped by project.
 - **Listening ports** opened by programs inside your terminals, with Open (opens `http://localhost:<port>` in your browser) and Stop for each.
@@ -194,7 +196,7 @@ Settings → Storage and memory lists everything o-bros can clear for you, how b
 
 ## Backup and restore
 
-- **Export** (Settings → Backup and restore, or "Export settings to a JSON file" in the command palette) saves a JSON file with `format: "o-bros-settings"` and `formatVersion: 1`. It holds your color theme, editor settings and snippets, shortcuts, prompts, agent buttons, terminal options, agent and git options, the name and email for commits made by agents, and, if you tick the box, the list of project folders.
+- **Export** (Settings → Backup and restore, or "Export settings to a JSON file" in the command palette) saves a JSON file with `format: "o-bros-settings"` and `formatVersion: 1`. It holds your color theme, editor settings, shortcuts, prompts, agent buttons, terminal options, agent and git options, the name and email for commits made by agents, and, if you tick the box, the list of project folders.
 - Not included: open tabs, recent files, accounts, logins and tokens.
 - **Import** checks the file first. A file that is not an O-BROS export, or that was made by a newer O-BROS, is refused. Otherwise it shows where the file came from and how many settings it has, and asks before applying. Settings in the file replace yours, settings not in the file stay, and project folders are added only if they exist on this computer. The window reloads to apply them, so open terminals restart.
 
@@ -226,7 +228,7 @@ Short messages (toasts) appear bottom right, with an icon for success, warning o
 | Agents | Your list of agent CLIs (add, rename, change the command, remove), well-known agents found in your PATH, a search over every program in PATH, and up to two shown as buttons. Known agents get their own logo. Each agent shows a status: a green dot and **Connected** when its command is found in your PATH (for Claude and Codex, **Signed in** when a login is detected, or a hollow dot and **Not signed in** when it is not), and a hollow dot and **Not found** when the command is missing. **Custom agent** adds your own command. o-bros looks at your PATH again when the window gets focus (at most every 30 seconds) and when you press a button of an agent that is **Not found**, so a tool you just installed is picked up. If it is still missing, Settings → Agents opens with a message instead of running a command that would fail. The list of well-known agents comes from the [ACP Registry](https://agentclientprotocol.com/get-started/registry), fetched when the page opens, with a built-in list as a fallback |
 | Project folders | Add and remove folders |
 | Editor | Auto save and delay, linter mode, format on save, enabled languages |
-| Snippets | Per-language snippets, reset to defaults |
+| Language servers | Which language server each language uses, turn one off, or your own command (not included in backups, because a command runs when you open a file) |
 | Terminal | History size, finished notification |
 | Storage and memory | Clear app cache, leftover temporary files, terminal history, recent files, saved conversations |
 | Shortcuts | Change the keys that split, close and open terminals |

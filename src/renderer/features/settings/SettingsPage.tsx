@@ -8,7 +8,7 @@ import { ProjectFoldersPage } from './ProjectFoldersPage'
 import { PromptsPage } from './PromptsPage'
 import { ProviderAccountsPage } from './ProviderAccountsPage'
 import { ShortcutsPage } from './ShortcutsPage'
-import { SnippetsPage } from './SnippetsPage'
+import { LanguageServersPage } from './LanguageServersPage'
 import { StoragePage } from './StoragePage'
 import { TeamSettingsPage } from './TeamSettingsPage'
 import { TerminalSettingsPage } from './TerminalSettingsPage'
@@ -18,7 +18,7 @@ const pageByName: Record<SettingsPageId, () => ReactElement> = {
   agents: () => <AgentsPage />,
   folders: () => <ProjectFoldersPage />,
   editor: () => <EditorSettingsPage />,
-  snippets: () => <SnippetsPage />,
+  languageServers: () => <LanguageServersPage />,
   terminal: () => <TerminalSettingsPage />,
   prompts: () => <PromptsPage />,
   team: () => <TeamSettingsPage />,

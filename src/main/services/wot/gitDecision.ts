@@ -11,6 +11,7 @@ import {
 } from '../../../shared/gitGuard'
 import type { AgentGitAnswer } from '../../../shared/types'
 import { recordActivity } from '../activity/activityLog'
+import { writeLog } from '../logging/logFile'
 import { freshTypedAgents } from '../activity/typedAgents'
 import { terminalFactsOf } from '../terminalFacts'
 import { loadAgentCatalog, type AgentCatalog } from './agentCatalog'
@@ -19,6 +20,7 @@ import { findPushTraces } from './pushTraces'
 import { askInterface } from './rendererBridge'
 
 const CONFIRM_TIMEOUT_MS = 110_000
+const SLOW_PREPARATION_MS = 5000
 const BRANCH_ACTIONS = ['create a branch', 'create a worktree']
 
 export interface GitDecision {
@@ -92,7 +94,7 @@ async function recordAgentGit(call: GitCall, action: string, answer: AgentGitAns
     kind: 'git',
     agentCommand: terminalFactsOf(call.paneId)?.agentCommand ?? typedAgent?.program ?? null,
     folder: call.cwd,
-    text: `asked to ${action}`,
+    text: `tried to ${action}`,
     detail: shortDetail(['git', ...call.gitArguments].join(' ')),
     outcome: answer.allowed ? 'allowed' : 'denied',
     durationMs: null
@@ -100,6 +102,7 @@ async function recordAgentGit(call: GitCall, action: string, answer: AgentGitAns
 }
 
 export async function decideGit(call: GitCall): Promise<GitDecision> {
+  const startedAt = Date.now()
   const subcommand = gitSubcommand(call.gitArguments) ?? ''
   const guardedAction = guardedGitAction(call.gitArguments)
   const createsCommit = createsCommits(call.gitArguments)
@@ -119,6 +122,10 @@ export async function decideGit(call: GitCall): Promise<GitDecision> {
     return allowAsIs(call, action)
   }
 
+  const preparationMs = Date.now() - startedAt
+  if (preparationMs > SLOW_PREPARATION_MS) {
+    writeLog('warning', `The git guard needed ${preparationMs} ms before it could ask about "${action}".`)
+  }
   const answer = await askUser(call, { action, fromAgent, isGuarded: guardedAction !== null, createsCommit, warnings })
   if (fromAgent) {
     void recordAgentGit(call, action, answer).catch(() => undefined)

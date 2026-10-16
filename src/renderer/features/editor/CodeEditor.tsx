@@ -21,7 +21,13 @@ import { colorThemeCompartment, colorThemeExtension, editorLayoutTheme } from '.
 import { formatDocument } from './formatDocument'
 import { findLanguageForFile, type LanguageDefinition } from './languageRegistry'
 import { lintExtensionFor, lintNow } from './lintExtension'
-import { snippetCompletionFor } from './snippetCompletion'
+import {
+  attachLanguageServer,
+  detachLanguageServer,
+  languageServerCompartment,
+  prepareLanguageServer,
+  type PreparedServer
+} from './languageServer/languageServerSupport'
 import './editor.css'
 
 interface CodeEditorProps {
@@ -43,7 +49,7 @@ async function languageExtensionsFor(filePath: string, language: LanguageDefinit
   if (language === null) {
     return []
   }
-  const extensions: Extension[] = [await language.load(), snippetCompletionFor(language.id)]
+  const extensions: Extension[] = [await language.load()]
   if (language.canLint) {
     extensions.push(lintExtensionFor(filePath))
   }
@@ -157,6 +163,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
       contextMenu,
       reportModification,
       autoSave,
+      languageServerCompartment.of([]),
       ...languageExtensions
     ]
   })
@@ -196,6 +203,20 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   useEffect(() => {
     let view: EditorView | null = null
     let isCancelled = false
+    let server: PreparedServer | null = null
+
+    async function connectLanguageServer(mountedView: EditorView, language: LanguageDefinition): Promise<void> {
+      const prepared = await prepareLanguageServer(filePath, language.id)
+      if (prepared === null) {
+        return
+      }
+      if (isCancelled) {
+        detachLanguageServer(null, prepared)
+        return
+      }
+      server = prepared
+      attachLanguageServer(mountedView, prepared)
+    }
 
     async function mountEditor(): Promise<void> {
       const state = getSavedEditorState(filePath) ?? (await buildEditorState(tabId, filePath))
@@ -210,6 +231,9 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
       if (language !== null && language.canLint) {
         lintNow(view)
       }
+      if (language !== null) {
+        void connectLanguageServer(view, language)
+      }
     }
 
     setErrorMessage(null)
@@ -218,6 +242,9 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
     return () => {
       isCancelled = true
       viewRef.current = null
+      if (server !== null) {
+        detachLanguageServer(view, server)
+      }
       if (view !== null) {
         saveEditorState(filePath, view.state)
         view.destroy()

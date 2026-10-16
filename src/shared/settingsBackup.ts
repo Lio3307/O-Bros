@@ -14,7 +14,7 @@ export const BACKUP_SETTING_KEYS = [
   'terminalScrollback',
   'terminalGpuRendering',
   'notifyWhenFinished',
-  'askBeforeAgentGit',
+  'agentGitPolicy',
   'agentCommitIdentity',
   'allowAgentCoAuthors',
   'teamPolicy'

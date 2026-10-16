@@ -5,6 +5,7 @@ import { useRecentFilesStore } from '../../state/recentFilesStore'
 import { useStorageStore } from '../../state/storageStore'
 import { CleanupRow, pluralize } from './CleanupRow'
 import { DataLocationsSection } from './DataLocationsSection'
+import { HardwareAccelerationSetting } from './HardwareAccelerationSetting'
 import { SavedSessionsSection } from './SavedSessionsSection'
 import { TeamStorageSection } from './TeamStorageSection'
 import './settings.css'
@@ -98,6 +99,8 @@ export function StoragePage() {
       <SavedSessionsSection />
 
       <TeamStorageSection />
+
+      <HardwareAccelerationSetting />
 
       <DataLocationsSection />
 

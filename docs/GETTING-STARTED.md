@@ -67,7 +67,7 @@ Open **History** (the clock icon in the rail). Sessions are grouped by day. Use 
 
 ## 8. Tune it
 
-**Settings** has pages for the editor, snippets and the terminal. A good first change is turning on **Auto save** in Settings → Editor.
+**Settings** has pages for the editor, language servers and the terminal. A good first change is turning on **Auto save** in Settings → Editor.
 
 ## Closing the app
 

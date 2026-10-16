@@ -1,3 +1,4 @@
+import { agentGitVerdict, BLOCKED_BY_POLICY_REASON } from '../../../shared/agentGitPolicy'
 import type { AgentGitAnswer, AgentGitRequest } from '../../../shared/types'
 import { useAgentCommitStore } from '../../state/agentCommitStore'
 import { useConfirmStore, type ConfirmOptions } from '../../state/confirmStore'
@@ -80,17 +81,21 @@ async function askUser(request: AgentGitRequest): Promise<boolean> {
   return answer
 }
 
-function mustAsk(request: AgentGitRequest): boolean {
-  if (request.warnings.length > 0) {
-    return true
-  }
-  const wantsQuestion = isTeamMember(request.paneId) || useTerminalSettingsStore.getState().askBeforeAgentGit
-  return request.fromAgent && request.isGuarded && wantsQuestion
-}
-
 export async function confirmAgentGit(request: AgentGitRequest): Promise<AgentGitAnswer> {
   const keepCoAuthors = useAgentCommitStore.getState().allowAgentCoAuthors
-  if (mustAsk(request) && !(await askUser(request))) {
+  const verdict = agentGitVerdict(
+    {
+      fromAgent: request.fromAgent,
+      changesHistory: request.isGuarded || request.createsCommit,
+      isTeamMember: isTeamMember(request.paneId),
+      hasWarnings: request.warnings.length > 0
+    },
+    useTerminalSettingsStore.getState().agentGitPolicy
+  )
+  if (verdict === 'block') {
+    return { allowed: false, reason: BLOCKED_BY_POLICY_REASON, identity: null, keepCoAuthors }
+  }
+  if (verdict === 'ask' && !(await askUser(request))) {
     return { allowed: false, reason: REFUSED_REASON, identity: null, keepCoAuthors }
   }
   if (!request.fromAgent || !request.createsCommit) {

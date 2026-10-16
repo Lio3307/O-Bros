@@ -1,12 +1,15 @@
-import type { JSX } from 'react'
-import { ChangesPanel } from '../features/changes/ChangesPanel'
-import { HistoryPanel } from '../features/history/HistoryPanel'
+import { Suspense, type ComponentType } from 'react'
 import { ProjectsPanel } from '../features/projects/ProjectsPanel'
-import { SettingsPanel } from '../features/settings/SettingsPanel'
 import { TeamPanel } from '../features/team/TeamPanel'
 import { useLayoutStore, type Section } from '../state/layoutStore'
+import { lazyComponent } from '../ui/lazyComponent'
+import { LoadingText } from '../ui/LoadingText'
 
-const panelBySection: Partial<Record<Section, () => JSX.Element>> = {
+const HistoryPanel = lazyComponent(() => import('../features/history/HistoryPanel').then((module) => module.HistoryPanel))
+const ChangesPanel = lazyComponent(() => import('../features/changes/ChangesPanel').then((module) => module.ChangesPanel))
+const SettingsPanel = lazyComponent(() => import('../features/settings/SettingsPanel').then((module) => module.SettingsPanel))
+
+const panelBySection: Partial<Record<Section, ComponentType>> = {
   projects: ProjectsPanel,
   history: HistoryPanel,
   changes: ChangesPanel,
@@ -23,7 +26,9 @@ export function SidePanel() {
 
   return (
     <aside className="side-panel">
-      <Panel />
+      <Suspense fallback={<p className="panel-empty"><LoadingText text="Loading…" /></p>}>
+        <Panel />
+      </Suspense>
     </aside>
   )
 }

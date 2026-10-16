@@ -32,7 +32,7 @@ Technical decisions and their rationale live in `docs/decisions.md`. Read it bef
   Status: User-directed; implementation awaiting feedback.
 
 - Scope: Settings → Provider accounts
-  Convention: Show only the agents installed on the computer. Claude and Codex keep switchable accounts and usage. Every other agent CLI is listed read-only with the login it uses, parsed in `src/shared/agentLogins.ts` from its own files; the parsers keep only the account name, the login type and provider names, never a key or token value, and nothing is written. Add a new agent by adding a reader in `src/main/services/agentLogins.ts` and a parser with a test.
+  Convention: Show only the agents installed on the computer. Claude and Codex keep switchable accounts and usage. Every other agent CLI is listed read-only with the login it uses, parsed in `src/shared/agentLogins.ts` from its own files; the parsers keep only the account name, the login type and provider names, never a key or token value, and nothing is written. What each agent needs (account, API key or either), its key variables and sign-in steps live in resources/agents/agent-auth.json; key variables are checked for being set, never read for their value. Add a new agent by adding a reader in `src/main/services/agentLogins.ts` and a parser with a test.
   Reason: The user wants every agent they have to appear, without O-BROS ever touching credentials.
   Evidence: User request; `src/shared/agentLogins.test.ts` checks that no key value reaches the result.
   Status: User-directed; implementation awaiting feedback.

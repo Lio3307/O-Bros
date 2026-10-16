@@ -12,27 +12,17 @@ describe('normalizeEditorSettings', () => {
     const settings = normalizeEditorSettings({
       disabledLanguages: ['python', 'not-a-language'],
       lintMode: 'as-you-type',
-      formatOnSave: true,
-      snippets: { python: [{ prefix: 'pr', description: 'print', body: 'print(${1})' }] }
+      formatOnSave: true
     })
     expect(settings.disabledLanguages).toEqual(['python'])
     expect(settings.lintMode).toBe('as-you-type')
     expect(settings.formatOnSave).toBe(true)
-    expect(settings.snippets.python).toEqual([{ prefix: 'pr', description: 'print', body: 'print(${1})' }])
   })
 
-  it('falls back to default snippets for languages that were never saved', () => {
-    const settings = normalizeEditorSettings({ snippets: {} })
-    expect(settings.snippets.cpp).toEqual(defaultEditorSettings().snippets.cpp)
-  })
-
-  it('drops snippets without a prefix or body and rejects an unknown lint mode', () => {
-    const settings = normalizeEditorSettings({
-      lintMode: 'sometimes',
-      snippets: { go: [{ prefix: 'ok', body: 'x' }, { prefix: 'bad' }, 4] }
-    })
+  it('rejects an unknown lint mode and ignores old snippet data', () => {
+    const settings = normalizeEditorSettings({ lintMode: 'sometimes', snippets: { go: [] } })
     expect(settings.lintMode).toBe('on-save')
-    expect(settings.snippets.go).toEqual([{ prefix: 'ok', description: '', body: 'x' }])
+    expect(settings).not.toHaveProperty('snippets')
   })
 })
 

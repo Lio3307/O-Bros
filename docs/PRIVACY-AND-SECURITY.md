@@ -13,6 +13,8 @@ This page lists everything o-bros reads, writes and sends, so you can decide whe
 | `package.json` and lock file names in a project | The scripts list |
 | The operating-system process list and open ports | Resource Manager, ports, and the "still running" list when you close the app |
 
+**Agent sign-ins.** For the agents listed in resources/agents/agent-auth.json, o-bros checks whether their API key environment variables (for example GEMINI_API_KEY) are set. It looks only at whether the variable has a value; the value itself is never kept, shown or sent.
+
 ## What o-bros writes
 
 | What | When |
@@ -34,6 +36,10 @@ This page lists everything o-bros reads, writes and sends, so you can decide whe
 | Deletes Claude and Codex conversation files (Recycle Bin or Trash by default, permanently if you tick the box) | Only after you confirm, from History or Settings → Storage and memory |
 
 Deleting a file, a history session or a discarded new file moves it to the Recycle Bin or Trash. It is not erased.
+
+## Language servers
+
+Language servers are programs you installed (for example typescript-language-server or pyright). O-BROS starts them on your computer for the project you work in, talks to them over a pipe, and stops them a minute after you close their last file or when O-BROS quits. They read your project files like your editor does. Some servers go online on their own, for example the TypeScript server can download type definitions for packages; that is the server's behaviour, not O-BROS's. Documentation a server shows on hover is cleaned before display: only plain formatting and web links are kept, and web links open in your browser. A custom command you set in Settings → Language servers runs when you open a matching file; it is never imported from a settings backup.
 
 ## What o-bros sends over the network
 

@@ -1,0 +1,96 @@
+{
+  "description": "What each agent CLI needs before it can work: an account sign-in, an API key, or either. keyVariables are the environment variables it reads an API key from; O-BROS only checks whether they are set, never their values. Claude and Codex are handled in their own sections.",
+  "agents": [
+    {
+      "command": "gemini",
+      "title": "Gemini CLI",
+      "needs": "account-or-api-key",
+      "keyVariables": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+      "signIn": "Run gemini and type /auth to sign in with Google or to use an API key."
+    },
+    {
+      "command": "qwen",
+      "title": "Qwen Code",
+      "needs": "account-or-api-key",
+      "keyVariables": ["DASHSCOPE_API_KEY", "OPENAI_API_KEY"],
+      "signIn": "Run qwen and type /auth to sign in, or set an API key."
+    },
+    {
+      "command": "opencode",
+      "title": "OpenCode",
+      "needs": "api-key",
+      "keyVariables": ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "GEMINI_API_KEY"],
+      "signIn": "Run opencode auth login to add a provider, or opencode auth logout to remove one."
+    },
+    {
+      "command": "kilo",
+      "title": "Kilo Code",
+      "needs": "account",
+      "keyVariables": [],
+      "signIn": "Run kilo auth login to sign in, or kilo auth logout to sign out."
+    },
+    {
+      "command": "cline",
+      "title": "Cline",
+      "needs": "account-or-api-key",
+      "keyVariables": [],
+      "signIn": "Run cline auth to sign in or choose a provider and its key."
+    },
+    {
+      "command": "copilot",
+      "title": "GitHub Copilot CLI",
+      "needs": "account",
+      "keyVariables": ["GH_TOKEN", "GITHUB_TOKEN"],
+      "signIn": "Run copilot and type /login to sign in with GitHub."
+    },
+    {
+      "command": "cursor-agent",
+      "title": "Cursor Agent",
+      "needs": "account-or-api-key",
+      "keyVariables": ["CURSOR_API_KEY"],
+      "signIn": "Run cursor-agent login to sign in."
+    },
+    {
+      "command": "amp",
+      "title": "Amp",
+      "needs": "account-or-api-key",
+      "keyVariables": ["AMP_API_KEY"],
+      "signIn": "Run amp login to sign in."
+    },
+    {
+      "command": "droid",
+      "title": "Factory Droid",
+      "needs": "account-or-api-key",
+      "keyVariables": ["FACTORY_API_KEY"],
+      "signIn": "Run droid and sign in when it asks."
+    },
+    {
+      "command": "kimi",
+      "title": "Kimi CLI",
+      "needs": "account-or-api-key",
+      "keyVariables": ["MOONSHOT_API_KEY"],
+      "signIn": "Run kimi and type /login to sign in."
+    },
+    {
+      "command": "goose",
+      "title": "Goose",
+      "needs": "api-key",
+      "keyVariables": ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GOOGLE_API_KEY", "OPENROUTER_API_KEY"],
+      "signIn": "Run goose configure to choose a provider and enter its key."
+    },
+    {
+      "command": "aider",
+      "title": "Aider",
+      "needs": "api-key",
+      "keyVariables": ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "GEMINI_API_KEY", "DEEPSEEK_API_KEY"],
+      "signIn": "Set the API key of the provider you use, for example ANTHROPIC_API_KEY, then restart O-BROS."
+    },
+    {
+      "command": "crush",
+      "title": "Crush",
+      "needs": "api-key",
+      "keyVariables": ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "GEMINI_API_KEY"],
+      "signIn": "Run crush and pick a provider, or set its API key."
+    }
+  ]
+}

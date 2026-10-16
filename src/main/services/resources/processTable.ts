@@ -7,6 +7,7 @@ const MAX_OUTPUT_BYTES = 20 * 1024 * 1024
 const HUNDRED_NANOSECONDS_PER_MILLISECOND = 10_000
 const BYTES_PER_KILOBYTE = 1024
 const UNIX_COLUMN_COUNT = 4
+const FIRST_PRINTABLE_CODE = 32
 
 export interface ProcessEntry {
   pid: number
@@ -36,12 +37,20 @@ const WINDOWS_QUERY =
   LOWER_PRIORITY +
   'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CommandLine,WorkingSetSize,PrivatePageCount,KernelModeTime,UserModeTime | ConvertTo-Json -Compress'
 
+export function withoutControlCharacters(text: string): string {
+  let cleaned = ''
+  for (const character of text) {
+    cleaned += character.charCodeAt(0) < FIRST_PRINTABLE_CODE ? ' ' : character
+  }
+  return cleaned
+}
+
 async function readWindowsProcessTable(): Promise<ProcessEntry[]> {
   const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_QUERY], {
     maxBuffer: MAX_OUTPUT_BYTES,
     windowsHide: true
   })
-  const parsed = JSON.parse(stdout) as WindowsProcessRow | WindowsProcessRow[]
+  const parsed = JSON.parse(withoutControlCharacters(stdout)) as WindowsProcessRow | WindowsProcessRow[]
   const rows = Array.isArray(parsed) ? parsed : [parsed]
 
   return rows.map((row) => ({

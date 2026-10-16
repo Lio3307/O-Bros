@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
 import { writeLog } from './services/logging/logFile'
 
@@ -6,6 +6,15 @@ const TITLE_BAR_HEIGHT = 36
 const CHROME_COLOR = '#0B0B0B'
 const TEXT_COLOR = '#EDEDED'
 const TERMINAL_COLOR = '#000000'
+const WEB_PROTOCOLS = ['https:', 'http:']
+
+function isWebLink(url: string): boolean {
+  try {
+    return WEB_PROTOCOLS.includes(new URL(url).protocol)
+  } catch {
+    return false
+  }
+}
 
 export function createMainWindow(): BrowserWindow {
   const window = new BrowserWindow({
@@ -26,7 +35,12 @@ export function createMainWindow(): BrowserWindow {
     }
   })
 
-  window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
+  window.webContents.setWindowOpenHandler(({ url }) => {
+    if (isWebLink(url)) {
+      void shell.openExternal(url)
+    }
+    return { action: 'deny' }
+  })
   window.webContents.on('will-navigate', (event, url) => {
     if (url !== window.webContents.getURL()) {
       event.preventDefault()

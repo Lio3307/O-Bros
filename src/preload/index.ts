@@ -126,6 +126,16 @@ const api: DesktopApi = {
     stop: (pid) => ipcRenderer.invoke(IpcChannel.portsStop, pid),
     open: (port) => ipcRenderer.invoke(IpcChannel.portsOpen, port)
   },
+  lsp: {
+    statuses: (folderPath, choices) => ipcRenderer.invoke(IpcChannel.lspStatuses, folderPath, choices),
+    start: (request) => ipcRenderer.invoke(IpcChannel.lspStart, request),
+    send: (sessionId, message) => ipcRenderer.send(IpcChannel.lspSend, sessionId, message),
+    release: (sessionId) => ipcRenderer.send(IpcChannel.lspRelease, sessionId),
+    onMessage: (listener) => subscribe<{ sessionId: string; message: string }>(IpcChannel.lspMessage, listener),
+    onClosed: (listener) => subscribe<string>(IpcChannel.lspClosed, listener),
+    running: () => ipcRenderer.invoke(IpcChannel.lspRunning),
+    stop: (sessionId) => ipcRenderer.invoke(IpcChannel.lspStop, sessionId)
+  },
   activity: {
     list: () => ipcRenderer.invoke(IpcChannel.activityList),
     clear: () => ipcRenderer.invoke(IpcChannel.activityClear),
@@ -135,6 +145,9 @@ const api: DesktopApi = {
   app: {
     listRunningTasks: () => ipcRenderer.invoke(IpcChannel.appListRunningTasks),
     confirmClose: () => ipcRenderer.invoke(IpcChannel.appConfirmClose),
+    hardwareAcceleration: () => ipcRenderer.invoke(IpcChannel.appHardwareAcceleration),
+    setHardwareAcceleration: (isEnabled) => ipcRenderer.invoke(IpcChannel.appSetHardwareAcceleration, isEnabled),
+    restart: () => ipcRenderer.invoke(IpcChannel.appRestart),
     onCloseRequested: (listener) => subscribe<undefined>(IpcChannel.appCloseRequested, () => listener()),
     log: (level, message) => ipcRenderer.send(IpcChannel.appLog, level, message),
     openLogFolder: () => ipcRenderer.invoke(IpcChannel.appOpenLogFolder)

@@ -39,24 +39,6 @@
   accent-color: var(--color-white);
 }
 
-.snippet-row {
-  align-items: flex-start;
-  padding: 12px 16px;
-}
-
-.snippet-fields {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 0;
-}
-
-.snippet-line {
-  display: flex;
-  gap: 8px;
-}
-
 .field {
   flex: 1;
   min-width: 0;
@@ -347,4 +329,35 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.language-server-row {
+  align-items: flex-start;
+  padding: 14px 24px;
+}
+
+.language-server-row .cell-account {
+  gap: 6px;
+}
+
+.language-server-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.language-server-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.language-server-toggle {
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.agent-login-action {
+  color: var(--color-text);
 }
