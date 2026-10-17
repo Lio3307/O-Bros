@@ -20,19 +20,23 @@ export function ToastHost() {
         return (
           <div key={item.id} className={`toast toast-${item.kind}`} role={item.kind === 'error' ? 'alert' : 'status'}>
             <Icon size={16} className="toast-icon" />
-            <span className="toast-message">{item.message}</span>
-            {item.action !== null && (
-              <button
-                type="button"
-                className="toast-action"
-                onClick={() => {
-                  dismiss(item.id)
-                  void item.action?.run()
-                }}
-              >
-                {item.action.label}
-              </button>
-            )}
+            <span className="toast-body">
+              <span className="toast-message">{item.message}</span>
+              {item.action !== null && (
+                <span className="toast-actions">
+                  <button
+                    type="button"
+                    className="toast-action"
+                    onClick={() => {
+                      dismiss(item.id)
+                      void item.action?.run()
+                    }}
+                  >
+                    {item.action.label}
+                  </button>
+                </span>
+              )}
+            </span>
             <button type="button" className="toast-close" title="Dismiss" onClick={() => dismiss(item.id)}>
               <X size={14} />
             </button>

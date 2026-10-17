@@ -32,6 +32,10 @@ export const useToastStore = create<ToastState>()((set, get) => ({
   toasts: [],
 
   show: (kind, message, action) => {
+    const isAlreadyShown = get().toasts.some((shown) => shown.kind === kind && shown.message === message)
+    if (isAlreadyShown) {
+      return
+    }
     const toast: Toast = { id: crypto.randomUUID(), kind, message, action: action ?? null }
     set({ toasts: [...get().toasts, toast].slice(-MAX_VISIBLE_TOASTS) })
     if (action === undefined) {

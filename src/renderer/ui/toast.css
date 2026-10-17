@@ -103,3 +103,16 @@
 .toast-action:hover {
   background: var(--color-text);
 }
+
+.toast-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.toast-actions {
+  display: flex;
+  justify-content: flex-end;
+}

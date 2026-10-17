@@ -66,6 +66,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - Open sessions are listed under the folder they run in, instead of all at the top of the project. Sessions that run in the project folder itself stay under "Open sessions".
 
 ### Fixed
+- **The same notice could pile up.** A notice that is already on screen is not shown again, and the wot skill update is offered once per start. Notice buttons sit under the text.
 - **Folders under a drive root were refused.** With a whole drive such as `E:\` added as a project folder, files and terminals in `E:\wot-test` were treated as outside the project, so review, file actions and language servers failed with "Path is outside the opened project folders". Paths under a drive or file system root are now recognised.
 - Language servers no longer trigger Node's DEP0190 warning about passing arguments through the shell.
 - **O-BROS could hang while closing.** Closing reads the list of running programs to warn about busy terminals; that read had no time limit and no error handling, so a stalled Windows process query could keep the window from closing. It now gives up after 20 seconds and closes anyway, stopping the terminals as usual.

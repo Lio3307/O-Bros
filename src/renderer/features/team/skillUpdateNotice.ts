@@ -16,7 +16,13 @@ async function updateAll(outdated: WotSkillTarget[]): Promise<void> {
   await useTeamStore.getState().refreshInstalled()
 }
 
+let hasOffered = false
+
 export async function offerSkillUpdates(): Promise<void> {
+  if (hasOffered) {
+    return
+  }
+  hasOffered = true
   const targets = await window.api.wot.skillTargets().catch((): WotSkillTarget[] => [])
   const message = skillUpdateMessage(targets)
   if (message !== null) {
