@@ -17,7 +17,10 @@ export function fileExtension(path: string): string {
 export function isPathInside(childPath: string, parentPath: string): boolean {
   const child = normalizeSeparators(childPath)
   const parent = normalizeSeparators(parentPath)
-  return child === parent || child.startsWith(`${parent}/`)
+  const isRootWithSlash = parent.endsWith('/')
+  const folderPrefix = isRootWithSlash ? parent : `${parent}/`
+  const parentWithoutSlash = isRootWithSlash ? parent.slice(0, -1) : parent
+  return child === parent || child === parentWithoutSlash || child.startsWith(folderPrefix)
 }
 
 export function comparablePath(path: string, ignoreCase: boolean): string {
@@ -57,8 +60,9 @@ export function resolvePath(basePath: string, path: string): string {
 export function relativePathFrom(path: string, rootPath: string): string {
   const normalizedPath = normalizeSeparators(path)
   const normalizedRoot = normalizeSeparators(rootPath)
-  if (normalizedPath === normalizedRoot) {
+  const root = normalizedRoot.endsWith('/') ? normalizedRoot.slice(0, -1) : normalizedRoot
+  if (normalizedPath === normalizedRoot || normalizedPath === root) {
     return ''
   }
-  return normalizedPath.startsWith(`${normalizedRoot}/`) ? normalizedPath.slice(normalizedRoot.length + 1) : normalizedPath
+  return normalizedPath.startsWith(`${root}/`) ? normalizedPath.slice(root.length + 1) : normalizedPath
 }

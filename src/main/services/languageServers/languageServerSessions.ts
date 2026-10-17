@@ -49,12 +49,15 @@ function commandLineOf(server: LanguageServerStatus): string[] {
   return [server.resolvedPath ?? server.command, ...server.args]
 }
 
-function startProcess(parts: string[], cwd: string, isCustom: boolean): ChildProcess {
-  const [command, ...args] = parts
-  const useShell = needsShell(command) || (isCustom && process.platform === 'win32')
-  return useShell
-    ? spawn(quoted(command), args.map(quoted), { cwd, shell: true, windowsHide: true })
-    : spawn(command, args, { cwd, windowsHide: true })
+function startProcess(server: LanguageServerStatus, cwd: string): ChildProcess {
+  if (server.source === 'custom') {
+    return spawn(server.resolvedPath ?? '', { cwd, shell: true, windowsHide: true })
+  }
+  const command = server.resolvedPath ?? server.command
+  if (needsShell(command)) {
+    return spawn([command, ...server.args].map(quoted).join(' '), { cwd, shell: true, windowsHide: true })
+  }
+  return spawn(command, server.args, { cwd, windowsHide: true })
 }
 
 function killTree(child: ChildProcess): void {
@@ -144,7 +147,7 @@ export async function startLanguageServer(
     info: { sessionId: randomUUID(), serverId: server.id, serverTitle: server.title, rootUri: pathToFileURL(workspaceRoot).href },
     key,
     rootPath: workspaceRoot,
-    child: startProcess(parts, workspaceRoot, server.source === 'custom'),
+    child: startProcess(server, workspaceRoot),
     openFiles: 1,
     stopTimer: null
   }

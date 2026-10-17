@@ -56,6 +56,15 @@ describe('isPathInside', () => {
     expect(isPathInside('C:\\dev\\app', 'C:\\dev\\app')).toBe(true)
     expect(isPathInside('C:\\dev\\app-two', 'C:\\dev\\app')).toBe(false)
   })
+
+  it('works when the parent is a drive or file system root', () => {
+    expect(isPathInside('E:\\wot-test', 'E:\\')).toBe(true)
+    expect(isPathInside('E:\\', 'E:\\')).toBe(true)
+    expect(isPathInside('E:', 'E:\\')).toBe(true)
+    expect(isPathInside('F:\\other', 'E:\\')).toBe(false)
+    expect(isPathInside('/home/me', '/')).toBe(true)
+    expect(isPathInside('C:\\dev\\ap', 'C:\\dev\\app')).toBe(false)
+  })
 })
 
 describe('parentPath and relativePathFrom', () => {
@@ -65,6 +74,12 @@ describe('parentPath and relativePathFrom', () => {
 
   it('makes a path relative to a root', () => {
     expect(relativePathFrom('C:\\dev\\app\\src\\a.ts', 'C:/dev/app')).toBe('src/a.ts')
+  })
+
+  it('makes a path relative to a drive or file system root', () => {
+    expect(relativePathFrom('E:\\wot-test\\a.ts', 'E:\\')).toBe('wot-test/a.ts')
+    expect(relativePathFrom('/home/a.ts', '/')).toBe('home/a.ts')
+    expect(relativePathFrom('E:\\', 'E:\\')).toBe('')
   })
 
   it('keeps a path that is outside the root', () => {

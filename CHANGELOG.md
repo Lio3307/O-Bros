@@ -66,9 +66,11 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - Open sessions are listed under the folder they run in, instead of all at the top of the project. Sessions that run in the project folder itself stay under "Open sessions".
 
 ### Fixed
+- **Folders under a drive root were refused.** With a whole drive such as `E:\` added as a project folder, files and terminals in `E:\wot-test` were treated as outside the project, so review, file actions and language servers failed with "Path is outside the opened project folders". Paths under a drive or file system root are now recognised.
+- Language servers no longer trigger Node's DEP0190 warning about passing arguments through the shell.
 - **O-BROS could hang while closing.** Closing reads the list of running programs to warn about busy terminals; that read had no time limit and no error handling, so a stalled Windows process query could keep the window from closing. It now gives up after 20 seconds and closes anyway, stopping the terminals as usual.
 - **Git checks, the Resource Manager and agent detection could fail at random on Windows.** When any program on the computer ran with a control character in its command line, the process list O-BROS reads could not be parsed, so an agent's git command ended with "Bad control character in string literal" instead of the guard's answer. Control characters are now removed before reading the list.
-- A drive root such as `E:` added as a project showed an empty name in the sidebar; it is now called `E:`. The Windows system folders `$RECYCLE.BIN` and `System Volume Information` are no longer listed as project folders.
+- A drive root such as `E:\` added as a project showed an empty name in the sidebar; it is now called `E:`. The Windows system folders `$RECYCLE.BIN` and `System Volume Information` are no longer listed as project folders.
 - Claude or Codex usage disappeared ("unavailable") for up to 5 minutes whenever one usage request failed, for example a rate limit, a network blip or a login that was about to be refreshed. The last good numbers now stay, marked as last known with their time, until a window resets or a request works again.
 - Codex showed two different logos (the blue Codex icon on buttons, the OpenAI mark in the status bar, usage settings and History). Every place now uses the same logo pack, preloaded at start so it does not flicker.
 - Rows in settings tables had no space between their items, so "Connected" touched the "+ Add" button.
