@@ -10,6 +10,8 @@
     "build": "electron-vite build",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
+    "lint": "oxlint --deny-warnings src e2e",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build",
     "package": "electron-vite build && electron-builder",
     "package:dir": "electron-vite build && electron-builder --dir",
     "test:e2e": "electron-vite build && playwright test"

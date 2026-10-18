@@ -23,6 +23,7 @@ interface OpenMenu {
   x: number
   y: number
   width: number
+  anchor: Element
   options: DropdownOption[]
 }
 
@@ -33,10 +34,11 @@ export function Dropdown({ label, value, loadOptions, onChange, icon, title, cla
   const closeMenu = useCallback(() => setOpenMenu(null), [])
 
   async function open(event: MouseEvent<HTMLButtonElement>): Promise<void> {
-    const bounds = event.currentTarget.getBoundingClientRect()
+    const anchor = event.currentTarget
+    const bounds = anchor.getBoundingClientRect()
     const options = await loadOptions()
     if (options.length > 0) {
-      setOpenMenu({ x: bounds.left, y: bounds.bottom + MENU_GAP, width: bounds.width, options })
+      setOpenMenu({ x: bounds.left, y: bounds.bottom + MENU_GAP, width: bounds.width, anchor, options })
     }
   }
 
@@ -60,6 +62,7 @@ export function Dropdown({ label, value, loadOptions, onChange, icon, title, cla
           y={openMenu.y}
           onClose={closeMenu}
           minWidth={openMenu.width}
+          anchor={openMenu.anchor}
           items={openMenu.options.map((option) => {
             const isSelected = option.value === value
             return {

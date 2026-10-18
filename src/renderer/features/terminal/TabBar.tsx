@@ -18,6 +18,7 @@ interface OpenMenu {
   x: number
   y: number
   items: PopupMenuItem[]
+  anchor?: Element
 }
 
 function locationOf(tab: WorkspaceTab): string | null {
@@ -144,8 +145,10 @@ export function TabBar() {
   }
 
   function showAllTabs(event: MouseEvent<HTMLButtonElement>): void {
-    const bounds = event.currentTarget.getBoundingClientRect()
+    const anchor = event.currentTarget
+    const bounds = anchor.getBoundingClientRect()
     setOpenMenu({
+      anchor,
       x: bounds.left,
       y: bounds.bottom + 4,
       items: tabs.map((tab) => ({
@@ -196,7 +199,7 @@ export function TabBar() {
           </>
         )}
       </div>
-      {openMenu !== null && <PopupMenu x={openMenu.x} y={openMenu.y} items={openMenu.items} onClose={closeMenu} />}
+      {openMenu !== null && <PopupMenu x={openMenu.x} y={openMenu.y} items={openMenu.items} anchor={openMenu.anchor} onClose={closeMenu} />}
     </div>
   )
 }

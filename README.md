@@ -51,6 +51,8 @@ If `npm install` leaves Electron without its binary, run `node node_modules/elec
 | `npm run build` | Builds the main, preload and renderer bundles into `out/` |
 | `npm run typecheck` | Type-checks the main side and the renderer |
 | `npm test` | Runs the unit tests |
+| `npm run lint` | Lints the code and the end-to-end tests with oxlint |
+| `npm run check` | Type check, lint, unit tests and build in one go |
 | `npm run package` | Builds installers into `release/` |
 
 ## Keyboard shortcuts

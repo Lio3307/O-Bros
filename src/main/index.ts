@@ -6,6 +6,7 @@ import { registerActivityIpc } from './ipc/activityIpc'
 import { registerLanguageServersIpc } from './ipc/languageServersIpc'
 import { stopAllLanguageServers } from './services/languageServers/languageServerSessions'
 import { registerAgentsIpc } from './ipc/agentsIpc'
+import { reportHandlerErrors } from './ipc/handlerErrors'
 import { registerAppIpc } from './ipc/appIpc'
 import { registerFilesIpc } from './ipc/filesIpc'
 import { registerGitIpc } from './ipc/gitIpc'
@@ -44,6 +45,7 @@ if (!loadSettingsBeforeStart().useHardwareAcceleration) {
 }
 
 function registerAllIpc(): void {
+  reportHandlerErrors()
   registerPtyIpc()
   registerAgentsIpc()
   registerAccountsIpc()

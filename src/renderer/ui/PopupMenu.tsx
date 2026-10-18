@@ -18,6 +18,7 @@ interface PopupMenuProps {
   items: PopupMenuItem[]
   onClose: () => void
   minWidth?: number
+  anchor?: Element | null
 }
 
 const VIEWPORT_MARGIN = 8
@@ -34,7 +35,7 @@ function itemClassName(item: PopupMenuItem): string {
   return classNames.join(' ')
 }
 
-export function PopupMenu({ x, y, items, onClose, minWidth }: PopupMenuProps) {
+export function PopupMenu({ x, y, items, onClose, minWidth, anchor }: PopupMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -46,8 +47,17 @@ export function PopupMenu({ x, y, items, onClose, minWidth }: PopupMenuProps) {
       menu.style.top = `${Math.max(VIEWPORT_MARGIN, Math.min(y, maxTop))}px`
     }
 
+    function ignoreClickOnAnchor(event: MouseEvent): void {
+      if (anchor?.contains(event.target as Node) === true) {
+        event.stopPropagation()
+      }
+    }
     function closeWhenOutside(event: MouseEvent): void {
-      if (menuRef.current !== null && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node
+      if (menuRef.current !== null && !menuRef.current.contains(target)) {
+        if (event.button === 0 && anchor?.contains(target) === true) {
+          window.addEventListener('click', ignoreClickOnAnchor, { capture: true, once: true })
+        }
         onClose()
       }
     }
@@ -65,7 +75,7 @@ export function PopupMenu({ x, y, items, onClose, minWidth }: PopupMenuProps) {
       window.removeEventListener('keydown', closeOnEscape, true)
       window.removeEventListener('blur', onClose)
     }
-  }, [x, y, onClose])
+  }, [x, y, onClose, anchor])
 
   return (
     <div className="popup-menu" ref={menuRef} style={{ left: x, top: y, minWidth, maxWidth: Math.max(minWidth ?? 0, MAX_WIDTH) }}>

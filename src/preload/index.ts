@@ -150,7 +150,8 @@ const api: DesktopApi = {
     restart: () => ipcRenderer.invoke(IpcChannel.appRestart),
     onCloseRequested: (listener) => subscribe<undefined>(IpcChannel.appCloseRequested, () => listener()),
     log: (level, message) => ipcRenderer.send(IpcChannel.appLog, level, message),
-    openLogFolder: () => ipcRenderer.invoke(IpcChannel.appOpenLogFolder)
+    openLogFolder: () => ipcRenderer.invoke(IpcChannel.appOpenLogFolder),
+    onHandlerError: (listener) => subscribe<string>(IpcChannel.appHandlerError, listener)
   },
   storage: {
     report: () => ipcRenderer.invoke(IpcChannel.storageReport),

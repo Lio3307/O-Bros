@@ -26,6 +26,7 @@ const AGE_REFRESH_MS = 30_000
 interface OpenMenu {
   x: number
   y: number
+  anchor: Element
   items: PopupMenuItem[]
 }
 
@@ -61,7 +62,8 @@ export function BranchCard({ status, repoPath }: { status: GitStatus; repoPath: 
   }
 
   async function showBranchActions(event: MouseEvent<HTMLButtonElement>): Promise<void> {
-    const bounds = event.currentTarget.getBoundingClientRect()
+    const anchor = event.currentTarget
+    const bounds = anchor.getBoundingClientRect()
     try {
       const { branches, current } = await window.api.git.branches(repoPath)
       const otherBranches = branches.filter((branch) => branch !== current)
@@ -77,7 +79,7 @@ export function BranchCard({ status, repoPath }: { status: GitStatus; repoPath: 
         { label: 'Change last commit message…', onSelect: () => void amendLastCommitFlow(repoPath, status) },
         { label: 'Undo last commit', onSelect: () => void undoLastCommitFlow(repoPath, status) }
       ]
-      setOpenMenu({ x: bounds.left, y: bounds.bottom + 4, items })
+      setOpenMenu({ x: bounds.left, y: bounds.bottom + 4, anchor, items })
     } catch (error) {
       toast.error(friendlyErrorMessage(error, 'Could not list the branches.'))
     }
@@ -143,7 +145,7 @@ export function BranchCard({ status, repoPath }: { status: GitStatus; repoPath: 
           <ArrowUp size={14} /> {status.upstream === null ? 'Publish' : `Push${status.ahead > 0 ? ` ${status.ahead}` : ''}`}
         </Button>
       </div>
-      {openMenu !== null && <PopupMenu x={openMenu.x} y={openMenu.y} items={openMenu.items} onClose={closeMenu} />}
+      {openMenu !== null && <PopupMenu x={openMenu.x} y={openMenu.y} items={openMenu.items} anchor={openMenu.anchor} onClose={closeMenu} />}
     </div>
   )
 }

@@ -19,13 +19,11 @@ Thanks for taking a look at o-bros.
 ## Before you open a pull request
 
 ```
-npm run typecheck
-npm test
-npm run build
+npm run check
 npm audit
 ```
 
-All four should finish without errors.
+`npm run check` runs the type check, the linter, the unit tests and the build. Both commands should finish without errors.
 
 ## Describing your change
 

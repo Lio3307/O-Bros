@@ -69,7 +69,11 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **The commit message box is off until something is staged.** It is greyed out with a dashed border and says "Stage changes to write a commit message", and the button reads "Nothing staged".
 - **Branch pickers match the rest of the app.** Switching branch in the Changes panel and choosing a branch in the commit graph use one boxed dropdown with a check on the selected branch and "current" next to the checked-out one, instead of plain text in one place and the system select menu in the other.
 
+- **Errors in the background are easier to find.** A failing request from the window to the background is written to the log file with its name. When running from source (`npm run dev`), it also shows as a warning toast, so you no longer have to watch the terminal.
+- **For contributors:** `npm run lint` (oxlint, warnings fail) and `npm run check` (type check, lint, unit tests and build). CI now lints too.
+
 ### Fixed
+- **Clicking the button of an open menu reopened it.** Branch dropdowns, the branch actions menu and the All tabs menu now close when you click their button again.
 - **The repository list on the Git page could not scroll.** With many repositories inside a folder, the list now scrolls, fills the width of the main area, and shows each repository's path, branch and an arrow in a bordered list.
 - **Text boxes on the Git page had no style until Settings was opened.** The shared input style was loaded with the settings pages; it now loads at start, so the commit message box looks like every other input.
 - **"Error occurred in handler for git:stashList" in the terminal.** Moving to a folder that is not a repository could ask git for stashes using the previous folder's data. The Changes panel now waits until the status belongs to the selected folder, and listing stashes in a non-repository folder returns an empty list instead of an error.

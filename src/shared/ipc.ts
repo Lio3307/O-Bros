@@ -182,6 +182,7 @@ export const IpcChannel = {
   appCloseRequested: 'app:closeRequested',
   appLog: 'app:log',
   appOpenLogFolder: 'app:openLogFolder',
+  appHandlerError: 'app:handlerError',
   storageReport: 'storage:report',
   storageClearAppCache: 'storage:clearAppCache',
   storageClearLeftoverTemp: 'storage:clearLeftoverTemp',
@@ -356,6 +357,7 @@ export interface DesktopApi {
     onCloseRequested(listener: () => void): () => void
     log(level: 'error' | 'warning' | 'info', message: string): void
     openLogFolder(): Promise<void>
+    onHandlerError(listener: (message: string) => void): () => void
   }
   storage: {
     report(): Promise<StorageReport>

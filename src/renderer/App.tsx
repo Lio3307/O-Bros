@@ -28,6 +28,7 @@ import { useRefreshStore } from './state/refreshStore'
 import { restoreSavedSession, startSessionPersistence } from './state/sessionPersistence'
 import { offerSkillUpdates } from './features/team/skillUpdateNotice'
 import { startAutomaticUpdates } from './features/settings/update/automaticUpdates'
+import { toast } from './state/toastStore'
 
 const USAGE_REFRESH_MS = 5 * 60_000
 const COMMANDS_RESCAN_AFTER_MS = 30_000
@@ -47,6 +48,7 @@ function useStartupData(): void {
     const stopReviewBaselines = startReviewBaselines()
     const stopTeamBridge = startTeamBridge()
     const stopAutomaticUpdates = startAutomaticUpdates()
+    const stopHandlerErrors = window.api.app.onHandlerError((message) => toast.warning(`Dev: ${message}`))
     void useAgentCatalogStore.getState().load()
     PROVIDER_COMMANDS.forEach((command) => void useAgentCatalogStore.getState().loadLogo(command))
     void offerSkillUpdates()
@@ -56,6 +58,7 @@ function useStartupData(): void {
       stopReviewBaselines()
       stopTeamBridge()
       stopAutomaticUpdates()
+      stopHandlerErrors()
     }
   }, [])
 

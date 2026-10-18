@@ -113,6 +113,10 @@ test('shows the commit graph in the main area and opens a commit file from it', 
   await expect(branchOptions).toHaveCount(3)
   await branchOptions.filter({ hasText: 'feature-x' }).click()
   await expect(app.window.locator('.graph-branch-select')).toHaveText('feature-x')
+  await app.window.locator('.graph-branch-select').click()
+  await expect(app.window.locator('.popup-menu')).toBeVisible()
+  await app.window.locator('.graph-branch-select').click()
+  await expect(app.window.locator('.popup-menu')).toHaveCount(0)
   await expect(app.window.locator('.graph-row')).toHaveCount(2, { timeout: 15_000 })
 
   await app.window.locator('.graph-row', { hasText: 'Second commit' }).click()
