@@ -73,6 +73,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **For contributors:** `npm run lint` (oxlint, warnings fail) and `npm run check` (type check, lint, unit tests and build). CI now lints too.
 
 ### Fixed
+- **Pages use the whole width.** Settings pages were capped at 920 pixels, which left an empty band on the right and put the scrollbar in the middle of a wide window; they now fill the main area. Empty screens such as History before you pick a session centre their text in the whole area instead of sticking to the left.
 - **The Language servers page jumped when you clicked into a command box and away.** Leaving the box saved it even when nothing changed, and every save replaced the whole list with "Looking for language servers…". Nothing is saved now unless the command changed, and a re-check keeps the list on screen. The command box is hidden behind "Use my own command…", says what it is for, saves with Enter and cancels with Esc.
 - **Clicking the button of an open menu reopened it.** Branch dropdowns, the branch actions menu and the All tabs menu now close when you click their button again.
 - **The repository list on the Git page could not scroll.** With many repositories inside a folder, the list now scrolls, fills the width of the main area, and shows each repository's path, branch and an arrow in a bordered list.
