@@ -5,6 +5,7 @@ export interface AgentLauncher {
   id: string
   name: string
   command: string
+  providerId?: string | null
 }
 
 export const DEFAULT_AGENT_LAUNCHERS: AgentLauncher[] = []
@@ -99,7 +100,19 @@ function isLauncher(value: unknown): value is AgentLauncher {
     return false
   }
   const candidate = value as Record<string, unknown>
-  return typeof candidate.id === 'string' && typeof candidate.name === 'string' && typeof candidate.command === 'string'
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.name === 'string' &&
+    typeof candidate.command === 'string' &&
+    (candidate.providerId === undefined || candidate.providerId === null || typeof candidate.providerId === 'string')
+  )
+}
+
+export function providerIdForCommand(launchers: AgentLauncher[], command: string | null): string | null {
+  if (command === null) {
+    return null
+  }
+  return launchers.find((launcher) => launcher.command.trim() === command.trim())?.providerId ?? null
 }
 
 export function parseAgentLaunchers(raw: string | null): AgentLauncher[] | null {

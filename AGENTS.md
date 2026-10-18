@@ -27,7 +27,8 @@ Technical decisions and their rationale live in `docs/decisions.md`. Read it bef
 
 - Scope: whole repository
   Convention: Provider accounts are read-only. o-bros detects logins on the computer and never signs in, stores tokens, or edits CLI config. The only writes are Add account, which creates an empty `~/.claude-N` or `~/.codex-N` folder and opens a terminal where the official CLI signs in, and the wot skill, which writes `<Claude account folder>/skills/wot/SKILL.md` or `~/.agents/skills/wot/SKILL.md` only when the user presses Install in Settings → Team (wot) or Update all in the update notice O-BROS shows at start when an installed skill is older than the one it ships. A non-default account is selected only through `CLAUDE_CONFIG_DIR` or `CODEX_HOME` on the spawned PTY.
-  Reason: The app only reads the user's computer; credentials must stay with the official CLIs.
+  Exception: custom providers (Settings → Provider accounts). Their API key is stored only when the user pastes it, encrypted with Electron safeStorage in `provider-keys.json`, decrypted only in the main process when an agent that uses the provider starts, and never sent to the renderer, logged or exported; the renderer only sees the last 4 characters.
+  Reason: The app only reads the user's computer; credentials must stay with the official CLIs. Custom providers are the user's own endpoints, so the user chose to let O-BROS keep their key, encrypted and never exported.
   Evidence: Explicit user instruction; example in `src/main/services/accountEnvironment.ts`.
   Status: User-directed; implementation awaiting feedback.
 

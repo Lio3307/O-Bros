@@ -5,6 +5,7 @@ import { Terminal } from '@xterm/xterm'
 import { useEffect, useRef, useState, type DragEvent } from 'react'
 import type { AccountRef } from '../../../shared/types'
 import { useAgentCommitStore } from '../../state/agentCommitStore'
+import { providerForCommand } from '../../state/customProvidersStore'
 import { useColorThemeStore } from '../../state/colorThemeStore'
 import { useTerminalFontStore } from '../../state/terminalFontStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
@@ -124,7 +125,16 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     })
 
     void window.api.pty
-      .create({ id: paneId, cwd, account, startCommand, startsAgent, commitIdentity: useAgentCommitStore.getState().identity }).then(fitToHost)
+      .create({
+        id: paneId,
+        cwd,
+        account,
+        startCommand,
+        startsAgent,
+        commitIdentity: useAgentCommitStore.getState().identity,
+        provider: startsAgent ? providerForCommand(startCommand) : null
+      })
+      .then(fitToHost)
 
     return () => {
       resizeObserver.disconnect()

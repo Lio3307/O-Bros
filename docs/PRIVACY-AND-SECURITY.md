@@ -27,9 +27,10 @@ This page lists everything o-bros reads, writes and sends, so you can decide whe
 | Browser storage (`localStorage`) | Editor and terminal settings, the last session, recent files, and the name and email for commits made by agents |
 | An empty folder such as `~/.claude-work` or `~/.codex-work` | Only when you press **Add account** |
 | Git changes in your repositories | Only when you stage, unstage, discard, commit or switch branches |
+| `provider-keys.json` in the Electron user-data folder | Only when you paste an API key into a custom provider (Settings → Provider accounts → Custom providers). The key is encrypted with the operating system's protection (Windows DPAPI, macOS Keychain, the Linux secret store) and only its last 4 characters are kept readable. It is decrypted only in the background process, when an agent that uses the provider starts, and is never sent to the app window, shown, logged or exported. **Forget key** or deleting the provider removes it. |
 | Temporary copies of an open file | While linting. They are deleted right away. |
 | A log file `o-bros.log` in the Electron logs folder (about 1 MB, then one older copy is kept) | When the app crashes, a helper process stops, or an error is hidden behind a friendly message. It stays on your computer and may contain file paths. Open it from Settings → About and updates. |
-| A settings export file (JSON) where you choose to save it | Only when you press **Export settings**. It contains your commit name and email if you set them, never logins or tokens. |
+| A settings export file (JSON) where you choose to save it | Only when you press **Export settings**. It contains your commit name and email if you set them and your custom providers without their keys, never logins, keys or tokens. |
 | Deletes the app cache and old `o-bros-lint-*` temp folders | Only when you press a button in Settings → Storage and memory |
 | The wot skill file `<Claude account folder>/skills/wot/SKILL.md` or `~/.agents/skills/wot/SKILL.md` (instructions only, no secrets) | Only when you press **Install** in Settings → Team (wot). **Remove** deletes it again. |
 | Short task files in the system temp folder (`o-bros-wot`) | When an agent uses `wot new-file`. `wot` deletes each one after reading it. |
@@ -58,7 +59,7 @@ Usage requests identify themselves honestly as `o-bros`. The two usage endpoints
 
 ## What o-bros never does
 
-- It never asks for or stores your password.
+- It never asks for or stores your password. The only secret it stores is an API key you paste into a custom provider, encrypted as described above.
 - It never sends a saved token anywhere except the provider that issued it, and it never logs one.
 - It never refreshes, rewrites or copies login files.
 - It never edits Claude or Codex settings.

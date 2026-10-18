@@ -15,6 +15,7 @@ import { identityEnvironment } from '../../shared/commitIdentity'
 import { isTeamMemberPaneId } from '../../shared/teamMemberName'
 import { formatDuration } from '../../shared/time'
 import { recordActivity } from './activity/activityLog'
+import { customProviderEnvironment } from './customProviders/providerKeys'
 
 const OUTPUT_FLUSH_DELAY_MS = 8
 const INITIAL_COLUMNS = 80
@@ -69,7 +70,8 @@ function createBatchedSender(send: (chunk: string) => void) {
   return { push, flush }
 }
 
-export function createTerminal(owner: WebContents, request: PtyCreateRequest): void {
+export async function createTerminal(owner: WebContents, request: PtyCreateRequest): Promise<void> {
+  const providerVariables = request.startsAgent ? await customProviderEnvironment(request.provider) : {}
   runningTerminals.get(request.id)?.kill()
 
   const terminal = spawn(defaultShell(), [], {
@@ -81,7 +83,8 @@ export function createTerminal(owner: WebContents, request: PtyCreateRequest): v
       {
         ...inheritedEnvironment(),
         ...buildAccountEnvironment(request.account),
-        ...(request.startsAgent === true ? identityEnvironment(request.commitIdentity ?? null) : {})
+        ...(request.startsAgent === true ? identityEnvironment(request.commitIdentity ?? null) : {}),
+        ...providerVariables
       },
       request.id
     )

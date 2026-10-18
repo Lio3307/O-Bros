@@ -19,6 +19,7 @@ import './settingsControls.css'
 import { Button } from '../../ui/Button'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { OtherAgentLogins } from './OtherAgentLogins'
+import { CustomProviders } from './providers/CustomProviders'
 
 const USAGE_TEXT_REFRESH_MS = 30_000
 const SYSTEM_DEFAULT_TITLE = 'System default'
@@ -231,6 +232,7 @@ export function ProviderAccountsPage() {
         <ProviderBlock key={section.provider} section={section} />
       ))}
       <OtherAgentLogins />
+      <CustomProviders />
     </SettingsPageLayout>
   )
 }

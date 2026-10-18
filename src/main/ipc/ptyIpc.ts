@@ -5,7 +5,7 @@ import { createTerminal, killTerminal, resizeTerminal, writeToTerminal } from '.
 
 export function registerPtyIpc(): void {
   ipcMain.handle(IpcChannel.ptyCreate, (event, request: PtyCreateRequest) => {
-    createTerminal(event.sender, request)
+    return createTerminal(event.sender, request)
   })
   ipcMain.on(IpcChannel.ptyInput, (_event, id: string, data: string) => {
     writeToTerminal(id, data)

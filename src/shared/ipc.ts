@@ -9,6 +9,7 @@ import type {
   RunningLanguageServer
 } from './languageServers'
 import type { CommitIdentity } from './commitIdentity'
+import type { CustomProvider } from './customProviders'
 import type { CreditBalance } from './creditBalance'
 import type { UsageFacts } from './usageSupport'
 import type { TeamPolicy } from './teamPolicy'
@@ -86,6 +87,8 @@ export const IpcChannel = {
   usageCredits: 'usage:credits',
   usageFacts: 'usage:facts',
   accountsAgentLogins: 'accounts:agentLogins',
+  accountsProviderKeyHints: 'accounts:providerKeyHints',
+  accountsSaveProviderKey: 'accounts:saveProviderKey',
   projectsList: 'projects:list',
   projectsAddRoot: 'projects:addRoot',
   projectsRemoveRoot: 'projects:removeRoot',
@@ -203,6 +206,7 @@ export interface PtyCreateRequest {
   startCommand: string | null
   startsAgent: boolean
   commitIdentity: CommitIdentity | null
+  provider: CustomProvider | null
 }
 
 export interface PtyDataEvent {
@@ -228,6 +232,8 @@ export interface DesktopApi {
     scan(): Promise<DetectedAccount[]>
     createFolder(provider: ProviderId, accountName: string): Promise<string>
     agentLogins(): Promise<AgentLogin[]>
+    providerKeyHints(): Promise<Record<string, string>>
+    saveProviderKey(providerId: string, apiKey: string | null): Promise<void>
   }
   usage: {
     get(account: AccountRef): Promise<AccountUsage>

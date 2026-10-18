@@ -8,6 +8,7 @@ export const BACKUP_SETTING_KEYS = [
   'shortcuts',
   'prompts',
   'agentLaunchers',
+  'customProviders',
   'shownAgents',
   'hiddenUsageProviders',
   'terminalFontSize',

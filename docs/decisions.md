@@ -410,3 +410,14 @@
 - Implementation / validation / outcome: Written / unit and e2e / pending user feedback.
 - Result acceptance: Pending user feedback.
 - Learning: Two features that both call setDiagnostics replace each other's results; keep one owner.
+
+### Custom providers with an encrypted key
+- Scope and goal: User-requested. Save own model endpoints (name, protocol, URL, model ID, context and output tokens, API key), export them with the settings, and start agents with them.
+- Choice and authority: User-directed (asked: start agents with it; key encrypted, never exported). Provider details live in localStorage (`o-bros.customProviders`, part of the backup); keys live in `provider-keys.json`, encrypted with Electron safeStorage, readable only by the main process. An agent button carries a providerId; when its terminal starts, the main process adds the environment variables for the provider's protocol.
+- Evidence: customProviders.e2e.ts starts a shell agent with a provider and checks the variables it receives, that the key file and localStorage hold no plain key, and that the window never shows it; unit tests for parsing, validation and the variables.
+- Alternatives and sacrifice: Writing each agent's own config file was rejected (it edits files that belong to the agents). Only environment variables are used, so agents that read neither the Anthropic nor the OpenAI variables are not affected. The context window has no standard variable and is kept for reference.
+- Residual risk/debt: wot team members do not use a provider yet. The key is visible to any program the agent itself starts, as any environment variable is.
+- Recovery and ownership: src/shared/customProviders.ts, src/main/services/customProviders/providerKeys.ts, src/renderer/state/customProvidersStore.ts, src/renderer/features/settings/providers/*.
+- Implementation / validation / outcome: Written / unit and e2e / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: Keep secrets on the side that uses them; the window only needs to know that a key exists.
