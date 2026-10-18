@@ -44,7 +44,7 @@ test('lists the commits of the repository and shows the diff of a commit file', 
   await app.window.getByText('Second commit', { exact: true }).click()
   await app.window.locator('.commit-files .row', { hasText: 'notes.txt' }).click()
 
-  await expect(app.window.locator('.diff-line', { hasText: 'second line added later' })).toBeVisible({
+  await expect(app.window.locator('.diff-row', { hasText: 'second line added later' })).toBeVisible({
     timeout: 15_000
   })
 })
@@ -122,7 +122,7 @@ test('shows the commit graph in the main area and opens a commit file from it', 
   await app.window.locator('.graph-row', { hasText: 'Second commit' }).click()
   await app.window.locator('.graph-files .row', { hasText: 'notes.txt' }).click()
 
-  await expect(app.window.locator('.diff-line', { hasText: 'second line added later' })).toBeVisible({
+  await expect(app.window.locator('.diff-row', { hasText: 'second line added later' })).toBeVisible({
     timeout: 15_000
   })
 })
@@ -186,4 +186,22 @@ test('creates a branch, renames it, then undoes the last commit', async () => {
   await expect(app.window.getByText('First commit', { exact: true })).toBeVisible()
   await expect(app.window.getByText('Staged', { exact: true })).toBeVisible()
   await expect(app.window.getByPlaceholder('Commit message', { exact: true })).toBeEnabled()
+})
+
+test('shows a changed file side by side, before on the left and after on the right', async () => {
+  await createRepositoryWithTwoCommits()
+  await writeFile(join(app.projectFolder, 'notes.txt'), 'first line\nsecond line rewritten\n', 'utf8')
+
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.getByTitle('Changes', { exact: true }).click()
+  await app.window.locator('.row-change', { hasText: 'notes.txt' }).click()
+  await expect(app.window.locator('.diff-row', { hasText: 'second line rewritten' })).toBeVisible({ timeout: 15_000 })
+
+  await app.window.getByRole('button', { name: 'Side by side' }).click()
+  const changedRow = app.window.locator('.diff-split-row', { hasText: 'second line rewritten' })
+  await expect(changedRow.locator('.diff-half').first()).toContainText('second line added later')
+  await expect(changedRow.locator('.diff-half').first()).toHaveClass(/diff-cell-removed/)
+  await expect(changedRow.locator('.diff-half').last()).toHaveClass(/diff-cell-added/)
+  await expect(changedRow.locator('.diff-number').first()).toHaveText('2')
+  await expect(app.window.locator('.diff-split-head')).toContainText('Before')
 })

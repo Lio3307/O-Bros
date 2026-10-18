@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react'
 import type { GitDiffRequest, GitFileChange, ReviewFileRequest } from '../../../shared/types'
 import { useChangesStore, type CommitFileSelection } from '../../state/changesStore'
 import { useProjectsStore } from '../../state/projectsStore'
-import { classifyDiffLine } from './diffLines'
+import { useDiffLayoutStore, type DiffLayout } from '../../state/diffLayoutStore'
+import { SegmentedControl } from '../../ui/SegmentedControl'
+import { DiffBody } from './DiffBody'
 import { LineCounts } from './LineCounts'
 import { Send } from 'lucide-react'
 import { Button } from '../../ui/Button'
@@ -12,6 +14,11 @@ import { sendDiffToAgent } from '../prompts/sendToAgent'
 import './changes.css'
 
 const SHORT_HASH_LENGTH = 7
+
+const LAYOUT_OPTIONS: { value: DiffLayout; label: string }[] = [
+  { value: 'unified', label: 'Unified' },
+  { value: 'split', label: 'Side by side' }
+]
 
 interface DiffTarget {
   path: string
@@ -74,6 +81,8 @@ export function DiffView() {
   const selectedChange = useChangesStore((state) => state.selectedChange)
   const selectedCommitFile = useChangesStore((state) => state.selectedCommitFile)
   const selectedReview = useChangesStore((state) => state.selectedReview)
+  const layout = useDiffLayoutStore((state) => state.layout)
+  const setLayout = useDiffLayoutStore((state) => state.setLayout)
   const [diffText, setDiffText] = useState('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -111,6 +120,7 @@ export function DiffView() {
         <span className="diff-summary">
           <LineCounts addedLines={target.addedLines} removedLines={target.removedLines} />
           <span className="muted">{target.stateLabel} · read-only</span>
+          <SegmentedControl options={LAYOUT_OPTIONS} value={layout} onChange={setLayout} className="diff-layout" />
           <Button
             variant="outline"
             title="Insert this diff into the focused terminal"
@@ -126,13 +136,7 @@ export function DiffView() {
         <div className="diff-message">There is no text to compare for this file.</div>
       )}
       {errorMessage === null && diffText.trim() !== '' && (
-        <div className="diff-body">
-          {diffText.split('\n').map((line, index) => (
-            <div key={index} className={`diff-line diff-line-${classifyDiffLine(line)}`}>
-              {line}
-            </div>
-          ))}
-        </div>
+        <DiffBody diffText={diffText} layout={layout} />
       )}
     </div>
   )

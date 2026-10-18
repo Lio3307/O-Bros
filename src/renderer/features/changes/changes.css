@@ -161,6 +161,107 @@
   box-shadow: inset 3px 0 0 var(--color-success);
 }
 
+.diff-layout {
+  width: 200px;
+}
+
+.diff-hunk {
+  margin-top: 8px;
+  padding: 0 24px;
+  line-height: 24px;
+  color: var(--color-info);
+  white-space: pre;
+  background: var(--color-hunk-bg);
+}
+
+.diff-hunk:first-child {
+  margin-top: 0;
+}
+
+.diff-row,
+.diff-half {
+  display: flex;
+  min-width: 0;
+  line-height: 22px;
+  color: var(--color-muted);
+}
+
+.diff-number {
+  flex: 0 0 52px;
+  padding-right: 10px;
+  text-align: right;
+  color: var(--color-faint);
+  user-select: none;
+}
+
+.diff-marker {
+  flex: 0 0 16px;
+  color: var(--color-faint);
+  user-select: none;
+}
+
+.diff-text {
+  flex: 1;
+  min-width: 0;
+  padding-right: 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.diff-cell-added {
+  color: var(--color-text);
+  background: var(--color-added-bg);
+  box-shadow: inset 3px 0 0 var(--color-success);
+}
+
+.diff-cell-removed {
+  color: var(--color-text);
+  background: var(--color-removed-bg);
+  box-shadow: inset 3px 0 0 var(--color-danger);
+}
+
+.diff-cell-added .diff-marker {
+  color: var(--color-success);
+}
+
+.diff-cell-removed .diff-marker {
+  color: var(--color-danger);
+}
+
+.diff-split-head,
+.diff-split-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.diff-split-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 28px;
+  text-transform: uppercase;
+  color: var(--color-faint);
+  background: var(--color-chrome);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.diff-split-head span {
+  padding-left: 68px;
+}
+
+.diff-split-head span:first-child,
+.diff-half:first-child {
+  border-right: 1px solid var(--color-border);
+}
+
+.diff-half-empty {
+  background: var(--color-panel);
+}
+
 .diff-placeholder {
   display: flex;
   flex: 1;

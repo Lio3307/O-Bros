@@ -87,7 +87,7 @@ Files larger than 2 MB are not opened.
 - Click the branch name to switch to another local branch.
 - Stage, unstage or discard a file, or stage and unstage all. Discarding asks first; a new file goes to the Recycle Bin.
 - Write a message and commit (`Ctrl+Enter` inside the message box).
-- Select a file to read its diff.
+- Select a file to read its diff. **Unified** shows the change as one list; **Side by side** shows the file before the change on the left and after it on the right, lined up row by row. Both show the old and new line numbers. The switch is in the diff header and your choice is remembered.
 - **Pull** and **Push** buttons on the branch card show how many commits are behind or ahead. Pull is fast-forward only (it never makes a merge commit on its own); if your branch and the remote both have new commits you are told to merge or rebase in a terminal. Push publishes a branch with no upstream to `origin`. Git never prompts for a password inside the app; sign in once from a terminal if the remote asks.
 - **Branch and commit actions** (the ... button on the branch card): **New branch** (from the current commit, switched to right away), **Rename** the current branch, **Delete** another branch (a branch with commits that are not merged asks a second time), **Change last commit message** (only the message; staged files are not added) and **Undo last commit** (soft reset: the changes go back to staged). Changing or undoing a commit that is already on the remote needs a force push, which o-bros does not do, so you are warned first.
 - **Stashes**: **Stash changes** puts the changed and new files aside with a clean working tree. **Apply** restores a stash and removes it from the list, **Delete** removes it after you confirm.
