@@ -1,8 +1,9 @@
 import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { loginWithRule, parseAgentAuthRules, type AgentAuthRule } from '../../shared/agentAuth'
+import { loginWithRule, parseAgentAuthRules, unlistedAgentLogins, type AgentAuthRule } from '../../shared/agentAuth'
 import { clineLogin, copilotLogin, geminiLogin, loginFromAuthFile, type AgentLogin } from '../../shared/agentLogins'
+import { loadAcpRegistry } from './agents/acpRegistryClient'
 import { listPathCommands } from './agents/agentDetector'
 import { readJsonIfExists, readTextIfExists } from './fileSystem'
 
@@ -35,9 +36,16 @@ async function loginOf(rule: AgentAuthRule, home: string): Promise<AgentLogin> {
 }
 
 export async function readAgentLogins(): Promise<AgentLogin[]> {
-  const [installedCommands, rulesText] = await Promise.all([listPathCommands(), readFile(RULES_PATH, 'utf8')])
+  const [installedCommands, rulesText, registry] = await Promise.all([
+    listPathCommands(),
+    readFile(RULES_PATH, 'utf8'),
+    loadAcpRegistry().catch(() => [])
+  ])
   const installed = new Set(installedCommands.map((command) => command.toLowerCase()))
   const home = homedir()
-  const rules = parseAgentAuthRules(JSON.parse(rulesText)).filter((rule) => installed.has(rule.command))
-  return Promise.all(rules.map((rule) => loginOf(rule, home)))
+  const allRules = parseAgentAuthRules(JSON.parse(rulesText))
+  const rules = allRules.filter((rule) => installed.has(rule.command))
+  const known = await Promise.all(rules.map((rule) => loginOf(rule, home)))
+  const registryAgents = registry.map((agent) => ({ title: agent.name, commands: agent.commands }))
+  return [...known, ...unlistedAgentLogins(registryAgents, allRules, installed)]
 }

@@ -69,3 +69,30 @@ export function loginWithRule(detected: AgentLogin | null, rule: AgentAuthRule, 
   }
   return { ...withRequirement, summary: `${base.summary} · ${keyNote}` }
 }
+
+export interface InstalledAgent {
+  title: string
+  commands: string[]
+}
+
+const OWN_SECTION_COMMANDS = ['claude', 'codex']
+
+export function unlistedAgentLogins(agents: InstalledAgent[], rules: AgentAuthRule[], installed: Set<string>): AgentLogin[] {
+  const handledCommands = new Set([...OWN_SECTION_COMMANDS, ...rules.map((rule) => rule.command)])
+  const logins = new Map<string, AgentLogin>()
+  for (const agent of agents) {
+    const command = agent.commands.find((candidate) => installed.has(candidate.toLowerCase()))
+    if (command === undefined || logins.has(command) || agent.commands.some((candidate) => handledCommands.has(candidate))) {
+      continue
+    }
+    logins.set(command, {
+      command,
+      title: agent.title,
+      kind: 'unknown',
+      summary: 'O-BROS has no sign-in details for this agent yet',
+      providers: [],
+      manageHint: `Run ${command} and follow its setup, if it asks for an account or a key.`
+    })
+  }
+  return Array.from(logins.values())
+}
