@@ -5,7 +5,7 @@ import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { formatAge, formatResetsIn } from '../../../shared/time'
 import type { DetectedAccount, ProviderId, UsageWindow } from '../../../shared/types'
 import { selectActiveAccount, useAccountsStore } from '../../state/accountsStore'
-import { useInstalledCommandsStore } from '../../state/installedCommandsStore'
+import { useIsProviderPresent } from '../../state/presentProviders'
 import { openAccountSignInTerminal } from '../../state/openTerminal'
 import { useRefreshStore } from '../../state/refreshStore'
 import { toast } from '../../state/toastStore'
@@ -193,14 +193,8 @@ function ProviderBlock({ section }: { section: ProviderSection }) {
 }
 
 function useVisibleProviderSections(): ProviderSection[] {
-  const accounts = useAccountsStore((state) => state.accounts)
-  const installedCommands = useInstalledCommandsStore((state) => state.commands)
-  return providerSections.filter(
-    (section) =>
-      installedCommands === null ||
-      installedCommands.includes(section.provider) ||
-      accounts.some((account) => account.provider === section.provider)
-  )
+  const isProviderPresent = useIsProviderPresent()
+  return providerSections.filter((section) => isProviderPresent(section.provider))
 }
 
 function LastUpdatedText() {

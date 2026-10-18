@@ -57,8 +57,8 @@ function describeCreditLine(balance: CreditBalance): string {
 function useTrackedProviders(): TrackedProvider[] {
   const accountsState = useAccountsStore()
   const usageByAccountId = useUsageStore((state) => state.usageByAccountId)
-  const hiddenProviders = useUsageVisibilityStore((state) => state.hiddenProviders)
-  return PROVIDERS.filter((provider) => !hiddenProviders.includes(provider)).flatMap((provider) => {
+  const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
+  return PROVIDERS.filter((provider) => !hiddenSources.includes(provider)).flatMap((provider) => {
     const account = selectActiveAccount(accountsState, provider)
     if (account === null) {
       return []
@@ -70,7 +70,9 @@ function useTrackedProviders(): TrackedProvider[] {
 
 function UsageSummary({ onClick }: { onClick: () => void }) {
   const tracked = useTrackedProviders()
-  const credits = useUsageStore((state) => state.credits)
+  const allCredits = useUsageStore((state) => state.credits)
+  const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
+  const credits = allCredits.filter((balance) => !hiddenSources.includes(balance.id))
   const now = useNow(USAGE_TEXT_REFRESH_MS)
   if (tracked.length === 0 && credits.length === 0) {
     return null

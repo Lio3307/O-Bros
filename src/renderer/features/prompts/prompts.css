@@ -16,11 +16,24 @@
   min-width: 0;
 }
 
+.prompt-fields .field {
+  margin-right: 0;
+}
+
+.prompt-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.prompt-title {
+  font-weight: 600;
+  color: var(--color-white);
+}
+
 .prompt-text {
   min-height: 72px;
   padding: 8px 10px;
-  font-family: inherit;
-  color: var(--color-text);
   resize: vertical;
 }
 
@@ -35,4 +48,8 @@
 .command-shortcut {
   margin-left: auto;
   white-space: nowrap;
+}
+
+.prompt-header .button-remove {
+  margin-left: 0;
 }

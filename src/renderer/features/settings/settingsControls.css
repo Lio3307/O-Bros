@@ -295,10 +295,6 @@
   margin-bottom: 8px;
 }
 
-.agent-login-row {
-  padding: 14px 24px;
-}
-
 .agent-login-row .cell-account {
   gap: 6px;
 }
@@ -314,11 +310,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-}
-
-.language-server-row {
-  align-items: flex-start;
-  padding: 14px 24px;
 }
 
 .language-server-row .cell-account {

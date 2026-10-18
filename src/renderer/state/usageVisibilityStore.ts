@@ -1,39 +1,38 @@
 import { create } from 'zustand'
-import type { ProviderId } from '../../shared/types'
 
 const STORAGE_KEY = 'o-bros.hiddenUsageProviders'
 
 interface UsageVisibilityState {
-  hiddenProviders: ProviderId[]
-  toggle: (provider: ProviderId) => void
+  hiddenSources: string[]
+  toggle: (source: string) => void
 }
 
-function loadHiddenProviders(): ProviderId[] {
+function loadHiddenSources(): string[] {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter((id): id is ProviderId => id === 'claude' || id === 'codex') : []
+    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
   } catch {
     return []
   }
 }
 
-function saveHiddenProviders(hiddenProviders: ProviderId[]): void {
+function saveHiddenSources(hiddenSources: string[]): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(hiddenProviders))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(hiddenSources))
   } catch {
     return
   }
 }
 
 export const useUsageVisibilityStore = create<UsageVisibilityState>()((set, get) => ({
-  hiddenProviders: loadHiddenProviders(),
+  hiddenSources: loadHiddenSources(),
 
-  toggle: (provider) => {
-    const { hiddenProviders } = get()
-    const next = hiddenProviders.includes(provider)
-      ? hiddenProviders.filter((hidden) => hidden !== provider)
-      : [...hiddenProviders, provider]
-    saveHiddenProviders(next)
-    set({ hiddenProviders: next })
+  toggle: (source) => {
+    const { hiddenSources } = get()
+    const next = hiddenSources.includes(source)
+      ? hiddenSources.filter((hidden) => hidden !== source)
+      : [...hiddenSources, source]
+    saveHiddenSources(next)
+    set({ hiddenSources: next })
   }
 }))

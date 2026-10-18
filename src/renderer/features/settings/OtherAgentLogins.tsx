@@ -21,7 +21,7 @@ function needsAction(login: AgentLogin): boolean {
 
 function AgentLoginRow({ login }: { login: AgentLogin }) {
   return (
-    <div className="table-row agent-login-row">
+    <div className="table-row table-row-stacked agent-login-row">
       <div className="cell cell-account">
         <span className="agent-login-title">
           <AgentName command={login.command} label={login.title} size={16} isStrong />

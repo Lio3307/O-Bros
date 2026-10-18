@@ -73,6 +73,8 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **For contributors:** `npm run lint` (oxlint, warnings fail) and `npm run check` (type check, lint, unit tests and build). CI now lints too.
 
 ### Fixed
+- **Usage in the status bar lists what you have.** Settings → Agents showed Claude and Codex even when they were not installed, and OpenRouter credit could not be hidden. The list now shows Claude and Codex only when installed or signed in, plus every credit O-BROS reads (OpenRouter, with where its key comes from), each with its own switch.
+- **The Prompts page is tidy.** Each prompt has space around it, its title is bold with the delete button beside it, and Reset to examples asks before replacing your prompts. Prompts, Language servers and Other agents rows share one row style.
 - **Pages use the whole width.** Settings pages were capped at 920 pixels, which left an empty band on the right and put the scrollbar in the middle of a wide window; they now fill the main area. Empty screens such as History before you pick a session centre their text in the whole area instead of sticking to the left.
 - **The Language servers page jumped when you clicked into a command box and away.** Leaving the box saved it even when nothing changed, and every save replaced the whole list with "Looking for language servers…". Nothing is saved now unless the command changed, and a re-check keeps the list on screen. The command box is hidden behind "Use my own command…", says what it is for, saves with Enter and cancels with Esc.
 - **Clicking the button of an open menu reopened it.** Branch dropdowns, the branch actions menu and the All tabs menu now close when you click their button again.

@@ -54,7 +54,7 @@ function ServerRow({ server }: { server: LanguageServerStatus }) {
   }
 
   return (
-    <div className="table-row language-server-row">
+    <div className="table-row table-row-stacked language-server-row">
       <div className="cell cell-account">
         <span className="language-server-title">
           <span className="account-label">{server.title}</span>
