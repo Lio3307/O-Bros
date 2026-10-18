@@ -74,6 +74,25 @@ test('picks a nested repository from a folder of repositories and goes back to t
   await expect(app.window.getByText('Repositories in this folder')).toBeVisible({ timeout: 15_000 })
 })
 
+test('names the folder and lists its repositories in the main area when it is not a repository', async () => {
+  const nestedRepository = join(app.projectFolder, 'group', 'service')
+  await mkdir(nestedRepository, { recursive: true })
+  await execFileAsync('git', ['init'], { cwd: nestedRepository })
+  const errorOutput: string[] = []
+  app.application.process().stderr?.on('data', (chunk: Buffer) => errorOutput.push(chunk.toString()))
+
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.getByTitle('Changes', { exact: true }).click()
+
+  const overview = app.window.locator('.folder-overview')
+  await expect(overview).toContainText('sample-project', { timeout: 15_000 })
+  await expect(overview).toContainText(app.projectFolder)
+  await expect(overview).toContainText('This folder is not a git repository.')
+  await expect(overview.getByText('group/service')).toBeVisible()
+  await app.window.waitForTimeout(1000)
+  expect(errorOutput.join('')).not.toContain('git:stashList')
+})
+
 test('shows the commit graph in the main area and opens a commit file from it', async () => {
   await createRepositoryWithTwoCommits()
 

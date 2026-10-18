@@ -16,6 +16,7 @@ export type ChangesView = 'diff' | 'graph'
 interface ChangesState {
   view: ChangesView
   status: GitStatus | null
+  loadedPath: string | null
   selectedChange: GitFileChange | null
   selectedCommitFile: CommitFileSelection | null
   selectedReview: ReviewFileRequest | null
@@ -47,7 +48,7 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
     const stillThere = status?.changes.find(
       (change) => change.path === previous?.path && change.isStaged === previous.isStaged
     )
-    set({ status, selectedChange: stillThere ?? status?.changes[0] ?? null, errorMessage: null })
+    set({ status, loadedPath: repoPath, selectedChange: stillThere ?? status?.changes[0] ?? null, errorMessage: null })
   }
 
   async function runAction(repoPath: string, action: () => Promise<void>, failureMessage: string): Promise<boolean> {
@@ -67,6 +68,7 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
   return {
     view: 'diff',
     status: null,
+    loadedPath: null,
     selectedChange: null,
     selectedCommitFile: null,
     selectedReview: null,
@@ -77,9 +79,21 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
     load: async (repoPath) => {
       try {
         const status = await window.api.git.status(repoPath)
-        set({ status, selectedChange: status?.changes[0] ?? null, selectedCommitFile: null, errorMessage: null })
+        set({
+          status,
+          loadedPath: repoPath,
+          selectedChange: status?.changes[0] ?? null,
+          selectedCommitFile: null,
+          errorMessage: null
+        })
       } catch (error) {
-        set({ status: null, selectedChange: null, selectedCommitFile: null, errorMessage: friendlyErrorMessage(error, LOAD_FAILED_MESSAGE) })
+        set({
+          status: null,
+          loadedPath: repoPath,
+          selectedChange: null,
+          selectedCommitFile: null,
+          errorMessage: friendlyErrorMessage(error, LOAD_FAILED_MESSAGE)
+        })
       }
     },
 

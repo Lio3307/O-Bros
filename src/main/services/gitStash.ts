@@ -7,6 +7,7 @@ import { GIT_STASH_FORMAT, isStashRef, parseStashList } from './gitStashParser'
 const execFileAsync = promisify(execFile)
 const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
 const MAX_STASH_MESSAGE_LENGTH = 200
+const NOT_A_REPOSITORY = 'not a git repository'
 const NOTHING_TO_STASH = 'No local changes to save'
 
 async function runGit(repoPath: string, args: string[]): Promise<string> {
@@ -16,8 +17,14 @@ async function runGit(repoPath: string, args: string[]): Promise<string> {
 
 export async function listStashes(repoPath: string): Promise<GitStashEntry[]> {
   await assertInsideProjectRoots(repoPath)
-  const output = await runGit(repoPath, ['stash', 'list', `--format=${GIT_STASH_FORMAT}`])
-  return parseStashList(output)
+  try {
+    return parseStashList(await runGit(repoPath, ['stash', 'list', `--format=${GIT_STASH_FORMAT}`]))
+  } catch (error) {
+    if (error instanceof Error && error.message.includes(NOT_A_REPOSITORY)) {
+      return []
+    }
+    throw error
+  }
 }
 
 export async function stashChanges(request: GitStashRequest): Promise<void> {

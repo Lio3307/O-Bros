@@ -5,12 +5,12 @@ import { closestProject } from '../../../shared/closestProject'
 import { comparablePath, isPathInside, parentPath } from '../../../shared/paths'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useRepositoryOriginStore } from '../../state/repositoryOriginStore'
+import { LoadingText } from '../../ui/LoadingText'
 import { PanelHeader } from '../../ui/PanelHeader'
 import { BranchCard } from './BranchCard'
 import { ChangeGroup } from './ChangeGroup'
 import { CommitBox } from './CommitBox'
 import { CommitHistory } from './CommitHistory'
-import { RepositoryPicker } from './RepositoryPicker'
 import { ReviewSection } from './ReviewSection'
 import { StashSection } from './StashSection'
 import { ArrowLeft } from 'lucide-react'
@@ -22,8 +22,11 @@ export function ChangesPanel() {
   const selectProject = useProjectsStore((state) => state.selectProject)
   const originPath = useRepositoryOriginStore((state) => state.originPath)
   const setOrigin = useRepositoryOriginStore((state) => state.setOrigin)
-  const status = useChangesStore((state) => state.status)
+  const loadedStatus = useChangesStore((state) => state.status)
+  const loadedPath = useChangesStore((state) => state.loadedPath)
   const errorMessage = useChangesStore((state) => state.errorMessage)
+  const isLoaded = loadedPath === activeProjectPath
+  const status = isLoaded ? loadedStatus : null
   const load = useChangesStore((state) => state.load)
   const loadHistory = useCommitHistoryStore((state) => state.load)
   const resetHistory = useCommitHistoryStore((state) => state.reset)
@@ -77,8 +80,9 @@ export function ChangesPanel() {
       <div className="panel-content">
         <PanelHeader title="Changes" />
         {backButton}
-        <p className="panel-empty">{errorMessage ?? 'This folder is not a git repository.'}</p>
-        <RepositoryPicker folderPath={activeProjectPath} />
+        <p className="panel-empty">
+          {isLoaded ? (errorMessage ?? 'This folder is not a git repository.') : <LoadingText text="Reading the folder…" />}
+        </p>
       </div>
     )
   }

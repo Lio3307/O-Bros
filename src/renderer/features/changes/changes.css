@@ -616,3 +616,51 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.folder-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 640px;
+  padding: 32px;
+  margin: 0 auto;
+}
+
+.folder-overview p {
+  margin: 0;
+}
+
+.folder-overview-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--color-white);
+}
+
+.folder-overview-header svg {
+  flex-shrink: 0;
+}
+
+.folder-overview-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.folder-overview-name,
+.folder-overview-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.folder-overview-name {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.folder-overview-path {
+  font-size: 12px;
+}
