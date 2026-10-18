@@ -49,6 +49,7 @@ Language servers are programs you installed (for example typescript-language-ser
 | `api.anthropic.com` | Your saved Claude token, to read your usage | Every few minutes and when you press refresh |
 | `chatgpt.com` | Your saved Codex token, to read your usage | Every few minutes and when you press refresh |
 | `openrouter.ai` | The OpenRouter key saved in OpenCode (or `OPENROUTER_API_KEY`), to read that key's spending and credit | Every few minutes and when you press refresh, only if such a key exists |
+| The URL of a custom provider you added | A request for its model list, with the provider's saved key | Only when you press **Test connection** on that provider |
 | Your git remote | Whatever `git fetch` does | Only when you press fetch |
 | `cdn.agentclientprotocol.com` | A plain request for the public ACP Registry list of agents. Nothing about you is sent | When you open Settings → Agents, at most once an hour |
 | `github.com` (the o-bros releases) | A request for the latest release information, and then the installer file | Release information: 30 seconds after start and every 6 hours, unless you turn off "Check for new versions automatically" in Settings → About and updates, and when you press **Check for updates**. The installer: only when you press **Download** |

@@ -112,7 +112,13 @@ export function providerIdForCommand(launchers: AgentLauncher[], command: string
   if (command === null) {
     return null
   }
-  return launchers.find((launcher) => launcher.command.trim() === command.trim())?.providerId ?? null
+  const started = command.trim()
+  const matches = launchers.filter((launcher) => {
+    const launcherCommand = launcher.command.trim()
+    return launcherCommand !== '' && (started === launcherCommand || started.startsWith(`${launcherCommand} `))
+  })
+  const closest = matches.sort((first, second) => second.command.trim().length - first.command.trim().length)[0]
+  return closest?.providerId ?? null
 }
 
 export function parseAgentLaunchers(raw: string | null): AgentLauncher[] | null {

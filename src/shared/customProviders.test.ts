@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  describeProviderAnswer,
   draftProblem,
   keyHintOf,
   parseCustomProviders,
   parseTokenCount,
   providerEnvironment,
+  providerProbe,
   type CustomProvider
 } from './customProviders'
 
@@ -62,5 +64,29 @@ describe('custom providers', () => {
       OPENAI_API_BASE: 'https://proxy.example.com',
       OPENAI_MODEL: 'gpt-4.1'
     })
+  })
+})
+
+describe('testing a provider', () => {
+  const openai: CustomProvider = { ...ANTHROPIC_PROVIDER, protocol: 'openai', baseUrl: 'https://api.example.com/v1/', modelId: 'gpt-4.1' }
+
+  it('asks the model list of each kind of provider', () => {
+    expect(providerProbe(ANTHROPIC_PROVIDER, 'key')).toEqual({
+      url: 'https://proxy.example.com/v1/models',
+      headers: { Authorization: 'Bearer key', 'x-api-key': 'key', 'anthropic-version': '2023-06-01' }
+    })
+    expect(providerProbe(openai, null)).toEqual({ url: 'https://api.example.com/v1/models', headers: {} })
+  })
+
+  it('explains refused keys, wrong URLs and unknown models', () => {
+    expect(describeProviderAnswer(openai, 401, null).message).toContain('refused the key')
+    expect(describeProviderAnswer(openai, 404, null).message).toContain('end with /v1')
+    expect(describeProviderAnswer(openai, 500, null)).toEqual({ kind: 'failed', message: 'The provider answered with an error (500).' })
+    expect(describeProviderAnswer(openai, 200, { data: [{ id: 'gpt-4.1' }] })).toEqual({
+      kind: 'works',
+      message: 'The provider answered and offers gpt-4.1.'
+    })
+    expect(describeProviderAnswer(openai, 200, { data: [{ id: 'other' }] }).message).toContain('not in its list of 1 models')
+    expect(describeProviderAnswer(openai, 200, 'plain text').message).toContain('does not list its models')
   })
 })

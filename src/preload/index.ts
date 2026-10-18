@@ -23,7 +23,8 @@ const api: DesktopApi = {
     createFolder: (provider, accountName) => ipcRenderer.invoke(IpcChannel.accountsCreateFolder, provider, accountName),
     agentLogins: () => ipcRenderer.invoke(IpcChannel.accountsAgentLogins),
     providerKeyHints: () => ipcRenderer.invoke(IpcChannel.accountsProviderKeyHints),
-    saveProviderKey: (providerId, apiKey) => ipcRenderer.invoke(IpcChannel.accountsSaveProviderKey, providerId, apiKey)
+    saveProviderKey: (providerId, apiKey) => ipcRenderer.invoke(IpcChannel.accountsSaveProviderKey, providerId, apiKey),
+    testProvider: (provider) => ipcRenderer.invoke(IpcChannel.accountsTestProvider, provider)
   },
   usage: {
     get: (account) => ipcRenderer.invoke(IpcChannel.usageGet, account),

@@ -1,7 +1,7 @@
-import { KeyRound, Pencil, Plus, Trash2 } from 'lucide-react'
+import { KeyRound, Pencil, PlugZap, Plus, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { friendlyErrorMessage } from '../../../../shared/friendlyError'
-import type { CustomProvider } from '../../../../shared/customProviders'
+import type { CustomProvider, ProviderTestResult } from '../../../../shared/customProviders'
 import { useAgentLaunchersStore } from '../../../state/agentLaunchersStore'
 import { askToConfirm } from '../../../state/confirmStore'
 import { useCustomProvidersStore } from '../../../state/customProvidersStore'
@@ -9,6 +9,7 @@ import { toast } from '../../../state/toastStore'
 import { Button } from '../../../ui/Button'
 import { Chip } from '../../../ui/Chip'
 import { SettingsSection } from '../../../ui/SettingsSection'
+import { Spinner } from '../../../ui/Spinner'
 import { StatusDot } from '../../../ui/StatusDot'
 import { CustomProviderForm } from './CustomProviderForm'
 
@@ -28,10 +29,23 @@ function ProviderRow({ provider, onEdit }: { provider: CustomProvider; onEdit: (
   const remove = useCustomProvidersStore((state) => state.remove)
   const removeKey = useCustomProvidersStore((state) => state.removeKey)
   const launchers = useAgentLaunchersStore((state) => state.launchers)
+  const [testResult, setTestResult] = useState<ProviderTestResult | null>(null)
+  const [isTesting, setIsTesting] = useState(false)
   const usedBy = launchers.filter((launcher) => launcher.providerId === provider.id)
   const limits = [tokenText('Context', provider.contextTokens), tokenText('Output', provider.outputTokens)].filter(
     (text): text is string => text !== null
   )
+
+  async function testConnection(): Promise<void> {
+    setIsTesting(true)
+    try {
+      setTestResult(await window.api.accounts.testProvider(provider))
+    } catch (error) {
+      setTestResult({ kind: 'failed', message: friendlyErrorMessage(error, 'Could not test the provider.') })
+    } finally {
+      setIsTesting(false)
+    }
+  }
 
   async function confirmRemove(): Promise<void> {
     const isConfirmed = await askToConfirm({
@@ -67,6 +81,12 @@ function ProviderRow({ provider, onEdit }: { provider: CustomProvider; onEdit: (
             </Button>
           )}
         </span>
+        {testResult !== null && (
+          <span className="status-label provider-test-result">
+            <StatusDot tone={testResult.kind === 'works' ? 'success' : 'danger'} />
+            {testResult.message}
+          </span>
+        )}
         <span className="muted">
           {usedBy.length === 0
             ? 'Not used yet. Pick it for an agent in Settings → Agents.'
@@ -74,6 +94,9 @@ function ProviderRow({ provider, onEdit }: { provider: CustomProvider; onEdit: (
         </span>
       </div>
       <div className="provider-row-actions">
+        <Button variant="outline" disabled={isTesting} onClick={testConnection}>
+          {isTesting ? <Spinner size={14} /> : <PlugZap size={14} />} Test connection
+        </Button>
         <Button variant="outline" onClick={onEdit}>
           <Pencil size={14} /> Edit
         </Button>

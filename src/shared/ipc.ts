@@ -9,7 +9,7 @@ import type {
   RunningLanguageServer
 } from './languageServers'
 import type { CommitIdentity } from './commitIdentity'
-import type { CustomProvider } from './customProviders'
+import type { CustomProvider, ProviderTestResult } from './customProviders'
 import type { CreditBalance } from './creditBalance'
 import type { UsageFacts } from './usageSupport'
 import type { TeamPolicy } from './teamPolicy'
@@ -89,6 +89,7 @@ export const IpcChannel = {
   accountsAgentLogins: 'accounts:agentLogins',
   accountsProviderKeyHints: 'accounts:providerKeyHints',
   accountsSaveProviderKey: 'accounts:saveProviderKey',
+  accountsTestProvider: 'accounts:testProvider',
   projectsList: 'projects:list',
   projectsAddRoot: 'projects:addRoot',
   projectsRemoveRoot: 'projects:removeRoot',
@@ -234,6 +235,7 @@ export interface DesktopApi {
     agentLogins(): Promise<AgentLogin[]>
     providerKeyHints(): Promise<Record<string, string>>
     saveProviderKey(providerId: string, apiKey: string | null): Promise<void>
+    testProvider(provider: CustomProvider): Promise<ProviderTestResult>
   }
   usage: {
     get(account: AccountRef): Promise<AccountUsage>

@@ -3,6 +3,7 @@ import {
   agentStatusOf,
   isUsableLauncher,
   parseAgentLaunchers,
+  providerIdForCommand,
   parseShownIds,
   programOf,
   providerOfCommand,
@@ -148,5 +149,25 @@ describe('shortAgentName', () => {
   it('keeps names without that ending and a name that is only the ending', () => {
     expect(shortAgentName('Codex')).toBe('Codex')
     expect(shortAgentName('Agent')).toBe('Agent')
+  })
+})
+
+describe('providerIdForCommand', () => {
+  const launchers = [
+    { id: 'a', name: 'Claude', command: 'claude', providerId: 'proxy' },
+    { id: 'b', name: 'Claude fast', command: 'claude --model haiku', providerId: 'cheap' },
+    { id: 'c', name: 'Codex', command: 'codex', providerId: null }
+  ]
+
+  it('finds the provider of the button that started the command, including team members', () => {
+    expect(providerIdForCommand(launchers, 'claude')).toBe('proxy')
+    expect(providerIdForCommand(launchers, 'claude --session-id 123')).toBe('proxy')
+    expect(providerIdForCommand(launchers, 'claude --model haiku --session-id 123')).toBe('cheap')
+  })
+
+  it('finds nothing for other commands', () => {
+    expect(providerIdForCommand(launchers, 'codex')).toBeNull()
+    expect(providerIdForCommand(launchers, 'claudette')).toBeNull()
+    expect(providerIdForCommand(launchers, null)).toBeNull()
   })
 })
