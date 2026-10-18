@@ -31,10 +31,18 @@ export function comparablePath(path: string, ignoreCase: boolean): string {
   return ignoreCase ? normalized.toLowerCase() : normalized
 }
 
+function isDriveSegment(segment: string): boolean {
+  return segment.length === 2 && segment.charAt(1) === ':'
+}
+
 export function parentPath(path: string): string {
   const normalized = normalizeSeparators(path)
   const lastSlash = normalized.lastIndexOf('/')
-  return lastSlash <= 0 ? normalized : normalized.slice(0, lastSlash)
+  if (lastSlash <= 0) {
+    return normalized
+  }
+  const parent = normalized.slice(0, lastSlash)
+  return isDriveSegment(parent) ? `${parent}/` : parent
 }
 
 export function isAbsolutePath(path: string): boolean {

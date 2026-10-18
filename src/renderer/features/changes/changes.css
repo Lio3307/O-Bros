@@ -585,3 +585,34 @@
   padding: 4px 8px 8px;
   font-size: 12px;
 }
+
+.changes-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 6px 12px;
+  color: var(--color-muted);
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.changes-back:hover {
+  color: var(--color-white);
+  background: var(--color-hover);
+}
+
+.changes-back svg {
+  flex-shrink: 0;
+}
+
+.changes-back-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

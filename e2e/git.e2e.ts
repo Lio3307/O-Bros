@@ -70,7 +70,7 @@ test('picks a nested repository from a folder of repositories and goes back to t
 
   await expect(app.window.getByText('Nested commit', { exact: true })).toBeVisible({ timeout: 15_000 })
 
-  await app.window.locator('.link-button', { hasText: 'sample-project' }).click()
+  await app.window.locator('.changes-back', { hasText: 'sample-project' }).click()
   await expect(app.window.getByText('Repositories in this folder')).toBeVisible({ timeout: 15_000 })
 })
 

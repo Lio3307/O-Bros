@@ -72,6 +72,12 @@ describe('parentPath and relativePathFrom', () => {
     expect(parentPath('C:\\dev\\app\\src\\a.ts')).toBe('C:/dev/app/src')
   })
 
+  it('keeps a drive root as its own parent', () => {
+    expect(parentPath('E:\\wot-test')).toBe('E:/')
+    expect(parentPath('E:\\')).toBe('E:/')
+    expect(parentPath('/home')).toBe('/home')
+  })
+
   it('makes a path relative to a root', () => {
     expect(relativePathFrom('C:\\dev\\app\\src\\a.ts', 'C:/dev/app')).toBe('src/a.ts')
   })

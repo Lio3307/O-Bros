@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useChangesStore } from '../../state/changesStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
 import { closestProject } from '../../../shared/closestProject'
-import { isPathInside, parentPath } from '../../../shared/paths'
+import { comparablePath, isPathInside, parentPath } from '../../../shared/paths'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useRepositoryOriginStore } from '../../state/repositoryOriginStore'
 import { PanelHeader } from '../../ui/PanelHeader'
@@ -13,7 +13,6 @@ import { CommitHistory } from './CommitHistory'
 import { RepositoryPicker } from './RepositoryPicker'
 import { ReviewSection } from './ReviewSection'
 import { StashSection } from './StashSection'
-import { Button } from '../../ui/Button'
 import { ArrowLeft } from 'lucide-react'
 import './changes.css'
 
@@ -52,7 +51,8 @@ export function ChangesPanel() {
   }
 
   const folderAbove = parentPath(activeProjectPath)
-  const hasProjectAbove = closestProject(folderAbove, roots) !== null
+  const isAtTop = comparablePath(folderAbove, true) === comparablePath(activeProjectPath, true)
+  const hasProjectAbove = !isAtTop && closestProject(folderAbove, roots) !== null
   const hasValidOrigin =
     originPath !== null && originPath !== activeProjectPath && isPathInside(activeProjectPath, originPath)
   const backPath = hasValidOrigin ? originPath : hasProjectAbove ? folderAbove : null
@@ -66,9 +66,10 @@ export function ChangesPanel() {
   }
 
   const backButton = backPath === null ? null : (
-    <Button variant="link" onClick={goBack}>
-      <ArrowLeft size={14} /> {backName}
-    </Button>
+    <button type="button" className="changes-back" title={`Back to ${backName}`} onClick={goBack}>
+      <ArrowLeft size={14} />
+      <span className="changes-back-name">{backName}</span>
+    </button>
   )
 
   if (status === null) {
