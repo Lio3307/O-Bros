@@ -338,6 +338,17 @@
   gap: 6px;
 }
 
+.language-server-command {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.language-server-command-toggle {
+  align-self: flex-start;
+  padding: 0;
+}
+
 .language-server-toggle {
   flex-shrink: 0;
   margin-left: 16px;

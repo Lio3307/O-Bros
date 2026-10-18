@@ -73,6 +73,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **For contributors:** `npm run lint` (oxlint, warnings fail) and `npm run check` (type check, lint, unit tests and build). CI now lints too.
 
 ### Fixed
+- **The Language servers page jumped when you clicked into a command box and away.** Leaving the box saved it even when nothing changed, and every save replaced the whole list with "Looking for language servers…". Nothing is saved now unless the command changed, and a re-check keeps the list on screen. The command box is hidden behind "Use my own command…", says what it is for, saves with Enter and cancels with Esc.
 - **Clicking the button of an open menu reopened it.** Branch dropdowns, the branch actions menu and the All tabs menu now close when you click their button again.
 - **The repository list on the Git page could not scroll.** With many repositories inside a folder, the list now scrolls, fills the width of the main area, and shows each repository's path, branch and an arrow in a bordered list.
 - **Text boxes on the Git page had no style until Settings was opened.** The shared input style was loaded with the settings pages; it now loads at start, so the commit message box looks like every other input.

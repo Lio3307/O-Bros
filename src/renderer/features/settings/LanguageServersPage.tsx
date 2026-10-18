@@ -1,5 +1,5 @@
 import { Square } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   choiceFor,
   type LanguageServerSource,
@@ -33,7 +33,25 @@ function ServerRow({ server }: { server: LanguageServerStatus }) {
   const setEnabled = useLanguageServerStore((state) => state.setEnabled)
   const setCustomCommand = useLanguageServerStore((state) => state.setCustomCommand)
   const [draft, setDraft] = useState(choice.customCommand ?? '')
+  const [isEditing, setIsEditing] = useState(false)
+  const isCancelling = useRef(false)
   const defaultCommand = [server.command, ...server.args].join(' ')
+  const showsCommand = isEditing || choice.customCommand !== null
+
+  function save(): void {
+    if (isCancelling.current) {
+      isCancelling.current = false
+      return
+    }
+    setCustomCommand(server.id, draft)
+    setIsEditing(false)
+  }
+
+  function cancel(): void {
+    isCancelling.current = true
+    setDraft(choice.customCommand ?? '')
+    setIsEditing(false)
+  }
 
   return (
     <div className="table-row language-server-row">
@@ -56,14 +74,34 @@ function ServerRow({ server }: { server: LanguageServerStatus }) {
             Install it with <span className="mono">{server.install}</span>, then press Look again.
           </span>
         )}
-        <input
-          className="field mono"
-          placeholder={`Own command, for example ${defaultCommand}`}
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onBlur={() => setCustomCommand(server.id, draft)}
-          onKeyDown={(event) => event.key === 'Enter' && setCustomCommand(server.id, draft)}
-        />
+        {showsCommand ? (
+          <label className="language-server-command">
+            <span className="muted">
+              Your own command, used instead of <span className="mono">{defaultCommand}</span>. Leave it empty to go back.
+              Enter saves, Esc cancels.
+            </span>
+            <input
+              className="field mono"
+              placeholder={defaultCommand}
+              value={draft}
+              autoFocus={isEditing}
+              onChange={(event) => setDraft(event.target.value)}
+              onBlur={save}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  save()
+                } else if (event.key === 'Escape') {
+                  cancel()
+                  event.currentTarget.blur()
+                }
+              }}
+            />
+          </label>
+        ) : (
+          <button type="button" className="link-button language-server-command-toggle" onClick={() => setIsEditing(true)}>
+            Use my own command…
+          </button>
+        )}
       </div>
       <label className="toggle-row language-server-toggle">
         <input type="checkbox" checked={choice.isEnabled} onChange={(event) => setEnabled(server.id, event.target.checked)} />
@@ -132,7 +170,6 @@ export function LanguageServersPage() {
 
   useEffect(() => {
     let isCurrent = true
-    setServers(null)
     window.api.lsp
       .statuses(activeProjectPath, choices)
       .then((found) => isCurrent && setServers(found))

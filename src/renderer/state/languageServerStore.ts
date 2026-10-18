@@ -34,7 +34,12 @@ function loadChoices(): LanguageServerChoices {
 
 export const useLanguageServerStore = create<LanguageServerState>()((set, get) => {
   function change(serverId: string, changes: Partial<LanguageServerChoice>): void {
-    const choices = { ...get().choices, [serverId]: { ...choiceFor(get().choices, serverId), ...changes } }
+    const current = choiceFor(get().choices, serverId)
+    const next = { ...current, ...changes }
+    if (next.isEnabled === current.isEnabled && next.customCommand === current.customCommand) {
+      return
+    }
+    const choices = { ...get().choices, [serverId]: next }
     set({ choices })
     try {
       localStorage.setItem(LANGUAGE_SERVERS_STORAGE_KEY, JSON.stringify(choices))
