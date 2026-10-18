@@ -3,7 +3,7 @@
   "version": "0.1.4",
   "private": true,
   "license": "MIT",
-  "description": "Terminal-first workspace for the Claude and Codex CLIs",
+  "description": "Terminal-first workspace for any agent CLI",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",

@@ -39,21 +39,6 @@
   accent-color: var(--color-white);
 }
 
-.field {
-  flex: 1;
-  min-width: 0;
-  padding: 6px 8px;
-  color: var(--color-text);
-  background: var(--color-terminal);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  outline: none;
-}
-
-.field:focus {
-  border-color: var(--color-faint);
-}
-
 .field-prefix {
   flex: 0 0 140px;
 }

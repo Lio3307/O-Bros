@@ -7,7 +7,8 @@ export function CommitBox({ repoPath, stagedCount }: { repoPath: string; stagedC
   const commit = useChangesStore((state) => state.commit)
   const [message, setMessage] = useState('')
 
-  const canCommit = stagedCount > 0 && message.trim() !== '' && !isWorking
+  const hasStagedFiles = stagedCount > 0
+  const canCommit = hasStagedFiles && message.trim() !== '' && !isWorking
 
   async function submit(): Promise<void> {
     if (!canCommit) {
@@ -24,7 +25,9 @@ export function CommitBox({ repoPath, stagedCount }: { repoPath: string; stagedC
       <textarea
         className="field commit-message"
         rows={3}
-        placeholder={stagedCount === 0 ? 'Stage changes to commit' : 'Commit message'}
+        disabled={!hasStagedFiles}
+        title={hasStagedFiles ? 'Ctrl+Enter to commit' : 'Stage a file first'}
+        placeholder={hasStagedFiles ? 'Commit message' : 'Stage changes to write a commit message'}
         value={message}
         onChange={(event) => setMessage(event.target.value)}
         onKeyDown={(event) => {
@@ -34,7 +37,7 @@ export function CommitBox({ repoPath, stagedCount }: { repoPath: string; stagedC
         }}
       />
       <Button variant="primary" disabled={!canCommit} onClick={() => submit()}>
-        Commit {stagedCount > 0 ? `${stagedCount} ${stagedCount === 1 ? 'file' : 'files'}` : ''}
+        {hasStagedFiles ? `Commit ${stagedCount} ${stagedCount === 1 ? 'file' : 'files'}` : 'Nothing staged'}
       </Button>
     </div>
   )

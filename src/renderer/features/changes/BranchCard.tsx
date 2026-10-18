@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Check, ChevronDown, GitBranch, MoreHorizontal } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, GitBranch, MoreHorizontal } from 'lucide-react'
 import { useCallback, useState, type MouseEvent } from 'react'
 import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { describeSyncState } from '../../../shared/gitSync'
@@ -8,6 +8,7 @@ import { useChangesStore } from '../../state/changesStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { toast } from '../../state/toastStore'
 import { Button } from '../../ui/Button'
+import { Dropdown, type DropdownOption } from '../../ui/Dropdown'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { RefreshButton } from '../../ui/RefreshButton'
 import { useNow } from '../../ui/useNow'
@@ -45,26 +46,18 @@ export function BranchCard({ status, repoPath }: { status: GitStatus; repoPath: 
   const fetchedText =
     status.lastFetchedAt === null ? 'Never fetched' : `Fetched ${formatAge(status.lastFetchedAt, now)}`
 
-  async function showBranches(event: MouseEvent<HTMLButtonElement>): Promise<void> {
-    const bounds = event.currentTarget.getBoundingClientRect()
+  async function loadBranchOptions(): Promise<DropdownOption[]> {
     try {
       const { branches, current } = await window.api.git.branches(repoPath)
-      setOpenMenu({
-        x: bounds.left,
-        y: bounds.bottom + 4,
-        items: branches.map((branch) => ({
-          label: branch,
-          isActive: branch === current,
-          onSelect: () => {
-            if (branch !== current) {
-              void switchBranch(repoPath, branch).then((isDone) => isDone && void reloadProjects())
-            }
-          }
-        }))
-      })
+      return branches.map((branch) => ({ value: branch, label: branch, hint: branch === current ? 'current' : undefined }))
     } catch (error) {
       toast.error(friendlyErrorMessage(error, 'Could not list the branches.'))
+      return []
     }
+  }
+
+  function changeBranch(branch: string): void {
+    void switchBranch(repoPath, branch).then((isDone) => isDone && void reloadProjects())
   }
 
   async function showBranchActions(event: MouseEvent<HTMLButtonElement>): Promise<void> {
@@ -93,12 +86,15 @@ export function BranchCard({ status, repoPath }: { status: GitStatus; repoPath: 
   return (
     <div className="branch-card">
       <div className="branch-card-name">
-        <GitBranch size={14} />
-        <button type="button" className="branch-switch" title="Switch branch" onClick={(event) => void showBranches(event)}>
-          <span>{status.branch}</span>
-          <ChevronDown size={12} />
-        </button>
-        <span className="chip chip-current">current</span>
+        <Dropdown
+          className="branch-switch"
+          title="Switch branch"
+          icon={<GitBranch size={14} />}
+          label={status.branch}
+          value={status.branch}
+          loadOptions={loadBranchOptions}
+          onChange={changeBranch}
+        />
         <button
           type="button"
           className="branch-more"

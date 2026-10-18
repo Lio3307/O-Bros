@@ -1,8 +1,9 @@
-import { Folder, GitBranch } from 'lucide-react'
+import { ChevronRight, Folder, GitBranch } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { RepositoryEntry } from '../../../shared/types'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useRepositoryOriginStore } from '../../state/repositoryOriginStore'
+import { LoadingText } from '../../ui/LoadingText'
 
 export function RepositoryPicker({ folderPath }: { folderPath: string }) {
   const selectProject = useProjectsStore((state) => state.selectProject)
@@ -27,29 +28,33 @@ export function RepositoryPicker({ folderPath }: { folderPath: string }) {
   }
 
   if (repositories === null) {
-    return <p className="panel-empty">Looking for repositories…</p>
+    return <p className="panel-empty"><LoadingText text="Looking for repositories…" /></p>
   }
   if (repositories.length === 0) {
-    return null
+    return <p className="muted">No repositories were found inside this folder.</p>
   }
 
   return (
-    <section>
-      <h3 className="section-label">Repositories in this folder</h3>
+    <section className="repository-list">
+      <h3 className="repository-list-title">
+        Repositories in this folder
+        <span className="repository-list-count">{repositories.length}</span>
+      </h3>
       {repositories.map((repository) => (
         <button
           key={repository.path}
           type="button"
-          className="row"
-          title={repository.path}
+          className="repository-row"
+          title={`Open ${repository.path}`}
           onClick={() => open(repository)}
         >
           <Folder size={14} />
-          <span className="row-name">{repository.relativePath}</span>
+          <span className="repository-row-name">{repository.relativePath}</span>
           <span className="branch-label">
             <GitBranch size={12} />
             {repository.branch}
           </span>
+          <ChevronRight size={14} />
         </button>
       ))}
     </section>

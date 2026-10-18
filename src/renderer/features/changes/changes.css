@@ -237,17 +237,8 @@
 }
 
 .branch-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-  color: inherit;
-  background: transparent;
-  border: none;
+  flex: 1;
   font-weight: 600;
-}
-
-.branch-switch:hover {
   color: var(--color-white);
 }
 
@@ -519,9 +510,7 @@
 }
 
 .graph-branch-select {
-  min-width: 180px;
-  max-width: 280px;
-  height: 28px;
+  width: 240px;
 }
 
 .branch-card-actions {
@@ -619,12 +608,80 @@
 
 .folder-overview {
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 16px;
+  min-height: 0;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.repository-list {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.repository-list-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  margin: 0;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+  background: var(--color-panel);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.repository-list-count {
+  padding: 0 6px;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.repository-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
   width: 100%;
-  max-width: 640px;
-  padding: 32px;
-  margin: 0 auto;
+  height: 36px;
+  padding: 0 12px;
+  color: var(--color-text);
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.repository-row:last-child {
+  border-bottom: none;
+}
+
+.repository-row:hover {
+  color: var(--color-white);
+  background: var(--color-hover);
+}
+
+.repository-row > svg {
+  color: var(--color-muted);
+}
+
+.repository-row-name {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .folder-overview p {

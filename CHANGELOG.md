@@ -66,7 +66,12 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - The usage in the bottom-left corner is one compact item: the provider closest to a limit, with its number and reset time, and small icons for the other logged-in providers. Hover for every number; click for the full details.
 - Open sessions are listed under the folder they run in, instead of all at the top of the project. Sessions that run in the project folder itself stay under "Open sessions".
 
+- **The commit message box is off until something is staged.** It is greyed out with a dashed border and says "Stage changes to write a commit message", and the button reads "Nothing staged".
+- **Branch pickers match the rest of the app.** Switching branch in the Changes panel and choosing a branch in the commit graph use one boxed dropdown with a check on the selected branch and "current" next to the checked-out one, instead of plain text in one place and the system select menu in the other.
+
 ### Fixed
+- **The repository list on the Git page could not scroll.** With many repositories inside a folder, the list now scrolls, fills the width of the main area, and shows each repository's path, branch and an arrow in a bordered list.
+- **Text boxes on the Git page had no style until Settings was opened.** The shared input style was loaded with the settings pages; it now loads at start, so the commit message box looks like every other input.
 - **"Error occurred in handler for git:stashList" in the terminal.** Moving to a folder that is not a repository could ask git for stashes using the previous folder's data. The Changes panel now waits until the status belongs to the selected folder, and listing stashes in a non-repository folder returns an empty list instead of an error.
 - **A back button that led nowhere.** In the Changes panel, a drive root such as `E:` offered to go back to itself. The folder above a drive root is now the root itself, so no back button shows at the top. The back row is a full-width bar, and a long folder name is cut with an ellipsis instead of overflowing; hover it for the full name.
 - **The same notice could pile up.** A notice that is already on screen is not shown again, and the wot skill update is offered once per start. Notice buttons sit under the text.

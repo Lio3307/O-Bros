@@ -17,9 +17,11 @@ interface PopupMenuProps {
   y: number
   items: PopupMenuItem[]
   onClose: () => void
+  minWidth?: number
 }
 
 const VIEWPORT_MARGIN = 8
+const MAX_WIDTH = 320
 
 function itemClassName(item: PopupMenuItem): string {
   const classNames = ['popup-menu-item']
@@ -32,7 +34,7 @@ function itemClassName(item: PopupMenuItem): string {
   return classNames.join(' ')
 }
 
-export function PopupMenu({ x, y, items, onClose }: PopupMenuProps) {
+export function PopupMenu({ x, y, items, onClose, minWidth }: PopupMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function PopupMenu({ x, y, items, onClose }: PopupMenuProps) {
   }, [x, y, onClose])
 
   return (
-    <div className="popup-menu" ref={menuRef} style={{ left: x, top: y }}>
+    <div className="popup-menu" ref={menuRef} style={{ left: x, top: y, minWidth, maxWidth: Math.max(minWidth ?? 0, MAX_WIDTH) }}>
       {items.map((item) => (
         <div key={item.label} className="popup-menu-entry">
           {item.hasSeparatorBefore === true && <div className="popup-menu-separator" />}

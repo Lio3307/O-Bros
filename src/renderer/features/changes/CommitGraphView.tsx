@@ -1,9 +1,11 @@
+import { GitBranch } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { formatAge } from '../../../shared/time'
 import { useCommitGraphStore, canShowMoreGraphCommits } from '../../state/commitGraphStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { Button } from '../../ui/Button'
+import { Dropdown } from '../../ui/Dropdown'
 import { useNow } from '../../ui/useNow'
 import { buildCommitGraph, laneCount } from './commitGraph'
 import { CommitFiles } from './CommitFiles'
@@ -49,23 +51,25 @@ export function CommitGraphView() {
     <div className="graph-view">
       <header className="graph-toolbar">
         <span className="graph-title">Commit graph</span>
-        <label className="graph-option">
+        <span className="graph-option">
           Branch
-          <select
-            className="field graph-branch-select"
+          <Dropdown
+            className="graph-branch-select"
+            title="Show the history of one branch"
+            icon={<GitBranch size={14} />}
+            label={branchFilter ?? 'All branches'}
             value={branchFilter ?? ALL_BRANCHES_VALUE}
-            onChange={(event) =>
-              void setBranchFilter(repoPath, event.target.value === ALL_BRANCHES_VALUE ? null : event.target.value)
-            }
-          >
-            <option value={ALL_BRANCHES_VALUE}>All branches</option>
-            {branches.map((branch) => (
-              <option key={branch} value={branch}>
-                {branch === currentBranch ? `${branch} (current)` : branch}
-              </option>
-            ))}
-          </select>
-        </label>
+            loadOptions={() => [
+              { value: ALL_BRANCHES_VALUE, label: 'All branches' },
+              ...branches.map((branch) => ({
+                value: branch,
+                label: branch,
+                hint: branch === currentBranch ? 'current' : undefined
+              }))
+            ]}
+            onChange={(value) => void setBranchFilter(repoPath, value === ALL_BRANCHES_VALUE ? null : value)}
+          />
+        </span>
       </header>
       <div className="graph-body">
         {commits === null && <div className="graph-empty">{isLoading && <LoadingText text="Loading the history…" />}</div>}
