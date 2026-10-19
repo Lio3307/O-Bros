@@ -79,6 +79,24 @@ async function typeInTerminal(command: string): Promise<void> {
   await app.window.keyboard.press('Enter')
 }
 
+async function waitUntilShellRuns(): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        await typeInTerminal(savedOutput('echo ready', 'shell-ready.txt'))
+        await app.window.waitForTimeout(1_000)
+        return readProof('shell-ready.txt')
+      },
+      { timeout: 30_000, intervals: [2_000] }
+    )
+    .toContain('ready')
+}
+
+async function receivedOrSpawnOutput(): Promise<string> {
+  const received = await readProof('fake-codex-received.txt')
+  return received !== '' ? received : `nothing received; wot spawn said: ${await readProof('spawn-proof.txt')}`
+}
+
 async function openStoragePage(): Promise<void> {
   await app.window.getByTitle('Settings').click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
@@ -96,8 +114,9 @@ test('marks a team member conversation in History and deletes it from Storage', 
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByTitle('Plain terminal in the selected folder').click()
   await app.window.locator('.workspace .xterm-helper-textarea').first().waitFor({ state: 'attached' })
+  await waitUntilShellRuns()
   await typeInTerminal(savedOutput('wot spawn codex --name reviewer --task "Review the notes file please"', 'spawn-proof.txt'))
-  await expect.poll(() => readProof('fake-codex-received.txt'), { timeout: 60_000 }).toBe('Review the notes file please')
+  await expect.poll(receivedOrSpawnOutput, { timeout: 60_000 }).toBe('Review the notes file please')
   await typeInTerminal(savedOutput('wot stop reviewer', 'stop-proof.txt'))
   await expect.poll(() => readProof('stop-proof.txt'), { timeout: 30_000 }).toContain('Stopped "reviewer"')
 
