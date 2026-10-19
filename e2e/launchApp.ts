@@ -50,8 +50,8 @@ export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp
     for (const [fileName, content] of Object.entries(options.binFiles)) {
       await writeFile(join(binFolder, fileName), content, { encoding: 'utf8', mode: 0o755 })
     }
-    environment.PATH = `${binFolder}${delimiter}${environment.PATH ?? ''}`
-    environment.Path = environment.PATH
+    const pathKey = Object.keys(environment).find((key) => key.toUpperCase() === 'PATH') ?? 'PATH'
+    environment[pathKey] = `${binFolder}${delimiter}${environment[pathKey] ?? ''}`
   }
   Object.assign(environment, options.environment)
   delete environment.ELECTRON_RENDERER_URL
