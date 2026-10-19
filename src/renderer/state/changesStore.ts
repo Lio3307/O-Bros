@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
-import type { GitFileChange, GitStatus, ReviewFileRequest } from '../../shared/types'
+import type { GitConflictSide, GitFileChange, GitStatus, ReviewFileRequest } from '../../shared/types'
 import { askToConfirm } from './confirmStore'
 import { toast } from './toastStore'
 
@@ -34,6 +34,9 @@ interface ChangesState {
   stage: (repoPath: string, filePaths: string[]) => Promise<void>
   unstage: (repoPath: string, filePaths: string[]) => Promise<void>
   discard: (repoPath: string, change: GitFileChange) => Promise<void>
+  resolveConflict: (repoPath: string, filePath: string, side: GitConflictSide | null) => Promise<void>
+  continueOperation: (repoPath: string) => Promise<void>
+  abortOperation: (repoPath: string) => Promise<void>
   commit: (repoPath: string, message: string) => Promise<boolean>
   switchBranch: (repoPath: string, branch: string) => Promise<boolean>
 }
@@ -41,14 +44,17 @@ interface ChangesState {
 const LOAD_FAILED_MESSAGE = 'Could not read the git information for this folder.'
 const FETCH_FAILED_MESSAGE = 'Could not reach the remote. Check your connection and your git sign-in.'
 
+function selectableChanges(status: GitStatus | null): GitFileChange[] {
+  return status?.changes.filter((change) => change.kind !== 'conflicted') ?? []
+}
+
 export const useChangesStore = create<ChangesState>()((set, get) => {
   async function reload(repoPath: string): Promise<void> {
     const status = await window.api.git.status(repoPath)
     const previous = get().selectedChange
-    const stillThere = status?.changes.find(
-      (change) => change.path === previous?.path && change.isStaged === previous.isStaged
-    )
-    set({ status, loadedPath: repoPath, selectedChange: stillThere ?? status?.changes[0] ?? null, errorMessage: null })
+    const selectable = selectableChanges(status)
+    const stillThere = selectable.find((change) => change.path === previous?.path && change.isStaged === previous.isStaged)
+    set({ status, loadedPath: repoPath, selectedChange: stillThere ?? selectable[0] ?? null, errorMessage: null })
   }
 
   async function runAction(repoPath: string, action: () => Promise<void>, failureMessage: string): Promise<boolean> {
@@ -82,7 +88,7 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
         set({
           status,
           loadedPath: repoPath,
-          selectedChange: status?.changes[0] ?? null,
+          selectedChange: selectableChanges(status)[0] ?? null,
           selectedCommitFile: null,
           errorMessage: null
         })
@@ -167,6 +173,26 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
       )
       if (isDone) {
         toast.success('Discarded changes to ' + change.path + '.')
+      }
+    },
+
+    resolveConflict: async (repoPath, filePath, side) => {
+      await runAction(
+        repoPath,
+        () => window.api.git.resolveConflict({ repoPath, filePath, side }),
+        'Could not resolve the conflict.'
+      )
+    },
+
+    continueOperation: async (repoPath) => {
+      if (await runAction(repoPath, () => window.api.git.continueOperation(repoPath), 'Could not continue.')) {
+        toast.success('Done. The conflicts are resolved and committed.')
+      }
+    },
+
+    abortOperation: async (repoPath) => {
+      if (await runAction(repoPath, () => window.api.git.abortOperation(repoPath), 'Could not cancel.')) {
+        toast.success('Cancelled. The branch is back to how it was before.')
       }
     },
 

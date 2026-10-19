@@ -21,6 +21,7 @@ export interface LineCounts {
 
 const ORDINARY_ENTRY_FIELDS = 8
 const RENAMED_ENTRY_FIELDS = 9
+const UNMERGED_ENTRY_FIELDS = 10
 const NO_CHANGE_MARK = '.'
 
 function splitLeadingFields(line: string, fieldCount: number): { fields: string[]; rest: string } {
@@ -67,6 +68,10 @@ function parseChangeLine(line: string): ParsedChange[] {
   if (line.startsWith('1 ')) {
     const { fields, rest } = splitLeadingFields(line, ORDINARY_ENTRY_FIELDS)
     return changesFromMarks(rest, fields[1])
+  }
+  if (line.startsWith('u ')) {
+    const { rest } = splitLeadingFields(line, UNMERGED_ENTRY_FIELDS)
+    return [{ path: rest, kind: 'conflicted', isStaged: false }]
   }
   if (line.startsWith('2 ')) {
     const { fields, rest } = splitLeadingFields(line, RENAMED_ENTRY_FIELDS)

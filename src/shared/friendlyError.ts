@@ -40,7 +40,10 @@ const KNOWN_PROBLEMS: KnownProblem[] = [
   { needle: 'no earlier commit', message: 'There is no earlier commit to go back to.' },
   { needle: 'There is nothing to stash', message: 'There are no changes to stash.' },
   { needle: 'That is not a stash', message: 'That stash no longer exists.' },
-  { needle: 'conflict', message: 'There is a conflict. Resolve it in a terminal, then continue.' },
+  { needle: 'still has conflict markers', message: 'The file still has conflict markers (<<<<<<< and >>>>>>>). Edit them out first, or keep one version.' },
+  { needle: 'still have conflicts', message: 'Some files still have conflicts. Resolve them first.' },
+  { needle: 'no merge, rebase, cherry-pick or revert in progress', message: 'There is nothing to continue or cancel any more.' },
+  { needle: 'conflict', message: 'There is a conflict. Resolve it in the Changes panel, then continue.' },
   { needle: 'Could not resolve host', message: 'Could not reach the remote. Check your connection.' },
   { needle: 'A commit message is required', message: 'Write a commit message first.' },
   { needle: 'Too many account folders', message: 'There are too many account folders already.' }

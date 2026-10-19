@@ -37,6 +37,11 @@ describe('parseStatusOutput', () => {
     expect(changes).toContainEqual({ path: 'notes.md', kind: 'untracked', isStaged: false })
   })
 
+  it('marks a file with a merge conflict, even with spaces in its name', () => {
+    const { changes } = parseStatusOutput('u UU N... 100644 100644 100644 100644 aaa bbb ccc src/my file.ts\n')
+    expect(changes).toEqual([{ path: 'src/my file.ts', kind: 'conflicted', isStaged: false }])
+  })
+
   it('has no upstream when the header is missing', () => {
     const status = parseStatusOutput('# branch.head feature\n')
     expect(status.upstream).toBeNull()

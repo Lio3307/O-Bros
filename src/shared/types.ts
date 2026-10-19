@@ -46,7 +46,22 @@ export interface ProjectRoot {
   folders: ProjectFolder[]
 }
 
-export type FileChangeKind = 'modified' | 'added' | 'deleted' | 'renamed' | 'untracked'
+export type FileChangeKind = 'modified' | 'added' | 'deleted' | 'renamed' | 'untracked' | 'conflicted'
+
+export type GitOperationKind = 'merge' | 'rebase' | 'cherryPick' | 'revert'
+
+export interface GitOperation {
+  kind: GitOperationKind
+  incoming: string | null
+}
+
+export type GitConflictSide = 'current' | 'incoming'
+
+export interface GitResolveRequest {
+  repoPath: string
+  filePath: string
+  side: GitConflictSide | null
+}
 
 export interface GitFileChange {
   path: string
@@ -62,6 +77,7 @@ export interface GitStatus {
   ahead: number
   behind: number
   lastFetchedAt: number | null
+  operation: GitOperation | null
   changes: GitFileChange[]
 }
 

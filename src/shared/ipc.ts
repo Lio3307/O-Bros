@@ -40,6 +40,7 @@ import type {
   GitLogRequest,
   GitPathsRequest,
   GitStashEntry,
+  GitResolveRequest,
   GitStashRefRequest,
   ReviewBaseline,
   SessionSearchHit,
@@ -125,6 +126,9 @@ export const IpcChannel = {
   gitStashList: 'git:stashList',
   gitStashApply: 'git:stashApply',
   gitStashDrop: 'git:stashDrop',
+  gitResolveConflict: 'git:resolveConflict',
+  gitContinueOperation: 'git:continueOperation',
+  gitAbortOperation: 'git:abortOperation',
   historySearch: 'history:search',
   backupSave: 'backup:save',
   backupOpen: 'backup:open',
@@ -283,6 +287,9 @@ export interface DesktopApi {
     stashList(repoPath: string): Promise<GitStashEntry[]>
     stashApply(request: GitStashRefRequest): Promise<void>
     stashDrop(request: GitStashRefRequest): Promise<void>
+    resolveConflict(request: GitResolveRequest): Promise<void>
+    continueOperation(repoPath: string): Promise<void>
+    abortOperation(repoPath: string): Promise<void>
     agentTraces(repoPath: string): Promise<string[]>
     reviewBaseline(repoPath: string): Promise<ReviewBaseline | null>
     reviewChanges(baseline: ReviewBaseline): Promise<ReviewChange[]>

@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { promisify } from 'node:util'
 import type { GitDiffRequest, GitFileChange, GitStatus } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
+import { readGitOperation } from './gitConflicts'
 import { isCommitHash } from './gitLogParser'
 import { parseNumstat, parseStatusOutput } from './gitStatusParser'
 
@@ -46,10 +47,11 @@ export async function readGitStatus(repoPath: string): Promise<GitStatus | null>
     return null
   }
 
-  const [statusOutput, lineCounts, lastFetchedAt] = await Promise.all([
+  const [statusOutput, lineCounts, lastFetchedAt, operation] = await Promise.all([
     runGit(repoPath, ['status', '--porcelain=v2', '--branch', '--untracked-files=all']),
     readLineCounts(repoPath),
-    readLastFetchedAt(repoPath)
+    readLastFetchedAt(repoPath),
+    readGitOperation(repoPath)
   ])
   const parsed = parseStatusOutput(statusOutput)
 
@@ -64,6 +66,7 @@ export async function readGitStatus(repoPath: string): Promise<GitStatus | null>
     ahead: parsed.ahead,
     behind: parsed.behind,
     lastFetchedAt,
+    operation,
     changes
   }
 }

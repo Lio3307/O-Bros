@@ -11,6 +11,7 @@ import type {
   GitDiscardRequest,
   GitLogRequest,
   GitPathsRequest,
+  GitResolveRequest,
   GitRenameBranchRequest,
   GitStashRefRequest,
   GitStashRequest,
@@ -33,6 +34,7 @@ import {
   renameBranch,
   undoLastCommit
 } from '../services/gitBranchActions'
+import { abortOperation, continueOperation, resolveConflict } from '../services/gitConflicts'
 import { readCommitFiles, readCommitLog } from '../services/gitHistory'
 import { pullFastForward, pushCurrentBranch } from '../services/gitRemote'
 import { applyStash, dropStash, listStashes, stashChanges } from '../services/gitStash'
@@ -51,6 +53,9 @@ export function registerGitIpc(): void {
   ipcMain.handle(IpcChannel.gitUnstage, (_event, request: GitPathsRequest) => unstagePaths(request))
   ipcMain.handle(IpcChannel.gitCommit, (_event, request: GitCommitRequest) => commitStaged(request))
   ipcMain.handle(IpcChannel.gitDiscard, (_event, request: GitDiscardRequest) => discardChange(request))
+  ipcMain.handle(IpcChannel.gitResolveConflict, (_event, request: GitResolveRequest) => resolveConflict(request))
+  ipcMain.handle(IpcChannel.gitContinueOperation, (_event, repoPath: string) => continueOperation(repoPath))
+  ipcMain.handle(IpcChannel.gitAbortOperation, (_event, repoPath: string) => abortOperation(repoPath))
   ipcMain.handle(IpcChannel.gitBranches, (_event, repoPath: string) => listBranches(repoPath))
   ipcMain.handle(IpcChannel.gitLog, (_event, request: GitLogRequest) => readCommitLog(request))
   ipcMain.handle(IpcChannel.gitCommitFiles, (_event, request: GitCommitFilesRequest) => readCommitFiles(request))

@@ -11,7 +11,8 @@ const kindMark: Record<GitFileChange['kind'], string> = {
   added: 'A',
   deleted: 'D',
   renamed: 'R',
-  untracked: 'U'
+  untracked: 'U',
+  conflicted: '!'
 }
 
 interface ChangeGroupProps {

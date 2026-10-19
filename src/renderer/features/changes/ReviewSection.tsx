@@ -14,7 +14,8 @@ const kindMark: Record<ReviewChange['kind'], string> = {
   added: 'A',
   deleted: 'D',
   renamed: 'R',
-  untracked: 'N'
+  untracked: 'N',
+  conflicted: '!'
 }
 
 function revertMessage(change: ReviewChange): string {

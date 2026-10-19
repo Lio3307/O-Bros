@@ -11,6 +11,7 @@ import { BranchCard } from './BranchCard'
 import { ChangeGroup } from './ChangeGroup'
 import { CommitBox } from './CommitBox'
 import { CommitHistory } from './CommitHistory'
+import { ConflictSection } from './ConflictSection'
 import { ReviewSection } from './ReviewSection'
 import { StashSection } from './StashSection'
 import { ArrowLeft } from 'lucide-react'
@@ -87,8 +88,9 @@ export function ChangesPanel() {
     )
   }
 
+  const conflicts = status.changes.filter((change) => change.kind === 'conflicted')
   const stagedChanges = status.changes.filter((change) => change.isStaged)
-  const unstagedChanges = status.changes.filter((change) => !change.isStaged)
+  const unstagedChanges = status.changes.filter((change) => !change.isStaged && change.kind !== 'conflicted')
 
   return (
     <div className="panel-content">
@@ -97,6 +99,7 @@ export function ChangesPanel() {
       </PanelHeader>
       {backButton}
       <BranchCard status={status} repoPath={activeProjectPath} />
+      <ConflictSection repoPath={activeProjectPath} operation={status.operation} conflicts={conflicts} />
       <ReviewSection repoPath={activeProjectPath} />
       <CommitBox repoPath={activeProjectPath} stagedCount={stagedChanges.length} />
       <ChangeGroup title="Staged" changes={stagedChanges} repoPath={activeProjectPath} />
