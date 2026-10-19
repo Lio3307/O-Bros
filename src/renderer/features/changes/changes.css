@@ -169,6 +169,7 @@
 
 .diff-hunk {
   margin-top: 8px;
+  min-height: 24px;
   padding: 0 24px;
   line-height: 24px;
   color: var(--color-info);
@@ -176,45 +177,72 @@
   background: var(--color-hunk-bg);
 }
 
+.diff-lines {
+  width: max-content;
+  min-width: 100%;
+}
+
 .diff-row,
 .diff-half {
   display: flex;
-  min-width: 0;
+  min-height: 22px;
   line-height: 22px;
   color: var(--color-muted);
+  --diff-gutter-bg: var(--color-terminal);
+}
+
+.diff-number,
+.diff-marker {
+  position: sticky;
+  z-index: 1;
+  color: var(--color-faint);
+  background: var(--diff-gutter-bg);
+  user-select: none;
 }
 
 .diff-number {
+  left: 0;
   flex: 0 0 52px;
   padding-right: 10px;
   text-align: right;
-  color: var(--color-faint);
-  user-select: none;
 }
 
 .diff-marker {
+  left: 52px;
   flex: 0 0 16px;
-  color: var(--color-faint);
-  user-select: none;
+}
+
+.diff-row .diff-number + .diff-number {
+  left: 52px;
+}
+
+.diff-row .diff-marker {
+  left: 104px;
 }
 
 .diff-text {
-  flex: 1;
-  min-width: 0;
-  padding-right: 16px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  flex: 1 0 auto;
+  padding-right: 24px;
+  white-space: pre;
 }
 
 .diff-cell-added {
   color: var(--color-text);
   background: var(--color-added-bg);
-  box-shadow: inset 3px 0 0 var(--color-success);
+  --diff-gutter-bg: color-mix(in srgb, var(--color-success) 14%, var(--color-terminal));
 }
 
 .diff-cell-removed {
   color: var(--color-text);
   background: var(--color-removed-bg);
+  --diff-gutter-bg: color-mix(in srgb, var(--color-danger) 14%, var(--color-terminal));
+}
+
+.diff-cell-added .diff-number:first-child {
+  box-shadow: inset 3px 0 0 var(--color-success);
+}
+
+.diff-cell-removed .diff-number:first-child {
   box-shadow: inset 3px 0 0 var(--color-danger);
 }
 
@@ -226,16 +254,34 @@
   color: var(--color-danger);
 }
 
+.diff-split {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .diff-split-head,
-.diff-split-row {
+.diff-split-columns {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+.diff-split-columns {
+  flex: 1;
+  min-height: 0;
+}
+
+.diff-split-column {
+  min-width: 0;
+  padding-bottom: 12px;
+  overflow-x: scroll;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
 .diff-split-head {
-  position: sticky;
-  top: 0;
-  z-index: 1;
   font-family: var(--font-ui);
   font-size: 12px;
   line-height: 32px;
@@ -266,7 +312,7 @@
 }
 
 .diff-split-title:first-child,
-.diff-half:first-child {
+.diff-split-column:first-child {
   border-right: 1px solid var(--color-border);
 }
 

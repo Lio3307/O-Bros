@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, type RefObject } from 'react'
 import type { DiffLayout } from '../../state/diffLayoutStore'
-import { classifyDiffLine, parseDiffRows, splitDiffRows, type DiffCell, type DiffRow } from './diffLines'
+import { classifyDiffLine, parseDiffRows, splitDiffRows, type DiffCell, type DiffRow, type SplitDiffRow } from './diffLines'
 
 const MARKERS: Record<DiffRow['kind'], string> = { added: '+', removed: '-', context: ' ', hunk: '' }
 
@@ -10,7 +10,7 @@ function LineNumber({ value }: { value: number | null }) {
 
 function UnifiedRows({ rows }: { rows: DiffRow[] }) {
   return (
-    <>
+    <div className="diff-lines">
       {rows.map((row, index) =>
         row.kind === 'hunk' ? (
           <div key={index} className="diff-hunk">
@@ -25,7 +25,7 @@ function UnifiedRows({ rows }: { rows: DiffRow[] }) {
           </div>
         )
       )}
-    </>
+    </div>
   )
 }
 
@@ -46,10 +46,46 @@ function countRows(rows: DiffRow[], kind: DiffRow['kind']): number {
   return rows.filter((row) => row.kind === kind).length
 }
 
+function SplitColumn({
+  rows,
+  side,
+  columnRef,
+  onScroll
+}: {
+  rows: SplitDiffRow[]
+  side: 'left' | 'right'
+  columnRef: RefObject<HTMLDivElement | null>
+  onScroll: () => void
+}) {
+  return (
+    <div className="diff-split-column" ref={columnRef} onScroll={onScroll}>
+      <div className="diff-lines">
+        {rows.map((row, index) =>
+          row.isHunk ? (
+            <div key={index} className="diff-hunk">
+              {side === 'left' ? row.hunkText : ''}
+            </div>
+          ) : (
+            <SplitHalf key={index} cell={side === 'left' ? row.left : row.right} />
+          )
+        )}
+      </div>
+    </div>
+  )
+}
+
+function followScroll(source: HTMLDivElement | null, target: HTMLDivElement | null): void {
+  if (source !== null && target !== null && target.scrollTop !== source.scrollTop) {
+    target.scrollTop = source.scrollTop
+  }
+}
+
 function SplitRows({ rows }: { rows: DiffRow[] }) {
   const splitRows = useMemo(() => splitDiffRows(rows), [rows])
+  const leftRef = useRef<HTMLDivElement>(null)
+  const rightRef = useRef<HTMLDivElement>(null)
   return (
-    <>
+    <div className="diff-split">
       <div className="diff-split-head">
         <span className="diff-split-title">
           Before <span className="diff-split-count diff-split-count-removed">−{countRows(rows, 'removed')}</span>
@@ -58,19 +94,21 @@ function SplitRows({ rows }: { rows: DiffRow[] }) {
           After <span className="diff-split-count diff-split-count-added">+{countRows(rows, 'added')}</span>
         </span>
       </div>
-      {splitRows.map((row, index) =>
-        row.isHunk ? (
-          <div key={index} className="diff-hunk">
-            {row.hunkText}
-          </div>
-        ) : (
-          <div key={index} className="diff-split-row">
-            <SplitHalf cell={row.left} />
-            <SplitHalf cell={row.right} />
-          </div>
-        )
-      )}
-    </>
+      <div className="diff-split-columns">
+        <SplitColumn
+          rows={splitRows}
+          side="left"
+          columnRef={leftRef}
+          onScroll={() => followScroll(leftRef.current, rightRef.current)}
+        />
+        <SplitColumn
+          rows={splitRows}
+          side="right"
+          columnRef={rightRef}
+          onScroll={() => followScroll(rightRef.current, leftRef.current)}
+        />
+      </div>
+    </div>
   )
 }
 
@@ -95,5 +133,12 @@ export function DiffBody({ diffText, layout }: { diffText: string; layout: DiffL
       </div>
     )
   }
-  return <div className="diff-body">{layout === 'split' ? <SplitRows rows={rows} /> : <UnifiedRows rows={rows} />}</div>
+  if (layout === 'split') {
+    return <SplitRows rows={rows} />
+  }
+  return (
+    <div className="diff-body">
+      <UnifiedRows rows={rows} />
+    </div>
+  )
 }

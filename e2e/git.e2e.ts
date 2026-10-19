@@ -195,7 +195,7 @@ test('creates a branch, renames it, then undoes the last commit', async () => {
 
 test('shows a changed file side by side, before on the left and after on the right', async () => {
   await createRepositoryWithTwoCommits()
-  await writeFile(join(app.projectFolder, 'notes.txt'), 'first line\nsecond line rewritten\n' + 'more\n'.repeat(300), 'utf8')
+  await writeFile(join(app.projectFolder, 'notes.txt'), 'first line\nsecond line rewritten\n' + 'more\n'.repeat(300) + 'x'.repeat(2000) + '\n', 'utf8')
 
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByTitle('Changes', { exact: true }).click()
@@ -203,16 +203,22 @@ test('shows a changed file side by side, before on the left and after on the rig
   await expect(app.window.locator('.diff-row', { hasText: 'second line rewritten' })).toBeVisible({ timeout: 15_000 })
 
   await app.window.getByRole('button', { name: 'Side by side' }).click()
-  const changedRow = app.window.locator('.diff-split-row', { hasText: 'second line rewritten' })
-  await expect(changedRow.locator('.diff-half').first()).toContainText('second line added later')
-  await expect(changedRow.locator('.diff-half').first()).toHaveClass(/diff-cell-removed/)
-  await expect(changedRow.locator('.diff-half').last()).toHaveClass(/diff-cell-added/)
-  await expect(changedRow.locator('.diff-number').first()).toHaveText('2')
+  const [beforeColumn, afterColumn] = [app.window.locator('.diff-split-column').first(), app.window.locator('.diff-split-column').last()]
+  const removedCell = beforeColumn.locator('.diff-half', { hasText: 'second line added later' })
+  const addedCell = afterColumn.locator('.diff-half', { hasText: 'second line rewritten' })
+  await expect(removedCell).toHaveClass(/diff-cell-removed/)
+  await expect(addedCell).toHaveClass(/diff-cell-added/)
+  await expect(removedCell.locator('.diff-number')).toHaveText('2')
+  expect(await removedCell.evaluate((element) => (element as HTMLElement).offsetTop)).toBe(await addedCell.evaluate((element) => (element as HTMLElement).offsetTop))
   await expect(app.window.locator('.diff-split-head')).toContainText('Before')
 
-  const isScrollable = await app.window.locator('.diff-body').evaluate((element) => {
+  const scrolled = await afterColumn.evaluate((element) => {
     element.scrollTop = element.scrollHeight
-    return element.scrollTop > 0 && element.clientHeight < window.innerHeight
+    element.scrollLeft = element.scrollWidth
+    return { top: element.scrollTop, left: element.scrollLeft, height: element.clientHeight }
   })
-  expect(isScrollable).toBe(true)
+  expect(scrolled.top).toBeGreaterThan(0)
+  expect(scrolled.left).toBeGreaterThan(0)
+  expect(scrolled.height).toBeLessThan(await app.window.evaluate(() => window.innerHeight))
+  await expect.poll(() => beforeColumn.evaluate((element) => element.scrollTop)).toBe(scrolled.top)
 })
