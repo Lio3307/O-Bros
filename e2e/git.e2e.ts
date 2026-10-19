@@ -66,12 +66,17 @@ test('picks a nested repository from a folder of repositories and goes back to t
   await app.window.getByTitle('Changes', { exact: true }).click()
 
   await expect(app.window.getByText('Repositories in this folder')).toBeVisible({ timeout: 15_000 })
-  await app.window.getByText('group/service', { exact: true }).click()
+  await expect(app.window.getByText('group/service', { exact: true })).toHaveCount(0)
+  await app.window.locator('.repository-row', { hasText: '1 repository' }).getByText('group', { exact: true }).click()
+  await expect(app.window.locator('.folder-overview-name')).toHaveText('group', { timeout: 15_000 })
+  await app.window.locator('.repository-row').getByText('service', { exact: true }).click()
 
   await expect(app.window.getByText('Nested commit', { exact: true })).toBeVisible({ timeout: 15_000 })
 
+  await app.window.locator('.changes-back', { hasText: 'group' }).click()
+  await expect(app.window.locator('.folder-overview-name')).toHaveText('group', { timeout: 15_000 })
   await app.window.locator('.changes-back', { hasText: 'sample-project' }).click()
-  await expect(app.window.getByText('Repositories in this folder')).toBeVisible({ timeout: 15_000 })
+  await expect(app.window.locator('.folder-overview-name')).toHaveText('sample-project', { timeout: 15_000 })
 })
 
 test('names the folder and lists its repositories in the main area when it is not a repository', async () => {
@@ -88,7 +93,7 @@ test('names the folder and lists its repositories in the main area when it is no
   await expect(overview).toContainText('sample-project', { timeout: 15_000 })
   await expect(overview).toContainText(app.projectFolder)
   await expect(overview).toContainText('This folder is not a git repository.')
-  await expect(overview.getByText('group/service', { exact: true })).toBeVisible()
+  await expect(overview.locator('.repository-row', { hasText: 'group' })).toContainText('1 repository')
   await expect(overview).toHaveCSS('overflow-y', 'auto')
   await app.window.waitForTimeout(1000)
   expect(errorOutput.join('')).not.toContain('git:stashList')

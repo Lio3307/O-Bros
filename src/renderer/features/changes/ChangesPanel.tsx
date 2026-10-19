@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useChangesStore } from '../../state/changesStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
 import { closestProject } from '../../../shared/closestProject'
-import { comparablePath, isPathInside, parentPath } from '../../../shared/paths'
+import { comparablePath, isPathInside, lastPathSegment, parentPath } from '../../../shared/paths'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useRepositoryOriginStore } from '../../state/repositoryOriginStore'
 import { LoadingText } from '../../ui/LoadingText'
@@ -59,7 +59,7 @@ export function ChangesPanel() {
   const hasValidOrigin =
     originPath !== null && originPath !== activeProjectPath && isPathInside(activeProjectPath, originPath)
   const backPath = hasValidOrigin ? originPath : hasProjectAbove ? folderAbove : null
-  const backName = backPath === null ? '' : (closestProject(backPath, roots)?.name ?? backPath)
+  const backName = backPath === null ? '' : lastPathSegment(backPath)
 
   function goBack(): void {
     if (backPath !== null) {
@@ -69,7 +69,7 @@ export function ChangesPanel() {
   }
 
   const backButton = backPath === null ? null : (
-    <button type="button" className="changes-back" title={`Back to ${backName}`} onClick={goBack}>
+    <button type="button" className="changes-back" title={`Back to ${backPath}`} onClick={goBack}>
       <ArrowLeft size={14} />
       <span className="changes-back-name">{backName}</span>
     </button>
