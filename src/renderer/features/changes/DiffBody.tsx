@@ -42,13 +42,21 @@ function SplitHalf({ cell }: { cell: DiffCell | null }) {
   )
 }
 
+function countRows(rows: DiffRow[], kind: DiffRow['kind']): number {
+  return rows.filter((row) => row.kind === kind).length
+}
+
 function SplitRows({ rows }: { rows: DiffRow[] }) {
   const splitRows = useMemo(() => splitDiffRows(rows), [rows])
   return (
     <>
       <div className="diff-split-head">
-        <span>Before</span>
-        <span>After</span>
+        <span className="diff-split-title">
+          Before <span className="diff-split-count diff-split-count-removed">−{countRows(rows, 'removed')}</span>
+        </span>
+        <span className="diff-split-title">
+          After <span className="diff-split-count diff-split-count-added">+{countRows(rows, 'added')}</span>
+        </span>
       </div>
       {splitRows.map((row, index) =>
         row.isHunk ? (

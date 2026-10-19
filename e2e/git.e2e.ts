@@ -195,7 +195,7 @@ test('creates a branch, renames it, then undoes the last commit', async () => {
 
 test('shows a changed file side by side, before on the left and after on the right', async () => {
   await createRepositoryWithTwoCommits()
-  await writeFile(join(app.projectFolder, 'notes.txt'), 'first line\nsecond line rewritten\n', 'utf8')
+  await writeFile(join(app.projectFolder, 'notes.txt'), 'first line\nsecond line rewritten\n' + 'more\n'.repeat(300), 'utf8')
 
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByTitle('Changes', { exact: true }).click()
@@ -209,4 +209,10 @@ test('shows a changed file side by side, before on the left and after on the rig
   await expect(changedRow.locator('.diff-half').last()).toHaveClass(/diff-cell-added/)
   await expect(changedRow.locator('.diff-number').first()).toHaveText('2')
   await expect(app.window.locator('.diff-split-head')).toContainText('Before')
+
+  const isScrollable = await app.window.locator('.diff-body').evaluate((element) => {
+    element.scrollTop = element.scrollHeight
+    return element.scrollTop > 0 && element.clientHeight < window.innerHeight
+  })
+  expect(isScrollable).toBe(true)
 })
