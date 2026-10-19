@@ -145,14 +145,14 @@ test('stashes changes, applies the stash and pushes a commit to a remote', async
 
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByTitle('Changes', { exact: true }).click()
-  await expect(app.window.getByText('1 files')).toBeVisible({ timeout: 15_000 })
+  await expect(app.window.getByText('1 file', { exact: true })).toBeVisible({ timeout: 15_000 })
 
   await app.window.getByRole('button', { name: 'Stash changes' }).click()
   await expect(app.window.getByText('No changes. Your files match the last commit.')).toBeVisible({ timeout: 15_000 })
   await expect(app.window.getByRole('button', { name: 'Apply' })).toBeVisible()
 
   await app.window.getByRole('button', { name: 'Apply' }).click()
-  await expect(app.window.getByText('1 files')).toBeVisible({ timeout: 15_000 })
+  await expect(app.window.getByText('1 file', { exact: true })).toBeVisible({ timeout: 15_000 })
 
   await git('add', 'notes.txt')
   await git('commit', '-m', 'Local commit')

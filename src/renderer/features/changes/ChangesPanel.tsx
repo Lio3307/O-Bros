@@ -95,7 +95,7 @@ export function ChangesPanel() {
   return (
     <div className="panel-content">
       <PanelHeader title="Changes">
-        <span className="muted">{status.changes.length} files</span>
+        <span className="muted">{status.changes.length === 1 ? '1 file' : `${status.changes.length} files`}</span>
       </PanelHeader>
       {backButton}
       <BranchCard status={status} repoPath={activeProjectPath} />
