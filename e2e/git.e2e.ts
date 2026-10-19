@@ -202,6 +202,8 @@ test('shows a changed file side by side, before on the left and after on the rig
   await app.window.locator('.row-change', { hasText: 'notes.txt' }).click()
   await expect(app.window.locator('.diff-row', { hasText: 'second line rewritten' })).toBeVisible({ timeout: 15_000 })
 
+  await expect(app.window.locator('.diff-row', { hasText: 'second line rewritten' }).locator('.diff-change')).toHaveText('rewritten')
+
   await app.window.getByRole('button', { name: 'Side by side' }).click()
   const [beforeColumn, afterColumn] = [app.window.locator('.diff-split-column').first(), app.window.locator('.diff-split-column').last()]
   const removedCell = beforeColumn.locator('.diff-half', { hasText: 'second line added later' })
@@ -209,6 +211,7 @@ test('shows a changed file side by side, before on the left and after on the rig
   await expect(removedCell).toHaveClass(/diff-cell-removed/)
   await expect(addedCell).toHaveClass(/diff-cell-added/)
   await expect(removedCell.locator('.diff-number')).toHaveText('2')
+  await expect(removedCell.locator('.diff-change')).toHaveText('added later')
   expect(await removedCell.evaluate((element) => (element as HTMLElement).offsetTop)).toBe(await addedCell.evaluate((element) => (element as HTMLElement).offsetTop))
   await expect(app.window.locator('.diff-split-head')).toContainText('Before')
 

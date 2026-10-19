@@ -1,3 +1,5 @@
+import { diffLinePair, type TextSegment } from './inlineDiff'
+
 export type DiffLineKind = 'added' | 'removed' | 'hunk' | 'header' | 'context'
 
 const FILE_HEADER_PREFIXES = ['+++', '---', 'diff ', 'index ']
@@ -25,12 +27,14 @@ export interface DiffRow {
   oldNumber: number | null
   newNumber: number | null
   text: string
+  segments?: TextSegment[]
 }
 
 export interface DiffCell {
   kind: DiffCellKind
   number: number
   text: string
+  segments?: TextSegment[]
 }
 
 export interface SplitDiffRow {
@@ -75,12 +79,42 @@ export function parseDiffRows(diffText: string): DiffRow[] {
       isInHunk = false
     }
   }
+  markInlineChanges(rows)
   return rows
+}
+
+function markInlineChanges(rows: DiffRow[]): void {
+  let index = 0
+  while (index < rows.length) {
+    const removedStart = index
+    while (rows[index]?.kind === 'removed') {
+      index += 1
+    }
+    const addedStart = index
+    while (rows[index]?.kind === 'added') {
+      index += 1
+    }
+    const pairCount = Math.min(addedStart - removedStart, index - addedStart)
+    for (let offset = 0; offset < pairCount; offset += 1) {
+      const removed = rows[removedStart + offset]
+      const added = rows[addedStart + offset]
+      const pair = diffLinePair(removed.text, added.text)
+      if (pair !== null) {
+        removed.segments = pair.before
+        added.segments = pair.after
+      }
+    }
+    if (index === removedStart) {
+      index += 1
+    }
+  }
 }
 
 function cellOf(row: DiffRow, side: 'old' | 'new'): DiffCell | null {
   const number = side === 'old' ? row.oldNumber : row.newNumber
-  return number === null || row.kind === 'hunk' ? null : { kind: row.kind, number, text: row.text }
+  return number === null || row.kind === 'hunk'
+    ? null
+    : { kind: row.kind, number, text: row.text, segments: row.segments }
 }
 
 export function splitDiffRows(rows: DiffRow[]): SplitDiffRow[] {

@@ -1,11 +1,31 @@
 import { useMemo, useRef, type RefObject } from 'react'
 import type { DiffLayout } from '../../state/diffLayoutStore'
 import { classifyDiffLine, parseDiffRows, splitDiffRows, type DiffCell, type DiffRow, type SplitDiffRow } from './diffLines'
+import type { TextSegment } from './inlineDiff'
 
 const MARKERS: Record<DiffRow['kind'], string> = { added: '+', removed: '-', context: ' ', hunk: '' }
 
 function LineNumber({ value }: { value: number | null }) {
   return <span className="diff-number">{value ?? ''}</span>
+}
+
+function DiffText({ text, segments }: { text: string; segments: TextSegment[] | undefined }) {
+  if (segments === undefined) {
+    return <span className="diff-text">{text}</span>
+  }
+  return (
+    <span className="diff-text">
+      {segments.map((segment, index) =>
+        segment.isChanged ? (
+          <span key={index} className="diff-change">
+            {segment.text}
+          </span>
+        ) : (
+          segment.text
+        )
+      )}
+    </span>
+  )
 }
 
 function UnifiedRows({ rows }: { rows: DiffRow[] }) {
@@ -21,7 +41,7 @@ function UnifiedRows({ rows }: { rows: DiffRow[] }) {
             <LineNumber value={row.oldNumber} />
             <LineNumber value={row.newNumber} />
             <span className="diff-marker">{MARKERS[row.kind]}</span>
-            <span className="diff-text">{row.text}</span>
+            <DiffText text={row.text} segments={row.segments} />
           </div>
         )
       )}
@@ -37,7 +57,7 @@ function SplitHalf({ cell }: { cell: DiffCell | null }) {
     <div className={`diff-half diff-cell-${cell.kind}`}>
       <LineNumber value={cell.number} />
       <span className="diff-marker">{MARKERS[cell.kind]}</span>
-      <span className="diff-text">{cell.text}</span>
+      <DiffText text={cell.text} segments={cell.segments} />
     </div>
   )
 }

@@ -337,6 +337,14 @@
   --diff-gutter-bg: color-mix(in srgb, var(--color-danger) 14%, var(--color-terminal));
 }
 
+.diff-cell-added .diff-change {
+  background: color-mix(in srgb, var(--color-success) 38%, transparent);
+}
+
+.diff-cell-removed .diff-change {
+  background: color-mix(in srgb, var(--color-danger) 38%, transparent);
+}
+
 .diff-cell-added .diff-number:first-child {
   box-shadow: inset 3px 0 0 var(--color-success);
 }
