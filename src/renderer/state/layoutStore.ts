@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 export type Section = 'projects' | 'history' | 'changes' | 'activity' | 'team' | 'settings'
 export type SidebarMode = 'expanded' | 'rail' | 'hidden'
-export type SettingsPage = 'accounts' | 'agents' | 'folders' | 'editor' | 'languageServers' | 'terminal' | 'prompts' | 'team' | 'shortcuts' | 'storage' | 'backup' | 'about'
+export type SettingsPage = 'accounts' | 'agents' | 'folders' | 'editor' | 'languageServers' | 'terminal' | 'team' | 'shortcuts' | 'storage' | 'backup' | 'about'
 
 interface LayoutState {
   section: Section
@@ -10,7 +10,6 @@ interface LayoutState {
   settingsPage: SettingsPage
   isFilesPanelOpen: boolean
   isQuickOpenVisible: boolean
-  isPromptPickerVisible: boolean
   isCommandPaletteVisible: boolean
   selectSection: (section: Section) => void
   openSection: (section: Section) => void
@@ -19,8 +18,6 @@ interface LayoutState {
   toggleFilesPanel: () => void
   openQuickOpen: () => void
   closeQuickOpen: () => void
-  openPromptPicker: () => void
-  closePromptPicker: () => void
   openCommandPalette: () => void
   closeCommandPalette: () => void
   selectSettingsPage: (page: SettingsPage) => void
@@ -32,7 +29,6 @@ export const useLayoutStore = create<LayoutState>()((set, get) => ({
   settingsPage: 'accounts',
   isFilesPanelOpen: false,
   isQuickOpenVisible: false,
-  isPromptPickerVisible: false,
   isCommandPaletteVisible: false,
 
   selectSection: (section) => {
@@ -54,10 +50,6 @@ export const useLayoutStore = create<LayoutState>()((set, get) => ({
   openQuickOpen: () => set({ isQuickOpenVisible: true }),
 
   closeQuickOpen: () => set({ isQuickOpenVisible: false }),
-
-  openPromptPicker: () => set({ isPromptPickerVisible: true }),
-
-  closePromptPicker: () => set({ isPromptPickerVisible: false }),
 
   openCommandPalette: () => set({ isCommandPaletteVisible: true }),
 

@@ -8,9 +8,6 @@ import { useDiffLayoutStore, type DiffLayout } from '../../state/diffLayoutStore
 import { SegmentedControl } from '../../ui/SegmentedControl'
 import { DiffBody } from './DiffBody'
 import { LineCounts } from './LineCounts'
-import { Send } from 'lucide-react'
-import { Button } from '../../ui/Button'
-import { sendDiffToAgent } from '../prompts/sendToAgent'
 import './changes.css'
 
 const SHORT_HASH_LENGTH = 7
@@ -121,14 +118,6 @@ export function DiffView() {
           <LineCounts addedLines={target.addedLines} removedLines={target.removedLines} />
           <span className="muted">{target.stateLabel} · read-only</span>
           <SegmentedControl options={LAYOUT_OPTIONS} value={layout} onChange={setLayout} className="diff-layout" />
-          <Button
-            variant="outline"
-            title="Insert this diff into the focused terminal"
-            disabled={diffText.trim() === ''}
-            onClick={() => sendDiffToAgent(target.path, diffText)}
-          >
-            <Send size={14} /> Send to terminal
-          </Button>
         </span>
       </header>
       {errorMessage !== null && <div className="diff-message">{errorMessage}</div>}

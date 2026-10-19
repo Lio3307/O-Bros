@@ -17,15 +17,6 @@ export function unregisterTerminal(paneId: string): void {
   terminalsByPaneId.delete(paneId)
 }
 
-export function pasteIntoTerminal(paneId: string, text: string): boolean {
-  const terminal = terminalsByPaneId.get(paneId)
-  if (terminal === undefined) {
-    return false
-  }
-  terminal.paste(text)
-  return true
-}
-
 export function readTerminalText(paneId: string, lineCount: number): string | null {
   const terminal = terminalsByPaneId.get(paneId)
   if (terminal === undefined) {

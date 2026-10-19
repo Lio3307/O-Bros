@@ -5,7 +5,6 @@ import { AgentsPage } from './AgentsPage'
 import { BackupPage } from './backup/BackupPage'
 import { EditorSettingsPage } from './EditorSettingsPage'
 import { ProjectFoldersPage } from './ProjectFoldersPage'
-import { PromptsPage } from './PromptsPage'
 import { ProviderAccountsPage } from './ProviderAccountsPage'
 import { ShortcutsPage } from './ShortcutsPage'
 import { LanguageServersPage } from './LanguageServersPage'
@@ -20,7 +19,6 @@ const pageByName: Record<SettingsPageId, () => ReactElement> = {
   editor: () => <EditorSettingsPage />,
   languageServers: () => <LanguageServersPage />,
   terminal: () => <TerminalSettingsPage />,
-  prompts: () => <PromptsPage />,
   team: () => <TeamSettingsPage />,
   shortcuts: () => <ShortcutsPage />,
   storage: () => <StoragePage />,

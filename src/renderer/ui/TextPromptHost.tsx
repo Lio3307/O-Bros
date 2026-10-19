@@ -7,7 +7,7 @@ function TextPromptDialog({ options }: { options: TextPromptOptions }) {
   const answer = useTextPromptStore((state) => state.answer)
   const [value, setValue] = useState(options.initialValue ?? '')
   const fieldRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null)
-  const canConfirm = options.allowEmpty === true || value.trim() !== ''
+  const canConfirm = value.trim() !== ''
 
   useEffect(() => {
     fieldRef.current?.focus()

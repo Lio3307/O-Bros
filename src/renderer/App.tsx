@@ -3,7 +3,6 @@ import { FilesPanel } from './features/files/FilesPanel'
 import { FileActionDialogs } from './features/files/FileActionDialogs'
 import { QuickOpen } from './features/files/QuickOpen'
 import { CommandPalette } from './features/commands/CommandPalette'
-import { PromptPicker } from './features/prompts/PromptPicker'
 import { TextPromptHost } from './ui/TextPromptHost'
 import { CloseConfirmModal } from './features/shutdown/CloseConfirmModal'
 import { useQuickOpenShortcut } from './features/files/useQuickOpenShortcut'
@@ -98,7 +97,6 @@ export function App() {
   const section = useLayoutStore((state) => state.section)
   const isFilesPanelOpen = useLayoutStore((state) => state.isFilesPanelOpen)
   const isQuickOpenVisible = useLayoutStore((state) => state.isQuickOpenVisible)
-  const isPromptPickerVisible = useLayoutStore((state) => state.isPromptPickerVisible)
   const isCommandPaletteVisible = useLayoutStore((state) => state.isCommandPaletteVisible)
 
   return (
@@ -112,7 +110,6 @@ export function App() {
       </div>
       <StatusBar />
       {isQuickOpenVisible && <QuickOpen />}
-      {isPromptPickerVisible && <PromptPicker />}
       {isCommandPaletteVisible && <CommandPalette />}
       <FileActionDialogs />
       <CloseConfirmModal />

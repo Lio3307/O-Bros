@@ -1,6 +1,5 @@
 import {
   Bot,
-  BookText,
   ArchiveRestore,
   Code2,
   FolderCog,
@@ -32,7 +31,6 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     pages: [
       { page: 'accounts', label: 'Provider accounts', Icon: UserRound },
       { page: 'agents', label: 'Agents', Icon: Bot },
-      { page: 'prompts', label: 'Prompts', Icon: BookText },
       { page: 'team', label: 'Team (wot)', Icon: UsersRound }
     ]
   },

@@ -1,0 +1,12 @@
+.command-group {
+  min-width: 64px;
+  font-size: 11px;
+  color: var(--color-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.command-shortcut {
+  margin-left: auto;
+  white-space: nowrap;
+}

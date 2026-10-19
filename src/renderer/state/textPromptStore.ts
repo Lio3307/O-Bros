@@ -7,7 +7,6 @@ export interface TextPromptOptions {
   initialValue?: string
   confirmLabel: string
   isMultiline?: boolean
-  allowEmpty?: boolean
 }
 
 interface TextPromptState {

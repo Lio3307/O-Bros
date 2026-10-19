@@ -4,7 +4,7 @@ import { formatShortcut } from '../../../shared/shortcuts'
 import { useLayoutStore } from '../../state/layoutStore'
 import { isMacPlatform, useShortcutsStore } from '../../state/shortcutsStore'
 import '../files/quickOpen.css'
-import '../prompts/prompts.css'
+import './commands.css'
 import { ALL_COMMANDS } from './allCommands'
 import type { AppCommand } from './commandTypes'
 

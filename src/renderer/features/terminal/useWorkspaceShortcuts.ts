@@ -31,7 +31,6 @@ const RUN_ACTION: Record<ShortcutAction, () => void> = {
     }
   },
   newTerminal: () => openTerminal(null),
-  openPrompts: () => useLayoutStore.getState().openPromptPicker(),
   openCommandPalette: () => useLayoutStore.getState().openCommandPalette()
 }
 

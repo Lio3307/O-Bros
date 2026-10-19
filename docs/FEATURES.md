@@ -20,11 +20,7 @@ Terminals only start when their tab is first shown, and the GPU renderer is rele
 
 ### Command palette
 
-Press `Ctrl+Shift+P` (changeable in Settings → Shortcuts) and type. Every word you type must appear in the command name, its group or its keywords, so `git push` and `push` both find **Push the current branch**. Use the arrow keys and Enter, or click. Commands that have a shortcut show it on the right, and it follows what you set in Shortcuts. It covers terminals and splits, prompts, Git (graph, changes, fetch, pull, push, stash, new branch), going to Projects, History, Changes or any settings page, showing or hiding panels, checking for updates and opening the log folder.
-
-### Prompts
-
-Settings → Prompts keeps texts you send often (a few examples are included). Press the **Prompts** button at the right of the tab bar, or `Ctrl+Shift+L`, type to filter, then press **Enter** to insert the prompt into the focused terminal, or **Ctrl+Enter** to insert it and press Enter. It is pasted the way a paste is, so a prompt with several lines is not run line by line. Prompts are stored on this computer.
+Press `Ctrl+Shift+P` (changeable in Settings → Shortcuts) and type. Every word you type must appear in the command name, its group or its keywords, so `git push` and `push` both find **Push the current branch**. Use the arrow keys and Enter, or click. Commands that have a shortcut show it on the right, and it follows what you set in Shortcuts. It covers terminals and splits, Git (graph, changes, fetch, pull, push, stash, new branch), going to Projects, History, Changes or any settings page, showing or hiding panels, checking for updates and opening the log folder.
 
 ### Splitting
 
@@ -36,7 +32,6 @@ Split the focused terminal right or down from the buttons in the tab bar, or wit
 | `Ctrl+Shift+E` | Split down |
 | `Ctrl+Shift+W` | Close the focused pane |
 | `Ctrl+Shift+T` | New terminal in the selected folder |
-| `Ctrl+Shift+L` | Open the prompt list |
 
 On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → Shortcuts**: click a shortcut, then press the keys. A shortcut must include Ctrl, Cmd or Alt, so typing in a terminal is never taken over, and a shortcut already used for copy, paste, save, search or quick open is refused.
 
@@ -77,7 +72,6 @@ On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → 
 | Auto save | Settings → Editor → Auto save. Saves after you stop typing for 200 ms, 500 ms, 1 s, 2 s, 5 s or any delay from 100 ms to 60 s. It never formats, so the cursor does not jump. Pending changes are saved when you leave the tab. |
 | Problems | The status bar shows error and warning counts for open files. Press it for a list; click a row to jump to that line. |
 | Quick open | `Ctrl+P`. With an empty box it lists recently opened files. |
-| Send to terminal | Select code and press `Ctrl+Shift+Enter`, or right-click and choose **Send selection to terminal**. With nothing selected it sends the whole file. The text arrives with the file path and line range in a fenced block, after an optional question you type first, and is inserted as one block so you press Enter yourself. Limited to 20,000 characters. The diff view has the same as a **Send to terminal** button. Use it with an agent such as Claude or Codex: a plain shell has no way to receive a block and runs each line. |
 
 Files larger than 2 MB are not opened.
 
@@ -199,7 +193,7 @@ Settings → Storage and memory lists everything o-bros can clear for you, how b
 
 ## Backup and restore
 
-- **Export** (Settings → Backup and restore, or "Export settings to a JSON file" in the command palette) saves a JSON file with `format: "o-bros-settings"` and `formatVersion: 1`. It holds your color theme, editor settings, shortcuts, prompts, agent buttons, terminal options, agent and git options, the name and email for commits made by agents, and, if you tick the box, the list of project folders.
+- **Export** (Settings → Backup and restore, or "Export settings to a JSON file" in the command palette) saves a JSON file with `format: "o-bros-settings"` and `formatVersion: 1`. It holds your color theme, editor settings, shortcuts, agent buttons, terminal options, agent and git options, the name and email for commits made by agents, and, if you tick the box, the list of project folders.
 - Not included: open tabs, recent files, accounts, logins and tokens.
 - **Import** checks the file first. A file that is not an O-BROS export, or that was made by a newer O-BROS, is refused. Otherwise it shows where the file came from and how many settings it has, and asks before applying. Settings in the file replace yours, settings not in the file stay, and project folders are added only if they exist on this computer. The window reloads to apply them, so open terminals restart.
 

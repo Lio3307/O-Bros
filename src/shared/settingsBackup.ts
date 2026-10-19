@@ -6,7 +6,6 @@ export const BACKUP_SETTING_KEYS = [
   'colorTheme',
   'editorSettings',
   'shortcuts',
-  'prompts',
   'agentLaunchers',
   'customProviders',
   'shownAgents',

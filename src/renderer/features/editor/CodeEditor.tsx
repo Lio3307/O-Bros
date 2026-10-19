@@ -11,10 +11,7 @@ import { useEditorNavigationStore } from '../../state/editorNavigationStore'
 import { findColorTheme } from '../../theme/colorThemes'
 import { toast } from '../../state/toastStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
-import { PopupMenu } from '../../ui/PopupMenu'
 import { autoSaveExtension } from './autoSaveExtension'
-import { useEditorContextMenuStore } from './editorContextMenuStore'
-import { hasSelection, sendEditorContentToAgent } from './sendFromEditor'
 import { selectAllOccurrences } from './selectAllOccurrences'
 import { getSavedEditorState, saveEditorState } from './editorSessions'
 import { colorThemeCompartment, colorThemeExtension, editorLayoutTheme } from './editorTheme'
@@ -117,33 +114,8 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
     {
       key: 'F2',
       run: selectAllOccurrences
-    },
-    {
-      key: 'Mod-Shift-Enter',
-      run: (view) => {
-        sendEditorContentToAgent(view, filePath, false)
-        return true
-      }
     }
   ])
-
-  const contextMenu = EditorView.domEventHandlers({
-    contextmenu: (event, view) => {
-      event.preventDefault()
-      const items = [
-        {
-          label: hasSelection(view) ? 'Send selection to terminal…' : 'Send file to terminal…',
-          hint: 'Ctrl+Shift+Enter',
-          onSelect: () => sendEditorContentToAgent(view, filePath, false)
-        },
-        ...(hasSelection(view)
-          ? [{ label: 'Send whole file to terminal…', onSelect: () => sendEditorContentToAgent(view, filePath, true) }]
-          : [])
-      ]
-      useEditorContextMenuStore.getState().open({ x: event.clientX, y: event.clientY, items })
-      return true
-    }
-  })
 
   const reportModification = EditorView.updateListener.of((update) => {
     if (update.docChanged) {
@@ -160,7 +132,6 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
       editorLayoutTheme,
       colorThemeCompartment.of(currentColorThemeExtension()),
       fileShortcuts,
-      contextMenu,
       reportModification,
       autoSave,
       languageServerCompartment.of([]),
@@ -186,8 +157,6 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   const viewRef = useRef<EditorView | null>(null)
   const target = useEditorNavigationStore((state) => state.target)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const contextMenu = useEditorContextMenuStore((state) => state.menu)
-  const closeContextMenu = useEditorContextMenuStore((state) => state.close)
   const colorThemeId = useColorThemeStore((state) => state.themeId)
 
   useEffect(() => {
@@ -255,12 +224,5 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   if (errorMessage !== null) {
     return <div className="editor-error">{errorMessage}</div>
   }
-  return (
-    <>
-      <div className="editor-host" ref={hostRef} />
-      {contextMenu !== null && (
-        <PopupMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} onClose={closeContextMenu} />
-      )}
-    </>
-  )
+  return <div className="editor-host" ref={hostRef} />
 }

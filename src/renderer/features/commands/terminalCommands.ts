@@ -1,4 +1,3 @@
-import { useLayoutStore } from '../../state/layoutStore'
 import { openTerminal } from '../../state/openTerminal'
 import { useTerminalFontStore } from '../../state/terminalFontStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
@@ -53,14 +52,6 @@ export const TERMINAL_COMMANDS: AppCommand[] = [
         useWorkspaceStore.getState().closePane(tab.id, tab.focusedPaneId)
       }
     }
-  },
-  {
-    id: 'terminal.prompts',
-    title: 'Send a saved prompt to the terminal',
-    group: 'Terminal',
-    keywords: ['prompt', 'library'],
-    shortcutAction: 'openPrompts',
-    run: () => useLayoutStore.getState().openPromptPicker()
   },
   {
     id: 'terminal.zoomIn',
