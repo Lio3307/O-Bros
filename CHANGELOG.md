@@ -11,6 +11,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Pick any repository on the Git page.** A switcher at the top of the Changes panel lists every project folder, each with the repositories inside it (up to three levels down, such as `C:\xampp\htdocs\SmartPRO`). The folders are scanned in the background when the page opens, so the list opens quickly even for a whole drive. Choosing one no longer changes the selected project or hides that project's terminal tabs, and the command palette's fetch, pull and push act on the same repository. **Follow project** goes back to the folder of the selected project, which is what the page showed before. The side panel no longer stays empty when the folder is not a repository.
 
 ### Fixed
+- **A whole drive showed no repositories.** With a drive such as `C:\` added as a project folder, the repository list stopped at the first folder Windows does not let you read (`C:\Config.Msi`) and showed nothing, with "Error occurred in handler for 'projects:repositories'" in the log. Folders that cannot be read are now skipped.
 - **Collapsed project folders opened again.** A project folder collapsed on the Projects page expanded again after visiting another page or restarting. It now stays collapsed.
 
 ## [0.1.5] - 2026-10-20

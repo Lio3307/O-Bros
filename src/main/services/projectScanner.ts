@@ -10,7 +10,7 @@ const HIDDEN_OR_GENERATED_FOLDERS = new Set(['node_modules', 'dist', 'out', 'Sys
 const SYSTEM_FOLDER_PREFIXES = ['.', '$']
 
 export async function readCurrentBranch(folderPath: string): Promise<string | null> {
-  const head = await readTextIfExists(join(folderPath, '.git', 'HEAD'))
+  const head = await readTextIfExists(join(folderPath, '.git', 'HEAD')).catch(() => null)
   if (head === null) {
     return null
   }

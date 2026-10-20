@@ -15,7 +15,7 @@ async function collectRepositories(
   if (relativeParts.length >= MAX_DEPTH || found.length >= MAX_REPOSITORIES) {
     return
   }
-  const entries = await readDirectoryIfExists(folderPath)
+  const entries = await readDirectoryIfExists(folderPath).catch(() => [])
   const folders = entries.filter((entry) => entry.isDirectory() && isVisibleFolder(entry.name))
 
   for (const folder of folders) {

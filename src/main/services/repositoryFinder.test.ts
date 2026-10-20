@@ -4,6 +4,25 @@ import { join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../pathGuard', () => ({ assertInsideProjectRoots: async () => undefined }))
+vi.mock('./fileSystem', async (importOriginal) => {
+  const original = await importOriginal<typeof import('./fileSystem')>()
+  const refuseLocked = (path: string): void => {
+    if (path.includes('Config.Msi')) {
+      throw Object.assign(new Error(`EPERM: operation not permitted, scandir '${path}'`), { code: 'EPERM' })
+    }
+  }
+  return {
+    ...original,
+    readDirectoryIfExists: async (path: string) => {
+      refuseLocked(path)
+      return original.readDirectoryIfExists(path)
+    },
+    readTextIfExists: async (path: string) => {
+      refuseLocked(path)
+      return original.readTextIfExists(path)
+    }
+  }
+})
 
 const { findRepositories } = await import('./repositoryFinder')
 
@@ -24,6 +43,16 @@ afterEach(async () => {
 })
 
 describe('findRepositories', () => {
+  it('skips folders the system does not let it read, such as Config.Msi', async () => {
+    await makeRepository('api')
+    await mkdir(join(workFolder, 'Config.Msi', 'inner'), { recursive: true })
+
+    const found = await findRepositories(workFolder)
+
+    expect(found.map((entry) => entry.relativePath)).toEqual(['api'])
+  })
+
+
   it('finds repositories directly inside the folder and nested inside group folders', async () => {
     await makeRepository('api')
     await makeRepository('clients', 'web')
