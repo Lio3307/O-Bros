@@ -1,10 +1,11 @@
 import { ChevronRight, Folder, FolderGit2, GitBranch } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { resolvePath } from '../../../shared/paths'
 import { groupRepositoriesByFolder } from '../../../shared/repositoryGroups'
 import type { RepositoryEntry } from '../../../shared/types'
 import { useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { LoadingText } from '../../ui/LoadingText'
+import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { scanRepositories } from './repositoryScan'
 
 function repositoryCountText(count: number): string {
@@ -15,7 +16,10 @@ export function RepositoryPicker({ folderPath }: { folderPath: string }) {
   const openRepository = useGitRepositoryStore((state) => state.open)
   const [repositories, setRepositories] = useState<RepositoryEntry[] | null>(null)
 
+  const shownFolder = useRef(folderPath)
+
   useEffect(() => {
+    shownFolder.current = folderPath
     let isCurrent = true
     setRepositories(null)
     void scanRepositories(folderPath).then((found) => isCurrent && setRepositories(found))
@@ -23,6 +27,16 @@ export function RepositoryPicker({ folderPath }: { folderPath: string }) {
       isCurrent = false
     }
   }, [folderPath])
+
+  useLiveRefresh(
+    useCallback(async () => {
+      const found = await scanRepositories(folderPath)
+      if (shownFolder.current === folderPath) {
+        setRepositories(found)
+      }
+    }, [folderPath]),
+    null
+  )
 
   function open(path: string): void {
     openRepository(path, folderPath)

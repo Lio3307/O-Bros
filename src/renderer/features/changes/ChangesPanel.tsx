@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useChangesStore } from '../../state/changesStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
 import { closestProject } from '../../../shared/closestProject'
@@ -7,12 +7,14 @@ import { useProjectsStore } from '../../state/projectsStore'
 import { useGitRepositoryPath, useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { LoadingText } from '../../ui/LoadingText'
 import { PanelHeader } from '../../ui/PanelHeader'
+import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { BranchCard } from './BranchCard'
 import { ChangeGroup } from './ChangeGroup'
 import { CommitBox } from './CommitBox'
 import { CommitHistory } from './CommitHistory'
 import { ConflictSection } from './ConflictSection'
 import { RepositorySwitcher } from './RepositorySwitcher'
+import { refsKeyOf } from './refsKey'
 import { ReviewSection } from './ReviewSection'
 import { StashSection } from './StashSection'
 import { ArrowLeft } from 'lucide-react'
@@ -29,6 +31,7 @@ export function ChangesPanel() {
   const isLoaded = loadedPath === repoPath
   const status = isLoaded ? loadedStatus : null
   const load = useChangesStore((state) => state.load)
+  const refresh = useChangesStore((state) => state.refresh)
   const loadHistory = useCommitHistoryStore((state) => state.load)
   const resetHistory = useCommitHistoryStore((state) => state.reset)
 
@@ -39,11 +42,21 @@ export function ChangesPanel() {
     }
   }, [repoPath, load, resetHistory])
 
+  const refsKey = refsKeyOf(status)
+
   useEffect(() => {
-    if (repoPath !== null && status !== null) {
+    if (repoPath !== null && refsKey !== null) {
       void loadHistory(repoPath)
     }
-  }, [repoPath, status, loadHistory])
+  }, [repoPath, refsKey, loadHistory])
+
+  useLiveRefresh(
+    useCallback(async () => {
+      if (repoPath !== null) {
+        await refresh(repoPath)
+      }
+    }, [repoPath, refresh])
+  )
 
   if (repoPath === null) {
     return (

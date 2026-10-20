@@ -62,6 +62,7 @@ export async function readGitStatus(repoPath: string): Promise<GitStatus | null>
 
   return {
     branch: parsed.branch,
+    headHash: parsed.headHash,
     upstream: parsed.upstream,
     ahead: parsed.ahead,
     behind: parsed.behind,

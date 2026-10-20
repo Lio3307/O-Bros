@@ -119,7 +119,7 @@ export function FileTree({ directoryPath, depth, selectedPath, onOpenFile }: Fil
     setErrorMessage(null)
     window.api.files
       .list(directoryPath)
-      .then(setEntries)
+      .then((found) => setEntries((shown) => (JSON.stringify(shown) === JSON.stringify(found) ? shown : found)))
       .catch((error: unknown) => setErrorMessage(friendlyErrorMessage(error, 'Could not read this folder.')))
   }, [directoryPath, refreshToken])
 

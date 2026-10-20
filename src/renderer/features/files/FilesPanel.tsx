@@ -5,6 +5,7 @@ import { useFileTreeStore } from '../../state/fileTreeStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
+import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { FileTree } from './FileTree'
 import { buildRootMenuItems } from './fileTreeMenu'
 import { mergeSearchHits, type MergedHit } from './mergeSearchHits'
@@ -31,6 +32,9 @@ export function FilesPanel() {
   const [hits, setHits] = useState<MergedHit[]>([])
   const [openMenu, setOpenMenu] = useState<OpenMenu | null>(null)
   const closeMenu = useCallback(() => setOpenMenu(null), [])
+  const refreshTree = useFileTreeStore((state) => state.refresh)
+
+  useLiveRefresh(useCallback(async () => refreshTree(), [refreshTree]))
 
   const selectedPath = activeTab?.kind === 'file' ? activeTab.path : null
   const isSearching = query.trim().length > 0

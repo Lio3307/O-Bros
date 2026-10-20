@@ -98,6 +98,8 @@ export const IpcChannel = {
   projectsRemoveRoot: 'projects:removeRoot',
   projectsScripts: 'projects:scripts',
   projectsRepositories: 'projects:repositories',
+  projectsSearchDepth: 'projects:searchDepth',
+  projectsSetSearchDepth: 'projects:setSearchDepth',
   fsList: 'fs:list',
   fsRead: 'fs:read',
   fsWrite: 'fs:write',
@@ -258,6 +260,8 @@ export interface DesktopApi {
     removeRoot(rootPath: string): Promise<ProjectRoot[]>
     scripts(rootPath: string): Promise<ProjectScripts>
     repositories(folderPath: string): Promise<RepositoryEntry[]>
+    searchDepth(): Promise<number>
+    setSearchDepth(depth: number): Promise<void>
   }
   files: {
     list(directoryPath: string): Promise<DirectoryEntry[]>

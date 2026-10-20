@@ -445,3 +445,15 @@
 - Implementation / validation / outcome: Written / unit and e2e tests pass / not yet used on the user's real folders.
 - Result acceptance: Pending user feedback.
 - Learning: Freeing a drive means moving the data the tools write, not copying it; a link keeps every tool's path working.
+
+### Panels refresh themselves without file watchers
+- Scope and goal: The user asked for the app to be dynamic. The Git page, the file tree and the Projects list loaded once and missed what agents and terminals changed until the user navigated away or restarted. Repositories deeper than 3 levels were never found.
+- Choice and authority: The user picked which parts update (Git page and repository list, file tree and Projects, deeper search; not History). `useLiveRefresh` re-reads the panel on screen every 4 seconds and on window focus, and pauses while the window is hidden. Stores skip the update when the result is unchanged, so nothing re-renders or flickers and selections stay. History and the graph reload on a key of current commit, branch, upstream and ahead and behind (`refsKey.ts`), using the `# branch.oid` line git status already returns. Repository scans run on focus only and share a running scan. Search depth is a setting from 1 to 6 (default 3) with a 20-second limit per search.
+- Evidence: e2e/liveRefresh.e2e.ts changes files, commits, creates folders and switches branches outside the app and sees each appear without navigation; it also finds a 5-level-deep repository after raising the depth. repositoryFinder.test.ts covers the depth; gitStatusParser.test.ts covers the commit hash. `npm run check` passes.
+- Alternatives and sacrifice: File system watchers would update instantly but hold handles and memory per folder, and a watched drive root such as C: is expensive; the earlier "no file watcher" choice for low memory stays. Polling means a change appears up to 4 seconds late. Rescanning repositories on a timer was rejected because a whole drive takes about 5 seconds per scan.
+- Residual risk/debt: Each refresh of the Git page runs git status and two git diff --numstat calls every 4 seconds while it is open; on a very large repository that is noticeable CPU. A diff whose file changed without changing its line counts is not reloaded until the selection changes.
+- Mitigation and revisit trigger: Revisit if users report CPU use on large repositories (make the interval adaptive or skip numstat when status is unchanged), or ask for History to update live.
+- Recovery and ownership: src/renderer/ui/useLiveRefresh.ts and its callers in ChangesPanel, FilesPanel and ProjectsPanel; src/renderer/features/changes/refsKey.ts; src/shared/repositorySearch.ts.
+- Implementation / validation / outcome: Written / unit and e2e tests pass / not yet used day to day.
+- Result acceptance: Pending user feedback.
+- Learning: Polling only what is on screen, and skipping identical results, gives live panels at almost no cost.

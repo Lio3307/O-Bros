@@ -1,6 +1,7 @@
 import { dialog, ipcMain } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
 import { classifyNewRoot } from '../../shared/projectRoots'
+import { repositorySearchDepthOf } from '../../shared/repositorySearch'
 import type { AddRootResult } from '../../shared/types'
 import { listProjectRoots } from '../services/projectScanner'
 import { findRepositories } from '../services/repositoryFinder'
@@ -43,5 +44,11 @@ export function registerProjectsIpc(): void {
   ipcMain.handle(IpcChannel.projectsAddRoot, (_event, title: unknown) => addProjectRoot(title))
   ipcMain.handle(IpcChannel.projectsRemoveRoot, (_event, rootPath: string) => removeProjectRoot(rootPath))
   ipcMain.handle(IpcChannel.projectsScripts, (_event, rootPath: string) => readProjectScripts(rootPath))
-  ipcMain.handle(IpcChannel.projectsRepositories, (_event, folderPath: string) => findRepositories(folderPath))
+  ipcMain.handle(IpcChannel.projectsRepositories, async (_event, folderPath: string) =>
+    findRepositories(folderPath, (await loadSettings()).repositorySearchDepth)
+  )
+  ipcMain.handle(IpcChannel.projectsSearchDepth, async () => (await loadSettings()).repositorySearchDepth)
+  ipcMain.handle(IpcChannel.projectsSetSearchDepth, async (_event, depth: unknown) => {
+    await saveSettings({ ...(await loadSettings()), repositorySearchDepth: repositorySearchDepthOf(depth) })
+  })
 }

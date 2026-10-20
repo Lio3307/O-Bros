@@ -8,6 +8,7 @@ export interface ParsedChange {
 
 export interface ParsedStatus {
   branch: string
+  headHash: string | null
   upstream: string | null
   ahead: number
   behind: number
@@ -82,10 +83,13 @@ function parseChangeLine(line: string): ParsedChange[] {
 }
 
 export function parseStatusOutput(output: string): ParsedStatus {
-  const status: ParsedStatus = { branch: '', upstream: null, ahead: 0, behind: 0, changes: [] }
+  const status: ParsedStatus = { branch: '', headHash: null, upstream: null, ahead: 0, behind: 0, changes: [] }
 
   for (const line of output.split('\n')) {
-    if (line.startsWith('# branch.head ')) {
+    if (line.startsWith('# branch.oid ')) {
+      const oid = line.slice('# branch.oid '.length)
+      status.headHash = oid === '(initial)' ? null : oid
+    } else if (line.startsWith('# branch.head ')) {
       status.branch = line.slice('# branch.head '.length)
     } else if (line.startsWith('# branch.upstream ')) {
       status.upstream = line.slice('# branch.upstream '.length)

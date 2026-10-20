@@ -38,7 +38,8 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => {
     activeProjectPath: null,
 
     load: async () => {
-      const roots = await window.api.projects.list()
+      const found = await window.api.projects.list()
+      const roots = JSON.stringify(found) === JSON.stringify(get().roots) ? get().roots : found
       set({ roots, activeProjectPath: get().activeProjectPath ?? roots[0]?.path ?? null })
     },
 

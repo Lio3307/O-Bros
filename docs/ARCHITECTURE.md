@@ -321,6 +321,7 @@ Each store is a small Zustand store with one job (`workspaceStore` for tabs, `pr
 - A language server starts only when you open a file it handles, and stops a minute after its last file closes. No file watcher or search index runs in the background.
 - Linting and formatting run as short-lived processes.
 - Search and process lists are computed when asked for.
+- Panels stay current without file watchers: `useLiveRefresh` re-reads only the panel on screen (Changes, Files, Projects) every 4 seconds and when the window gets focus, and pauses while the window is hidden. A refresh that finds nothing new changes nothing on screen. Commit history and the graph reload only when the branch, the current commit or the ahead and behind counts change. Repository lists, which can mean scanning a whole drive, are re-read on window focus only.
 
 ## Design rules
 

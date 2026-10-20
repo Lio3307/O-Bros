@@ -1,5 +1,5 @@
 import { Bot, ChevronDown, ChevronRight, Folder, FolderPlus, GitBranch, Terminal } from 'lucide-react'
-import { Fragment, useState } from 'react'
+import { Fragment, useCallback, useState } from 'react'
 import { isPrimaryBranch } from '../../../shared/gitSync'
 import { isPathInside } from '../../../shared/paths'
 import { formatAge } from '../../../shared/time'
@@ -21,6 +21,7 @@ import { PanelHeader } from '../../ui/PanelHeader'
 import { ScriptsList } from './ScriptsList'
 import { TerminalTabIcon } from '../terminal/TerminalTabIcon'
 import { placeSessions } from './sessionPlacement'
+import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { useNow } from '../../ui/useNow'
 import './projects.css'
 import { Button } from '../../ui/Button'
@@ -190,6 +191,7 @@ function RootBlock({ root }: { root: ProjectRoot }) {
 
 export function ProjectsPanel() {
   const roots = useProjectsStore((state) => state.roots)
+  const loadProjects = useProjectsStore((state) => state.load)
   const addRoot = useProjectsStore((state) => state.addRoot)
   const savedLaunchers = useAgentLaunchersStore((state) => state.launchers)
   const shownIds = useAgentLaunchersStore((state) => state.shownIds)
@@ -198,6 +200,8 @@ export function ProjectsPanel() {
   const selectSettingsPage = useLayoutStore((state) => state.selectSettingsPage)
 
   const installedCommands = useInstalledCommandsStore((state) => state.commands)
+
+  useLiveRefresh(useCallback(() => loadProjects(), [loadProjects]))
 
   function chooseAgents(): void {
     selectSettingsPage('agents')

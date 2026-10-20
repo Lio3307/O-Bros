@@ -73,6 +73,7 @@ export interface GitFileChange {
 
 export interface GitStatus {
   branch: string
+  headHash: string | null
   upstream: string | null
   ahead: number
   behind: number

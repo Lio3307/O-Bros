@@ -2,12 +2,14 @@ import { app } from 'electron'
 import { readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
+import { repositorySearchDepthOf } from '../shared/repositorySearch'
 import { readJsonIfExists } from './services/fileSystem'
 
 interface Settings {
   projectRoots: string[]
   useHardwareAcceleration: boolean
   conversationFolder: string | null
+  repositorySearchDepth: number
 }
 
 function settingsFilePath(): string {
@@ -18,7 +20,8 @@ function withDefaults(saved: Partial<Settings> | null): Settings {
   return {
     projectRoots: saved?.projectRoots ?? [],
     useHardwareAcceleration: saved?.useHardwareAcceleration !== false,
-    conversationFolder: typeof saved?.conversationFolder === 'string' ? saved.conversationFolder : null
+    conversationFolder: typeof saved?.conversationFolder === 'string' ? saved.conversationFolder : null,
+    repositorySearchDepth: repositorySearchDepthOf(saved?.repositorySearchDepth)
   }
 }
 

@@ -18,6 +18,8 @@ describe('parseStatusOutput', () => {
   it('reads branch, upstream and ahead/behind counts', () => {
     const status = parseStatusOutput(STATUS_OUTPUT)
     expect(status.branch).toBe('main')
+    expect(status.headHash).toBe('1234567890')
+    expect(parseStatusOutput(['# branch.oid (initial)', '# branch.head main'].join('\n')).headHash).toBeNull()
     expect(status.upstream).toBe('origin/main')
     expect(status.ahead).toBe(2)
     expect(status.behind).toBe(1)

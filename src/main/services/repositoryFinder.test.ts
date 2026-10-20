@@ -43,6 +43,18 @@ afterEach(async () => {
 })
 
 describe('findRepositories', () => {
+  it('looks as many levels deep as asked', async () => {
+    await makeRepository('top')
+    await makeRepository('users', 'me', 'source', 'repos', 'app')
+
+    expect((await findRepositories(workFolder, 1)).map((entry) => entry.relativePath)).toEqual(['top'])
+    expect((await findRepositories(workFolder)).map((entry) => entry.relativePath)).toEqual(['top'])
+    expect((await findRepositories(workFolder, 5)).map((entry) => entry.relativePath)).toEqual([
+      'top',
+      'users/me/source/repos/app'
+    ])
+  })
+
   it('skips folders the system does not let it read, such as Config.Msi', async () => {
     await makeRepository('api')
     await mkdir(join(workFolder, 'Config.Msi', 'inner'), { recursive: true })

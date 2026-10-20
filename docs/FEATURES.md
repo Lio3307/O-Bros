@@ -56,6 +56,7 @@ On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → 
 ## Files panel
 
 - Tree with lazy loading: a folder is only read when you expand it.
+- Stays current: files and folders that an agent or another program creates, renames or deletes appear within a few seconds while the panel is open, and right away when you come back to the window.
 - Right-click menu: New File, New Folder, Copy Path, Copy Relative Path, Open in Terminal, Send Path to Terminal, Collapse Folder, Find in Folder, Reveal in File Explorer, Rename (`F2`), Delete (`Del`).
 - Delete moves the item to the Recycle Bin or Trash.
 - Search finds files by name first, then by text. Files that only match inside their text are tagged "in text".
@@ -77,6 +78,8 @@ Files larger than 2 MB are not opened.
 
 ## Git (Changes panel)
 
+- Stays current: while the Git page is open, files an agent changes, commits made in a terminal and branch switches appear within a few seconds, without leaving the page.
+- How deep to look for repositories: Settings → Project folders, from 1 to 6 folder levels (default 3). Each search stops after 20 seconds or 100 repositories.
 - Repository switcher at the top: every project folder, each followed by the repositories inside it; pick a folder or a repository (a folder such as `E:` lists every repository up to three levels down). Your selected project and terminal tabs stay as they are. **Follow project** goes back to showing the selected project.
 - Branch card: current branch, tracking branch, ahead and behind counts, last fetch time and a fetch button.
 - Click the branch name to switch to another local branch.
@@ -153,7 +156,7 @@ The Activity page is one full-width monitor (no side list):
 
 - **Agent buttons** at the top start a command-line agent in the selected folder. At most two are shown, plus the plain terminal button. None are shown at first, because every computer has different agents. Open Settings → Agents (or press the Agents button), add the CLIs you use, and tick **Show** on up to two.
 - Open sessions of the selected folder, with how long ago each started.
-- Folders in each project with their git branch. Feature branches are shown in white.
+- Folders in each project with their git branch. Feature branches are shown in white. New folders and branch switches made in a terminal show up within a few seconds.
 - **Scripts:** the selected project's `package.json` scripts. Press one to run it in a new terminal. The package manager (npm, pnpm, yarn or bun) is chosen from the lock file.
 
 ## Resource Manager

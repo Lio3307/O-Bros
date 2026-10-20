@@ -36,7 +36,9 @@ const api: DesktopApi = {
     addRoot: (dialogTitle) => ipcRenderer.invoke(IpcChannel.projectsAddRoot, dialogTitle),
     removeRoot: (rootPath) => ipcRenderer.invoke(IpcChannel.projectsRemoveRoot, rootPath),
     scripts: (rootPath) => ipcRenderer.invoke(IpcChannel.projectsScripts, rootPath),
-    repositories: (folderPath) => ipcRenderer.invoke(IpcChannel.projectsRepositories, folderPath)
+    repositories: (folderPath) => ipcRenderer.invoke(IpcChannel.projectsRepositories, folderPath),
+    searchDepth: () => ipcRenderer.invoke(IpcChannel.projectsSearchDepth),
+    setSearchDepth: (depth) => ipcRenderer.invoke(IpcChannel.projectsSetSearchDepth, depth)
   },
   files: {
     list: (directoryPath) => ipcRenderer.invoke(IpcChannel.fsList, directoryPath),

@@ -3,11 +3,13 @@ import { useEffect, useMemo } from 'react'
 import { formatAge } from '../../../shared/time'
 import { useCommitGraphStore, canShowMoreGraphCommits } from '../../state/commitGraphStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
+import { useChangesStore } from '../../state/changesStore'
 import { useGitRepositoryPath } from '../../state/gitRepositoryStore'
 import { Button } from '../../ui/Button'
 import { Dropdown } from '../../ui/Dropdown'
 import { useNow } from '../../ui/useNow'
 import { buildCommitGraph, laneCount } from './commitGraph'
+import { refsKeyOf } from './refsKey'
 import { CommitFiles } from './CommitFiles'
 import { CommitGraphCell } from './CommitGraphCell'
 import { CommitRefs } from './CommitRefs'
@@ -37,11 +39,13 @@ export function CommitGraphView() {
   const rows = useMemo(() => buildCommitGraph(commits ?? []), [commits])
   const laneTotal = laneCount(rows)
 
+  const refsKey = useChangesStore((state) => (state.loadedPath === repoPath ? refsKeyOf(state.status) : null))
+
   useEffect(() => {
     if (repoPath !== null) {
       void loadBranches(repoPath).then(() => load(repoPath))
     }
-  }, [repoPath, load, loadBranches])
+  }, [repoPath, refsKey, load, loadBranches])
 
   if (repoPath === null) {
     return <div className="graph-empty">Open a folder in Projects first.</div>

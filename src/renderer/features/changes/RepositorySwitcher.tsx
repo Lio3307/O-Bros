@@ -1,10 +1,11 @@
 import { FolderGit2 } from 'lucide-react'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { lastPathSegment } from '../../../shared/paths'
 import type { ProjectRoot } from '../../../shared/types'
 import { useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { Dropdown, type DropdownOption } from '../../ui/Dropdown'
+import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { repositoriesIn, rescanRepositories } from './repositoryScan'
 
 const FOLLOW_PROJECT = 'follow-project'
@@ -40,6 +41,11 @@ export function RepositorySwitcher({ repoPath }: { repoPath: string }) {
   useEffect(() => {
     rescanRepositories(foldersToScan(roots))
   }, [roots])
+
+  useLiveRefresh(
+    useCallback(async () => rescanRepositories(foldersToScan(roots)), [roots]),
+    null
+  )
 
   async function loadOptions(): Promise<DropdownOption[]> {
     const followOption: DropdownOption = {

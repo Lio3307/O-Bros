@@ -3,6 +3,7 @@ import { useProjectsStore } from '../../state/projectsStore'
 import './settings.css'
 import { Button } from '../../ui/Button'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
+import { RepositorySearchSetting } from './RepositorySearchSetting'
 
 export function ProjectFoldersPage() {
   const roots = useProjectsStore((state) => state.roots)
@@ -39,6 +40,8 @@ export function ProjectFoldersPage() {
           </div>
         ))}
       </div>
+
+      <RepositorySearchSetting />
     </SettingsPageLayout>
   )
 }

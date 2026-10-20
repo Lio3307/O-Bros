@@ -24,6 +24,7 @@ interface ChangesState {
   isWorking: boolean
   errorMessage: string | null
   load: (repoPath: string) => Promise<void>
+  refresh: (repoPath: string) => Promise<void>
   fetchRemote: (repoPath: string) => Promise<void>
   pull: (repoPath: string) => Promise<boolean>
   push: (repoPath: string) => Promise<boolean>
@@ -49,12 +50,19 @@ function selectableChanges(status: GitStatus | null): GitFileChange[] {
 }
 
 export const useChangesStore = create<ChangesState>()((set, get) => {
-  async function reload(repoPath: string): Promise<void> {
-    const status = await window.api.git.status(repoPath)
+  function applyStatus(repoPath: string, status: GitStatus | null): void {
     const previous = get().selectedChange
     const selectable = selectableChanges(status)
     const stillThere = selectable.find((change) => change.path === previous?.path && change.isStaged === previous.isStaged)
     set({ status, loadedPath: repoPath, selectedChange: stillThere ?? selectable[0] ?? null, errorMessage: null })
+  }
+
+  async function reload(repoPath: string): Promise<void> {
+    applyStatus(repoPath, await window.api.git.status(repoPath))
+  }
+
+  function isQuiet(repoPath: string): boolean {
+    return get().loadedPath === repoPath && !get().isWorking && !get().isFetching
   }
 
   async function runAction(repoPath: string, action: () => Promise<void>, failureMessage: string): Promise<boolean> {
@@ -100,6 +108,16 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
           selectedCommitFile: null,
           errorMessage: friendlyErrorMessage(error, LOAD_FAILED_MESSAGE)
         })
+      }
+    },
+
+    refresh: async (repoPath) => {
+      if (!isQuiet(repoPath)) {
+        return
+      }
+      const status = await window.api.git.status(repoPath)
+      if (isQuiet(repoPath) && JSON.stringify(status) !== JSON.stringify(get().status)) {
+        applyStatus(repoPath, status)
       }
     },
 
