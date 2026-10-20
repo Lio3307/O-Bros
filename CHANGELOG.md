@@ -4,6 +4,8 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-10-20
+
 ### Added
 - **Resolve merge conflicts in the Changes panel.** A merge, rebase, cherry-pick, revert or stash that stops on conflicts now shows a red box with what is in progress and every conflicted file. Pick **Use current** or **Use incoming** per file, or fix it in the editor and mark it resolved with ✓ (refused while conflict markers remain), then **Commit merge** or **Continue**, or **Abort** to go back. Before, conflicted files were missing from the Changes panel entirely.
 - **Custom providers.** Settings → Provider accounts → Custom providers adds your own model endpoint: a name, Anthropic- or OpenAI-compatible, the URL, the model ID, the context window and max output tokens, and an API key. Pick one for an agent button in Settings → Agents and that agent starts with it (ANTHROPIC_BASE_URL, ANTHROPIC_AUTH_TOKEN, ANTHROPIC_MODEL and CLAUDE_CODE_MAX_OUTPUT_TOKENS, which Claude Code reads, or OPENAI_BASE_URL, OPENAI_API_KEY and OPENAI_MODEL). The key is encrypted with the operating system's protection, shown only by its last 4 characters, and never leaves the background process except into that agent; providers are part of the settings export, their keys are not. **Test connection** asks the provider for its model list and says whether the URL answers, whether the key is accepted and whether the model ID is offered. Team members summoned by wot from an agent button start with that button's provider too.
