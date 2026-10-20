@@ -12,6 +12,8 @@ import {
 } from './terminalFacts'
 import { withWotEnvironment } from './wot/wotEnvironment'
 import { identityEnvironment } from '../../shared/commitIdentity'
+import { runOnceArguments, shellKindOf } from '../../shared/shellCommand'
+import { cleanTerminalEnvironment } from '../../shared/terminalEnvironment'
 import { isTeamMemberPaneId } from '../../shared/teamMemberName'
 import { formatDuration } from '../../shared/time'
 import { recordActivity } from './activity/activityLog'
@@ -30,9 +32,19 @@ function defaultShell(): string {
   return process.env.SHELL ?? '/bin/bash'
 }
 
+function runsAgentDirectly(request: PtyCreateRequest): boolean {
+  return isTeamMemberPaneId(request.id) && request.startCommand !== null
+}
+
+function shellArguments(request: PtyCreateRequest): string[] {
+  return runsAgentDirectly(request) && request.startCommand !== null
+    ? runOnceArguments(request.startCommand, shellKindOf(process.platform))
+    : []
+}
+
 function inheritedEnvironment(): Record<string, string> {
   const entries = Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined)
-  return Object.fromEntries(entries)
+  return cleanTerminalEnvironment(Object.fromEntries(entries))
 }
 
 function agentCommandOf(request: PtyCreateRequest): string | null {
@@ -74,7 +86,7 @@ export async function createTerminal(owner: WebContents, request: PtyCreateReque
   const providerVariables = request.startsAgent ? await customProviderEnvironment(request.provider) : {}
   runningTerminals.get(request.id)?.kill()
 
-  const terminal = spawn(defaultShell(), [], {
+  const terminal = spawn(defaultShell(), shellArguments(request), {
     name: 'xterm-256color',
     cols: INITIAL_COLUMNS,
     rows: INITIAL_ROWS,
@@ -123,7 +135,7 @@ export async function createTerminal(owner: WebContents, request: PtyCreateReque
     sendToWindow(IpcChannel.ptyExit, { id: request.id, exitCode })
   })
 
-  if (request.startCommand !== null) {
+  if (request.startCommand !== null && !runsAgentDirectly(request)) {
     terminal.write(`${request.startCommand}\r`)
   }
 }

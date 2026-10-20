@@ -64,7 +64,7 @@ Usage requests identify themselves honestly as `o-bros`. The two usage endpoints
 - It never sends a saved token anywhere except the provider that issued it, and it never logs one.
 - It never refreshes, rewrites or copies login files.
 - It never edits Claude or Codex settings.
-- It never runs a command you did not start. Scripts and terminals start only when you press a button, or when an agent you started uses `wot` to summon a team member. Team members always show in the Team view, where you can stop them.
+- It never runs a command you did not start. Scripts and terminals start only when you press a button, or when an agent you started uses `wot` to summon a team member. Team members always show under the terminal that summoned them in Projects, where you can stop them.
 
 ## How the app protects you
 

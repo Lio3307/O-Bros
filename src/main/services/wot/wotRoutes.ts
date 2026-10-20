@@ -88,7 +88,9 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
       callerPaneId: teamCallerPaneOf(body),
       agent: textField(body, 'agent', true),
       name: textField(body, 'name', false),
-      task: textField(body, 'task', false)
+      task: textField(body, 'task', false),
+      agentArgs: body.agentArgs === undefined ? [] : textListField(body, 'agentArgs'),
+      cwd: textField(body, 'cwd', false)
     }),
 
   '/list': async (body) => {

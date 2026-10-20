@@ -30,7 +30,7 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 - **Accounts and usage.** Shows every agent CLI you have installed and how it signs in (account or API key). Claude and Codex accounts can be switched, and their 5-hour and weekly usage shows in the status bar.
 - **Files and editor.** A file tree with a right-click menu, name and text search, quick open (`Ctrl+P`) and a CodeMirror editor with code intelligence from the language servers you have installed (completions, hover, errors, go to definition), linting and formatting for JavaScript and TypeScript, auto save and 14 languages.
 - **Git changes.** Stage, unstage, discard and commit, switch branches, fetch, and read diffs.
-- **Team of agents (wot).** Ask your agent to bring in another one by name ("ask gemini to review this"). It summons any agent CLI installed on your computer into a hidden terminal you can watch and stop in the Team view.
+- **Team of agents (wot).** Ask your agent to bring in another one by name ("ask gemini to review this"). It summons any agent CLI installed on your computer; members show under the terminal that summoned them in Projects, where you can watch and stop them.
 - **Session history and Resume.** Browse, search, resume and delete your Claude and Codex conversations (the transcript formats O-BROS can read; other agents keep their own history).
 - **Development helpers.** Run `package.json` scripts, see problems from the linter, see and stop listening ports, and get a notification when a long command finishes.
 - **Resource Manager.** See how much memory and CPU each terminal and the app use.

@@ -3,23 +3,21 @@ import type { TeamMember } from '../../shared/types'
 
 interface TeamState {
   members: TeamMember[]
-  selectedMemberId: string | null
+  shownMemberId: string | null
   isInstalled: boolean
   refreshInstalled: () => Promise<void>
   setMembers: (members: TeamMember[]) => void
-  select: (memberId: string) => void
+  showMember: (memberId: string) => void
+  hideMember: () => void
 }
 
-function keptSelection(members: TeamMember[], selectedMemberId: string | null): string | null {
-  if (members.some((member) => member.id === selectedMemberId)) {
-    return selectedMemberId
-  }
-  return members.at(-1)?.id ?? null
+function keptShownMember(members: TeamMember[], shownMemberId: string | null): string | null {
+  return members.some((member) => member.id === shownMemberId) ? shownMemberId : null
 }
 
 export const useTeamStore = create<TeamState>()((set, get) => ({
   members: [],
-  selectedMemberId: null,
+  shownMemberId: null,
   isInstalled: false,
 
   refreshInstalled: async () => {
@@ -27,7 +25,17 @@ export const useTeamStore = create<TeamState>()((set, get) => ({
     set({ isInstalled })
   },
 
-  setMembers: (members) => set({ members, selectedMemberId: keptSelection(members, get().selectedMemberId) }),
+  setMembers: (members) => set({ members, shownMemberId: keptShownMember(members, get().shownMemberId) }),
 
-  select: (selectedMemberId) => set({ selectedMemberId })
+  showMember: (shownMemberId) => set({ shownMemberId }),
+
+  hideMember: () => set({ shownMemberId: null })
 }))
+
+export function membersOfTab(members: TeamMember[], paneIds: string[]): TeamMember[] {
+  return members.filter((member) => paneIds.includes(member.summonedByPaneId))
+}
+
+export function memberToOpenFirst(members: TeamMember[]): TeamMember | null {
+  return members.find((member) => member.state === 'waiting') ?? members.at(-1) ?? null
+}

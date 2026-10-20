@@ -6,6 +6,7 @@ import { launchApp, type RunningApp } from './launchApp'
 let app: RunningApp
 
 const isWindows = process.platform === 'win32'
+const BUTTON_DOUBLE_CLICK_GUARD_MS = 400
 
 const FAKE_AGENT_SOURCE = `
 const fs = require('fs')
@@ -25,6 +26,10 @@ process.stdin.on('data', (chunk) => {
       continue
     }
     const text = typed.split('\\u001b[200~').join('').split('\\u001b[201~').join('')
+    if (text.trim() === '') {
+      typed = ''
+      continue
+    }
     fs.writeFileSync('fake-agent-received.txt', text)
     process.stdout.write('\\r\\nDONE: received ' + text + '\\r\\n> ')
     typed = ''
@@ -85,10 +90,19 @@ test('an agent summons a hidden team member, reads it and stops it', async () =>
   await expect.poll(() => readProof('spawn-proof.txt'), { timeout: 10_000 }).toContain('Summoned team member "helper"')
 
   await expect(app.window.locator('.rail-badge')).toHaveText('1')
-  await app.window.getByTitle('Team (wot)').click()
-  await expect(app.window.locator('.team-member-row .team-member-name')).toHaveText('helper')
-  await expect(app.window.locator('.team-lead-row')).toContainText('Lead · 1 member')
-  await expect(app.window.locator('.team-flow-member')).toContainText('helper')
+  const leadGroup = app.window.locator('.session-group', { has: app.window.locator('.row-session') })
+  await expect(leadGroup.locator('.session-member-row')).toContainText('helper')
+  await expect(leadGroup.locator('.session-member-row')).toContainText('hello team')
+  await leadGroup.locator('.session-member-row').click()
+  await expect(app.window.locator('.team-frame:not(.tab-content-hidden) .team-flow-member')).toContainText('helper')
+  await expect(app.window.locator('.tab-bar')).toBeVisible()
+  await app.window.getByRole('button', { name: 'Back' }).click()
+  await expect(app.window.locator('.team-frame:not(.tab-content-hidden)')).toHaveCount(0)
+  await app.window.locator('.rail').getByTitle('Team members: 1. Show the newest one.').click()
+  await expect(app.window.locator('.team-frame:not(.tab-content-hidden) .team-flow-member')).toContainText('helper')
+  await app.window.waitForTimeout(BUTTON_DOUBLE_CLICK_GUARD_MS)
+  await app.window.getByRole('button', { name: 'Back' }).click()
+  await expect(app.window.locator('.team-frame:not(.tab-content-hidden)')).toHaveCount(0)
 
   await app.window.getByTitle('Activity', { exact: true }).click()
   await expect(app.window.locator('.live-card', { hasText: 'Team member "helper"' })).toBeVisible({ timeout: 10_000 })
@@ -131,7 +145,6 @@ test('keeps team features off until the skill is installed, and shows its versio
   await expect(sharedRow.getByText('Not installed', { exact: false })).toBeVisible({ timeout: 15_000 })
   await sharedRow.getByRole('button', { name: 'Install' }).click()
   await expect(sharedRow.getByText('installed', { exact: false })).toBeVisible({ timeout: 15_000 })
-  await expect(app.window.getByTitle('Team (wot)')).toHaveCount(1)
 })
 
 test('stops team members when the terminal that summoned them closes', async () => {

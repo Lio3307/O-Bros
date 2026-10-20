@@ -58,6 +58,8 @@ Commands:
   wot spawn <agent> --name <name> --task-file <path>
   wot spawn <agent> --name <name> --task "<short one-line task>"
                                                Start a hidden team member and give it its task.
+      [--cwd <folder>]                         Work in another folder of the project (relative to yours).
+      [-- <agent options>]                     Everything after -- goes to the agent, e.g. -- --no-daemon
   wot list                                     List team members and what they are doing.
   wot wait <name> [--timeout <seconds>]        Wait until the member finishes its turn or asks a question.
   wot read <name> [--lines <number>]           Print what is on the member's screen.
@@ -74,12 +76,32 @@ function finish(exitCode, text) {
   process.exit(exitCode)
 }
 
+const AGENT_ARGUMENTS_MARK = '--'
+
+const FLAGS_BY_COMMAND = {
+  status: [],
+  agents: [],
+  'new-file': [],
+  spawn: ['name', 'task', 'task-file', 'cwd'],
+  list: [],
+  wait: ['timeout'],
+  read: ['lines'],
+  send: ['file', 'text'],
+  stop: [],
+  help: []
+}
+
 function parseArguments(argv) {
   const positional = []
   const flags = {}
+  let agentArgs = []
   let index = 0
   while (index < argv.length) {
     const argument = argv[index]
+    if (argument === AGENT_ARGUMENTS_MARK) {
+      agentArgs = argv.slice(index + 1)
+      break
+    }
     if (argument.startsWith('--')) {
       const equalsIndex = argument.indexOf('=')
       if (equalsIndex !== -1) {
@@ -94,7 +116,20 @@ function parseArguments(argv) {
     positional.push(argument)
     index += 1
   }
-  return { positional, flags }
+  return { positional, flags, agentArgs }
+}
+
+function checkFlags(command, flags, agentArgs) {
+  const allowed = FLAGS_BY_COMMAND[command] ?? []
+  const unknown = Object.keys(flags).filter((flag) => !allowed.includes(flag))
+  if (unknown.length > 0) {
+    const known = allowed.length === 0 ? 'none' : allowed.map((flag) => '--' + flag).join(', ')
+    const agentHint = command === 'spawn' ? '\nTo give options to the agent itself, put them after --, for example: wot spawn codex --name docs --task-file <path> -- --no-daemon' : ''
+    finish(EXIT_CODES.failed, `ERROR: "wot ${command}" does not know ${unknown.map((flag) => '--' + flag).join(', ')}. Its options: ${known}.${agentHint}`)
+  }
+  if (agentArgs.length > 0 && command !== 'spawn') {
+    finish(EXIT_CODES.failed, `ERROR: Options after -- are only for "wot spawn" (they go to the agent). "wot ${command}" does not take them.`)
+  }
 }
 
 function isInsideTaskFolder(filePath) {
@@ -242,17 +277,19 @@ function createTaskFile(positional) {
   )
 }
 
-async function spawnMember(positional, flags) {
+async function spawnMember(positional, flags, agentArgs) {
   const agent = positional[0]
   if (agent === undefined || agent.trim() === '') {
     finish(EXIT_CODES.failed, 'ERROR: The agent is missing. Usage: wot spawn <agent> --name <name> --task-file <path>\nRun "wot agents" to see which agents you can use.')
   }
   const task = textFrom(flags, positional.slice(1), 'task-file', 'task')
-  const { member, taskSent } = await call('/spawn', { agent, name: flags.name ?? '', task })
+  const { member, taskSent, warnings } = await call('/spawn', { agent, name: flags.name ?? '', task, agentArgs, cwd: flags.cwd ?? '' })
   const lines = [
     `OK: Summoned team member "${member.name}" (${member.agentName}).`,
+    `It runs: ${member.command}`,
     `It works in: ${member.cwd ?? 'the home folder'}`,
     taskSent ? 'Its task was typed in and sent.' : 'No task was sent. Send one with: wot send ' + member.name + ' --file <path>',
+    ...(warnings ?? []).map((warning) => `NOTE: ${warning}`),
     `Next: run  wot wait ${member.name}  and then  wot read ${member.name}`
   ]
   finish(EXIT_CODES.ok, lines.join('\n'))
@@ -313,13 +350,13 @@ async function stopMember(positional) {
 }
 
 async function main() {
-  const { positional, flags } = parseArguments(process.argv.slice(2))
+  const { positional, flags, agentArgs } = parseArguments(process.argv.slice(2))
   const command = (positional.shift() || 'help').toLowerCase()
   const commands = {
     status: () => showStatus(),
     agents: () => showAgents(),
     'new-file': () => createTaskFile(positional),
-    spawn: () => spawnMember(positional, flags),
+    spawn: () => spawnMember(positional, flags, agentArgs),
     list: () => listMembers(),
     wait: () => waitForMember(positional, flags),
     read: () => readMember(positional, flags),
@@ -331,6 +368,7 @@ async function main() {
   if (run === undefined) {
     finish(EXIT_CODES.failed, `ERROR: Unknown command "${command}".\n\n${HELP}`)
   }
+  checkFlags(command, flags, agentArgs)
   await run()
 }
 

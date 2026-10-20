@@ -5,7 +5,9 @@ import { providerOfCommand, type AgentLauncher } from '../../../shared/agentLaun
 import { findTeamAgent, listTeamAgents, type TeamAgentOption } from '../../../shared/teamAgents'
 import { TEAM_MEMBER_ID_PREFIX, teamMemberName } from '../../../shared/teamMemberName'
 import { autoStopReason, DEFAULT_TEAM_POLICY, isFinishedState, type TeamPolicy } from '../../../shared/teamPolicy'
-import { comparablePath } from '../../../shared/paths'
+import { comparablePath, isDriveRoot, resolvePath } from '../../../shared/paths'
+import { commandWithArguments, shellKindOf } from '../../../shared/shellCommand'
+import { assertInsideProjectRoots } from '../../pathGuard'
 import { taskStartOf } from '../../../shared/teamSessions'
 import type { TeamMember } from '../../../shared/types'
 import { recordActivity } from '../activity/activityLog'
@@ -13,11 +15,12 @@ import { loadAcpRegistry } from '../agents/acpRegistryClient'
 import { listPathCommands } from '../agents/agentDetector'
 import { killTerminal, writeToTerminal } from '../ptyManager'
 import { terminalFactsOf } from '../terminalFacts'
+import { looksLikeWaitingForInput } from '../../../shared/waitingPrompt'
 import { isReadyForInput, isSettled, memberStateOf } from './memberState'
 import { askInterface, sendToInterface } from './rendererBridge'
 import { removeTeamSessionFiles, rememberTeamSession } from './teamSessions'
 import { WotError } from './wotError'
-import { IS_PATH_CASE_INSENSITIVE } from '../fileSystem'
+import { IS_PATH_CASE_INSENSITIVE, isFolder } from '../fileSystem'
 
 const MAX_MEMBERS = 6
 const CHAT_DELETE_DELAY_MS = 3000
@@ -26,6 +29,12 @@ const POLL_MS = 500
 const TERMINAL_START_TIMEOUT_MS = 15_000
 const READY_TIMEOUT_MS = 45_000
 const SUBMIT_DELAY_MS = 300
+const TYPED_TEXT_SETTLED_MS = 600
+const TYPED_TEXT_SETTLE_LIMIT_MS = 8000
+const SUBMIT_TICK_MS = 100
+const SUBMIT_CHECK_TICKS = 30
+const WORKING_OUTPUT_TICKS = 8
+const SUBMIT_ATTEMPTS = 2
 const STATE_CHECK_MS = 1000
 const DEFAULT_WAIT_SECONDS = 100
 const MAX_WAIT_SECONDS = 280
@@ -42,7 +51,17 @@ export interface SpawnRequest {
   agent: string
   name: string
   task: string
+  agentArgs: string[]
+  cwd: string
 }
+
+export interface SpawnOutcome {
+  member: TeamMember
+  taskSent: boolean
+  warnings: string[]
+}
+
+const EXIT_SCREEN_LINES = 15
 
 export interface WaitOutcome {
   member: TeamMember
@@ -89,6 +108,32 @@ function projectFolderOf(callerPaneId: string): string {
     throw new WotError('not-allowed', NO_PROJECT_MESSAGE)
   }
   return cwd
+}
+
+async function memberFolderOf(callerPaneId: string, requestedFolder: string): Promise<string> {
+  const callerFolder = projectFolderOf(callerPaneId)
+  if (requestedFolder.trim() === '') {
+    return callerFolder
+  }
+  const folder = resolvePath(callerFolder, requestedFolder.trim())
+  try {
+    await assertInsideProjectRoots(folder)
+  } catch {
+    throw new WotError('not-allowed', `"${folder}" is outside the user's project folders. Pick a folder inside the project for --cwd.`)
+  }
+  if (!(await isFolder(folder))) {
+    throw new WotError('bad-request', `"${folder}" is not a folder. Pass an existing folder to --cwd.`)
+  }
+  return folder
+}
+
+function folderWarnings(folder: string): string[] {
+  if (!isDriveRoot(folder)) {
+    return []
+  }
+  return [
+    `The member works in "${folder}", the top of a drive. Some agents cannot run commands or write files there: Codex's Windows sandbox fails to start in a drive root. If the member reports that its shell or file writes fail, stop it and summon it again with --cwd <a folder inside ${folder}>.`
+  ]
 }
 
 export function listMembers(): TeamMember[] {
@@ -218,13 +263,43 @@ function assertTextLength(text: string): void {
   }
 }
 
+function quietFor(memberId: string): number {
+  const facts = terminalFactsOf(memberId)
+  return facts === undefined ? Number.POSITIVE_INFINITY : Date.now() - (facts.lastOutputAt ?? facts.startedAt)
+}
+
+async function countOutputTicks(memberId: string): Promise<number> {
+  let ticksWithOutput = 0
+  let lastSeen = terminalFactsOf(memberId)?.lastOutputAt ?? null
+  for (let tick = 0; tick < SUBMIT_CHECK_TICKS; tick += 1) {
+    await delay(SUBMIT_TICK_MS)
+    const latest = terminalFactsOf(memberId)?.lastOutputAt ?? null
+    if (latest !== lastSeen) {
+      ticksWithOutput += 1
+    }
+    lastSeen = latest
+  }
+  return ticksWithOutput
+}
+
+function hasExitedOrAsks(memberId: string): boolean {
+  const facts = terminalFactsOf(memberId)
+  return facts === undefined || facts.hasExited || looksLikeWaitingForInput(facts.tail)
+}
+
 async function typeAndSubmit(memberId: string, text: string): Promise<void> {
   const withoutReturns = text.split('\r').join('')
   const isBracketedPaste = terminalFactsOf(memberId)?.isBracketedPaste ?? false
   const body = isBracketedPaste ? PASTE_START + withoutReturns + PASTE_END : withoutReturns.split('\n').join(' ')
   writeToTerminal(memberId, body)
   await delay(SUBMIT_DELAY_MS)
-  writeToTerminal(memberId, '\r')
+  await waitUntil(() => quietFor(memberId) >= TYPED_TEXT_SETTLED_MS, TYPED_TEXT_SETTLE_LIMIT_MS)
+  for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
+    writeToTerminal(memberId, '\r')
+    if ((await countOutputTicks(memberId)) >= WORKING_OUTPUT_TICKS || hasExitedOrAsks(memberId)) {
+      return
+    }
+  }
 }
 
 function removeMember(memberId: string, reason: string | null = null): void {
@@ -247,7 +322,25 @@ function commandWithSessionId(command: string, sessionId: string | null): string
   return sessionId === null ? command : `${command} --session-id ${sessionId}`
 }
 
-export async function spawnMember(request: SpawnRequest): Promise<{ member: TeamMember; taskSent: boolean }> {
+async function lastScreenOf(member: TeamMember): Promise<string> {
+  try {
+    return await askInterface<string>({ kind: 'readScreen', memberId: member.id, lines: EXIT_SCREEN_LINES })
+  } catch {
+    return '(the screen could not be read)'
+  }
+}
+
+async function failBecauseExited(member: TeamMember): Promise<never> {
+  member.state = 'exited'
+  publish()
+  const screen = await lastScreenOf(member)
+  throw new WotError(
+    'failed',
+    `"${member.name}" exited right after it started, so no task was sent. Its last output:\n${screen}\nFix the cause (for example pass agent options after --), then stop it with "wot stop ${member.name}" and summon it again.`
+  )
+}
+
+export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> {
   if (isTeamMember(request.callerPaneId)) {
     throw new WotError('not-allowed', 'A team member cannot summon more agents. Only the agent the user talks to can.')
   }
@@ -255,17 +348,18 @@ export async function spawnMember(request: SpawnRequest): Promise<{ member: Team
     throw new WotError('limit', `The team is full (${MAX_MEMBERS} members). Stop one with "wot stop <name>" first.`)
   }
   assertTextLength(request.task)
-  const cwd = projectFolderOf(request.callerPaneId)
+  const cwd = await memberFolderOf(request.callerPaneId, request.cwd)
   const agent = await chooseAgent(request.agent)
   const takenNames = listMembers().map((member) => member.name)
   const provider = providerOfCommand(agent.command)
   const sessionId = provider === 'claude' ? randomUUID() : null
+  const warnings = folderWarnings(cwd)
 
   const member: TeamMember = {
     id: `${TEAM_MEMBER_ID_PREFIX}${randomUUID()}`,
     name: teamMemberName(request.name, agent.name, takenNames),
     agentName: agent.name,
-    command: commandWithSessionId(agent.command, sessionId),
+    command: commandWithArguments(commandWithSessionId(agent.command, sessionId), request.agentArgs, shellKindOf(process.platform)),
     cwd,
     summonedByPaneId: request.callerPaneId,
     task: request.task,
@@ -294,19 +388,18 @@ export async function spawnMember(request: SpawnRequest): Promise<{ member: Team
     removeMember(member.id)
     throw new WotError('failed', 'The O-BROS window did not start the terminal for this agent. Is the window open?')
   }
-  if (request.task.trim() === '') {
-    return { member, taskSent: false }
-  }
-
   await waitUntil(() => {
     const facts = terminalFactsOf(member.id)
     return facts === undefined || facts.hasExited || isReadyForInput(facts, Date.now())
   }, READY_TIMEOUT_MS)
   if (terminalFactsOf(member.id)?.hasExited ?? true) {
-    throw new WotError('failed', `"${member.name}" stopped right after it started. Run "wot read ${member.name}" to see why.`)
+    return failBecauseExited(member)
+  }
+  if (request.task.trim() === '') {
+    return { member, taskSent: false, warnings }
   }
   await typeAndSubmit(member.id, request.task)
-  return { member, taskSent: true }
+  return { member, taskSent: true, warnings }
 }
 
 export async function sendToMember(nameOrId: string, text: string): Promise<TeamMember> {

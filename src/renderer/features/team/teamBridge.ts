@@ -5,8 +5,10 @@ import { useTeamPolicyStore } from '../../state/teamPolicyStore'
 import { useTeamStore } from '../../state/teamStore'
 import { toast } from '../../state/toastStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
+import { useWorkspaceStore } from '../../state/workspaceStore'
 import { readTerminalText } from '../terminal/terminalRegistry'
 import { confirmAgentGit } from './confirmAgentGit'
+import { openTeamMember } from './openTeamMember'
 
 async function answerRequest(request: WotRendererRequest): Promise<unknown> {
   if (request.kind === 'confirmGit') {
@@ -22,19 +24,18 @@ async function answerRequest(request: WotRendererRequest): Promise<unknown> {
   return screen
 }
 
-function isWatchingTeam(): boolean {
-  return useLayoutStore.getState().section === 'team' && document.hasFocus()
+function isWatchingMember(member: TeamMember): boolean {
+  return useLayoutStore.getState().section === 'projects' && useTeamStore.getState().shownMemberId === member.id && document.hasFocus()
 }
 
 function notifyWaiting(member: TeamMember): void {
   try {
     const notification = new Notification(`Team member "${member.name}" is waiting`, {
-      body: 'It is asking a question. Open the Team view to see it.'
+      body: 'It is asking a question. Click to see it.'
     })
     notification.onclick = () => {
       window.focus()
-      useTeamStore.getState().select(member.id)
-      useLayoutStore.getState().openSection('team')
+      openTeamMember(member)
     }
   } catch {
     return
@@ -43,10 +44,10 @@ function notifyWaiting(member: TeamMember): void {
 
 function receiveMembers(members: TeamMember[]): void {
   const previous = useTeamStore.getState().members
-  const shouldNotify = useTerminalSettingsStore.getState().notifyWhenFinished && !isWatchingTeam()
+  const shouldNotify = useTerminalSettingsStore.getState().notifyWhenFinished
   for (const member of members) {
     const before = previous.find((candidate) => candidate.id === member.id)
-    if (shouldNotify && member.state === 'waiting' && before?.state !== 'waiting') {
+    if (shouldNotify && !isWatchingMember(member) && member.state === 'waiting' && before?.state !== 'waiting') {
       notifyWaiting(member)
     }
   }
@@ -58,6 +59,11 @@ export function startTeamBridge(): () => void {
   void useTeamStore.getState().refreshInstalled()
   useTeamPolicyStore.getState().sendToApp()
   const stopNotices = window.api.wot.onNotice((message) => toast.success(message))
+  const stopTabWatch = useWorkspaceStore.subscribe((state, previous) => {
+    if (state.activeTabId !== previous.activeTabId) {
+      useTeamStore.getState().hideMember()
+    }
+  })
   const stopMembers = window.api.wot.onMembers(receiveMembers)
   const stopRequests = window.api.wot.onRequest(({ requestId, request }) => {
     answerRequest(request)
@@ -70,5 +76,6 @@ export function startTeamBridge(): () => void {
     stopMembers()
     stopRequests()
     stopNotices()
+    stopTabWatch()
   }
 }

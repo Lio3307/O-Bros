@@ -1,6 +1,5 @@
 import { Suspense, type ComponentType } from 'react'
 import { ProjectsPanel } from '../features/projects/ProjectsPanel'
-import { TeamPanel } from '../features/team/TeamPanel'
 import { useLayoutStore, type Section } from '../state/layoutStore'
 import { lazyComponent } from '../ui/lazyComponent'
 import { LoadingText } from '../ui/LoadingText'
@@ -13,7 +12,6 @@ const panelBySection: Partial<Record<Section, ComponentType>> = {
   projects: ProjectsPanel,
   history: HistoryPanel,
   changes: ChangesPanel,
-  team: TeamPanel,
   settings: SettingsPanel
 }
 

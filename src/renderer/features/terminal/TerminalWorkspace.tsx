@@ -2,7 +2,9 @@ import { Suspense, useRef } from 'react'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { openTerminal } from '../../state/openTerminal'
 import { useProjectsStore } from '../../state/projectsStore'
+import { useTeamStore } from '../../state/teamStore'
 import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
+import { TeamMemberViews } from '../team/TeamMemberViews'
 import { PaneLayoutView } from './PaneLayoutView'
 import { TabBar } from './TabBar'
 import './terminal.css'
@@ -38,6 +40,7 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
   const startedTabIds = useRef(new Set<string>())
   const hasNoFolders = useProjectsStore((state) => state.roots.length === 0)
+  const isMemberShown = useTeamStore((state) => state.shownMemberId !== null)
 
   const terminalTabs = tabs.filter(isTerminalTab)
   const activeFileTab = projectTabs.find((tab) => tab.kind === 'file' && tab.id === activeTabId)
@@ -50,8 +53,8 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
     <div className={isVisible ? 'workspace' : 'workspace workspace-hidden'}>
       <TabBar />
       <div className="workspace-content">
-        {projectTabs.length === 0 && hasNoFolders && <FirstRunState />}
-        {projectTabs.length === 0 && !hasNoFolders && (
+        {!isMemberShown && projectTabs.length === 0 && hasNoFolders && <FirstRunState />}
+        {!isMemberShown && projectTabs.length === 0 && !hasNoFolders && (
           <div className="empty-state">
             <p>No terminal is open in this project.</p>
             <Button variant="primary" onClick={() => openTerminal(null)}>
@@ -62,20 +65,21 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
         {terminalTabs
           .filter((tab) => startedTabIds.current.has(tab.id))
           .map((tab) => {
-            const isActive = tab.id === activeTabId
+            const isActive = tab.id === activeTabId && !isMemberShown
             return (
               <div key={tab.id} className={isActive ? 'tab-content' : 'tab-content tab-content-hidden'}>
                 <PaneLayoutView tab={tab} layout={tab.layout} isVisible={isVisible && isActive} />
               </div>
             )
           })}
-        {activeFileTab?.kind === 'file' && (
+        {!isMemberShown && activeFileTab?.kind === 'file' && (
           <div className="tab-content">
             <Suspense fallback={null}>
               <CodeEditor tabId={activeFileTab.id} filePath={activeFileTab.path} />
             </Suspense>
           </div>
         )}
+        <TeamMemberViews isVisible={isVisible} />
       </div>
     </div>
   )

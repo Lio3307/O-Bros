@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fileExtension, isAbsolutePath, isPathInside, lastPathSegment, parentPath, relativePathFrom, resolvePath } from './paths'
+import { fileExtension, isAbsolutePath, isDriveRoot, isPathInside, lastPathSegment, parentPath, relativePathFrom, resolvePath } from './paths'
 
 describe('isAbsolutePath', () => {
   it('recognises drive, root and UNC paths', () => {
@@ -90,5 +90,15 @@ describe('parentPath and relativePathFrom', () => {
 
   it('keeps a path that is outside the root', () => {
     expect(relativePathFrom('D:/other/a.ts', 'C:/dev/app')).toBe('D:/other/a.ts')
+  })
+})
+
+describe('isDriveRoot', () => {
+  it('is true only for the top of a drive or file system', () => {
+    expect(isDriveRoot('E:\\')).toBe(true)
+    expect(isDriveRoot('E:')).toBe(true)
+    expect(isDriveRoot('/')).toBe(true)
+    expect(isDriveRoot('E:\\PersonalRepo')).toBe(false)
+    expect(isDriveRoot('/home/me')).toBe(false)
   })
 })

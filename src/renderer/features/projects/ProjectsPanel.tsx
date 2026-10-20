@@ -1,4 +1,9 @@
 import { Bot, ChevronDown, ChevronRight, Folder, FolderPlus, GitBranch, Terminal } from 'lucide-react'
+import { showTab } from '../../state/showTab'
+import { closestProject } from '../../../shared/closestProject'
+import { findTerminalPane } from '../../state/focusTerminalPane'
+import { membersOfTab, useTeamStore } from '../../state/teamStore'
+import { SessionMembers } from './SessionMembers'
 import { Fragment, useCallback, useState } from 'react'
 import { isPrimaryBranch } from '../../../shared/gitSync'
 import { isPathInside } from '../../../shared/paths'
@@ -40,18 +45,55 @@ function BranchLabel({ branch }: { branch: string }) {
 
 function SessionRow({ session, now }: { session: TerminalTab; now: number }) {
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
-  const activateTab = useWorkspaceStore((state) => state.activateTab)
+  const isShowingMember = useTeamStore((state) => state.shownMemberId !== null)
+  const members = useTeamStore((state) => state.members)
+  const sessionMembers = membersOfTab(members, Object.keys(session.panes))
+  const isSelected = session.id === activeTabId && !isShowingMember
 
-  return (
+  const row = (
     <button
       type="button"
-      className={session.id === activeTabId ? 'row row-session row-selected' : 'row row-session'}
-      onClick={() => activateTab(session.id)}
+      className={isSelected ? 'row row-session row-selected' : 'row row-session'}
+      title={sessionMembers.length === 0 ? undefined : `${session.title} · lead of ${sessionMembers.length} team member${sessionMembers.length === 1 ? '' : 's'}`}
+      onClick={() => showTab(session.id)}
     >
       <TerminalTabIcon tab={session} />
       <span className="row-name">{session.title}</span>
       <span className="muted">{formatAge(session.createdAt, now)}</span>
     </button>
+  )
+  if (sessionMembers.length === 0) {
+    return row
+  }
+  return (
+    <div className="session-group">
+      {row}
+      <SessionMembers members={sessionMembers} now={now} />
+    </div>
+  )
+}
+
+function LeadClosedMembers({ rootPath, now }: { rootPath: string; now: number }) {
+  const members = useTeamStore((state) => state.members)
+  const roots = useProjectsStore((state) => state.roots)
+  useWorkspaceStore((state) => state.tabs)
+  const orphans = members.filter(
+    (member) =>
+      findTerminalPane(member.summonedByPaneId) === null &&
+      member.cwd !== null &&
+      closestProject(member.cwd, roots)?.path === rootPath
+  )
+  if (orphans.length === 0) {
+    return null
+  }
+  return (
+    <div className="session-group">
+      <div className="row row-session session-group-closed" title="The terminal that summoned these members was closed">
+        <Bot size={14} />
+        <span className="row-name">Lead closed</span>
+      </div>
+      <SessionMembers members={orphans} now={now} />
+    </div>
   )
 }
 
@@ -181,6 +223,7 @@ function RootBlock({ root }: { root: ProjectRoot }) {
       {!isCollapsed && (
         <>
           <RootSessions sessions={placement.atRoot} now={now} />
+          <LeadClosedMembers rootPath={root.path} now={now} />
           <FolderList root={root} sessionsByFolder={placement.byFolderPath} now={now} />
           <ScriptsList root={root} />
         </>

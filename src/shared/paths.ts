@@ -45,6 +45,10 @@ export function parentPath(path: string): string {
   return isDriveSegment(parent) ? `${parent}/` : parent
 }
 
+export function isDriveRoot(path: string): boolean {
+  return comparablePath(parentPath(path), true) === comparablePath(path, true)
+}
+
 export function isAbsolutePath(path: string): boolean {
   return path.startsWith('/') || path.startsWith('\\') || path.charAt(1) === ':'
 }

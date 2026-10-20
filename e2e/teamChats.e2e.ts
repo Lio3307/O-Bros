@@ -40,6 +40,10 @@ process.stdin.on('data', (chunk) => {
       continue
     }
     const text = typed.split('\\u001b[200~').join('').split('\\u001b[201~').join('')
+    if (text.trim() === '') {
+      typed = ''
+      continue
+    }
     saveSession(text)
     fs.writeFileSync('fake-codex-received.txt', text)
     process.stdout.write('\\r\\nDONE: received ' + text + '\\r\\n> ')

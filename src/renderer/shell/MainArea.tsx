@@ -1,5 +1,4 @@
 import { Suspense } from 'react'
-import { TeamWorkspace } from '../features/team/TeamWorkspace'
 import { TerminalWorkspace } from '../features/terminal/TerminalWorkspace'
 import { useLayoutStore } from '../state/layoutStore'
 import { lazyComponent } from '../ui/lazyComponent'
@@ -26,7 +25,6 @@ export function MainArea() {
   return (
     <main className="main-area">
       <TerminalWorkspace isVisible={section === 'projects'} />
-      <TeamWorkspace isVisible={section === 'team'} />
       <Suspense fallback={<MainLoading />}>
         {section === 'history' && <SessionReplay />}
         {section === 'changes' && <ChangesMain />}

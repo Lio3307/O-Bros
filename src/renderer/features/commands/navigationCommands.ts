@@ -1,13 +1,14 @@
 import { useLayoutStore, type Section } from '../../state/layoutStore'
 import { SETTINGS_PAGES } from '../settings/settingsPages'
+import { toast } from '../../state/toastStore'
+import { openFirstTeamMember } from '../team/openTeamMember'
 import type { AppCommand } from './commandTypes'
 
 const SECTION_COMMANDS: { section: Section; title: string; keywords: string[] }[] = [
   { section: 'projects', title: 'Show Projects', keywords: ['folders', 'terminals'] },
   { section: 'history', title: 'Show conversation History', keywords: ['sessions', 'resume', 'claude', 'codex'] },
   { section: 'changes', title: 'Show Changes (Git)', keywords: ['git', 'commit', 'diff'] },
-  { section: 'activity', title: 'Show agent Activity', keywords: ['log', 'timeline', 'agents', 'today'] },
-  { section: 'team', title: 'Show Team (wot)', keywords: ['agents', 'team', 'wot', 'summon'] }
+  { section: 'activity', title: 'Show agent Activity', keywords: ['log', 'timeline', 'agents', 'today'] }
 ]
 
 const sectionCommands: AppCommand[] = SECTION_COMMANDS.map(({ section, title, keywords }) => ({
@@ -32,6 +33,17 @@ const settingsCommands: AppCommand[] = SETTINGS_PAGES.map(({ page, label }) => (
 
 export const NAVIGATION_COMMANDS: AppCommand[] = [
   ...sectionCommands,
+  {
+    id: 'show.team',
+    title: 'Show team members (wot)',
+    group: 'Go to',
+    keywords: ['agents', 'team', 'wot', 'summon', 'member'],
+    run: () => {
+      if (!openFirstTeamMember()) {
+        toast.info('There are no team members right now.')
+      }
+    }
+  },
   {
     id: 'file.quickOpen',
     title: 'Go to a file by name',

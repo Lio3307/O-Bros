@@ -7,6 +7,7 @@ import { copyPath, revealInFileExplorer } from '../files/fileActions'
 import { openTerminal } from '../../state/openTerminal'
 import { requestCloseOtherTabs, requestCloseTab } from '../../state/requestCloseTab'
 import { useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore'
+import { showTab } from '../../state/showTab'
 import { EditableTitle } from '../../ui/EditableTitle'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { useShortcutLabel } from '../../state/shortcutsStore'
@@ -49,7 +50,6 @@ interface TabItemProps {
 }
 
 function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
-  const activateTab = useWorkspaceStore((state) => state.activateTab)
   const renameTab = useWorkspaceStore((state) => state.renameTab)
   const moveTab = useWorkspaceStore((state) => state.moveTab)
   const needsAttention = useAttentionStore((state) => state.tabIds.includes(tab.id))
@@ -68,7 +68,7 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
       className={isActive ? 'tab tab-active' : 'tab'}
       title={tab.kind === 'file' ? tab.path : tab.title}
       draggable
-      onClick={() => activateTab(tab.id)}
+      onClick={() => showTab(tab.id)}
       onMouseDown={handleMouseDown}
       onContextMenu={(event) => {
         event.preventDefault()
@@ -110,7 +110,6 @@ export function TabBar() {
   const splitPane = useWorkspaceStore((state) => state.splitPane)
   const splitRightLabel = useShortcutLabel('splitRight')
   const splitDownLabel = useShortcutLabel('splitDown')
-  const activateTab = useWorkspaceStore((state) => state.activateTab)
   const clearAttention = useAttentionStore((state) => state.clear)
   const [openMenu, setOpenMenu] = useState<OpenMenu | null>(null)
   const scrollerRef = useRef<HTMLDivElement>(null)
@@ -151,7 +150,7 @@ export function TabBar() {
       items: tabs.map((tab) => ({
         label: tab.title,
         isActive: tab.id === activeTabId,
-        onSelect: () => activateTab(tab.id)
+        onSelect: () => showTab(tab.id)
       }))
     })
   }

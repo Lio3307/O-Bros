@@ -11,7 +11,7 @@ flowchart TB
         RT["Terminals"]
         RE["Editor"]
         RC["Changes (git)"]
-        RTeam["Team view"]
+        RTeam["Team members (under their lead)"]
         RH["History"]
         RS["Settings"]
     end
@@ -156,20 +156,22 @@ flowchart LR
 
     Lead -- "wot agents · spawn · list · wait<br/>read · send · stop · status" --> Server
 
-    Server -- "1. new member" --> Team["Team view (renderer)<br/>working · finished · asking you"]
-    Team -- "2. opens a terminal<br/>like any other" --> M1["Member · gemini"]
+    Server -- "1. new member" --> Team["Members under their lead<br/>in Projects (renderer)<br/>working · finished · asking you"]
+    Team -- "2. opens a terminal<br/>that runs the agent itself" --> M1["Member · gemini"]
     Team --> M2["Member · codex"]
     Team --> M3["Member · opencode"]
-    Server -- "3. types the task" --> M1
+    Server -- "3. types the task,<br/>checks it was submitted" --> M1
 
     Server -- "live state" --> Team
     Team -- "you type or stop" --> M1
 ```
 
 - You ask in your own words, for example "ask gemini to review login.ts". The skill tells the lead agent to run `wot`, which every O-BROS terminal has on its `PATH`.
-- `wot` talks to a small HTTP server inside the main process that listens only on `127.0.0.1` and needs a random key that only O-BROS terminals receive. Outside O-BROS, `wot` answers that it needs the app.
-- `spawnMember` (`teamRegistry.ts`) adds the member and tells the window, which opens its terminal through the normal `pty:create` path. The server waits until that terminal runs, then types the task into it.
-- Members are real terminals. When one asks a question, the Team button turns red. A member cannot summon more members.
+- `wot` talks to a small HTTP server inside the main process that listens only on `127.0.0.1` and needs a random key that only O-BROS terminals receive. Outside O-BROS, `wot` answers that it needs the app. The CLI refuses options a command does not know; arguments after `--` go to the agent, quoted for the shell (`shellCommand.ts`).
+- `spawnMember` (`teamRegistry.ts`) adds the member and tells the window, which opens its terminal through the normal `pty:create` path. A member terminal runs the agent as the shell's one command (`powershell -Command` or `sh -c`), so when the agent exits, the terminal exits and the member is "exited". If that happens before the task is sent, `wot spawn` fails with the agent's last screen instead of typing the task into a shell.
+- Typing a task: the text is pasted, wot waits until the agent stops redrawing it, presses Enter, and counts output over the next 3 seconds. A working agent keeps drawing; if it did not, Enter is pressed once more, never when the screen shows a question. This was measured with Codex, which needs a second Enter after a large paste.
+- Every O-BROS terminal starts from a cleaned environment (`terminalEnvironment.ts`): `CODEX_HOME` and `CLAUDE_CONFIG_DIR` are removed so the account chosen in O-BROS applies, and the session variables of a terminal app that started O-BROS (`ORCA_*`, `TERM_PROGRAM`) are dropped. Without this, O-BROS started from an Orca terminal gave every Codex Orca's private Codex home and its daemon, which failed with "Access is denied".
+- Members are real terminals. They show nested under the session that summoned them in Projects; clicking one shows it in the main area (`TeamMemberViews.tsx`, `teamStore.shownMemberId`). When one asks a question, the rail number turns red. A member cannot summon more members.
 - The code is in `src/main/services/wot` (server, routes, member state, skill installer) and `src/renderer/features/team`.
 
 ## How the git guard works

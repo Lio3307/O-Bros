@@ -4,21 +4,21 @@ import { formatBytes, formatPercent } from '../../../../shared/format'
 import { lastPathSegment } from '../../../../shared/paths'
 import { formatShortDuration } from '../../../../shared/time'
 import { findTerminalPane, focusTerminalPane } from '../../../state/focusTerminalPane'
-import { useLayoutStore } from '../../../state/layoutStore'
 import { useResourcesStore } from '../../../state/resourcesStore'
 import { useTeamStore } from '../../../state/teamStore'
 import { useWorkspaceStore } from '../../../state/workspaceStore'
 import { AgentName } from '../../../ui/AgentName'
 import { AgentStateBadge } from '../../../ui/AgentStateBadge'
 import { useNow } from '../../../ui/useNow'
+import { openTeamMember } from '../../team/openTeamMember'
 import { leadOf } from '../../team/teamMemberText'
 
 const TICK_MS = 1000
 
 function openAgent(agent: LiveAgent): void {
-  if (agent.isTeamMember) {
-    useTeamStore.getState().select(agent.paneId)
-    useLayoutStore.getState().openSection('team')
+  const member = useTeamStore.getState().members.find((candidate) => candidate.id === agent.paneId)
+  if (member !== undefined) {
+    openTeamMember(member)
     return
   }
   focusTerminalPane(agent.paneId)
