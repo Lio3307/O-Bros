@@ -81,6 +81,8 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Prompts and Send to terminal.** The prompt list (`Ctrl+Shift+L`, the Prompts button in the tab bar and Settings → Prompts), Send selection to terminal in the editor (`Ctrl+Shift+Enter` and its right-click menu) and the Send to terminal button in the diff view are gone. Saved prompts are no longer exported, and older backups that contain them still import.
 
 ### Fixed
+- **Team member conversations were not marked when the folder path had a short form.** On Windows a folder can also be written in its short 8.3 form (such as RUNNER~1); a Codex member's conversation then was not recognised as a team member's. Both paths are now compared by their real location.
+- **Restart now showed on computers without a working graphics card.** The graphics card setting compared your choice with what Chromium reports, which is "off" when no GPU can be used, so it asked for a restart that changed nothing. It now compares with the setting O-BROS started with.
 - **Problems counts language server errors.** Errors from a language server were underlined in the editor but the Problems count in the status bar stayed at 0; it now counts them with oxlint's.
 - **A long diff could not be scrolled.** The diff grew taller than the window instead of scrolling; it now scrolls in both layouts.
 - **Usage in the status bar lists what you have.** Settings → Agents showed Claude and Codex even when they were not installed, and OpenRouter credit could not be hidden. The list now shows Claude and Codex only when installed or signed in, plus every credit O-BROS reads (OpenRouter, with where its key comes from), each with its own switch.

@@ -122,7 +122,7 @@ test('refuses agent commits, branches and worktrees by default without asking', 
   await expect.poll(() => readProof('init-proof.txt'), { timeout: 30_000 }).toContain('GIT_BLOCKED')
 
   await typeInTerminal(savedOutput(`git ${IDENTITY} commit --allow-empty -m by-agent`, 'commit-proof.txt'))
-  await expect.poll(() => readProof('commit-proof.txt'), { timeout: 30_000 }).toContain('does not let agents commit')
+  await expect.poll(() => readProof('commit-proof.txt').then((text) => text.split(/\s+/).join(' ')), { timeout: 30_000 }).toContain('does not let agents commit')
   await typeInTerminal(savedOutput('git checkout -b agent-branch', 'branch-proof.txt'))
   await expect.poll(() => readProof('branch-proof.txt'), { timeout: 30_000 }).toContain('GIT_BLOCKED')
   await typeInTerminal(savedOutput('git worktree add ../agent-tree', 'tree-proof.txt'))

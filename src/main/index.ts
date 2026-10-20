@@ -28,7 +28,7 @@ import { startTypedAgentWatch } from './services/activity/typedAgents'
 import { startWotServer, stopWotServer } from './services/wot/wotServer'
 import { guardWindowClose } from './closeGuard'
 import { createMainWindow } from './window'
-import { loadSettingsBeforeStart } from './settings'
+import { applyHardwareAccelerationSetting } from './hardwareAcceleration'
 
 const DATA_FOLDER_NAME = 'o-bros'
 
@@ -40,9 +40,7 @@ function keepDataFolderName(): void {
 
 keepDataFolderName()
 
-if (!loadSettingsBeforeStart().useHardwareAcceleration) {
-  app.disableHardwareAcceleration()
-}
+applyHardwareAccelerationSetting()
 
 function registerAllIpc(): void {
   reportHandlerErrors()

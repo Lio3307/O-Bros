@@ -1,4 +1,5 @@
 import { app } from 'electron'
+import { realpath } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import {
@@ -58,6 +59,10 @@ export async function rememberTeamSession(record: TeamSessionRecord): Promise<vo
   save()
 }
 
+function realFolderOf(path: string): Promise<string> {
+  return new Promise((resolve) => realpath.native(path, (error, resolved) => resolve(error === null ? resolved : path)))
+}
+
 function baseNameOf(file: SourceFile): string {
   return basename(file.filePath, TRANSCRIPT_EXTENSION)
 }
@@ -71,7 +76,7 @@ async function candidatesFor(pending: TeamSessionRecord[], files: SourceFile[]):
       return {
         sessionId: header.sessionId,
         provider: file.source.format.provider,
-        projectPath: header.projectPath,
+        projectPath: header.projectPath === null ? null : await realFolderOf(header.projectPath),
         title: header.title,
         modifiedAt: file.modifiedAt
       }
@@ -91,7 +96,7 @@ async function resolvePendingRecords(files: SourceFile[]): Promise<void> {
   const claimedIds = new Set(records.flatMap((record) => (record.sessionId === null ? [] : [record.sessionId])))
   let hasResolved = false
   for (const record of pending) {
-    const sessionId = findTeamSessionId(record, candidates, claimedIds, IS_PATH_CASE_INSENSITIVE)
+    const sessionId = findTeamSessionId({ ...record, cwd: await realFolderOf(record.cwd) }, candidates, claimedIds, IS_PATH_CASE_INSENSITIVE)
     if (sessionId !== null) {
       record.sessionId = sessionId
       claimedIds.add(sessionId)

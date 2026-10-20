@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
 import { closeWindowAndStopTasks } from '../closeGuard'
+import { isHardwareAccelerationOnThisRun } from '../hardwareAcceleration'
 import { loadSettings, saveSettings } from '../settings'
 import { logDirectory, writeLog } from '../services/logging/logFile'
 import { LOG_LEVELS, type LogLevel } from '../services/logging/logLine'
@@ -18,7 +19,7 @@ export function registerAppIpc(): void {
   })
   ipcMain.handle(IpcChannel.appHardwareAcceleration, async () => ({
     isSaved: (await loadSettings()).useHardwareAcceleration,
-    isActive: app.isHardwareAccelerationEnabled()
+    isActive: isHardwareAccelerationOnThisRun()
   }))
   ipcMain.handle(IpcChannel.appSetHardwareAcceleration, async (_event, isEnabled: boolean) => {
     await saveSettings({ ...(await loadSettings()), useHardwareAcceleration: isEnabled === true })
