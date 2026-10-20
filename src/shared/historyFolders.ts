@@ -3,6 +3,7 @@ export interface AgentHistoryFolder {
   title: string
   path: string
   note: string
+  holdsLogin: boolean
 }
 
 const HOME_TOKEN = '{home}'
@@ -28,6 +29,7 @@ export function parseHistoryFolders(raw: unknown, home: string): AgentHistoryFol
     command: entry.command,
     title: entry.title,
     note: entry.note,
+    holdsLogin: entry.holdsLogin === true,
     path: home + entry.path.slice(HOME_TOKEN.length)
   }))
 }

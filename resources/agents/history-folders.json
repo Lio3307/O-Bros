@@ -1,5 +1,5 @@
 {
-  "description": "Where agent CLIs other than Claude and Codex keep their conversation history. {home} is the home folder. O-BROS only lists the folders that exist on the computer and opens them; it never deletes them, because each agent stores history in its own format.",
+  "description": "Where agent CLIs other than Claude and Codex keep their conversation history. {home} is the home folder. O-BROS only lists the folders that exist on the computer and opens them; it never deletes them, because each agent stores history in its own format. Folders without holdsLogin hold only conversations, so Settings → Storage and memory can move them to another drive.",
   "folders": [
     {
       "command": "gemini",
@@ -17,13 +17,15 @@
       "command": "opencode",
       "title": "OpenCode conversations",
       "path": "{home}/.local/share/opencode",
-      "note": "OpenCode keeps every session in opencode.db and the storage folder here, and it can grow large. Delete old sessions from inside OpenCode. Do not delete the whole folder: it also holds auth.json, your OpenCode logins and API keys."
+      "note": "OpenCode keeps every session in opencode.db and the storage folder here, and it can grow large. Delete old sessions from inside OpenCode. Do not delete the whole folder: it also holds auth.json, your OpenCode logins and API keys.",
+      "holdsLogin": true
     },
     {
       "command": "kilo",
       "title": "Kilo Code conversations",
       "path": "{home}/.local/share/kilo",
-      "note": "Kilo keeps its sessions in kilo.db here. Delete old sessions from inside Kilo. Do not delete the whole folder: it also holds auth.json, your Kilo login."
+      "note": "Kilo keeps its sessions in kilo.db here. Delete old sessions from inside Kilo. Do not delete the whole folder: it also holds auth.json, your Kilo login.",
+      "holdsLogin": true
     },
     {
       "command": "cline",

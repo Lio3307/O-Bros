@@ -2,7 +2,7 @@ import { app, shell } from 'electron'
 import { readFile, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join, normalize } from 'node:path'
-import { parseHistoryFolders } from '../../../shared/historyFolders'
+import { parseHistoryFolders, type AgentHistoryFolder } from '../../../shared/historyFolders'
 import type { DataLocation, DataLocationKind } from '../../../shared/types'
 import { logDirectory } from '../logging/logFile'
 import { readSessionSources } from '../sessions/sessionSources'
@@ -23,13 +23,15 @@ async function isFolder(path: string): Promise<boolean> {
   }
 }
 
-async function listAgentHistoryLocations(): Promise<DataLocation[]> {
+export async function readAgentHistoryFolders(): Promise<AgentHistoryFolder[]> {
   const raw: unknown = JSON.parse(await readFile(HISTORY_FOLDERS_PATH, 'utf8'))
   const folders = parseHistoryFolders(raw, homedir()).map((folder) => ({ ...folder, path: normalize(folder.path) }))
   const existing = await Promise.all(folders.map((folder) => isFolder(folder.path)))
-  return folders
-    .filter((_folder, index) => existing[index])
-    .map((folder) => ({ ...locationOf('agentHistory', folder.path, null), copy: { title: folder.title, note: folder.note, command: folder.command } }))
+  return folders.filter((_folder, index) => existing[index])
+}
+
+async function listAgentHistoryLocations(): Promise<DataLocation[]> {
+  return (await readAgentHistoryFolders()).map((folder) => ({ ...locationOf('agentHistory', folder.path, null), copy: { title: folder.title, note: folder.note, command: folder.command } }))
 }
 
 function userCacheDirectory(): string {

@@ -18,6 +18,8 @@ import type { AcpAgent } from './acpRegistry'
 import type {
   AccountRef,
   AddRootResult,
+  ConversationMoveResult,
+  ConversationStorage,
   DataLocation,
   CreateEntryRequest,
   AccountUsage,
@@ -196,6 +198,10 @@ export const IpcChannel = {
   storageClearLeftoverTemp: 'storage:clearLeftoverTemp',
   storageLocations: 'storage:locations',
   storageOpenLocation: 'storage:openLocation',
+  storageConversations: 'storage:conversations',
+  storageChooseConversationFolder: 'storage:chooseConversationFolder',
+  storageMoveConversations: 'storage:moveConversations',
+  storageMoveConversationsBack: 'storage:moveConversationsBack',
   updaterStatus: 'updater:status',
   updaterCheck: 'updater:check',
   updaterDownload: 'updater:download',
@@ -381,6 +387,10 @@ export interface DesktopApi {
     clearTeamTaskFiles(): Promise<void>
     locations(): Promise<DataLocation[]>
     openLocation(id: string): Promise<void>
+    conversations(): Promise<ConversationStorage>
+    chooseConversationFolder(): Promise<string | null>
+    moveConversations(id: string): Promise<ConversationMoveResult>
+    moveConversationsBack(id: string): Promise<ConversationMoveResult>
   }
   updater: {
     status(): Promise<UpdateStatus>

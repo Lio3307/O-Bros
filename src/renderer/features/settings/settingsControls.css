@@ -439,3 +439,12 @@
 .launcher-provider {
   flex: 0 0 180px;
 }
+
+.conversation-row {
+  align-items: center;
+}
+
+.conversation-size {
+  flex-shrink: 0;
+  white-space: nowrap;
+}

@@ -378,6 +378,26 @@ export interface DataLocation {
   copy: DataLocationCopy | null
 }
 
+export interface ConversationFolder {
+  id: string
+  title: string
+  program: string
+  path: string
+  movedTo: string | null
+  sizeBytes: number
+  holdsLogin: boolean
+}
+
+export interface ConversationStorage {
+  targetFolder: string | null
+  folders: ConversationFolder[]
+}
+
+export interface ConversationMoveResult {
+  isDone: boolean
+  message: string
+}
+
 export interface StorageReport {
   appCacheBytes: number
   leftoverTempBytes: number

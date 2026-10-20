@@ -1,22 +1,33 @@
 import { FolderGit2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { lastPathSegment } from '../../../shared/paths'
 import type { ProjectRoot } from '../../../shared/types'
 import { useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { Dropdown, type DropdownOption } from '../../ui/Dropdown'
+import { repositoriesIn, rescanRepositories } from './repositoryScan'
 
 const FOLLOW_PROJECT = 'follow-project'
 
-async function repositoryOptionsOf(root: ProjectRoot): Promise<DropdownOption[]> {
-  if (root.branch !== null) {
-    return [{ value: root.path, label: root.name, hint: root.branch }]
+function foldersToScan(roots: ProjectRoot[]): string[] {
+  return roots.filter((root) => root.branch === null).map((root) => root.path)
+}
+
+async function optionsOfRoot(root: ProjectRoot): Promise<DropdownOption[]> {
+  const rootOption: DropdownOption = {
+    value: root.path,
+    label: root.name,
+    hint: root.branch ?? 'project folder',
+    hasSeparatorBefore: true
   }
-  const repositories = await window.api.projects.repositories(root.path).catch(() => [])
-  return repositories.map((repository) => ({
-    value: repository.path,
-    label: repository.name,
-    hint: `${root.name}/${repository.relativePath}`
-  }))
+  if (root.branch !== null) {
+    return [rootOption]
+  }
+  const repositories = await repositoriesIn(root.path)
+  return [
+    rootOption,
+    ...repositories.map((repository) => ({ value: repository.path, label: repository.name, hint: repository.relativePath }))
+  ]
 }
 
 export function RepositorySwitcher({ repoPath }: { repoPath: string }) {
@@ -26,14 +37,18 @@ export function RepositorySwitcher({ repoPath }: { repoPath: string }) {
   const open = useGitRepositoryStore((state) => state.open)
   const followProject = useGitRepositoryStore((state) => state.followProject)
 
+  useEffect(() => {
+    rescanRepositories(foldersToScan(roots))
+  }, [roots])
+
   async function loadOptions(): Promise<DropdownOption[]> {
     const followOption: DropdownOption = {
       value: FOLLOW_PROJECT,
       label: 'Follow project',
       hint: activeProjectPath === null ? undefined : lastPathSegment(activeProjectPath)
     }
-    const repositoryOptions = (await Promise.all(roots.map(repositoryOptionsOf))).flat()
-    return [followOption, ...repositoryOptions]
+    const rootOptions = (await Promise.all(roots.map(optionsOfRoot))).flat()
+    return [followOption, ...rootOptions]
   }
 
   function change(value: string): void {

@@ -5,6 +5,7 @@ import { isPathInside } from '../../../shared/paths'
 import { formatAge } from '../../../shared/time'
 import type { ProjectRoot } from '../../../shared/types'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
+import { useCollapsedRootsStore } from '../../state/collapsedRootsStore'
 import { useAttentionStore } from '../../state/attentionStore'
 import { agentStatusOf, programOf, shortAgentName, shownLaunchers, type AgentLauncher } from '../../../shared/agentLaunchers'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
@@ -150,7 +151,8 @@ function FolderList({ root, sessionsByFolder, now }: FolderListProps) {
 }
 
 function RootBlock({ root }: { root: ProjectRoot }) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const isCollapsed = useCollapsedRootsStore((state) => state.paths.includes(root.path))
+  const toggleCollapsed = useCollapsedRootsStore((state) => state.toggle)
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const selectProject = useProjectsStore((state) => state.selectProject)
   const projectTabs = useActiveProjectTabs()
@@ -167,7 +169,7 @@ function RootBlock({ root }: { root: ProjectRoot }) {
   return (
     <section className="root-block">
       <div className={headerClassName}>
-        <Button variant="icon" title="Show or hide folders" onClick={() => setIsCollapsed(!isCollapsed)}>
+        <Button variant="icon" title="Show or hide folders" onClick={() => toggleCollapsed(root.path)}>
           <Chevron size={14} />
         </Button>
         <button type="button" className="root-name" title={root.path} onClick={() => selectProject(root.path)}>

@@ -2,6 +2,12 @@ import { ipcMain } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
 import type { StorageReport } from '../../shared/types'
 import { clearAppCache, readAppCacheBytes } from '../services/storage/appCache'
+import {
+  chooseConversationFolder,
+  listConversationFolders,
+  moveConversations,
+  moveConversationsBack
+} from '../services/storage/conversationFolders'
 import { listDataLocations, openDataLocation } from '../services/storage/dataLocations'
 import { readLeftoverTempFolders, removeLeftoverTempFolders } from '../services/storage/leftoverTempFolders'
 import { readTaskFiles, removeTaskFiles } from '../services/wot/wotTaskFiles'
@@ -28,4 +34,8 @@ export function registerStorageIpc(): void {
   ipcMain.handle(IpcChannel.storageClearTeamTaskFiles, () => removeTaskFiles())
   ipcMain.handle(IpcChannel.storageLocations, () => listDataLocations())
   ipcMain.handle(IpcChannel.storageOpenLocation, (_event, id: string) => openDataLocation(id))
+  ipcMain.handle(IpcChannel.storageConversations, () => listConversationFolders())
+  ipcMain.handle(IpcChannel.storageChooseConversationFolder, () => chooseConversationFolder())
+  ipcMain.handle(IpcChannel.storageMoveConversations, (_event, id: string) => moveConversations(String(id)))
+  ipcMain.handle(IpcChannel.storageMoveConversationsBack, (_event, id: string) => moveConversationsBack(String(id)))
 }

@@ -4,8 +4,14 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Added
+- **Choose where conversations are saved.** Settings → Storage and memory → Where conversations are saved: choose a folder, for example `E:\o-bros\chat-history`, and press **Move** next to an agent to move its conversations there and free space on the drive they were on. O-BROS leaves a link in the old place, so the agent, History and resume keep working and new conversations are saved in the new folder too. It checks the agent is closed and the folder has room, moves only conversation folders (never logins or settings), compares the copy before deleting the original, and puts everything back if a step fails. Works for Claude and Codex (every account), Gemini CLI, Qwen Code, Cline, GitHub Copilot CLI, Goose and Cursor Agent; OpenCode and Kilo keep their login in the same folder, so they are listed but not moved. **Move back** returns the files.
+
 ### Changed
-- **Pick any repository on the Git page.** A switcher at the top of the Changes panel lists every repository in your project folders. Choosing one no longer changes the selected project or hides that project's terminal tabs, and the command palette's fetch, pull and push act on the same repository. **Follow project** goes back to the folder of the selected project, which is what the page showed before. The side panel no longer stays empty when the folder is not a repository.
+- **Pick any repository on the Git page.** A switcher at the top of the Changes panel lists every project folder, each with the repositories inside it (up to three levels down, such as `C:\xampp\htdocs\SmartPRO`). The folders are scanned in the background when the page opens, so the list opens quickly even for a whole drive. Choosing one no longer changes the selected project or hides that project's terminal tabs, and the command palette's fetch, pull and push act on the same repository. **Follow project** goes back to the folder of the selected project, which is what the page showed before. The side panel no longer stays empty when the folder is not a repository.
+
+### Fixed
+- **Collapsed project folders opened again.** A project folder collapsed on the Projects page expanded again after visiting another page or restarting. It now stays collapsed.
 
 ## [0.1.5] - 2026-10-20
 

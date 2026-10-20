@@ -7,6 +7,7 @@ import { readJsonIfExists } from './services/fileSystem'
 interface Settings {
   projectRoots: string[]
   useHardwareAcceleration: boolean
+  conversationFolder: string | null
 }
 
 function settingsFilePath(): string {
@@ -16,7 +17,8 @@ function settingsFilePath(): string {
 function withDefaults(saved: Partial<Settings> | null): Settings {
   return {
     projectRoots: saved?.projectRoots ?? [],
-    useHardwareAcceleration: saved?.useHardwareAcceleration !== false
+    useHardwareAcceleration: saved?.useHardwareAcceleration !== false,
+    conversationFolder: typeof saved?.conversationFolder === 'string' ? saved.conversationFolder : null
   }
 }
 

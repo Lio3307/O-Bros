@@ -77,7 +77,7 @@ Files larger than 2 MB are not opened.
 
 ## Git (Changes panel)
 
-- Repository switcher at the top: pick any repository inside your project folders (a folder such as `E:` lists every repository up to three levels down). Your selected project and terminal tabs stay as they are. **Follow project** goes back to showing the selected project.
+- Repository switcher at the top: every project folder, each followed by the repositories inside it; pick a folder or a repository (a folder such as `E:` lists every repository up to three levels down). Your selected project and terminal tabs stay as they are. **Follow project** goes back to showing the selected project.
 - Branch card: current branch, tracking branch, ahead and behind counts, last fetch time and a fetch button.
 - Click the branch name to switch to another local branch.
 - Stage, unstage or discard a file, or stage and unstage all. Discarding asks first; a new file goes to the Recycle Bin.
@@ -189,9 +189,11 @@ Settings → Storage and memory lists everything o-bros can clear for you, how b
 
 **Team (wot).** Running team members (Stop all), **Team member conversations** (every Claude and Codex conversation a team member had, with a Delete button) and wot task files. History marks those conversations "Team member · <name>" and has a "Team only" filter. In Settings → Team (wot) you can have a member's conversation moved to the Recycle Bin or Trash as soon as it stops. A Claude member gets its own session ID when it starts, so the match is exact; a Codex member is matched by its folder, start time and the task it was given, so a Codex member summoned without a task is not marked.
 
+**Where conversations are saved.** Agents save conversations on the drive they are installed on, which can fill it. Press **Choose folder…** (for example `E:\o-bros\chat-history`), then **Move** next to an agent. O-BROS checks the agent is closed and there is room, moves the folder into `<chosen folder>\<agent>` and leaves a link (a junction on Windows) in the old place, so the agent, History and resume keep working and new conversations land in the new folder. Only conversation folders move: Claude's `projects` and Codex's `sessions` for every account, and the folders of Gemini CLI, Qwen Code, Cline, GitHub Copilot CLI, Goose and Cursor Agent. OpenCode and Kilo keep their login in the same folder, so their Move button stays off. **Move back** returns the files. If anything fails part way, the files are put back where they were.
+
 **Other agents.** Where your data lives also lists the conversation folders of Gemini CLI, Qwen Code, OpenCode, Kilo Code, Cline, GitHub Copilot CLI, Goose and Cursor Agent when they exist, with what each holds and what deleting it does. O-BROS only opens these; delete old sessions from inside the agent, because OpenCode and Kilo keep your login in the same folder. The list lives in `resources/agents/history-folders.json`.
 
-**Clear everything below** runs the four cleanups above. It does not delete conversations. The page never touches your project files, git history, Claude or Codex logins and conversations, project folders list, or editor and terminal settings. Old conversations are removed from the History panel.
+**Clear everything below** runs the four cleanups above. It does not delete conversations. The page never touches your project files, git history, agent logins, project folders list, or editor and terminal settings, and conversations only move or get deleted when you press Move or Delete. Old conversations are removed from the History panel.
 
 ## Backup and restore
 

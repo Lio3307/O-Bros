@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { access, readFile } from 'node:fs/promises'
+import { access, mkdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { launchApp, type RunningApp } from './launchApp'
 
@@ -69,4 +69,22 @@ test('opens the storage and update settings pages', async () => {
 
   await app.window.getByText('About and updates', { exact: true }).first().click()
   await expect(app.window.getByText('Updates are only available in the installed app')).toBeVisible()
+})
+
+test('keeps a project folder collapsed after visiting another page', async () => {
+  await mkdir(join(app.projectFolder, 'src'))
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+  const rootBlock = app.window.locator('.root-block')
+  await expect(rootBlock.getByText('src', { exact: true })).toBeVisible({ timeout: 15_000 })
+
+  await rootBlock.getByTitle('Show or hide folders').click()
+  await expect(rootBlock.getByText('src', { exact: true })).toHaveCount(0)
+  await app.window.getByTitle('Changes', { exact: true }).click()
+  await app.window.getByTitle('Projects', { exact: true }).click()
+  await expect(rootBlock.getByText('src', { exact: true })).toHaveCount(0)
+
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+  await expect(rootBlock.getByText('src', { exact: true })).toHaveCount(0)
 })

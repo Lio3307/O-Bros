@@ -4,6 +4,7 @@ import { formatBytes } from '../../../shared/format'
 import { useRecentFilesStore } from '../../state/recentFilesStore'
 import { useStorageStore } from '../../state/storageStore'
 import { CleanupRow, pluralize } from './CleanupRow'
+import { ConversationFolderSection } from './ConversationFolderSection'
 import { DataLocationsSection } from './DataLocationsSection'
 import { HardwareAccelerationSetting } from './HardwareAccelerationSetting'
 import { SavedSessionsSection } from './SavedSessionsSection'
@@ -97,6 +98,8 @@ export function StoragePage() {
       </div>
 
       <SavedSessionsSection />
+
+      <ConversationFolderSection />
 
       <TeamStorageSection />
 

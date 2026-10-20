@@ -7,6 +7,7 @@ export interface DropdownOption {
   value: string
   label: string
   hint?: string
+  hasSeparatorBefore?: boolean
 }
 
 interface DropdownProps {
@@ -68,6 +69,7 @@ export function Dropdown({ label, value, loadOptions, onChange, icon, title, cla
             return {
               label: option.label,
               hint: option.hint,
+              hasSeparatorBefore: option.hasSeparatorBefore,
               isActive: isSelected,
               icon: <Check size={14} className={isSelected ? undefined : 'dropdown-check-hidden'} />,
               onSelect: () => {

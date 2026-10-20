@@ -5,6 +5,7 @@ import { groupRepositoriesByFolder } from '../../../shared/repositoryGroups'
 import type { RepositoryEntry } from '../../../shared/types'
 import { useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { LoadingText } from '../../ui/LoadingText'
+import { scanRepositories } from './repositoryScan'
 
 function repositoryCountText(count: number): string {
   return count === 1 ? '1 repository' : `${count} repositories`
@@ -17,10 +18,7 @@ export function RepositoryPicker({ folderPath }: { folderPath: string }) {
   useEffect(() => {
     let isCurrent = true
     setRepositories(null)
-    window.api.projects
-      .repositories(folderPath)
-      .then((found) => isCurrent && setRepositories(found))
-      .catch(() => isCurrent && setRepositories([]))
+    void scanRepositories(folderPath).then((found) => isCurrent && setRepositories(found))
     return () => {
       isCurrent = false
     }

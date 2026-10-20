@@ -165,7 +165,11 @@ const api: DesktopApi = {
     clearLeftoverTemp: () => ipcRenderer.invoke(IpcChannel.storageClearLeftoverTemp),
     clearTeamTaskFiles: () => ipcRenderer.invoke(IpcChannel.storageClearTeamTaskFiles),
     locations: () => ipcRenderer.invoke(IpcChannel.storageLocations),
-    openLocation: (id) => ipcRenderer.invoke(IpcChannel.storageOpenLocation, id)
+    openLocation: (id) => ipcRenderer.invoke(IpcChannel.storageOpenLocation, id),
+    conversations: () => ipcRenderer.invoke(IpcChannel.storageConversations),
+    chooseConversationFolder: () => ipcRenderer.invoke(IpcChannel.storageChooseConversationFolder),
+    moveConversations: (id) => ipcRenderer.invoke(IpcChannel.storageMoveConversations, id),
+    moveConversationsBack: (id) => ipcRenderer.invoke(IpcChannel.storageMoveConversationsBack, id)
   },
   updater: {
     status: () => ipcRenderer.invoke(IpcChannel.updaterStatus),

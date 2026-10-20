@@ -301,7 +301,8 @@ Each store is a small Zustand store with one job (`workspaceStore` for tabs, `pr
 
 | Data | Where |
 |---|---|
-| Project folders, graphics card setting | `settings.json` in the user-data folder (`%APPDATA%/o-bros` on Windows) |
+| Project folders, graphics card setting, chosen conversation folder | `settings.json` in the user-data folder (`%APPDATA%/o-bros` on Windows) |
+| Agent conversations you moved | `<chosen folder>/<agent>`, with a junction (Windows) or symlink in the agent's old folder. Done by `folderMove.ts`: rename the old folder (fails if a file is in use), copy and compare file count and bytes, link, then delete the old copy; any failure puts the files back. `conversationFolders.ts` refuses while the agent's process runs or the target lacks space. |
 | Custom provider keys | `provider-keys.json` in the user-data folder, encrypted |
 | Activity log | `activity.json` in the user-data folder |
 | Team member conversations (to find them in History) | `team-sessions.json` in the user-data folder |
