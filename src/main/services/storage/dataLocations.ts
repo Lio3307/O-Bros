@@ -1,26 +1,20 @@
 import { app, shell } from 'electron'
-import { readFile, stat } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join, normalize } from 'node:path'
 import { parseHistoryFolders, type AgentHistoryFolder } from '../../../shared/historyFolders'
 import type { DataLocation, DataLocationKind } from '../../../shared/types'
+import { isRunningFromSource } from '../../runMode'
 import { logDirectory } from '../logging/logFile'
 import { readSessionSources } from '../sessions/sessionSources'
 import { listSkillTargets } from '../wot/skillInstaller'
 import { WOT_TASK_FOLDER } from '../wot/wotTaskFiles'
+import { isFolder } from '../fileSystem'
 
 const HISTORY_FOLDERS_PATH = join(__dirname, '../../resources/agents/history-folders.json')
 
 function locationOf(kind: DataLocationKind, path: string, accountLabel: string | null): DataLocation {
   return { id: `${kind}:${path}`, kind, path, accountLabel, copy: null }
-}
-
-async function isFolder(path: string): Promise<boolean> {
-  try {
-    return (await stat(path)).isDirectory()
-  } catch {
-    return false
-  }
 }
 
 export async function readAgentHistoryFolders(): Promise<AgentHistoryFolder[]> {
@@ -60,10 +54,10 @@ export async function listDataLocations(): Promise<DataLocation[]> {
       source.account.label
     )
   )
-  const programLocations = app.isPackaged ? [locationOf('program', dirname(app.getPath('exe')), null)] : []
-  const updaterLocations = app.isPackaged
-    ? [locationOf('updater', join(userCacheDirectory(), `${app.getName()}-updater`), null)]
-    : []
+  const programLocations = isRunningFromSource() ? [] : [locationOf('program', dirname(app.getPath('exe')), null)]
+  const updaterLocations = isRunningFromSource()
+    ? []
+    : [locationOf('updater', join(userCacheDirectory(), `${app.getName()}-updater`), null)]
 
   return [
     ...programLocations,

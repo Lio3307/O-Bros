@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { choiceFor, type LanguageServerChoice, type LanguageServerChoices } from '../../shared/languageServers'
+import { readStoredJson, writeStoredJson } from './browserStorage'
 
 export const LANGUAGE_SERVERS_STORAGE_KEY = 'o-bros.languageServers'
 
@@ -25,11 +26,7 @@ export function readLanguageServerChoices(raw: unknown): LanguageServerChoices {
 }
 
 function loadChoices(): LanguageServerChoices {
-  try {
-    return readLanguageServerChoices(JSON.parse(localStorage.getItem(LANGUAGE_SERVERS_STORAGE_KEY) ?? 'null'))
-  } catch {
-    return {}
-  }
+  return readLanguageServerChoices(readStoredJson(LANGUAGE_SERVERS_STORAGE_KEY))
 }
 
 export const useLanguageServerStore = create<LanguageServerState>()((set, get) => {
@@ -41,11 +38,7 @@ export const useLanguageServerStore = create<LanguageServerState>()((set, get) =
     }
     const choices = { ...get().choices, [serverId]: next }
     set({ choices })
-    try {
-      localStorage.setItem(LANGUAGE_SERVERS_STORAGE_KEY, JSON.stringify(choices))
-    } catch {
-      return
-    }
+    writeStoredJson(LANGUAGE_SERVERS_STORAGE_KEY, choices)
   }
 
   return {

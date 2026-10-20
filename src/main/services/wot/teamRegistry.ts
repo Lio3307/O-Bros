@@ -17,6 +17,7 @@ import { isReadyForInput, isSettled, memberStateOf } from './memberState'
 import { askInterface, sendToInterface } from './rendererBridge'
 import { removeTeamSessionFiles, rememberTeamSession } from './teamSessions'
 import { WotError } from './wotError'
+import { IS_PATH_CASE_INSENSITIVE } from '../fileSystem'
 
 const MAX_MEMBERS = 6
 const CHAT_DELETE_DELAY_MS = 3000
@@ -33,7 +34,6 @@ const MAX_READ_LINES = 400
 const PASTE_START = '\u001b[200~'
 const PASTE_END = '\u001b[201~'
 
-const IS_PATH_CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin'
 const NO_PROJECT_MESSAGE =
   'Team members only work inside a project folder, and this terminal runs in the home folder. Tell the user: open a project folder in O-BROS (the folder button in Projects), then start me from a terminal in that folder.'
 

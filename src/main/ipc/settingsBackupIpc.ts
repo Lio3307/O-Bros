@@ -6,10 +6,10 @@ import { IpcChannel } from '../../shared/ipc'
 import { classifyNewRoot } from '../../shared/projectRoots'
 import type { OpenedBackupFile } from '../../shared/types'
 import { loadSettings, saveSettings } from '../settings'
+import { IS_PATH_CASE_INSENSITIVE, isFolder } from '../services/fileSystem'
 
 const MAX_BACKUP_BYTES = 1024 * 1024
 const JSON_FILTER = { name: 'O-BROS settings', extensions: ['json'] }
-const IS_PATH_CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin'
 
 function defaultFolder(): string {
   try {
@@ -46,14 +46,6 @@ async function openBackup(): Promise<OpenedBackupFile | null> {
     throw new Error('The file is too large to be an O-BROS settings export.')
   }
   return { fileName: basename(filePath), text: await readFile(filePath, 'utf8') }
-}
-
-async function isFolder(folderPath: string): Promise<boolean> {
-  try {
-    return (await stat(folderPath)).isDirectory()
-  } catch {
-    return false
-  }
 }
 
 async function addProjectFolders(folderPaths: string[]): Promise<number> {

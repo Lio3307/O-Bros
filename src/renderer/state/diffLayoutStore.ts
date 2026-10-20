@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { readStored, writeStored } from './browserStorage'
 
 export type DiffLayout = 'unified' | 'split'
 
@@ -10,22 +11,13 @@ interface DiffLayoutState {
 }
 
 function loadLayout(): DiffLayout {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === 'split' ? 'split' : 'unified'
-  } catch {
-    return 'unified'
-  }
+  return readStored(STORAGE_KEY) === 'split' ? 'split' : 'unified'
 }
 
 export const useDiffLayoutStore = create<DiffLayoutState>()((set) => ({
   layout: loadLayout(),
   setLayout: (layout) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, layout)
-    } catch {
-      return
-    } finally {
-      set({ layout })
-    }
+    writeStored(STORAGE_KEY, layout)
+    set({ layout })
   }
 }))

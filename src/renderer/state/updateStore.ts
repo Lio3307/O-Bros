@@ -2,15 +2,12 @@ import { create } from 'zustand'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
 import type { UpdateStatus } from '../../shared/types'
 import { toast } from './toastStore'
+import { readStored, writeStored } from './browserStorage'
 
 const AUTO_CHECK_KEY = 'o-bros.autoCheckUpdates'
 
 function readAutoCheck(): boolean {
-  try {
-    return localStorage.getItem(AUTO_CHECK_KEY) !== 'false'
-  } catch {
-    return true
-  }
+  return readStored(AUTO_CHECK_KEY) !== 'false'
 }
 
 interface UpdateState {
@@ -29,11 +26,7 @@ export const useUpdateStore = create<UpdateState>()((set) => ({
   isAutoCheckEnabled: readAutoCheck(),
 
   setAutoCheckEnabled: (isAutoCheckEnabled) => {
-    try {
-      localStorage.setItem(AUTO_CHECK_KEY, String(isAutoCheckEnabled))
-    } catch {
-      return
-    }
+    writeStored(AUTO_CHECK_KEY, String(isAutoCheckEnabled))
     set({ isAutoCheckEnabled })
   },
 

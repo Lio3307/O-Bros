@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { DEFAULT_COLOR_THEME_ID, isColorThemeId, type ColorThemeId } from '../theme/colorThemes'
+import { readStored, writeStored } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.colorTheme'
 
@@ -9,20 +10,12 @@ interface ColorThemeState {
 }
 
 function loadSavedThemeId(): ColorThemeId {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return isColorThemeId(saved) ? saved : DEFAULT_COLOR_THEME_ID
-  } catch {
-    return DEFAULT_COLOR_THEME_ID
-  }
+  const saved = readStored(STORAGE_KEY)
+  return isColorThemeId(saved) ? saved : DEFAULT_COLOR_THEME_ID
 }
 
 function saveThemeId(themeId: ColorThemeId): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, themeId)
-  } catch {
-    return
-  }
+  writeStored(STORAGE_KEY, themeId)
 }
 
 export const useColorThemeStore = create<ColorThemeState>()((set) => ({

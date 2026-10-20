@@ -3,6 +3,7 @@ import { friendlyErrorMessage } from '../../shared/friendlyError'
 import type { GitConflictSide, GitFileChange, GitStatus, ReviewFileRequest } from '../../shared/types'
 import { askToConfirm } from './confirmStore'
 import { toast } from './toastStore'
+import { isSameData } from '../../shared/sameData'
 
 export interface CommitFileSelection {
   hash: string
@@ -116,7 +117,7 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
         return
       }
       const status = await window.api.git.status(repoPath)
-      if (isQuiet(repoPath) && JSON.stringify(status) !== JSON.stringify(get().status)) {
+      if (isQuiet(repoPath) && !isSameData(status, get().status)) {
         applyStatus(repoPath, status)
       }
     },

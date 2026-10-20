@@ -1,9 +1,9 @@
 import { cp, lstat, mkdir, readdir, realpath, rename, rm, rmdir, stat, symlink, unlink } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { comparablePath, isPathInside } from '../../../shared/paths'
+import { IS_PATH_CASE_INSENSITIVE, entryExists } from '../fileSystem'
 
 const STAGING_SUFFIX = '.o-bros-moving'
-const IS_PATH_CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin'
 
 export interface FolderTotals {
   fileCount: number
@@ -11,15 +11,6 @@ export interface FolderTotals {
 }
 
 export class FolderMoveRefusal extends Error {}
-
-async function exists(path: string): Promise<boolean> {
-  try {
-    await lstat(path)
-    return true
-  } catch {
-    return false
-  }
-}
 
 export async function isLink(path: string): Promise<boolean> {
   try {
@@ -55,7 +46,7 @@ function isSameOrInside(childPath: string, parentPath: string): boolean {
 }
 
 async function isMissingOrEmptyFolder(path: string): Promise<boolean> {
-  if (!(await exists(path))) {
+  if (!(await entryExists(path))) {
     return true
   }
   return (await stat(path)).isDirectory() && (await readdir(path)).length === 0
@@ -94,7 +85,7 @@ export async function moveFolderAndLink(sourcePath: string, targetPath: string):
   if (await isLink(sourcePath)) {
     throw new FolderMoveRefusal(`${sourcePath} has already been moved.`)
   }
-  if (!(await exists(sourcePath)) || !(await stat(sourcePath)).isDirectory()) {
+  if (!(await entryExists(sourcePath)) || !(await stat(sourcePath)).isDirectory()) {
     throw new FolderMoveRefusal(`${sourcePath} does not exist yet, so there is nothing to move.`)
   }
   if (isSameOrInside(targetPath, sourcePath) || isSameOrInside(sourcePath, targetPath)) {
@@ -104,7 +95,7 @@ export async function moveFolderAndLink(sourcePath: string, targetPath: string):
     throw new FolderMoveRefusal(`${targetPath} already has files in it. Pick another folder or empty it first.`)
   }
   const stagingPath = sourcePath + STAGING_SUFFIX
-  if (await exists(stagingPath)) {
+  if (await entryExists(stagingPath)) {
     throw new FolderMoveRefusal(`${stagingPath} is left from an earlier move. Check its files, then delete or rename it.`)
   }
 
@@ -114,7 +105,7 @@ export async function moveFolderAndLink(sourcePath: string, targetPath: string):
     await linkFolder(sourcePath, targetPath)
   } catch (error) {
     await rm(targetPath, { recursive: true, force: true })
-    if (!(await exists(sourcePath))) {
+    if (!(await entryExists(sourcePath))) {
       await rename(stagingPath, sourcePath)
     }
     throw error
@@ -128,7 +119,7 @@ export async function moveFolderBack(linkPath: string): Promise<void> {
     throw new FolderMoveRefusal(`${linkPath} is not a moved folder.`)
   }
   const stagingPath = targetPath + STAGING_SUFFIX
-  if (await exists(stagingPath)) {
+  if (await entryExists(stagingPath)) {
     throw new FolderMoveRefusal(`${stagingPath} is left from an earlier move. Check its files, then delete or rename it.`)
   }
 

@@ -1,5 +1,6 @@
 import { BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
+import { devServerUrl, isRunningFromSource } from './runMode'
 import { writeLog } from './services/logging/logFile'
 
 const TITLE_BAR_HEIGHT = 36
@@ -31,7 +32,8 @@ export function createMainWindow(): BrowserWindow {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      spellcheck: false
+      spellcheck: false,
+      devTools: isRunningFromSource()
     }
   })
 
@@ -50,9 +52,9 @@ export function createMainWindow(): BrowserWindow {
     writeLog('error', 'The interface process stopped: ' + details.reason)
   })
 
-  const devServerUrl = process.env.ELECTRON_RENDERER_URL
-  if (devServerUrl !== undefined) {
-    void window.loadURL(devServerUrl)
+  const sourceUrl = devServerUrl()
+  if (sourceUrl !== null) {
+    void window.loadURL(sourceUrl)
   } else {
     void window.loadFile(join(__dirname, '../renderer/index.html'))
   }

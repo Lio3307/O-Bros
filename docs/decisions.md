@@ -457,3 +457,15 @@
 - Implementation / validation / outcome: Written / unit and e2e tests pass / not yet used day to day.
 - Result acceptance: Pending user feedback.
 - Learning: Polling only what is on screen, and skipping identical results, gives live panels at almost no cost.
+
+### Keep development and the installed app apart, and harden the installed app
+- Scope and goal: The user asked that the development session never reaches production and that the app and its architecture are safe in both.
+- Choice and authority: User-requested; design delegated. `src/main/runMode.ts` decides "running from source" with `app.isPackaged` only. From source, O-BROS uses the `o-bros-dev` data folder, may load the dev server URL, and has DevTools, Reload and "Dev:" toasts. The installed app uses `o-bros`, always loads its built page, has `devTools: false`, and ships with fuses that ignore `NODE_OPTIONS` and `--inspect` and encrypt cookies. Every `ipcMain.handle` refuses senders other than the O-BROS page.
+- Evidence: Audit of `window.ts`, `index.ts`, `applicationMenu.ts`, `handlerErrors.ts`, `electron-builder.yml`: the installed app honoured `ELECTRON_RENDERER_URL`, shared `%APPDATA%/o-bros` with `npm run dev`, and kept DevTools and Reload shortcuts. trustedSender.test.ts covers the sender check; the full e2e suite passes with the check on.
+- Alternatives and sacrifice: Turning off the `runAsNode` fuse was rejected because wot, the git guard and the lint tools run `O-BROS.exe` as Node; replacing that with a bundled Node or utility processes is a larger change. Packing the app into an asar archive with integrity checks was left out because the wot scripts and the terminal module must stay real files; it needs its own packaging test. The first `npm run dev` after this change starts with an empty `o-bros-dev` folder.
+- Residual risk/debt: `runAsNode` stays on, so the installed executable can be used as a Node interpreter by a program that already runs on the computer. `asar: false` means the installed files are not integrity-checked. The wot temp folder is shared between dev and the installed app.
+- Mitigation and revisit trigger: Revisit when the app is code-signed (asar integrity becomes meaningful) or if wot moves to utility processes, then turn `runAsNode` off.
+- Recovery and ownership: src/main/runMode.ts, src/main/ipc/trustedSender.ts, src/main/ipc/handlerErrors.ts, electron-builder.yml.
+- Implementation / validation / outcome: Written / unit tests and the full e2e suite pass; the same fuses applied to a copy of Electron with @electron/fuses still run the wot CLI and git guard as Node, ignore NODE_OPTIONS, and the app ignores --inspect. Local packaging failed on this machine before the fuse step (antivirus locked default_app.asar, with or without fuses), so the installer itself was not built here / not yet released.
+- Result acceptance: Pending user feedback.
+- Learning: Decide dev versus production in one place, from a value the user's environment cannot change.

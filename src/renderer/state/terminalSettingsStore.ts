@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { readAgentGitPolicy, type AgentGitPolicy } from '../../shared/agentGitPolicy'
+import { readStored, writeStored } from './browserStorage'
 
 export const SCROLLBACK_CHOICES = [1000, 2000, 5000, 10000]
 
@@ -20,50 +21,34 @@ interface TerminalSettingsState {
   setUseGpuRendering: (isEnabled: boolean) => void
 }
 
-function readStorage(key: string): string | null {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function writeStorage(key: string, value: string): void {
-  try {
-    localStorage.setItem(key, value)
-  } catch {
-    return
-  }
-}
-
 function loadScrollback(): number {
-  const saved = Number(readStorage(SCROLLBACK_KEY))
+  const saved = Number(readStored(SCROLLBACK_KEY))
   return SCROLLBACK_CHOICES.includes(saved) ? saved : DEFAULT_SCROLLBACK
 }
 
 export const useTerminalSettingsStore = create<TerminalSettingsState>()((set) => ({
   scrollback: loadScrollback(),
-  notifyWhenFinished: readStorage(NOTIFY_KEY) !== 'false',
-  agentGitPolicy: readAgentGitPolicy(readStorage(AGENT_GIT_KEY)),
-  useGpuRendering: readStorage(GPU_KEY) === 'true',
+  notifyWhenFinished: readStored(NOTIFY_KEY) !== 'false',
+  agentGitPolicy: readAgentGitPolicy(readStored(AGENT_GIT_KEY)),
+  useGpuRendering: readStored(GPU_KEY) === 'true',
 
   setScrollback: (scrollback) => {
-    writeStorage(SCROLLBACK_KEY, String(scrollback))
+    writeStored(SCROLLBACK_KEY, String(scrollback))
     set({ scrollback })
   },
 
   setNotifyWhenFinished: (notifyWhenFinished) => {
-    writeStorage(NOTIFY_KEY, String(notifyWhenFinished))
+    writeStored(NOTIFY_KEY, String(notifyWhenFinished))
     set({ notifyWhenFinished })
   },
 
   setAgentGitPolicy: (agentGitPolicy) => {
-    writeStorage(AGENT_GIT_KEY, agentGitPolicy)
+    writeStored(AGENT_GIT_KEY, agentGitPolicy)
     set({ agentGitPolicy })
   },
 
   setUseGpuRendering: (useGpuRendering) => {
-    writeStorage(GPU_KEY, String(useGpuRendering))
+    writeStored(GPU_KEY, String(useGpuRendering))
     set({ useGpuRendering })
   }
 }))

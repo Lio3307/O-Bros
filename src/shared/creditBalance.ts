@@ -1,3 +1,4 @@
+import { isRecord } from './isRecord'
 export interface CreditBalance {
   id: string
   name: string
@@ -8,10 +9,6 @@ export interface CreditBalance {
   remainingDollars: number | null
   isFreeTier: boolean
   errorMessage: string | null
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function dollarsOf(value: unknown): number | null {

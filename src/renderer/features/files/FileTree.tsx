@@ -7,6 +7,7 @@ import { useFileTreeStore } from '../../state/fileTreeStore'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { DRAGGED_PATH_TYPE } from './dragData'
 import { buildEntryMenuItems } from './fileTreeMenu'
+import { isSameData } from '../../../shared/sameData'
 
 interface FileTreeProps {
   directoryPath: string
@@ -119,7 +120,7 @@ export function FileTree({ directoryPath, depth, selectedPath, onOpenFile }: Fil
     setErrorMessage(null)
     window.api.files
       .list(directoryPath)
-      .then((found) => setEntries((shown) => (JSON.stringify(shown) === JSON.stringify(found) ? shown : found)))
+      .then((found) => setEntries((shown) => (isSameData(shown, found) ? shown : found)))
       .catch((error: unknown) => setErrorMessage(friendlyErrorMessage(error, 'Could not read this folder.')))
   }, [directoryPath, refreshToken])
 

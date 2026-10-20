@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { lastPathSegment } from '../../shared/paths'
 import type { AddRootResult, ProjectRoot } from '../../shared/types'
 import { toast } from './toastStore'
+import { isSameData } from '../../shared/sameData'
 
 interface ProjectsState {
   roots: ProjectRoot[]
@@ -39,7 +40,7 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => {
 
     load: async () => {
       const found = await window.api.projects.list()
-      const roots = JSON.stringify(found) === JSON.stringify(get().roots) ? get().roots : found
+      const roots = isSameData(found, get().roots) ? get().roots : found
       set({ roots, activeProjectPath: get().activeProjectPath ?? roots[0]?.path ?? null })
     },
 

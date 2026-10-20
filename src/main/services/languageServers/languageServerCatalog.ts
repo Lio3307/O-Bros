@@ -1,4 +1,4 @@
-import { access, readFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import {
   choiceFor,
@@ -10,6 +10,7 @@ import {
 } from '../../../shared/languageServers'
 import { isPathInside } from '../../../shared/paths'
 import { pathFolders } from '../agents/agentDetector'
+import { pathExists } from '../fileSystem'
 
 const SERVERS_PATH = join(__dirname, '../../resources/agents/language-servers.json')
 const ROOT_MARKERS = [
@@ -30,15 +31,6 @@ const WINDOWS_EXTENSIONS = ['.cmd', '.exe', '.bat']
 
 let definitions: LanguageServerDefinition[] | null = null
 
-async function exists(path: string): Promise<boolean> {
-  try {
-    await access(path)
-    return true
-  } catch {
-    return false
-  }
-}
-
 async function loadDefinitions(): Promise<LanguageServerDefinition[]> {
   definitions ??= parseLanguageServers(JSON.parse(await readFile(SERVERS_PATH, 'utf8')))
   return definitions
@@ -52,7 +44,7 @@ async function firstExisting(folders: string[], command: string): Promise<string
   for (const folder of folders) {
     for (const name of candidateNames(command)) {
       const candidate = join(folder, name)
-      if (await exists(candidate)) {
+      if (await pathExists(candidate)) {
         return candidate
       }
     }
@@ -65,7 +57,7 @@ export async function findWorkspaceRoot(filePath: string, projectRoot: string): 
   let folder = dirname(resolve(filePath))
   while (isPathInside(folder, boundary)) {
     for (const marker of ROOT_MARKERS) {
-      if (await exists(join(folder, marker))) {
+      if (await pathExists(join(folder, marker))) {
         return folder
       }
     }

@@ -1,10 +1,11 @@
 import { shell } from 'electron'
-import { access, mkdir, rename, writeFile } from 'node:fs/promises'
+import { mkdir, rename, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { findEntryNameProblem } from '../../shared/entryName'
 import type { CreateEntryRequest, RenameEntryRequest } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
 import { loadSettings } from '../settings'
+import { pathExists } from './fileSystem'
 
 const INVALID_NAME_MESSAGE = 'That name is not allowed.'
 const PROJECT_ROOT_MESSAGE = 'A project folder itself cannot be changed here. Remove it from Settings instead.'
@@ -19,15 +20,6 @@ async function assertNotProjectRoot(targetPath: string): Promise<void> {
   const { projectRoots } = await loadSettings()
   if (projectRoots.some((rootPath) => resolve(rootPath) === resolve(targetPath))) {
     throw new Error(PROJECT_ROOT_MESSAGE)
-  }
-}
-
-async function pathExists(targetPath: string): Promise<boolean> {
-  try {
-    await access(targetPath)
-    return true
-  } catch {
-    return false
   }
 }
 

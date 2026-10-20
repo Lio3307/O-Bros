@@ -7,6 +7,7 @@ import {
   type LintMode
 } from '../features/editor/editorSettings'
 import type { LanguageId } from '../features/editor/languageRegistry'
+import { readStoredJson, writeStoredJson } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.editorSettings'
 
@@ -19,12 +20,8 @@ interface EditorSettingsState extends EditorSettings {
 }
 
 function loadSavedSettings(): EditorSettings {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved === null ? defaultEditorSettings() : normalizeEditorSettings(JSON.parse(saved))
-  } catch {
-    return defaultEditorSettings()
-  }
+  const saved = readStoredJson(STORAGE_KEY)
+  return saved === null ? defaultEditorSettings() : normalizeEditorSettings(saved)
 }
 
 function pickSettings(state: EditorSettings): EditorSettings {
@@ -39,11 +36,7 @@ export function isLanguageEnabled(settings: EditorSettings, id: LanguageId): boo
 export const useEditorSettingsStore = create<EditorSettingsState>()((set, get) => {
   function change(changes: Partial<EditorSettings>): void {
     set(changes)
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(pickSettings(get())))
-    } catch {
-      return
-    }
+    writeStoredJson(STORAGE_KEY, pickSettings(get()))
   }
 
   return {

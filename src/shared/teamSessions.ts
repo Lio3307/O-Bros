@@ -1,5 +1,6 @@
 import { comparablePath } from './paths'
 import type { ProviderId } from './types'
+import { isRecord } from './isRecord'
 
 export interface TeamSessionRecord {
   memberId: string
@@ -30,10 +31,6 @@ function collapseSpaces(text: string): string {
 
 export function taskStartOf(task: string): string {
   return collapseSpaces(task).slice(0, TASK_MATCH_LENGTH)
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function isTeamSessionRecord(value: unknown): value is TeamSessionRecord {

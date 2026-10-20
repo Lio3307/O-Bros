@@ -1,3 +1,4 @@
+import { isRecord } from './isRecord'
 export type CommandAliases = Record<string, string>
 
 export interface AcpAgent {
@@ -17,12 +18,6 @@ export interface AgentSuggestion {
 const GENERIC_NAMES = ['cli', 'code', 'agent', 'server', 'app']
 const ACP_SUFFIX = '-acp'
 const CLI_SUFFIX = '-cli'
-
-type JsonRecord = Record<string, unknown>
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function withoutSuffix(text: string, suffix: string): string {
   return text.endsWith(suffix) ? text.slice(0, text.length - suffix.length) : text

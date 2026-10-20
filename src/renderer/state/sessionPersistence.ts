@@ -1,15 +1,12 @@
 import { parseSession, serializeSession, type SessionSnapshot } from '../features/terminal/sessionSnapshot'
 import { useWorkspaceStore } from './workspaceStore'
+import { readStored, writeStored } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.session'
 const SAVE_DELAY_MS = 500
 
 export function loadSavedSession(): SessionSnapshot | null {
-  try {
-    return parseSession(localStorage.getItem(STORAGE_KEY))
-  } catch {
-    return null
-  }
+  return parseSession(readStored(STORAGE_KEY))
 }
 
 export function startSessionPersistence(): () => void {
@@ -23,12 +20,8 @@ export function startSessionPersistence(): () => void {
       clearTimeout(saveTimer)
     }
     saveTimer = setTimeout(() => {
-      try {
-        const { tabs, activeTabId } = useWorkspaceStore.getState()
-        localStorage.setItem(STORAGE_KEY, serializeSession({ tabs, activeTabId }))
-      } catch {
-        return
-      }
+      const { tabs, activeTabId } = useWorkspaceStore.getState()
+      writeStored(STORAGE_KEY, serializeSession({ tabs, activeTabId }))
     }, SAVE_DELAY_MS)
   })
 

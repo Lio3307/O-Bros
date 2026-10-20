@@ -7,8 +7,7 @@ import { listProjectRoots } from '../services/projectScanner'
 import { findRepositories } from '../services/repositoryFinder'
 import { readProjectScripts } from '../services/scriptService'
 import { loadSettings, saveSettings } from '../settings'
-
-const IS_PATH_CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin'
+import { IS_PATH_CASE_INSENSITIVE } from '../services/fileSystem'
 
 async function addProjectRoot(title: unknown): Promise<AddRootResult> {
   const dialogTitle = typeof title === 'string' && title.trim() !== '' ? title : undefined

@@ -11,7 +11,7 @@ import {
   type TeamSessionRecord
 } from '../../../shared/teamSessions'
 import type { RemoveSessionsResult } from '../../../shared/types'
-import { readJsonIfExists } from '../fileSystem'
+import { IS_PATH_CASE_INSENSITIVE, readJsonIfExists } from '../fileSystem'
 import { removeSessions } from '../sessions/sessionRemoval'
 import { listSourceFiles, readSessionSources, type SourceFile } from '../sessions/sessionSources'
 import { TRANSCRIPT_EXTENSION } from '../sessions/transcriptFormat'
@@ -23,7 +23,6 @@ export interface TeamSessionFile {
   sizeBytes: number
 }
 
-const IS_PATH_CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin'
 const RESOLVE_WINDOW_MS = 24 * 60 * 60 * 1000
 
 let records: TeamSessionRecord[] = []

@@ -1,4 +1,4 @@
-import { access, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join } from 'node:path'
 import type { FormatRequest, FormatResult, LintRequest, LintResult } from '../../../shared/types'
@@ -6,18 +6,10 @@ import { assertInsideProjectRoots } from '../../pathGuard'
 import { parseOxlintReport } from './oxlintParser'
 import { LINT_TEMP_PREFIX } from '../storage/leftoverTempFolders'
 import { runBundledTool } from './toolRunner'
+import { pathExists } from '../fileSystem'
 
 const OXLINT_CONFIG_FILE = '.oxlintrc.json'
 const MAX_FAILURE_TEXT_LENGTH = 300
-
-async function fileExists(path: string): Promise<boolean> {
-  try {
-    await access(path)
-    return true
-  } catch {
-    return false
-  }
-}
 
 function failureText(stderr: string, stdout: string): string {
   const text = (stderr.trim() || stdout.trim()).slice(0, MAX_FAILURE_TEXT_LENGTH)
@@ -35,7 +27,7 @@ export async function lintContent(request: LintRequest): Promise<LintResult> {
     await writeFile(temporaryFile, request.content, 'utf8')
 
     const configPath = join(workingDirectory, OXLINT_CONFIG_FILE)
-    const configArgs = (await fileExists(configPath)) ? ['-c', configPath] : []
+    const configArgs = (await pathExists(configPath)) ? ['-c', configPath] : []
     const output = await runBundledTool('oxlint', {
       args: ['--format=json', ...configArgs, temporaryFile],
       workingDirectory

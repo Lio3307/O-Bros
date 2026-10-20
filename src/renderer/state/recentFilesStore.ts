@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { parseRecentFiles, pushRecentFile } from '../features/files/recentFiles'
+import { readStored, writeStoredJson } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.recentFiles'
 
@@ -10,19 +11,11 @@ interface RecentFilesState {
 }
 
 function readSaved(): string[] {
-  try {
-    return parseRecentFiles(localStorage.getItem(STORAGE_KEY))
-  } catch {
-    return []
-  }
+  return parseRecentFiles(readStored(STORAGE_KEY))
 }
 
 function saveRecentFiles(paths: string[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(paths))
-  } catch {
-    return
-  }
+  writeStoredJson(STORAGE_KEY, paths)
 }
 
 export const useRecentFilesStore = create<RecentFilesState>()((set, get) => ({

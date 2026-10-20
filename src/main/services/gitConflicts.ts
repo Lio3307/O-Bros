@@ -1,10 +1,11 @@
 import { execFile } from 'node:child_process'
-import { readFile, stat } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import { hasConflictMarkers } from '../../shared/conflictMarkers'
 import type { GitOperation, GitOperationKind, GitResolveRequest } from '../../shared/types'
 import { assertInsideProjectRoots, isInsideDirectory } from '../pathGuard'
+import { pathExists } from './fileSystem'
 
 const execFileAsync = promisify(execFile)
 const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
@@ -33,15 +34,6 @@ async function runGit(repoPath: string, args: string[]): Promise<string> {
     env: { ...process.env, GIT_EDITOR: 'true' }
   })
   return stdout
-}
-
-async function exists(path: string): Promise<boolean> {
-  try {
-    await stat(path)
-    return true
-  } catch {
-    return false
-  }
 }
 
 async function readTextIfExists(path: string): Promise<string | null> {
@@ -80,16 +72,16 @@ async function rebasedBranch(gitDir: string): Promise<string | null> {
 
 export async function readGitOperation(repoPath: string): Promise<GitOperation | null> {
   const gitDir = (await runGit(repoPath, ['rev-parse', '--absolute-git-dir'])).trim()
-  if (await exists(join(gitDir, 'MERGE_HEAD'))) {
+  if (await pathExists(join(gitDir, 'MERGE_HEAD'))) {
     return { kind: 'merge', incoming: await branchNameOf(repoPath, 'MERGE_HEAD') }
   }
-  if ((await exists(join(gitDir, 'rebase-merge'))) || (await exists(join(gitDir, 'rebase-apply')))) {
+  if ((await pathExists(join(gitDir, 'rebase-merge'))) || (await pathExists(join(gitDir, 'rebase-apply')))) {
     return { kind: 'rebase', incoming: await rebasedBranch(gitDir) }
   }
-  if (await exists(join(gitDir, 'CHERRY_PICK_HEAD'))) {
+  if (await pathExists(join(gitDir, 'CHERRY_PICK_HEAD'))) {
     return { kind: 'cherryPick', incoming: await commitSubject(repoPath, 'CHERRY_PICK_HEAD') }
   }
-  if (await exists(join(gitDir, 'REVERT_HEAD'))) {
+  if (await pathExists(join(gitDir, 'REVERT_HEAD'))) {
     return { kind: 'revert', incoming: await commitSubject(repoPath, 'REVERT_HEAD') }
   }
   return null

@@ -7,6 +7,7 @@ import {
   type ShortcutAction,
   type ShortcutMap
 } from '../../shared/shortcuts'
+import { readStored, writeStoredJson } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.shortcuts'
 
@@ -19,24 +20,12 @@ interface ShortcutsState {
   setRecording: (isRecording: boolean) => void
 }
 
-function readSaved(): string | null {
-  try {
-    return localStorage.getItem(STORAGE_KEY)
-  } catch {
-    return null
-  }
-}
-
 function save(shortcuts: ShortcutMap): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(shortcuts))
-  } catch {
-    return
-  }
+  writeStoredJson(STORAGE_KEY, shortcuts)
 }
 
 export const useShortcutsStore = create<ShortcutsState>()((set, get) => ({
-  shortcuts: parseShortcuts(readSaved()),
+  shortcuts: parseShortcuts(readStored(STORAGE_KEY)),
   isRecording: false,
 
   setShortcut: (action, shortcut) => {

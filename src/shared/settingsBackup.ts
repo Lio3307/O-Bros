@@ -1,3 +1,4 @@
+import { isRecord } from './isRecord'
 export const BACKUP_FORMAT = 'o-bros-settings'
 export const BACKUP_FORMAT_VERSION = 1
 export const SETTING_KEY_PREFIX = 'o-bros.'
@@ -30,10 +31,6 @@ export interface SettingsBackup {
 }
 
 export type BackupReadResult = { kind: 'ok'; backup: SettingsBackup } | { kind: 'invalid'; reason: string }
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function readableValue(stored: string): unknown {
   try {

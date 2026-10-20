@@ -1,4 +1,5 @@
 import type { AgentLogin } from './agentLogins'
+import { isRecord } from './isRecord'
 
 export type AgentNeeds = 'account' | 'api-key' | 'account-or-api-key'
 
@@ -16,10 +17,6 @@ const REQUIREMENT_TEXT: Record<AgentNeeds, string> = {
   account: 'Needs an account sign-in',
   'api-key': 'Needs an API key',
   'account-or-api-key': 'Needs an account sign-in or an API key'
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 export function parseAgentAuthRules(raw: unknown): AgentAuthRule[] {

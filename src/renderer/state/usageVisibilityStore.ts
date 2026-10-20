@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { readStoredJson, writeStoredJson } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.hiddenUsageProviders'
 
@@ -8,20 +9,12 @@ interface UsageVisibilityState {
 }
 
 function loadHiddenSources(): string[] {
-  try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
-  } catch {
-    return []
-  }
+  const parsed = readStoredJson(STORAGE_KEY)
+  return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : []
 }
 
 function saveHiddenSources(hiddenSources: string[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(hiddenSources))
-  } catch {
-    return
-  }
+  writeStoredJson(STORAGE_KEY, hiddenSources)
 }
 
 export const useUsageVisibilityStore = create<UsageVisibilityState>()((set, get) => ({

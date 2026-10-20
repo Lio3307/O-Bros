@@ -10,16 +10,9 @@ import {
 import { askToConfirm } from '../../../state/confirmStore'
 import { useProjectsStore } from '../../../state/projectsStore'
 import { toast } from '../../../state/toastStore'
+import { readStored } from '../../../state/browserStorage'
 
-function readStored(key: string): string | null {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function writeStored(key: string, value: string): void {
+function writeStoredOrFail(key: string, value: string): void {
   localStorage.setItem(key, value)
 }
 
@@ -71,7 +64,7 @@ export async function importSettings(): Promise<void> {
       return
     }
     for (const [key, value] of Object.entries(result.backup.settings)) {
-      writeStored(SETTING_KEY_PREFIX + key, storedValueOf(value))
+      writeStoredOrFail(SETTING_KEY_PREFIX + key, storedValueOf(value))
     }
     if (result.backup.projectFolders !== undefined && result.backup.projectFolders.length > 0) {
       await window.api.backup.addProjectFolders(result.backup.projectFolders)

@@ -1,3 +1,4 @@
+import { isRecord } from './isRecord'
 export interface AgentHistoryFolder {
   command: string
   title: string
@@ -8,10 +9,6 @@ export interface AgentHistoryFolder {
 
 const HOME_TOKEN = '{home}'
 const REQUIRED_TEXT_FIELDS = ['command', 'title', 'path', 'note']
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function isFolderEntry(entry: unknown): entry is AgentHistoryFolder {
   return (

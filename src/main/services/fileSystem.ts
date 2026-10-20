@@ -1,5 +1,7 @@
 import type { Dirent } from 'node:fs'
-import { readdir, readFile } from 'node:fs/promises'
+import { access, lstat, readdir, readFile, stat } from 'node:fs/promises'
+
+export const IS_PATH_CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin'
 
 function isMissingFileError(error: unknown): boolean {
   return error instanceof Error && 'code' in error && error.code === 'ENOENT'
@@ -39,5 +41,31 @@ export async function readJsonIfExists<T>(filePath: string): Promise<T | null> {
       return null
     }
     throw error
+  }
+}
+
+export async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
+export async function entryExists(path: string): Promise<boolean> {
+  try {
+    await lstat(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
+export async function isFolder(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isDirectory()
+  } catch {
+    return false
   }
 }

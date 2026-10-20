@@ -12,7 +12,14 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 ### Changed
 - **Pick any repository on the Git page.** A switcher at the top of the Changes panel lists every project folder, each with the repositories inside it (up to three levels down, such as `C:\xampp\htdocs\SmartPRO`). The folders are scanned in the background when the page opens, so the list opens quickly even for a whole drive. Choosing one no longer changes the selected project or hides that project's terminal tabs, and the command palette's fetch, pull and push act on the same repository. **Follow project** goes back to the folder of the selected project, which is what the page showed before. The side panel no longer stays empty when the folder is not a repository.
 
+### Security
+- **The installed app ignores the developer page address.** It always loads its own built page; before, setting `ELECTRON_RENDERER_URL` on a computer made the installed app load any address with full access to files and terminals.
+- **Running from source no longer shares data with the installed app.** `npm run dev` uses its own `o-bros-dev` data folder, so development settings, open tabs, saved keys, activity and logs never mix with the installed app's.
+- **DevTools and Reload are only available when running from source**, and the installed app ignores `NODE_OPTIONS` and `--inspect` (Electron fuses).
+- **Background requests are accepted only from the O-BROS window.** Every request from the interface is checked to come from O-BROS's own page.
+
 ### Fixed
+- **O-BROS could fail to start when browser storage is blocked.** The terminal font size was read without a guard. All saved interface settings now go through one helper that falls back to the defaults.
 - **A whole drive showed no repositories.** With a drive such as `C:\` added as a project folder, the repository list stopped at the first folder Windows does not let you read (`C:\Config.Msi`) and showed nothing, with "Error occurred in handler for 'projects:repositories'" in the log. Folders that cannot be read are now skipped.
 - **Collapsed project folders opened again.** A project folder collapsed on the Projects page expanded again after visiting another page or restarting. It now stays collapsed.
 

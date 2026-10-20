@@ -1,5 +1,5 @@
 import { dialog } from 'electron'
-import { lstat, mkdir, statfs } from 'node:fs/promises'
+import { mkdir, statfs } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import { formatBytes } from '../../../shared/format'
 import type { ConversationFolder, ConversationMoveResult, ConversationStorage } from '../../../shared/types'
@@ -10,6 +10,7 @@ import { agentProgramOf } from '../wot/agentCaller'
 import { directorySize } from './directorySize'
 import { readAgentHistoryFolders } from './dataLocations'
 import { FolderMoveRefusal, linkTarget, moveFolderAndLink, moveFolderBack } from './folderMove'
+import { entryExists } from '../fileSystem'
 
 interface ConversationPlace {
   title: string
@@ -20,15 +21,6 @@ interface ConversationPlace {
 }
 
 const PROVIDER_TITLES: Record<string, string> = { claude: 'Claude conversations', codex: 'Codex conversations' }
-
-async function exists(path: string): Promise<boolean> {
-  try {
-    await lstat(path)
-    return true
-  } catch {
-    return false
-  }
-}
 
 function accountFolderName(configDir: string): string {
   const name = basename(configDir)
@@ -55,7 +47,7 @@ async function listPlaces(): Promise<ConversationPlace[]> {
     holdsLogin: folder.holdsLogin
   }))
   const places = [...sessionPlaces, ...historyPlaces]
-  const present = await Promise.all(places.map((place) => exists(place.path)))
+  const present = await Promise.all(places.map((place) => entryExists(place.path)))
   return places.filter((_place, index) => present[index])
 }
 

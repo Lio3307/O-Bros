@@ -3,17 +3,18 @@ import type { AppUpdater } from 'electron-updater'
 import { IpcChannel } from '../../../shared/ipc'
 import { createSingleFlight } from '../../../shared/singleFlight'
 import { allowEveryWindowToClose } from '../../closeGuard'
+import { isRunningFromSource } from '../../runMode'
 import type { UpdateStatus } from '../../../shared/types'
 
 const RELEASES_URL = 'https://github.com/Lio3307/O-Bros/releases'
 const FAILURE_MESSAGE = 'Could not check for updates. Check your connection, or open the releases page.'
 
 let status: UpdateStatus = {
-  state: app.isPackaged ? 'idle' : 'unavailable',
+  state: isRunningFromSource() ? 'unavailable' : 'idle',
   currentVersion: app.getVersion(),
   latestVersion: null,
   percent: 0,
-  message: app.isPackaged ? null : 'Updates are only available in the installed app, not when running from source.'
+  message: isRunningFromSource() ? 'Updates are only available in the installed app, not when running from source.' : null
 }
 
 function publish(patch: Partial<UpdateStatus>): void {

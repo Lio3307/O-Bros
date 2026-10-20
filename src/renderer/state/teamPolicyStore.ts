@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { normalizeTeamPolicy, type TeamPolicy } from '../../shared/teamPolicy'
+import { readStoredJson, writeStoredJson } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.teamPolicy'
 
@@ -10,19 +11,11 @@ interface TeamPolicyState {
 }
 
 function loadPolicy(): TeamPolicy {
-  try {
-    return normalizeTeamPolicy(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null'))
-  } catch {
-    return normalizeTeamPolicy(null)
-  }
+  return normalizeTeamPolicy(readStoredJson(STORAGE_KEY))
 }
 
 function savePolicy(policy: TeamPolicy): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(policy))
-  } catch {
-    return
-  }
+  writeStoredJson(STORAGE_KEY, policy)
 }
 
 export const useTeamPolicyStore = create<TeamPolicyState>()((set, get) => ({

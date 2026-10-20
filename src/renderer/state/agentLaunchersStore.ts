@@ -6,6 +6,7 @@ import {
   toggleShownId,
   type AgentLauncher
 } from '../../shared/agentLaunchers'
+import { readStored, writeStoredJson } from './browserStorage'
 
 const LAUNCHERS_KEY = 'o-bros.agentLaunchers'
 const SHOWN_KEY = 'o-bros.shownAgents'
@@ -20,34 +21,18 @@ interface AgentLaunchersState {
   reset: () => void
 }
 
-function readStorage(key: string): string | null {
-  try {
-    return localStorage.getItem(key)
-  } catch {
-    return null
-  }
-}
-
-function writeStorage(key: string, value: unknown): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    return
-  }
-}
-
 export const useAgentLaunchersStore = create<AgentLaunchersState>()((set, get) => {
-  const savedLaunchers = parseAgentLaunchers(readStorage(LAUNCHERS_KEY)) ?? DEFAULT_AGENT_LAUNCHERS
+  const savedLaunchers = parseAgentLaunchers(readStored(LAUNCHERS_KEY)) ?? DEFAULT_AGENT_LAUNCHERS
 
   function replace(launchers: AgentLauncher[], shownIds: string[]): void {
-    writeStorage(LAUNCHERS_KEY, launchers)
-    writeStorage(SHOWN_KEY, shownIds)
+    writeStoredJson(LAUNCHERS_KEY, launchers)
+    writeStoredJson(SHOWN_KEY, shownIds)
     set({ launchers, shownIds })
   }
 
   return {
     launchers: savedLaunchers,
-    shownIds: parseShownIds(readStorage(SHOWN_KEY), savedLaunchers),
+    shownIds: parseShownIds(readStored(SHOWN_KEY), savedLaunchers),
 
     add: (name, command) => {
       replace([...get().launchers, { id: crypto.randomUUID(), name, command }], get().shownIds)

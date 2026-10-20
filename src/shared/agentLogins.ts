@@ -1,3 +1,4 @@
+import { isRecord } from './isRecord'
 export type AgentLoginKind = 'account' | 'api-keys' | 'none' | 'unknown'
 
 export interface AgentLogin {
@@ -29,10 +30,6 @@ const KNOWN_PROVIDER_NAMES: Record<string, string> = {
 }
 
 const OAUTH_TYPES = ['oauth', 'wellknown']
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 export function providerDisplayName(id: string): string {
   const known = KNOWN_PROVIDER_NAMES[id.toLowerCase()]

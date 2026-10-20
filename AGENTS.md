@@ -62,3 +62,15 @@ Technical decisions and their rationale live in `docs/decisions.md`. Read it bef
   Reason: Not stated by the user; chosen to keep trust boundaries explicit.
   Evidence: Agent-selected layout; example in `src/shared/ipc.ts`.
   Status: Provisional, not yet confirmed by the user.
+
+- Scope: src/main
+  Convention: Development and the installed app never share data or behaviour. Decide "running from source" only through `src/main/runMode.ts` (`isRunningFromSource`, `dataFolderName`, `devServerUrl`), never through `process.env.ELECTRON_RENDERER_URL` or `app.isPackaged` directly. Dev-only tools (DevTools, Reload, "Dev:" toasts, loading a URL) must stay behind it. Every `ipcMain.handle` goes through `handlerErrors.ts`, which refuses senders other than the O-BROS page.
+  Reason: The user asked that the development session is never brought into production and that the app is safe in both.
+  Evidence: User request; `src/main/runMode.ts`, `src/main/ipc/trustedSender.test.ts`.
+  Status: User-directed.
+
+- Scope: whole repository
+  Convention: Reuse the shared helpers instead of writing local copies: `isRecord` (`src/shared/isRecord.ts`), `isSameData` (`src/shared/sameData.ts`), `readStored`, `readStoredJson`, `writeStored`, `writeStoredJson` for localStorage (`src/renderer/state/browserStorage.ts`, never call localStorage directly), `pathExists`, `entryExists`, `isFolder`, `IS_PATH_CASE_INSENSITIVE` (`src/main/services/fileSystem.ts`), and `useLiveRefresh` for panels that must stay current (`src/renderer/ui/useLiveRefresh.ts`).
+  Reason: The user asked to make repeated logic reusable; these replaced 13, 18, 9 and 5 copies.
+  Evidence: User request; the files named above.
+  Status: User-directed.

@@ -1,6 +1,7 @@
 import type { AccountRef } from '../../../shared/types'
 import type { FileTab, TerminalPaneInfo, TerminalTab, WorkspaceTab } from '../../state/workspaceStore'
 import { clampSplitRatio, listPaneIds, type PaneLayout } from './paneTree'
+import { isRecord } from '../../../shared/isRecord'
 
 export interface SessionSnapshot {
   tabs: WorkspaceTab[]
@@ -8,10 +9,6 @@ export interface SessionSnapshot {
 }
 
 type JsonRecord = Record<string, unknown>
-
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === 'string'

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { readStored, writeStored } from './browserStorage'
 
 const DEFAULT_FONT_SIZE = 13
 const MIN_FONT_SIZE = 8
@@ -17,14 +18,14 @@ function clampFontSize(size: number): number {
 }
 
 function loadSavedFontSize(): number {
-  const saved = Number(localStorage.getItem(STORAGE_KEY))
+  const saved = Number(readStored(STORAGE_KEY))
   return saved > 0 ? clampFontSize(saved) : DEFAULT_FONT_SIZE
 }
 
 export const useTerminalFontStore = create<TerminalFontState>()((set, get) => {
   function changeTo(size: number): void {
     const fontSize = clampFontSize(size)
-    localStorage.setItem(STORAGE_KEY, String(fontSize))
+    writeStored(STORAGE_KEY, String(fontSize))
     set({ fontSize })
   }
 

@@ -1,3 +1,4 @@
+import { isRecord } from './isRecord'
 export type ProviderProtocol = 'anthropic' | 'openai'
 
 export interface CustomProvider {
@@ -15,10 +16,6 @@ export type CustomProviderDraft = Omit<CustomProvider, 'id'>
 const PROTOCOLS: ProviderProtocol[] = ['anthropic', 'openai']
 const WEB_PROTOCOLS = ['http:', 'https:']
 const KEY_HINT_LENGTH = 4
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function tokensOf(value: unknown): number | null {
   return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null

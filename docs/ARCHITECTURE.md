@@ -59,13 +59,29 @@ The window is created with `contextIsolation` on, `nodeIntegration` off and the 
 
 `src/main/index.ts` runs these steps in order:
 
-1. Use the `o-bros` data folder, and turn off the graphics card if you chose that in Settings (it must happen before Electron is ready).
-2. Register every IPC handler (`src/main/ipc/*`).
+1. Pick the data folder, and turn off the graphics card if you chose that in Settings (it must happen before Electron is ready).
+2. Register every IPC handler (`src/main/ipc/*`). Each `ipcMain.handle` goes through `handlerErrors.ts`, which refuses calls that do not come from the O-BROS page (`trustedSender.ts`) and logs failures.
 3. Start the wot server on a free port of `127.0.0.1`.
 4. Open the window and connect the bridge that lets main ask the window questions.
 5. Start watching for agents you start by typing their name in a plain terminal, so Activity can show them (`typedAgents.ts`).
 
 On quit, main stops the wot server, every terminal and every language server. Closing the window first asks the renderer, which can warn about unsaved files and running tasks (`closeGuard.ts`).
+
+### Running from source and the installed app
+
+`src/main/runMode.ts` is the only place that tells them apart, and it uses `app.isPackaged`, which an environment variable cannot change.
+
+| | Running from source (`npm run dev`, e2e) | Installed app |
+|---|---|---|
+| Data folder (settings, open tabs, localStorage, provider keys, logs, activity) | `%APPDATA%/o-bros-dev` | `%APPDATA%/o-bros` |
+| Page loaded | The dev server in `ELECTRON_RENDERER_URL`, or the built page | Always the built page; `ELECTRON_RENDERER_URL` is ignored |
+| DevTools and Reload | In the View menu | Turned off (`devTools: false`) |
+| Background errors | Logged and shown as a "Dev:" toast | Logged only |
+| Updates | Not checked | Checked on GitHub |
+
+e2e tests pass their own `--user-data-dir`, so they never touch either folder. The wot task folder in the system temp folder is shared; its files are short-lived and uniquely named.
+
+The installer sets Electron fuses in `electron-builder.yml`: `NODE_OPTIONS` and `--inspect` are ignored and cookies are encrypted. `runAsNode` stays on because wot, the git guard and the lint tools run `O-BROS.exe` as Node (`ELECTRON_RUN_AS_NODE`); that is the one fuse an attacker who can already run programs on the computer could still use.
 
 ## The IPC contract
 
@@ -301,7 +317,7 @@ Each store is a small Zustand store with one job (`workspaceStore` for tabs, `pr
 
 | Data | Where |
 |---|---|
-| Project folders, graphics card setting, chosen conversation folder | `settings.json` in the user-data folder (`%APPDATA%/o-bros` on Windows) |
+| Project folders, graphics card setting, chosen conversation folder | `settings.json` in the user-data folder (`%APPDATA%/o-bros` on Windows, `o-bros-dev` when running from source) |
 | Agent conversations you moved | `<chosen folder>/<agent>`, with a junction (Windows) or symlink in the agent's old folder. Done by `folderMove.ts`: rename the old folder (fails if a file is in use), copy and compare file count and bytes, link, then delete the old copy; any failure puts the files back. `conversationFolders.ts` refuses while the agent's process runs or the target lacks space. |
 | Custom provider keys | `provider-keys.json` in the user-data folder, encrypted |
 | Activity log | `activity.json` in the user-data folder |

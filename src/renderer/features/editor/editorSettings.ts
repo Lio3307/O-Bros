@@ -1,4 +1,5 @@
 import { LANGUAGE_IDS, type LanguageId } from './languageRegistry'
+import { isRecord } from '../../../shared/isRecord'
 
 export type LintMode = 'off' | 'on-save' | 'as-you-type'
 
@@ -25,10 +26,6 @@ export function defaultEditorSettings(): EditorSettings {
     autoSaveEnabled: false,
     autoSaveDelayMs: AUTO_SAVE_DEFAULT_DELAY_MS
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function isLanguageId(value: unknown): value is LanguageId {

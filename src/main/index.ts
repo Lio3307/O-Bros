@@ -29,12 +29,11 @@ import { startWotServer, stopWotServer } from './services/wot/wotServer'
 import { guardWindowClose } from './closeGuard'
 import { createMainWindow } from './window'
 import { applyHardwareAccelerationSetting } from './hardwareAcceleration'
-
-const DATA_FOLDER_NAME = 'o-bros'
+import { dataFolderName } from './runMode'
 
 function keepDataFolderName(): void {
   if (!app.commandLine.hasSwitch('user-data-dir')) {
-    app.setPath('userData', join(app.getPath('appData'), DATA_FOLDER_NAME))
+    app.setPath('userData', join(app.getPath('appData'), dataFolderName()))
   }
 }
 

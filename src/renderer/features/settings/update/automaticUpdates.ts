@@ -2,25 +2,18 @@ import { readAnnouncedUpdates, updateNoticeFor, type AnnouncedUpdates } from '..
 import { restartToUpdate } from '../../../state/restartToUpdate'
 import { toast } from '../../../state/toastStore'
 import { useUpdateStore } from '../../../state/updateStore'
+import { readStoredJson, writeStoredJson } from '../../../state/browserStorage'
 
 const FIRST_CHECK_DELAY_MS = 30_000
 const CHECK_EVERY_MS = 6 * 60 * 60 * 1000
 const ANNOUNCED_KEY = 'o-bros.announcedUpdates'
 
 function loadAnnounced(): AnnouncedUpdates {
-  try {
-    return readAnnouncedUpdates(JSON.parse(localStorage.getItem(ANNOUNCED_KEY) ?? 'null'))
-  } catch {
-    return {}
-  }
+  return readAnnouncedUpdates(readStoredJson(ANNOUNCED_KEY))
 }
 
 function saveAnnounced(announced: AnnouncedUpdates): void {
-  try {
-    localStorage.setItem(ANNOUNCED_KEY, JSON.stringify(announced))
-  } catch {
-    return
-  }
+  writeStoredJson(ANNOUNCED_KEY, announced)
 }
 
 function announceIfNew(): void {

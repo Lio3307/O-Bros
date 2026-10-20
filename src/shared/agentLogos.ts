@@ -1,3 +1,4 @@
+import { isRecord } from './isRecord'
 export type AgentLogoStyle = 'color' | 'mono'
 
 export interface AgentLogo {
@@ -12,10 +13,6 @@ export interface AgentLogoEntry {
 
 const LOGO_EXTENSION = '.svg'
 const FORBIDDEN_FILE_PARTS = ['/', '\\', '..']
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function isSafeFileName(file: string): boolean {
   return file.endsWith(LOGO_EXTENSION) && !FORBIDDEN_FILE_PARTS.some((part) => file.includes(part))

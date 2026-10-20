@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { providerIdForCommand } from '../../shared/agentLaunchers'
 import { parseCustomProviders, type CustomProvider, type CustomProviderDraft } from '../../shared/customProviders'
 import { useAgentLaunchersStore } from './agentLaunchersStore'
+import { readStoredJson, writeStoredJson } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.customProviders'
 
@@ -15,19 +16,11 @@ interface CustomProvidersState {
 }
 
 function readSaved(): CustomProvider[] {
-  try {
-    return parseCustomProviders(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]'))
-  } catch {
-    return []
-  }
+  return parseCustomProviders(readStoredJson(STORAGE_KEY) ?? [])
 }
 
 function writeSaved(providers: CustomProvider[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(providers))
-  } catch {
-    return
-  }
+  writeStoredJson(STORAGE_KEY, providers)
 }
 
 export const useCustomProvidersStore = create<CustomProvidersState>()((set, get) => {

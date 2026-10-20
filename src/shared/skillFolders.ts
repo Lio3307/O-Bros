@@ -1,4 +1,5 @@
 import type { ProviderId } from './types'
+import { isRecord } from './isRecord'
 
 export interface SkillFolderRule {
   id: string
@@ -23,10 +24,6 @@ export interface SkillPlace {
 const HOME_TOKEN = '{home}'
 const ACCOUNT_TOKEN_START = '{account:'
 const PROVIDERS: ProviderId[] = ['claude', 'codex']
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 export function parseSkillFolderRules(raw: unknown): SkillFolderRule[] {
   if (!isRecord(raw) || !Array.isArray(raw.folders)) {

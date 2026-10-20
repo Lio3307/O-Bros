@@ -1,3 +1,4 @@
+import { isRecord } from './isRecord'
 export interface LanguageServerDefinition {
   id: string
   title: string
@@ -49,10 +50,6 @@ const LANGUAGE_ID_BY_EXTENSION: Record<string, string> = {
   jsx: 'javascriptreact',
   c: 'c',
   h: 'c'
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function isTextList(value: unknown): value is string[] {

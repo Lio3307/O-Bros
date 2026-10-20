@@ -1,4 +1,5 @@
 import { Menu, type MenuItemConstructorOptions } from 'electron'
+import { isRunningFromSource } from './runMode'
 
 export function buildApplicationMenu(): Menu {
   const isMac = process.platform === 'darwin'
@@ -8,7 +9,9 @@ export function buildApplicationMenu(): Menu {
     { role: 'editMenu' },
     {
       label: 'View',
-      submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }, { role: 'togglefullscreen' }]
+      submenu: isRunningFromSource()
+        ? [{ role: 'reload' }, { role: 'toggleDevTools' }, { role: 'togglefullscreen' }]
+        : [{ role: 'togglefullscreen' }]
     },
     { role: 'windowMenu' }
   ]
