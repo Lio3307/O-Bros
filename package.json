@@ -21,7 +21,7 @@
     "@lydell/node-pty": "^1.0.0",
     "electron-updater": "^6.8.9",
     "oxfmt": "^0.72.0",
-    "oxlint": "^1.87.0"
+    "oxlint": "^1.88.0"
   },
   "devDependencies": {
     "@codemirror/autocomplete": "^6.20.3",
