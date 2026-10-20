@@ -1,6 +1,7 @@
 import type { Diagnostic } from '@codemirror/lint'
 import { LSPPlugin, type LSPClient, type LSPClientExtension } from '@codemirror/lsp-client'
 import { ViewPlugin, type ViewUpdate } from '@codemirror/view'
+import { fileUriToPath } from '../../../../shared/fileUri'
 import { showServerDiagnostics } from '../diagnosticsBoard'
 
 const SYNC_DELAY_MS = 500
@@ -51,13 +52,15 @@ function handlePublish(client: LSPClient, params: PublishDiagnosticsParams): boo
   }
   const view = file.getView()
   const plugin = view === null ? null : LSPPlugin.get(view)
-  if (view === null || plugin === null) {
+  const filePath = fileUriToPath(file.uri)
+  if (view === null || plugin === null || filePath === null) {
     return false
   }
   const toOffset = (position: ServerDiagnostic['range']['start']) =>
     plugin.unsyncedChanges.mapPos(plugin.fromPosition(position, plugin.syncedDoc))
   showServerDiagnostics(
     view,
+    filePath,
     params.diagnostics.map((item) => ({
       from: toOffset(item.range.start),
       to: toOffset(item.range.end),

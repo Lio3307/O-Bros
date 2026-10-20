@@ -46,6 +46,7 @@ test('gives TypeScript code intelligence from the installed language server', as
     await openFile(app, 'main.ts')
 
     await expect(app.window.locator('.cm-lintRange-error').first()).toBeVisible({ timeout: SERVER_TIMEOUT_MS })
+    await expect(app.window.getByTitle('Problems in open files').locator('.status-percent').first()).toHaveText('1')
 
     await app.window.locator('.cm-line').filter({ hasText: "greetUser('Ada')" }).getByText('greetUser').hover()
     await expect(app.window.locator('.cm-tooltip', { hasText: 'greetUser(name: string): string' }).first()).toBeVisible({

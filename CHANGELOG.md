@@ -79,6 +79,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Prompts and Send to terminal.** The prompt list (`Ctrl+Shift+L`, the Prompts button in the tab bar and Settings → Prompts), Send selection to terminal in the editor (`Ctrl+Shift+Enter` and its right-click menu) and the Send to terminal button in the diff view are gone. Saved prompts are no longer exported, and older backups that contain them still import.
 
 ### Fixed
+- **Problems counts language server errors.** Errors from a language server were underlined in the editor but the Problems count in the status bar stayed at 0; it now counts them with oxlint's.
 - **A long diff could not be scrolled.** The diff grew taller than the window instead of scrolling; it now scrolls in both layouts.
 - **Usage in the status bar lists what you have.** Settings → Agents showed Claude and Codex even when they were not installed, and OpenRouter credit could not be hidden. The list now shows Claude and Codex only when installed or signed in, plus every credit O-BROS reads (OpenRouter, with where its key comes from), each with its own switch.
 - **Pages use the whole width.** Settings pages were capped at 920 pixels, which left an empty band on the right and put the scrollbar in the middle of a wide window; they now fill the main area. Empty screens such as History before you pick a session centre their text in the whole area instead of sticking to the left.
