@@ -77,6 +77,7 @@ Files larger than 2 MB are not opened.
 
 ## Git (Changes panel)
 
+- Repository switcher at the top: pick any repository inside your project folders (a folder such as `E:` lists every repository up to three levels down). Your selected project and terminal tabs stay as they are. **Follow project** goes back to showing the selected project.
 - Branch card: current branch, tracking branch, ahead and behind counts, last fetch time and a fetch button.
 - Click the branch name to switch to another local branch.
 - Stage, unstage or discard a file, or stage and unstage all. Discarding asks first; a new file goes to the Recycle Bin.

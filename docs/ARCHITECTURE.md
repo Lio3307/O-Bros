@@ -203,6 +203,7 @@ flowchart LR
     CA --> CO["Commit merge / Continue<br/>or Abort"]
 ```
 
+- The panel shows the repository in `gitRepositoryStore.ts`: the selected project, or a repository you picked in the switcher at the top. Picking one there does not change the selected project or the terminal tabs, and the command palette's fetch, pull and push use the same repository.
 - The status parser and the diff parser split text by hand; there are no regular expressions.
 - In a diff, each removed line is compared word by word with the added line in the same place, and only the changed words get the strong colour. A line rewritten completely stays plain red and green.
 - Conflicts come from the unmerged (`u`) lines of `git status` and the state files in the git folder (`MERGE_HEAD`, `rebase-merge` or `rebase-apply`, `CHERRY_PICK_HEAD`, `REVERT_HEAD`). The code is in `src/main/services/gitConflicts.ts` and `src/renderer/features/changes/ConflictSection.tsx`.

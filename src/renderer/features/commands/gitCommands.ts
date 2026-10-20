@@ -1,6 +1,6 @@
 import { useChangesStore } from '../../state/changesStore'
 import { useLayoutStore } from '../../state/layoutStore'
-import { useProjectsStore } from '../../state/projectsStore'
+import { gitRepositoryPath } from '../../state/gitRepositoryStore'
 import { useStashStore } from '../../state/stashStore'
 import { toast } from '../../state/toastStore'
 import { createBranchFlow } from '../changes/branchFlows'
@@ -8,7 +8,7 @@ import type { AppCommand } from './commandTypes'
 
 function withRepository(action: (repoPath: string) => void | Promise<unknown>): () => void | Promise<unknown> {
   return () => {
-    const repoPath = useProjectsStore.getState().activeProjectPath
+    const repoPath = gitRepositoryPath()
     if (repoPath === null) {
       toast.warning('Open a folder in Projects first.')
       return undefined

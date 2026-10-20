@@ -225,3 +225,28 @@ test('shows a changed file side by side, before on the left and after on the rig
   expect(scrolled.height).toBeLessThan(await app.window.evaluate(() => window.innerHeight))
   await expect.poll(() => beforeColumn.evaluate((element) => element.scrollTop)).toBe(scrolled.top)
 })
+
+test('switches the Git page to any repository without changing the selected project', async () => {
+  const nestedRepository = join(app.projectFolder, 'group', 'service')
+  await mkdir(nestedRepository, { recursive: true })
+  await writeFile(join(nestedRepository, 'readme.txt'), 'nested\n', 'utf8')
+  const gitIn = (...args: string[]) =>
+    execFileAsync('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', ...args], { cwd: nestedRepository })
+  await gitIn('init')
+  await gitIn('add', 'readme.txt')
+  await gitIn('commit', '-m', 'Nested commit')
+
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.getByTitle('Changes', { exact: true }).click()
+  await expect(app.window.locator('.folder-overview-name')).toHaveText('sample-project', { timeout: 15_000 })
+
+  await app.window.locator('.repository-switch').click()
+  await app.window.locator('.popup-menu-item', { hasText: 'service' }).click()
+  await expect(app.window.getByText('Nested commit', { exact: true })).toBeVisible({ timeout: 15_000 })
+  await expect(app.window.locator('.repository-switch')).toHaveText('service')
+  await expect(app.window.locator('.title-bar-title')).toContainText('sample-project')
+
+  await app.window.locator('.repository-switch').click()
+  await app.window.locator('.popup-menu-item', { hasText: 'Follow project' }).click()
+  await expect(app.window.locator('.folder-overview-name')).toHaveText('sample-project', { timeout: 15_000 })
+})

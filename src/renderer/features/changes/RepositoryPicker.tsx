@@ -3,8 +3,7 @@ import { useEffect, useState } from 'react'
 import { resolvePath } from '../../../shared/paths'
 import { groupRepositoriesByFolder } from '../../../shared/repositoryGroups'
 import type { RepositoryEntry } from '../../../shared/types'
-import { useProjectsStore } from '../../state/projectsStore'
-import { useRepositoryOriginStore } from '../../state/repositoryOriginStore'
+import { useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { LoadingText } from '../../ui/LoadingText'
 
 function repositoryCountText(count: number): string {
@@ -12,8 +11,7 @@ function repositoryCountText(count: number): string {
 }
 
 export function RepositoryPicker({ folderPath }: { folderPath: string }) {
-  const selectProject = useProjectsStore((state) => state.selectProject)
-  const setOrigin = useRepositoryOriginStore((state) => state.setOrigin)
+  const openRepository = useGitRepositoryStore((state) => state.open)
   const [repositories, setRepositories] = useState<RepositoryEntry[] | null>(null)
 
   useEffect(() => {
@@ -29,8 +27,7 @@ export function RepositoryPicker({ folderPath }: { folderPath: string }) {
   }, [folderPath])
 
   function open(path: string): void {
-    setOrigin(folderPath)
-    selectProject(path)
+    openRepository(path, folderPath)
   }
 
   if (repositories === null) {

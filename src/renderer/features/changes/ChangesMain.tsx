@@ -1,6 +1,6 @@
 import { FileDiff, Network, type LucideIcon } from 'lucide-react'
 import { useChangesStore, type ChangesView } from '../../state/changesStore'
-import { useProjectsStore } from '../../state/projectsStore'
+import { useGitRepositoryPath } from '../../state/gitRepositoryStore'
 import { LoadingText } from '../../ui/LoadingText'
 import { Button } from '../../ui/Button'
 import { CommitGraphView } from './CommitGraphView'
@@ -19,12 +19,12 @@ export function ChangesMain() {
   const status = useChangesStore((state) => state.status)
   const loadedPath = useChangesStore((state) => state.loadedPath)
   const errorMessage = useChangesStore((state) => state.errorMessage)
-  const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
+  const repoPath = useGitRepositoryPath()
 
-  if (activeProjectPath === null) {
+  if (repoPath === null) {
     return <div className="changes-main"><p className="panel-empty">No folder selected. Open one in Projects first.</p></div>
   }
-  if (loadedPath !== activeProjectPath) {
+  if (loadedPath !== repoPath) {
     return (
       <div className="changes-main">
         <p className="panel-empty"><LoadingText text="Reading the folder…" /></p>
@@ -34,7 +34,7 @@ export function ChangesMain() {
   if (status === null) {
     return (
       <div className="changes-main">
-        <FolderOverview folderPath={activeProjectPath} message={errorMessage ?? 'This folder is not a git repository.'} />
+        <FolderOverview folderPath={repoPath} message={errorMessage ?? 'This folder is not a git repository.'} />
       </div>
     )
   }

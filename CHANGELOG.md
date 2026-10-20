@@ -4,6 +4,9 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Changed
+- **Pick any repository on the Git page.** A switcher at the top of the Changes panel lists every repository in your project folders. Choosing one no longer changes the selected project or hides that project's terminal tabs, and the command palette's fetch, pull and push act on the same repository. **Follow project** goes back to the folder of the selected project, which is what the page showed before. The side panel no longer stays empty when the folder is not a repository.
+
 ## [0.1.5] - 2026-10-20
 
 ### Added

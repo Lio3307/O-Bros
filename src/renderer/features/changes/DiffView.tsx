@@ -3,7 +3,7 @@ import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { useEffect, useState } from 'react'
 import type { GitDiffRequest, GitFileChange, ReviewFileRequest } from '../../../shared/types'
 import { useChangesStore, type CommitFileSelection } from '../../state/changesStore'
-import { useProjectsStore } from '../../state/projectsStore'
+import { useGitRepositoryPath } from '../../state/gitRepositoryStore'
 import { useDiffLayoutStore, type DiffLayout } from '../../state/diffLayoutStore'
 import { SegmentedControl } from '../../ui/SegmentedControl'
 import { DiffBody } from './DiffBody'
@@ -74,7 +74,7 @@ function chooseTarget(
 }
 
 export function DiffView() {
-  const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
+  const repoPath = useGitRepositoryPath()
   const selectedChange = useChangesStore((state) => state.selectedChange)
   const selectedCommitFile = useChangesStore((state) => state.selectedCommitFile)
   const selectedReview = useChangesStore((state) => state.selectedReview)
@@ -86,19 +86,19 @@ export function DiffView() {
   const target = chooseTarget(selectedChange, selectedCommitFile, selectedReview)
 
   useEffect(() => {
-    if (activeProjectPath === null || target === null) {
+    if (repoPath === null || target === null) {
       setDiffText('')
       return
     }
     setErrorMessage(null)
     const loading =
       target.review === null
-        ? window.api.git.diff({ repoPath: activeProjectPath, ...target.request })
+        ? window.api.git.diff({ repoPath: repoPath, ...target.request })
         : window.api.git.reviewDiff(target.review)
     loading
       .then(setDiffText)
       .catch((error: unknown) => setErrorMessage(friendlyErrorMessage(error, 'Could not load this diff.')))
-  }, [activeProjectPath, selectedChange, selectedCommitFile, selectedReview])
+  }, [repoPath, selectedChange, selectedCommitFile, selectedReview])
 
   if (target === null) {
     return (

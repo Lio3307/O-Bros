@@ -421,3 +421,15 @@
 - Implementation / validation / outcome: Written / unit and e2e / pending user feedback.
 - Result acceptance: Pending user feedback.
 - Learning: Keep secrets on the side that uses them; the window only needs to know that a key exists.
+
+### The Git page keeps its own repository
+- Scope and goal: Let the user look at any repository from the Changes panel. Before, it only showed the selected project, which follows the active terminal, and opening a repository from its list moved the Projects selection and hid that project's terminal tabs.
+- Choice and authority: User-requested ("it only open the directory/folder that user currently work on terminal"). The design was delegated to the agent. `gitRepositoryStore.ts` holds a pinned repository; when nothing is pinned, the page follows the selected project as before. A switcher at the top of the side panel lists the repositories of every project folder plus **Follow project**. The Changes views and the command palette's git commands read the same path. The old `repositoryOriginStore.ts` was merged into it.
+- Evidence: e2e/git.e2e.ts "switches the Git page to any repository without changing the selected project" checks the title bar keeps the project while the page shows another repository, and that Follow project returns. All git, conflict and palette e2e tests and `npm run check` pass. Screenshots were reviewed.
+- Alternatives and sacrifice: Only filling the empty side panel was rejected because picking a repository would still move the Projects selection and hide tabs. Once a repository is picked, the page stays on it when you switch terminals; Follow project undoes that.
+- Residual risk/debt: The switcher lists only repositories inside project folders, up to three levels deep and 100 per folder (`repositoryFinder.ts`), and scans each time it opens. The pin is not saved across restarts.
+- Mitigation and revisit trigger: Revisit if users expect the pin to survive a restart, if opening the switcher feels slow on a large drive, or if users expect the page to jump back to the project when they switch terminals.
+- Recovery and ownership: src/renderer/state/gitRepositoryStore.ts, src/renderer/features/changes/RepositorySwitcher.tsx.
+- Implementation / validation / outcome: Written / e2e and unit tests pass / not yet used by the user.
+- Result acceptance: Pending user feedback.
+- Learning: A page that browses things should own its selection instead of borrowing a global one.

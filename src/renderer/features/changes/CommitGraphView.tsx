@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react'
 import { formatAge } from '../../../shared/time'
 import { useCommitGraphStore, canShowMoreGraphCommits } from '../../state/commitGraphStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
-import { useProjectsStore } from '../../state/projectsStore'
+import { useGitRepositoryPath } from '../../state/gitRepositoryStore'
 import { Button } from '../../ui/Button'
 import { Dropdown } from '../../ui/Dropdown'
 import { useNow } from '../../ui/useNow'
@@ -19,7 +19,7 @@ const ALL_BRANCHES_VALUE = '\u0000all'
 const DOT_Y = ROW_HEIGHT / 2
 
 export function CommitGraphView() {
-  const repoPath = useProjectsStore((state) => state.activeProjectPath)
+  const repoPath = useGitRepositoryPath()
   const commits = useCommitGraphStore((state) => state.commits)
   const limit = useCommitGraphStore((state) => state.limit)
   const isLoading = useCommitGraphStore((state) => state.isLoading)
