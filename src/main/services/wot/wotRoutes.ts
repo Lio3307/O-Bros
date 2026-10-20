@@ -13,6 +13,7 @@ import {
   sendToMember,
   spawnMember,
   stopMember,
+  waitForAnyMember,
   waitForMember
 } from './teamRegistry'
 import { WotError } from './wotError'
@@ -110,7 +111,10 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
   },
 
   '/wait': async (body) => {
-    teamCallerPaneOf(body)
+    const callerPaneId = teamCallerPaneOf(body)
+    if (body.any === true) {
+      return { any: await waitForAnyMember(callerPaneId, numberField(body, 'timeout')) }
+    }
     return waitForMember(textField(body, 'member', true), numberField(body, 'timeout'))
   },
 

@@ -55,6 +55,14 @@ export interface SpawnRequest {
   cwd: string
 }
 
+export interface AnyWaitOutcome {
+  member: TeamMember | null
+  nothingNew: boolean
+  timedOut: boolean
+  waitedSeconds: number
+  members: TeamMember[]
+}
+
 export interface SpawnOutcome {
   member: TeamMember
   taskSent: boolean
@@ -70,6 +78,7 @@ export interface WaitOutcome {
 }
 
 const members = new Map<string, TeamMember>()
+const unreportedIds = new Set<string>()
 const finishedSinceById = new Map<string, number>()
 let stateTimer: NodeJS.Timeout | null = null
 let policy: TeamPolicy = DEFAULT_TEAM_POLICY
@@ -171,14 +180,27 @@ function stopForReason(member: TeamMember, reason: string): void {
   sendToInterface(IpcChannel.wotNotice, `Stopped team member "${member.name}" to free memory: ${reason}.`)
 }
 
+function updateState(member: TeamMember, state: TeamMember['state']): boolean {
+  if (state === member.state) {
+    return false
+  }
+  if (isSettled(state) && !isSettled(member.state)) {
+    unreportedIds.add(member.id)
+  }
+  if (!isSettled(state)) {
+    unreportedIds.delete(member.id)
+  }
+  member.state = state
+  return true
+}
+
 function refreshStates(): void {
   const now = Date.now()
   let hasChanged = false
   const toStop: { member: TeamMember; reason: string }[] = []
   for (const member of members.values()) {
     const state = currentStateOf(member)
-    if (state !== member.state) {
-      member.state = state
+    if (updateState(member, state)) {
       hasChanged = true
     }
     noteFinishedTime(member, now)
@@ -309,6 +331,7 @@ function removeMember(memberId: string, reason: string | null = null): void {
     recordTeamChange(member, text, Date.now() - member.createdAt)
   }
   members.delete(memberId)
+  unreportedIds.delete(memberId)
   finishedSinceById.delete(memberId)
   killTerminal(memberId)
   keepStatesFresh()
@@ -331,7 +354,8 @@ async function lastScreenOf(member: TeamMember): Promise<string> {
 }
 
 async function failBecauseExited(member: TeamMember): Promise<never> {
-  member.state = 'exited'
+  updateState(member, 'exited')
+  unreportedIds.delete(member.id)
   publish()
   const screen = await lastScreenOf(member)
   throw new WotError(
@@ -417,6 +441,9 @@ export async function sendToMember(nameOrId: string, text: string): Promise<Team
 
 export async function readMemberScreen(nameOrId: string, lines: number | undefined): Promise<string> {
   const member = findMember(nameOrId)
+  if (isSettled(member.state)) {
+    unreportedIds.delete(member.id)
+  }
   return askInterface<string>({ kind: 'readScreen', memberId: member.id, lines: clamp(lines, DEFAULT_READ_LINES, MAX_READ_LINES) })
 }
 
@@ -425,8 +452,44 @@ export async function waitForMember(nameOrId: string, timeoutSeconds: number | u
   const startedAt = Date.now()
   const timeoutMs = clamp(timeoutSeconds, DEFAULT_WAIT_SECONDS, MAX_WAIT_SECONDS) * 1000
   const isDone = await waitUntil(() => !members.has(member.id) || isSettled(currentStateOf(member)), timeoutMs)
-  member.state = currentStateOf(member)
+  updateState(member, currentStateOf(member))
+  if (isDone) {
+    unreportedIds.delete(member.id)
+  }
   return { member, timedOut: !isDone, waitedSeconds: Math.round((Date.now() - startedAt) / 1000) }
+}
+
+function membersSummonedBy(callerPaneId: string): TeamMember[] {
+  const own = listMembers().filter((member) => member.summonedByPaneId === callerPaneId)
+  const hasChanged = own.map((member) => updateState(member, currentStateOf(member))).some((changed) => changed)
+  if (hasChanged) {
+    publish()
+  }
+  return own
+}
+
+function newlySettledMember(callerPaneId: string): TeamMember | undefined {
+  return membersSummonedBy(callerPaneId).find((member) => unreportedIds.has(member.id) && isSettled(member.state))
+}
+
+export async function waitForAnyMember(callerPaneId: string, timeoutSeconds: number | undefined): Promise<AnyWaitOutcome> {
+  const own = membersSummonedBy(callerPaneId)
+  if (own.length === 0) {
+    throw new WotError('not-found', 'You have no team members right now. Summon one with "wot spawn" first.')
+  }
+  const startedAt = Date.now()
+  const waitedSeconds = (): number => Math.round((Date.now() - startedAt) / 1000)
+  const isNothingNew = newlySettledMember(callerPaneId) === undefined && own.every((member) => isSettled(member.state))
+  if (isNothingNew) {
+    return { member: null, nothingNew: true, timedOut: false, waitedSeconds: 0, members: own }
+  }
+  const timeoutMs = clamp(timeoutSeconds, DEFAULT_WAIT_SECONDS, MAX_WAIT_SECONDS) * 1000
+  await waitUntil(() => newlySettledMember(callerPaneId) !== undefined, timeoutMs)
+  const member = newlySettledMember(callerPaneId) ?? null
+  if (member !== null) {
+    unreportedIds.delete(member.id)
+  }
+  return { member, nothingNew: false, timedOut: member === null, waitedSeconds: waitedSeconds(), members: membersSummonedBy(callerPaneId) }
 }
 
 export function stopMember(nameOrId: string): TeamMember {

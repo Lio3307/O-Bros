@@ -3,7 +3,7 @@ name: wot
 description: wot (work of teams) lets you summon other AI coding agents (Claude, Codex, Gemini, OpenCode and any other agent CLI installed on this computer) as hidden team members inside the O-BROS app, give them tasks, wait for them, read their answers and stop them. Use it when the user asks you to "use codex", "ask claude", "get a second opinion from another agent", "summon an agent", "make a team", "work in parallel with other agents", "wot", or names another agent CLI to help. It only works inside a terminal opened by the O-BROS app.
 license: MIT
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
   publisher: O-BROS
 ---
 
@@ -315,7 +315,9 @@ If it fails, or the variables are empty, you are not inside O-BROS. Follow secti
 
 - Summon them one after another (one `wot spawn` at a time).
 - Give each member different files, or make some members read-only (for example "review only, do not edit files").
-- Wait for them one by one: `wot wait reviewer`, then `wot wait test-writer`, and so on.
+- Wait with `wot wait --any`: it returns as soon as any of YOUR members finishes, asks a question or exits, and names it. Handle that member (`wot read`, then answer or stop it), then run `wot wait --any` again for the next one.
+- `NOTHING_NEW:` means every member already finished or is waiting and you have seen it. Read them, send new work, or stop them; do not keep waiting.
+- `STILL_WORKING:` lists every member's state; run `wot wait --any` again.
 - Use `wot list` to see all of them and their state.
 
 ---
@@ -333,6 +335,7 @@ If it fails, or the variables are empty, you are not inside O-BROS. Follow secti
 | `wot spawn ... -- <agent options>` | Passes the options after `--` to the agent program. |
 | `wot list` | Lists members, their state and their task. |
 | `wot wait <name> [--timeout <seconds>]` | Waits until the member finishes its turn, asks something, or stops. |
+| `wot wait --any [--timeout <seconds>]` | Waits for whichever of your members finishes, asks or stops first, and names it. |
 | `wot read <name> [--lines <number>]` | Prints the member's screen. |
 | `wot send <name> "<text>"` / `wot send <name> --file <path>` | Types a message into the member and presses Enter. |
 | `wot stop <name>` | Stops the member and closes its terminal. |

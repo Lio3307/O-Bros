@@ -137,6 +137,21 @@ test('asks before stopping a member from its row, and keeps it on cancel', async
   await expect(app.window.locator('.rail-badge')).toHaveCount(0)
 })
 
+test('wot wait --any reports each member that has news once, then says nothing is new', async () => {
+  test.setTimeout(240_000)
+  await runInTerminal('wot spawn codex --name first --task "job one"', 'spawn-a.txt')
+  await runInTerminal('wot spawn codex --name second --task "job two"', 'spawn-b.txt')
+
+  const reported = [await runInTerminal('wot wait --any', 'wait-1.txt'), await runInTerminal('wot wait --any', 'wait-2.txt')]
+  expect(reported.join(' ')).toContain('FINISHED: "first" finished its turn')
+  expect(reported.join(' ')).toContain('FINISHED: "second" finished its turn')
+  expect(await runInTerminal('wot wait --any', 'wait-3.txt')).toContain('NOTHING_NEW')
+
+  await runInTerminal('wot send second "job three"', 'send.txt')
+  expect(await runInTerminal('wot wait --any', 'wait-4.txt')).toContain('FINISHED: "second" finished its turn')
+  expect(await runInTerminal('wot wait second --any', 'wait-5.txt')).toContain('not both')
+})
+
 test('refuses unknown options and passes options after -- to the agent', async () => {
   test.setTimeout(180_000)
   const refused = await runInTerminal('wot spawn codex --name docs --task "hi" --no-daemon', 'refused-proof.txt')

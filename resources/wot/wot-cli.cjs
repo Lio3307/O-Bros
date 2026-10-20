@@ -62,6 +62,7 @@ Commands:
       [-- <agent options>]                     Everything after -- goes to the agent, e.g. -- --no-daemon
   wot list                                     List team members and what they are doing.
   wot wait <name> [--timeout <seconds>]        Wait until the member finishes its turn or asks a question.
+  wot wait --any [--timeout <seconds>]         Wait for whichever of your members finishes, asks or exits first.
   wot read <name> [--lines <number>]           Print what is on the member's screen.
   wot send <name> --file <path>
   wot send <name> "<short one-line message>"   Type a message into the member and press Enter.
@@ -77,6 +78,7 @@ function finish(exitCode, text) {
 }
 
 const AGENT_ARGUMENTS_MARK = '--'
+const SWITCH_FLAGS = ['any']
 
 const FLAGS_BY_COMMAND = {
   status: [],
@@ -84,7 +86,7 @@ const FLAGS_BY_COMMAND = {
   'new-file': [],
   spawn: ['name', 'task', 'task-file', 'cwd'],
   list: [],
-  wait: ['timeout'],
+  wait: ['timeout', 'any'],
   read: ['lines'],
   send: ['file', 'text'],
   stop: [],
@@ -106,6 +108,11 @@ function parseArguments(argv) {
       const equalsIndex = argument.indexOf('=')
       if (equalsIndex !== -1) {
         flags[argument.slice(2, equalsIndex)] = argument.slice(equalsIndex + 1)
+        index += 1
+        continue
+      }
+      if (SWITCH_FLAGS.includes(argument.slice(2))) {
+        flags[argument.slice(2)] = 'true'
         index += 1
         continue
       }
@@ -308,8 +315,41 @@ async function listMembers() {
   finish(EXIT_CODES.ok, lines.join('\n'))
 }
 
+function stateList(members) {
+  return members.map((member) => `  - ${member.name}: ${describeState(member.state)}`).join('\n')
+}
+
+async function waitForAnyMember(flags) {
+  const timeout = flags.timeout === undefined ? undefined : Number(flags.timeout)
+  const { any } = await call('/wait', { any: true, timeout })
+  if (any.nothingNew) {
+    finish(
+      EXIT_CODES.ok,
+      `NOTHING_NEW: none of your members has news you have not seen. They are:\n${stateList(any.members)}\nRead one with  wot read <name>, send it new work with  wot send <name>, or stop it with  wot stop <name>.`
+    )
+  }
+  if (any.timedOut) {
+    finish(EXIT_CODES.ok, `STILL_WORKING: no member finished or asked anything in ${any.waitedSeconds} seconds. They are:\n${stateList(any.members)}\nRun  wot wait --any  again.`)
+  }
+  const member = any.member
+  const nextStep = {
+    idle: `FINISHED: "${member.name}" finished its turn. Run  wot read ${member.name}  to see its answer.`,
+    waiting: `QUESTION: "${member.name}" is asking a question or a permission. Run  wot read ${member.name}  to see it.`,
+    exited: `EXITED: "${member.name}" stopped running. Run  wot read ${member.name}  to see its last screen, then  wot stop ${member.name}.`
+  }
+  const others = any.members.filter((candidate) => candidate.name !== member.name)
+  const rest = others.length === 0 ? '' : `\nYour other members:\n${stateList(others)}\nAfter handling it, run  wot wait --any  again for the next one.`
+  finish(EXIT_CODES.ok, (nextStep[member.state] ?? `"${member.name}" is ${describeState(member.state)}.`) + rest)
+}
+
 async function waitForMember(positional, flags) {
-  const name = requireName(positional, 'wot wait <name> [--timeout <seconds>]')
+  if (flags.any !== undefined) {
+    if (positional[0] !== undefined) {
+      finish(EXIT_CODES.failed, 'ERROR: Use either  wot wait <name>  or  wot wait --any, not both.')
+    }
+    return waitForAnyMember(flags)
+  }
+  const name = requireName(positional, 'wot wait <name> [--timeout <seconds>]  or  wot wait --any')
   const timeout = flags.timeout === undefined ? undefined : Number(flags.timeout)
   const { member, timedOut, waitedSeconds } = await call('/wait', { member: name, timeout })
   if (timedOut) {

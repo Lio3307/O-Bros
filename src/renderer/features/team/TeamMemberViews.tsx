@@ -29,55 +29,51 @@ function MemberHeader({ member }: { member: TeamMember }) {
     void focusTerminalPane(lead.paneId)
   }
 
+  const task = firstLineOf(member.task)
+
   return (
-    <header className="team-header">
-      <div className="team-flow">
-        <Button variant="outline" title="Back to the terminals" onClick={hideMember}>
-          <ArrowLeft size={14} /> Back
+    <>
+      <header className="member-bar">
+        <Button variant="icon" title="Back to your terminals" aria-label="Back" onClick={hideMember}>
+          <ArrowLeft size={16} />
         </Button>
         <button
           type="button"
-          className="team-flow-lead"
+          className="member-bar-lead"
           disabled={!lead.isOpen}
-          title={lead.isOpen ? "Go to the lead's terminal" : 'The terminal that summoned this member is closed'}
+          title={lead.isOpen ? `Lead: ${lead.title}. Go to its terminal.` : 'The terminal that summoned this member is closed'}
           onClick={goToLead}
         >
-          {lead.command === null ? <Bot size={16} /> : <AgentIcon command={lead.command} size={16} />}
-          <span className="team-flow-text">
-            <span className="team-flow-role">Lead</span>
-            <span className="team-flow-name">{lead.title}</span>
-          </span>
+          {lead.command === null ? <Bot size={14} /> : <AgentIcon command={lead.command} size={14} />}
+          <span>{lead.title}</span>
         </button>
-        <ChevronRight size={16} className="team-flow-arrow" />
-        <span className="team-flow-member">
-          <AgentIcon command={member.command} size={16} />
-          <span className="team-flow-text">
-            <span className="team-flow-role">Team member · {member.agentName}</span>
-            <span className="team-flow-name">{member.name}</span>
-          </span>
+        <ChevronRight size={14} className="member-bar-arrow" />
+        <span className="member-bar-member" title={`Team member · ${member.agentName}`}>
+          <AgentIcon command={member.command} size={14} />
+          <span className="member-bar-name">{member.name}</span>
+          <span className="muted">{member.agentName}</span>
         </span>
-        <span className="team-state-pill">
+        <span className="member-bar-task" title={member.task}>
+          {task === '' ? 'No task sent yet' : task}
+        </span>
+        <span className="member-bar-actions">
           <AgentStateBadge state={member.state} />
+          <Button variant="outline" className="hover-danger" title={`Stop "${member.name}"`} onClick={() => void stopTeamMember(member)}>
+            <Square size={12} /> Stop
+          </Button>
         </span>
-        <Button variant="outline" className="hover-danger" title={`Stop "${member.name}"`} onClick={() => void stopTeamMember(member)}>
-          <Square size={12} /> Stop
-        </Button>
-      </div>
-      <p className="team-task" title={member.task}>
-        <span className="team-task-label">Task</span>
-        {firstLineOf(member.task)}
-      </p>
+      </header>
       {member.state === 'waiting' && (
-        <p className="team-waiting-hint">
+        <p className="member-hint member-hint-waiting">
           It is asking a question. The lead usually answers; you can also type the answer in the terminal below.
         </p>
       )}
       {member.state === 'exited' && (
-        <p className="team-waiting-hint">
+        <p className="member-hint member-hint-exited">
           The agent program stopped. Its last screen stays below. Stop the member to close it, or ask the lead to summon it again.
         </p>
       )}
-    </header>
+    </>
   )
 }
 
