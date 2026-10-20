@@ -12,6 +12,18 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 
 > **Status:** early version. Built and tested on Windows 11. macOS and Linux code paths exist but have not been tested. Installers are built by a release workflow once a version is published; until then you run it from source.
 
+## Screenshots
+
+![The workspace with a terminal and the files panel](docs/images/workspace.png)
+
+| Editor with linting | Git changes |
+|---|---|
+| ![The code editor](docs/images/editor.png) | ![The Changes panel](docs/images/changes.png) |
+
+| Session history | Provider accounts |
+|---|---|
+| ![The History panel](docs/images/history.png) | ![Provider accounts settings](docs/images/settings.png) |
+
 ## What you get
 
 - **Real terminals** with tabs and splits (xterm.js and node-pty). Start `claude`, `codex` or a plain shell in any project folder.
