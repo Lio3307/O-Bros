@@ -5,6 +5,7 @@ import { useHistoryStore } from '../../state/historyStore'
 import { Button } from '../../ui/Button'
 import './history.css'
 import { ContinueButton } from './ContinueButton'
+import { SessionTitle } from './SessionTitle'
 import { ThreadChip } from './ThreadChip'
 
 const MESSAGES_SHOWN_FIRST = 200
@@ -49,7 +50,9 @@ export function SessionReplay() {
     <div className="replay">
       <header className="replay-header">
         <div className="replay-heading">
-          <span className="replay-title">{session.title}</span>
+          <span className="replay-title">
+            <SessionTitle sessionId={session.sessionId} title={session.title} />
+          </span>
           <span className="replay-meta">{session.projectPath ?? 'Unknown folder'} · read-only</span>
         </div>
         <div className="replay-actions">

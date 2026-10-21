@@ -92,7 +92,7 @@ test('an agent summons a hidden team member, reads it and stops it', async () =>
   await expect(app.window.locator('.rail-badge')).toHaveText('1')
   const leadGroup = app.window.locator('.session-group', { has: app.window.locator('.row-session') })
   await expect(leadGroup.locator('.session-member-row')).toContainText('helper')
-  await expect(leadGroup.locator('.session-member-row')).toContainText('hello team')
+  expect(await leadGroup.locator('.session-member-row').getAttribute('title')).toContain('hello team')
   await leadGroup.locator('.session-member-row').click()
   await expect(app.window.locator('.team-frame:not(.tab-content-hidden) .member-bar-member')).toContainText('helper')
   await expect(app.window.locator('.tab-bar')).toBeVisible()

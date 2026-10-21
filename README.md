@@ -14,15 +14,19 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 
 ## Screenshots
 
-![The workspace with a terminal and the files panel](docs/images/workspace.png)
+![A lead agent with two team members nested under it in Projects](docs/images/workspace.png)
 
-| Editor with linting | Git changes |
+| Team member view | Continue in another agent |
 |---|---|
-| ![The code editor](docs/images/editor.png) | ![The Changes panel](docs/images/changes.png) |
+| ![A team member asking a question](docs/images/team.png) | ![A Codex conversation continued in Claude](docs/images/history.png) |
 
-| Session history | Provider accounts |
+| Git changes, side by side | Storage you control |
 |---|---|
-| ![The History panel](docs/images/history.png) | ![Provider accounts settings](docs/images/settings.png) |
+| ![The Changes panel with a side-by-side diff](docs/images/changes.png) | ![Universal history in Storage and memory](docs/images/storage.png) |
+
+| Editor with linting | Provider accounts |
+|---|---|
+| ![The code editor](docs/images/editor.png) | ![Provider accounts settings](docs/images/settings.png) |
 
 ## What you get
 

@@ -1,4 +1,5 @@
 const TAIL_LENGTH = 1200
+const REPAINT_MATCH_LENGTH = 40
 const ESCAPE = '\u001b'
 const BELL = '\u0007'
 
@@ -55,4 +56,9 @@ export function appendToTail(tail: string, chunk: string): string {
 export function looksLikeWaitingForInput(tail: string): boolean {
   const lowered = tail.toLowerCase()
   return WAITING_PHRASES.some((phrase) => lowered.includes(phrase))
+}
+
+export function isRepaintOfQuestion(before: string, after: string): boolean {
+  const ending = before.trimEnd().slice(-REPAINT_MATCH_LENGTH)
+  return looksLikeWaitingForInput(before) && ending !== '' && after.trimEnd().endsWith(ending)
 }

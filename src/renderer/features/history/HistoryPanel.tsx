@@ -10,6 +10,7 @@ import { resumeSession } from '../../state/openTerminal'
 import { PanelHeader } from '../../ui/PanelHeader'
 import { ProviderMark } from '../../ui/ProviderMark'
 import { ContinueButton } from './ContinueButton'
+import { SessionTitle } from './SessionTitle'
 import { ThreadChip } from './ThreadChip'
 import './history.css'
 import './historyFilter.css'
@@ -46,7 +47,9 @@ function SessionItem({ session, isSelected }: { session: SessionSummary | Sessio
         className={isSelected ? 'session-row session-row-selected' : 'session-row'}
         onClick={() => select(session.filePath)}
       >
-        <span className="session-title">{session.title}</span>
+        <span className="session-title">
+          <SessionTitle sessionId={session.sessionId} title={session.title} />
+        </span>
         <ThreadChip sessionId={session.sessionId} />
         {session.teamMemberName !== null && (
           <Chip title="A wot team member had this conversation">Team member · {session.teamMemberName}</Chip>

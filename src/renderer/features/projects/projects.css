@@ -183,12 +183,6 @@
   font-size: 12px;
 }
 
-.session-member-row .row-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .session-member-waiting {
   color: var(--color-danger);
 }

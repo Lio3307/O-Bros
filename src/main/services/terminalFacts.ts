@@ -1,4 +1,4 @@
-import { appendToTail } from '../../shared/waitingPrompt'
+import { appendToTail, isRepaintOfQuestion } from '../../shared/waitingPrompt'
 import type { TerminalFacts } from './wot/memberState'
 
 const BRACKETED_PASTE_ON = '\u001b[?2004h'
@@ -36,8 +36,11 @@ export function noteTerminalStarted(id: string, cwd: string | null, agentCommand
 export function noteTerminalOutput(id: string, chunk: string): void {
   const record = records.get(id)
   if (record !== undefined) {
-    record.lastOutputAt = Date.now()
-    record.tail = appendToTail(record.tail, chunk)
+    const tail = appendToTail(record.tail, chunk)
+    if (!isRepaintOfQuestion(record.tail, tail)) {
+      record.lastOutputAt = Date.now()
+    }
+    record.tail = tail
     record.isBracketedPaste = bracketedPasteAfter(chunk, record.isBracketedPaste)
   }
 }

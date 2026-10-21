@@ -38,10 +38,7 @@ function MemberRow({ member, now }: { member: TeamMember; now: number }) {
       >
         <MemberStateMark member={member} />
         <AgentIcon command={member.command} size={14} />
-        <span className="row-name">
-          {member.name}
-          {task !== '' && <span className="muted"> · {task}</span>}
-        </span>
+        <span className="row-name">{member.name}</span>
         <span className="muted session-member-age">
           {member.state === 'waiting' ? 'asking' : member.state === 'exited' ? 'exited' : formatAge(member.createdAt, now)}
         </span>
