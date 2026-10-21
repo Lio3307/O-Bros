@@ -1,3 +1,4 @@
+import { typeWhenReady } from '../services/terminalTyping'
 import { ipcMain } from 'electron'
 import { IpcChannel, type PtyCreateRequest } from '../../shared/ipc'
 import { noteTerminalInputForAgents } from '../services/activity/typedAgents'
@@ -15,4 +16,5 @@ export function registerPtyIpc(): void {
     resizeTerminal(id, columns, rows)
   )
   ipcMain.on(IpcChannel.ptyKill, (_event, id: string) => killTerminal(id))
+  ipcMain.handle(IpcChannel.ptyTypeWhenReady, (_event, id: unknown, text: unknown) => typeWhenReady(String(id), String(text)))
 }

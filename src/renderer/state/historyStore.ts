@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
-import type { SessionSearchHit, SessionSummary } from '../../shared/types'
+import type { SessionSearchHit, SessionSummary, ThreadSummary } from '../../shared/types'
 import { summarizeRemoval } from '../../shared/sessionRemovalResult'
 import { toast } from './toastStore'
 
 interface HistoryState {
   sessions: SessionSummary[]
+  threads: ThreadSummary[]
   selectedFilePath: string | null
   deletePermanently: boolean
   searchHits: SessionSearchHit[] | null
@@ -14,6 +15,7 @@ interface HistoryState {
   clearSearch: () => void
   setDeletePermanently: (deletePermanently: boolean) => void
   load: () => Promise<void>
+  loadThreads: () => Promise<void>
   select: (filePath: string) => void
   remove: (filePaths: string[]) => Promise<void>
 }
@@ -22,20 +24,26 @@ let latestSearchId = 0
 
 export const useHistoryStore = create<HistoryState>()((set, get) => {
   async function reload(): Promise<void> {
-    const sessions = await window.api.history.list()
+    const [sessions, threads] = await Promise.all([window.api.history.list(), window.api.history.threads().catch(() => [])])
     const selectedStillListed = sessions.some((session) => session.filePath === get().selectedFilePath)
     set({
       sessions,
+      threads,
       selectedFilePath: selectedStillListed ? get().selectedFilePath : (sessions[0]?.filePath ?? null)
     })
   }
 
   return {
     sessions: [],
+    threads: [],
     selectedFilePath: null,
     deletePermanently: false,
     searchHits: null,
     isSearching: false,
+
+    loadThreads: async () => {
+      set({ threads: await window.api.history.threads().catch(() => get().threads) })
+    },
 
     search: async (query) => {
       latestSearchId += 1

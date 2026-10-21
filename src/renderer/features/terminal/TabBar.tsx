@@ -6,7 +6,8 @@ import { useAttentionStore } from '../../state/attentionStore'
 import { copyPath, revealInFileExplorer } from '../files/fileActions'
 import { openTerminal } from '../../state/openTerminal'
 import { requestCloseOtherTabs, requestCloseTab } from '../../state/requestCloseTab'
-import { useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore'
+import { isTerminalTab, useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore'
+import { continueItemsForTab, readableProviderOfTab } from '../history/continueFromTab'
 import { showTab } from '../../state/showTab'
 import { EditableTitle } from '../../ui/EditableTitle'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
@@ -25,7 +26,30 @@ function locationOf(tab: WorkspaceTab): string | null {
   return tab.kind === 'file' ? tab.path : tab.cwd
 }
 
-function contextMenuItemsFor(tab: WorkspaceTab): PopupMenuItem[] {
+function continueItem(tab: WorkspaceTab, reopen: (items: PopupMenuItem[]) => void): PopupMenuItem[] {
+  if (!isTerminalTab(tab)) {
+    return []
+  }
+  const provider = readableProviderOfTab(tab)
+  if (provider === null) {
+    return []
+  }
+  return [
+    {
+      label: 'Continue in another agent…',
+      hasSeparatorBefore: true,
+      onSelect: () => {
+        void continueItemsForTab(tab, provider).then((items) => {
+          if (items !== null) {
+            reopen(items)
+          }
+        })
+      }
+    }
+  ]
+}
+
+function contextMenuItemsFor(tab: WorkspaceTab, reopen: (items: PopupMenuItem[]) => void): PopupMenuItem[] {
   const location = locationOf(tab)
   return [
     { label: 'Close', onSelect: () => requestCloseTab(tab.id) },
@@ -39,7 +63,8 @@ function contextMenuItemsFor(tab: WorkspaceTab): PopupMenuItem[] {
       label: 'Reveal in folder',
       isDisabled: location === null,
       onSelect: () => void revealInFileExplorer(location ?? '')
-    }
+    },
+    ...continueItem(tab, reopen)
   ]
 }
 
@@ -72,7 +97,8 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
       onMouseDown={handleMouseDown}
       onContextMenu={(event) => {
         event.preventDefault()
-        onOpenMenu({ x: event.clientX, y: event.clientY, items: contextMenuItemsFor(tab) })
+        const position = { x: event.clientX, y: event.clientY }
+        onOpenMenu({ ...position, items: contextMenuItemsFor(tab, (items) => onOpenMenu({ ...position, items })) })
       }}
       onDragStart={(event) => event.dataTransfer.setData('text/plain', tab.id)}
       onDragOver={(event) => event.preventDefault()}

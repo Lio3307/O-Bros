@@ -20,6 +20,8 @@ This page lists everything o-bros reads, writes and sends, so you can decide whe
 | What | When |
 |---|---|
 | Files you edit or create in your project folders | When you save, create, rename or delete |
+| `threads.json` next to the universal history | When you use Continue with…: which conversations belong together (agent, session ID, folder, start time and the handoff's first line). |
+| A handoff typed into the agent you pick | Only when you press Continue with…: a summary built from the universal history of the conversation you continue, including anything you typed into it (also secrets you pasted), the folder and the files changed in git. It goes only into that agent, on your computer. |
 | `settings.json` in the Electron user-data folder | Your list of project folders, and your storage choices (conversation folder, universal history folder and keep period, repository search depth) |
 | The universal history: `o-bros-history\<agent>-resume\*.json` in the Electron user-data folder, or in the folder you move it to | Every minute while O-BROS runs, a plain-text copy of each Claude and Codex conversation that changed: your messages, the agent's answers, its title, folder and session ID. Tool output and file contents are left out. It stays on your computer and is never uploaded or put in your projects. Remove it with Keep (30, 90 or 365 days) or by deleting the folder; it can contain anything you typed into an agent, including secrets you pasted. |
 | `team-sessions.json` in the Electron user-data folder (newest 1000 entries) | When wot summons a Claude or Codex member: its name, agent, folder, start time, session ID and the first 30 characters of its task, so History can mark its conversation. |

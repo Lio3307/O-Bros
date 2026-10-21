@@ -434,6 +434,35 @@ export interface DiskReport {
   items: DiskItem[]
 }
 
+export interface ContinueRequest {
+  sessionFilePath: string
+  agentCommand: string
+}
+
+export interface ContinuePlan {
+  cwd: string
+  command: string
+  handoffText: string
+  threadId: string
+}
+
+export interface ThreadPartSummary {
+  agentName: string
+  sessionId: string | null
+  startedAt: number
+}
+
+export interface ThreadSummary {
+  id: string
+  title: string
+  parts: ThreadPartSummary[]
+}
+
+export interface TypeResult {
+  isSent: boolean
+  message: string
+}
+
 export interface ConversationMoveResult {
   isDone: boolean
   message: string

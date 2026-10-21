@@ -1,5 +1,4 @@
 import { app } from 'electron'
-import { realpath } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import {
@@ -7,11 +6,11 @@ import {
   isSessionFileOf,
   MAX_TEAM_SESSION_RECORDS,
   readTeamSessionRecords,
-  type SessionCandidate,
   type TeamSessionRecord
 } from '../../../shared/teamSessions'
 import type { RemoveSessionsResult } from '../../../shared/types'
 import { IS_PATH_CASE_INSENSITIVE, readJsonIfExists } from '../fileSystem'
+import { readSessionCandidates, realFolderOf } from '../sessions/sessionCandidates'
 import { removeSessions } from '../sessions/sessionRemoval'
 import { listSourceFiles, readSessionSources, type SourceFile } from '../sessions/sessionSources'
 import { TRANSCRIPT_EXTENSION } from '../sessions/transcriptFormat'
@@ -58,29 +57,8 @@ export async function rememberTeamSession(record: TeamSessionRecord): Promise<vo
   save()
 }
 
-function realFolderOf(path: string): Promise<string> {
-  return new Promise((resolve) => realpath.native(path, (error, resolved) => resolve(error === null ? resolved : path)))
-}
-
 function baseNameOf(file: SourceFile): string {
   return basename(file.filePath, TRANSCRIPT_EXTENSION)
-}
-
-async function candidatesFor(pending: TeamSessionRecord[], files: SourceFile[]): Promise<SessionCandidate[]> {
-  const oldestStart = Math.min(...pending.map((record) => record.startedAt))
-  const recentFiles = files.filter((file) => file.modifiedAt >= oldestStart)
-  return Promise.all(
-    recentFiles.map(async (file) => {
-      const header = await file.source.format.readHeader(file.filePath)
-      return {
-        sessionId: header.sessionId,
-        provider: file.source.format.provider,
-        projectPath: header.projectPath === null ? null : await realFolderOf(header.projectPath),
-        title: header.title,
-        modifiedAt: file.modifiedAt
-      }
-    })
-  )
 }
 
 async function resolvePendingRecords(files: SourceFile[]): Promise<void> {
@@ -91,7 +69,7 @@ async function resolvePendingRecords(files: SourceFile[]): Promise<void> {
   if (pending.length === 0) {
     return
   }
-  const candidates = await candidatesFor(pending, files)
+  const candidates = await readSessionCandidates(files, Math.min(...pending.map((record) => record.startedAt)))
   const claimedIds = new Set(records.flatMap((record) => (record.sessionId === null ? [] : [record.sessionId])))
   let hasResolved = false
   for (const record of pending) {

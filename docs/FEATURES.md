@@ -130,6 +130,10 @@ wot (work of teams) lets the agent you talk to summon other agents.
 - **Resume** (play button on a row): opens a terminal in the session's project folder, with the right account, and runs `claude --resume <id>` or `codex resume <id>`.
 - Delete one session from its row. A confirmation says what you lose and how much space it frees.
 - Click a session to read it. It is read-only.
+- **Continue with…** (the two-arrows button on a row, or the button above a conversation): pick any agent from your agent buttons and it starts in the conversation's folder with a handoff as its first message, so you do not repeat yourself when an agent hits its limit. Pick the same agent to start a fresh conversation that still knows what happened. O-BROS needs no model for this, so it works after a limit.
+- **From a running agent:** right-click a Claude or Codex terminal tab → **Continue in another agent…**. O-BROS finds that tab's conversation (the newest one of that agent in its folder since the tab opened); if the agent has not saved anything yet, it says to send a message first.
+- **The handoff** is built from the universal history: a marker line, which agents worked on it, the folder, the paths of the full copies (the new agent can read them for more detail), the conversation (your first request always, the newest messages, then your older requests; your messages up to 3,000 characters, the agent's answers shortened to 800, about 24,000 characters at most), the files changed and not committed yet, and "continue from the latest request". It is typed in like a wot message: O-BROS waits until the agent is ready, then presses Enter again if the agent did not start working.
+- **Threads:** conversations continued across agents form a thread, shown as a chip such as "Claude → Codex" on each of its conversations (hover for which part this is). A Claude part is linked exactly (it starts with its own session ID); a Codex part is found by its folder, start time and the handoff's marker line. Other agents appear in the chain but their conversation cannot be read yet. Threads are saved in `threads.json` next to the universal history.
 
 ## Activity
 

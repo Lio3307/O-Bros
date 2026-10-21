@@ -15,6 +15,7 @@ const api: DesktopApi = {
     input: (id, data) => ipcRenderer.send(IpcChannel.ptyInput, id, data),
     resize: (id, columns, rows) => ipcRenderer.send(IpcChannel.ptyResize, id, columns, rows),
     kill: (id) => ipcRenderer.send(IpcChannel.ptyKill, id),
+    typeWhenReady: (id, text) => ipcRenderer.invoke(IpcChannel.ptyTypeWhenReady, id, text),
     onData: (listener) => subscribe<PtyDataEvent>(IpcChannel.ptyData, listener),
     onExit: (listener) => subscribe<PtyExitEvent>(IpcChannel.ptyExit, listener)
   },
@@ -111,7 +112,10 @@ const api: DesktopApi = {
     storage: () => ipcRenderer.invoke(IpcChannel.historyStorage),
     removeOlderThan: (request) => ipcRenderer.invoke(IpcChannel.historyRemoveOlder, request),
     teamChats: () => ipcRenderer.invoke(IpcChannel.historyTeamChats),
-    removeTeamChats: (permanently) => ipcRenderer.invoke(IpcChannel.historyRemoveTeamChats, permanently)
+    removeTeamChats: (permanently) => ipcRenderer.invoke(IpcChannel.historyRemoveTeamChats, permanently),
+    continueWith: (request) => ipcRenderer.invoke(IpcChannel.historyContinueWith, request),
+    latestSessionFile: (provider, cwd, since) => ipcRenderer.invoke(IpcChannel.historyLatestSessionFile, provider, cwd, since),
+    threads: () => ipcRenderer.invoke(IpcChannel.historyThreads)
   },
   resources: {
     get: () => ipcRenderer.invoke(IpcChannel.resourcesGet),

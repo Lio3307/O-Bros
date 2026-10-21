@@ -4,6 +4,8 @@ import type { SessionMessage } from '../../../shared/types'
 import { useHistoryStore } from '../../state/historyStore'
 import { Button } from '../../ui/Button'
 import './history.css'
+import { ContinueButton } from './ContinueButton'
+import { ThreadChip } from './ThreadChip'
 
 const MESSAGES_SHOWN_FIRST = 200
 
@@ -46,8 +48,14 @@ export function SessionReplay() {
   return (
     <div className="replay">
       <header className="replay-header">
-        <span className="replay-title">{session.title}</span>
-        <span className="replay-meta">{session.projectPath ?? 'Unknown folder'} · read-only</span>
+        <div className="replay-heading">
+          <span className="replay-title">{session.title}</span>
+          <span className="replay-meta">{session.projectPath ?? 'Unknown folder'} · read-only</span>
+        </div>
+        <div className="replay-actions">
+          <ThreadChip sessionId={session.sessionId} />
+          <ContinueButton session={session} isLabelled />
+        </div>
       </header>
       <div className="replay-body">
         {errorMessage !== null && <p className="muted">{errorMessage}</p>}

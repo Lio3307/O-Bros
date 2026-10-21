@@ -9,6 +9,8 @@ import { useHistoryStore } from '../../state/historyStore'
 import { resumeSession } from '../../state/openTerminal'
 import { PanelHeader } from '../../ui/PanelHeader'
 import { ProviderMark } from '../../ui/ProviderMark'
+import { ContinueButton } from './ContinueButton'
+import { ThreadChip } from './ThreadChip'
 import './history.css'
 import './historyFilter.css'
 import { Button } from '../../ui/Button'
@@ -45,6 +47,7 @@ function SessionItem({ session, isSelected }: { session: SessionSummary | Sessio
         onClick={() => select(session.filePath)}
       >
         <span className="session-title">{session.title}</span>
+        <ThreadChip sessionId={session.sessionId} />
         {session.teamMemberName !== null && (
           <Chip title="A wot team member had this conversation">Team member · {session.teamMemberName}</Chip>
         )}
@@ -55,6 +58,7 @@ function SessionItem({ session, isSelected }: { session: SessionSummary | Sessio
         </span>
       </button>
       <div className="session-actions">
+        <ContinueButton session={session} />
         <button
           type="button"
           className="session-action hover-positive"

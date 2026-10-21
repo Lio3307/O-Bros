@@ -18,7 +18,11 @@ import type { AcpAgent } from './acpRegistry'
 import type {
   AccountRef,
   AddRootResult,
+  ContinuePlan,
+  ContinueRequest,
   ConversationMoveResult,
+  ThreadSummary,
+  TypeResult,
   ConversationStorage,
   DiskReport,
   UniversalHistoryReport,
@@ -84,6 +88,7 @@ export const IpcChannel = {
   ptyInput: 'pty:input',
   ptyResize: 'pty:resize',
   ptyKill: 'pty:kill',
+  ptyTypeWhenReady: 'pty:typeWhenReady',
   ptyData: 'pty:data',
   ptyExit: 'pty:exit',
   accountsScan: 'accounts:scan',
@@ -183,6 +188,9 @@ export const IpcChannel = {
   lspStop: 'lsp:stop',
   wotAgents: 'wot:agents',
   historyTeamChats: 'history:teamChats',
+  historyContinueWith: 'history:continueWith',
+  historyLatestSessionFile: 'history:latestSessionFile',
+  historyThreads: 'history:threads',
   historyRemoveTeamChats: 'history:removeTeamChats',
   activityList: 'activity:list',
   activityClear: 'activity:clear',
@@ -246,6 +254,7 @@ export interface DesktopApi {
     input(id: string, data: string): void
     resize(id: string, columns: number, rows: number): void
     kill(id: string): void
+    typeWhenReady(id: string, text: string): Promise<TypeResult>
     onData(listener: (event: PtyDataEvent) => void): () => void
     onExit(listener: (event: PtyExitEvent) => void): () => void
   }
@@ -343,6 +352,9 @@ export interface DesktopApi {
     removeOlderThan(request: RemoveOlderSessionsRequest): Promise<RemoveSessionsResult>
     teamChats(): Promise<TeamChatsReport>
     removeTeamChats(permanently: boolean): Promise<RemoveSessionsResult>
+    continueWith(request: ContinueRequest): Promise<ContinuePlan>
+    latestSessionFile(provider: ProviderId, cwd: string, since: number): Promise<string | null>
+    threads(): Promise<ThreadSummary[]>
   }
   resources: {
     get(): Promise<ResourceSnapshot>

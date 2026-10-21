@@ -1,6 +1,7 @@
+import { latestSessionFile, listThreadSummaries, prepareContinuation } from '../services/universalHistory/continuation'
 import { ipcMain } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
-import type { RemoveOlderSessionsRequest, SessionSummary, TeamChatsReport } from '../../shared/types'
+import type { ContinueRequest, RemoveOlderSessionsRequest, SessionSummary, TeamChatsReport } from '../../shared/types'
 import { listSessions, readSession } from '../services/sessions/sessionLibrary'
 import { searchSessions } from '../services/sessions/sessionSearch'
 import { removeSessions, removeSessionsOlderThan } from '../services/sessions/sessionRemoval'
@@ -29,6 +30,11 @@ export function registerHistoryIpc(): void {
     removeSessionsOlderThan(request.provider, request.days, request.permanently)
   )
   ipcMain.handle(IpcChannel.historyTeamChats, () => readTeamChatsReport())
+  ipcMain.handle(IpcChannel.historyContinueWith, (_event, request: ContinueRequest) => prepareContinuation(request))
+  ipcMain.handle(IpcChannel.historyLatestSessionFile, (_event, provider: unknown, cwd: unknown, since: unknown) =>
+    latestSessionFile(provider, cwd, since)
+  )
+  ipcMain.handle(IpcChannel.historyThreads, () => listThreadSummaries())
   ipcMain.handle(IpcChannel.historyRemoveTeamChats, (_event, permanently: boolean) =>
     removeTeamSessionFiles(null, permanently === true)
   )

@@ -6,6 +6,7 @@ import { findTeamAgent, listTeamAgents, type TeamAgentOption } from '../../../sh
 import { TEAM_MEMBER_ID_PREFIX, teamMemberName } from '../../../shared/teamMemberName'
 import { autoStopReason, DEFAULT_TEAM_POLICY, isFinishedState, type TeamPolicy } from '../../../shared/teamPolicy'
 import { comparablePath, isDriveRoot, resolvePath } from '../../../shared/paths'
+import { commandWithSessionId } from '../../../shared/sessionCommand'
 import { commandWithArguments, shellKindOf } from '../../../shared/shellCommand'
 import { assertInsideProjectRoots } from '../../pathGuard'
 import { taskStartOf } from '../../../shared/teamSessions'
@@ -13,10 +14,10 @@ import type { TeamMember } from '../../../shared/types'
 import { recordActivity } from '../activity/activityLog'
 import { loadAcpRegistry } from '../agents/acpRegistryClient'
 import { listPathCommands } from '../agents/agentDetector'
-import { killTerminal, writeToTerminal } from '../ptyManager'
+import { killTerminal } from '../ptyManager'
 import { terminalFactsOf } from '../terminalFacts'
-import { looksLikeWaitingForInput } from '../../../shared/waitingPrompt'
 import { isReadyForInput, isSettled, memberStateOf } from './memberState'
+import { typeAndSubmit, waitUntil } from '../terminalTyping'
 import { askInterface, sendToInterface } from './rendererBridge'
 import { removeTeamSessionFiles, rememberTeamSession } from './teamSessions'
 import { WotError } from './wotError'
@@ -25,23 +26,13 @@ import { IS_PATH_CASE_INSENSITIVE, isFolder } from '../fileSystem'
 const MAX_MEMBERS = 6
 const CHAT_DELETE_DELAY_MS = 3000
 const MAX_TEXT_LENGTH = 20_000
-const POLL_MS = 500
 const TERMINAL_START_TIMEOUT_MS = 15_000
 const READY_TIMEOUT_MS = 45_000
-const SUBMIT_DELAY_MS = 300
-const TYPED_TEXT_SETTLED_MS = 600
-const TYPED_TEXT_SETTLE_LIMIT_MS = 8000
-const SUBMIT_TICK_MS = 100
-const SUBMIT_CHECK_TICKS = 30
-const WORKING_OUTPUT_TICKS = 8
-const SUBMIT_ATTEMPTS = 2
 const STATE_CHECK_MS = 1000
 const DEFAULT_WAIT_SECONDS = 100
 const MAX_WAIT_SECONDS = 280
 const DEFAULT_READ_LINES = 80
 const MAX_READ_LINES = 400
-const PASTE_START = '\u001b[200~'
-const PASTE_END = '\u001b[201~'
 
 const NO_PROJECT_MESSAGE =
   'Team members only work inside a project folder, and this terminal runs in the home folder. Tell the user: open a project folder in O-BROS (the folder button in Projects), then start me from a terminal in that folder.'
@@ -85,21 +76,6 @@ let policy: TeamPolicy = DEFAULT_TEAM_POLICY
 
 export function setTeamPolicy(next: TeamPolicy): void {
   policy = next
-}
-
-function delay(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds))
-}
-
-async function waitUntil(condition: () => boolean, timeoutMs: number): Promise<boolean> {
-  const deadline = Date.now() + timeoutMs
-  while (Date.now() < deadline) {
-    if (condition()) {
-      return true
-    }
-    await delay(POLL_MS)
-  }
-  return condition()
 }
 
 function clamp(value: number | undefined, fallback: number, maximum: number): number {
@@ -285,45 +261,6 @@ function assertTextLength(text: string): void {
   }
 }
 
-function quietFor(memberId: string): number {
-  const facts = terminalFactsOf(memberId)
-  return facts === undefined ? Number.POSITIVE_INFINITY : Date.now() - (facts.lastOutputAt ?? facts.startedAt)
-}
-
-async function countOutputTicks(memberId: string): Promise<number> {
-  let ticksWithOutput = 0
-  let lastSeen = terminalFactsOf(memberId)?.lastOutputAt ?? null
-  for (let tick = 0; tick < SUBMIT_CHECK_TICKS; tick += 1) {
-    await delay(SUBMIT_TICK_MS)
-    const latest = terminalFactsOf(memberId)?.lastOutputAt ?? null
-    if (latest !== lastSeen) {
-      ticksWithOutput += 1
-    }
-    lastSeen = latest
-  }
-  return ticksWithOutput
-}
-
-function hasExitedOrAsks(memberId: string): boolean {
-  const facts = terminalFactsOf(memberId)
-  return facts === undefined || facts.hasExited || looksLikeWaitingForInput(facts.tail)
-}
-
-async function typeAndSubmit(memberId: string, text: string): Promise<void> {
-  const withoutReturns = text.split('\r').join('')
-  const isBracketedPaste = terminalFactsOf(memberId)?.isBracketedPaste ?? false
-  const body = isBracketedPaste ? PASTE_START + withoutReturns + PASTE_END : withoutReturns.split('\n').join(' ')
-  writeToTerminal(memberId, body)
-  await delay(SUBMIT_DELAY_MS)
-  await waitUntil(() => quietFor(memberId) >= TYPED_TEXT_SETTLED_MS, TYPED_TEXT_SETTLE_LIMIT_MS)
-  for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
-    writeToTerminal(memberId, '\r')
-    if ((await countOutputTicks(memberId)) >= WORKING_OUTPUT_TICKS || hasExitedOrAsks(memberId)) {
-      return
-    }
-  }
-}
-
 function removeMember(memberId: string, reason: string | null = null): void {
   const member = members.get(memberId)
   if (member !== undefined) {
@@ -339,10 +276,6 @@ function removeMember(memberId: string, reason: string | null = null): void {
   if (member !== undefined && policy.deleteChatWhenStopped) {
     setTimeout(() => void removeTeamSessionFiles(memberId, false).catch(() => undefined), CHAT_DELETE_DELAY_MS)
   }
-}
-
-function commandWithSessionId(command: string, sessionId: string | null): string {
-  return sessionId === null ? command : `${command} --session-id ${sessionId}`
 }
 
 async function lastScreenOf(member: TeamMember): Promise<string> {

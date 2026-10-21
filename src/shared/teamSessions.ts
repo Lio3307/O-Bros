@@ -55,8 +55,10 @@ export function isSessionFileOf(fileBaseName: string, sessionId: string): boolea
   return fileBaseName === sessionId || fileBaseName.endsWith(`-${sessionId}`)
 }
 
+export type PendingSession = Pick<TeamSessionRecord, 'provider' | 'cwd' | 'startedAt' | 'taskStart'>
+
 export function findTeamSessionId(
-  record: TeamSessionRecord,
+  record: PendingSession,
   candidates: SessionCandidate[],
   claimedIds: Set<string>,
   ignoreCase: boolean

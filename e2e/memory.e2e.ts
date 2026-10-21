@@ -58,7 +58,7 @@ function describe(reading: MemoryReading): string {
 
 test('frees the memory of closed terminals', async () => {
   test.setTimeout(240_000)
-  const app = await launchApp({ extraArgs: ['--js-flags=--expose-gc', '--enable-precise-memory-info'] })
+  const app = await launchApp({ separateHome: true, extraArgs: ['--js-flags=--expose-gc', '--enable-precise-memory-info'] })
   try {
     const start = await readMemory(app)
     console.log(`start        ${describe(start)}`)
