@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -34,7 +34,7 @@ describe('moveFolderAndLink', () => {
     await moveFolderAndLink(source, target)
 
     expect(await isLink(source)).toBe(true)
-    expect((await linkTarget(source))?.toLowerCase()).toBe(target.toLowerCase())
+    expect(await linkTarget(source)).toBe(await realpath(target))
     expect(await readFile(join(target, '2026', '10', 'chat.jsonl'), 'utf8')).toBe('{"role":"user"}\n')
     await writeFile(join(source, 'new.jsonl'), 'new', 'utf8')
     expect(await readFile(join(target, 'new.jsonl'), 'utf8')).toBe('new')
