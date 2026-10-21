@@ -171,7 +171,13 @@ const api: DesktopApi = {
     conversations: () => ipcRenderer.invoke(IpcChannel.storageConversations),
     chooseConversationFolder: () => ipcRenderer.invoke(IpcChannel.storageChooseConversationFolder),
     moveConversations: (id) => ipcRenderer.invoke(IpcChannel.storageMoveConversations, id),
-    moveConversationsBack: (id) => ipcRenderer.invoke(IpcChannel.storageMoveConversationsBack, id)
+    moveConversationsBack: (id) => ipcRenderer.invoke(IpcChannel.storageMoveConversationsBack, id),
+    history: () => ipcRenderer.invoke(IpcChannel.storageHistory),
+    saveHistoryNow: () => ipcRenderer.invoke(IpcChannel.storageSaveHistoryNow),
+    moveHistory: () => ipcRenderer.invoke(IpcChannel.storageMoveHistory),
+    setHistoryKeep: (days) => ipcRenderer.invoke(IpcChannel.storageSetHistoryKeep, days),
+    openHistoryFolder: (agent) => ipcRenderer.invoke(IpcChannel.storageOpenHistoryFolder, agent),
+    disks: () => ipcRenderer.invoke(IpcChannel.storageDisks)
   },
   updater: {
     status: () => ipcRenderer.invoke(IpcChannel.updaterStatus),

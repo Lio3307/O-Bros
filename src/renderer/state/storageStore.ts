@@ -21,6 +21,7 @@ interface StorageState {
   sessionReports: SessionStorageReport[] | null
   teamChats: TeamChatsReport | null
   terminalMemory: TerminalMemory
+  measuredAt: number
   refresh: () => Promise<void>
   clearAppCache: () => Promise<void>
   clearLeftoverTemp: () => Promise<void>
@@ -30,7 +31,7 @@ interface StorageState {
   removeTeamChats: () => Promise<void>
   clearTerminalScrollback: () => void
   clearRecentFiles: () => void
-  clearEverything: () => Promise<void>
+  clearSafeItems: () => Promise<void>
 }
 
 export const useStorageStore = create<StorageState>()((set, get) => ({
@@ -38,6 +39,7 @@ export const useStorageStore = create<StorageState>()((set, get) => ({
   sessionReports: null,
   teamChats: null,
   terminalMemory: readTerminalMemory(),
+  measuredAt: 0,
 
   refresh: async () => {
     try {
@@ -46,7 +48,7 @@ export const useStorageStore = create<StorageState>()((set, get) => ({
         window.api.history.storage(),
         window.api.history.teamChats().catch(() => null)
       ])
-      set({ report, sessionReports, teamChats, terminalMemory: readTerminalMemory() })
+      set({ report, sessionReports, teamChats, terminalMemory: readTerminalMemory(), measuredAt: Date.now() })
     } catch (error) {
       toast.error(friendlyErrorMessage(error, 'Could not measure the storage.'))
     }
@@ -144,11 +146,10 @@ export const useStorageStore = create<StorageState>()((set, get) => ({
     toast.success('Recent files list cleared.')
   },
 
-  clearEverything: async () => {
+  clearSafeItems: async () => {
     await get().clearAppCache()
     await get().clearLeftoverTemp()
     await get().clearTeamTaskFiles()
-    get().clearTerminalScrollback()
     get().clearRecentFiles()
   }
 }))

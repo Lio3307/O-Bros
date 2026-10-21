@@ -41,7 +41,7 @@ export async function folderTotals(path: string): Promise<FolderTotals> {
   )
 }
 
-function isSameOrInside(childPath: string, parentPath: string): boolean {
+export function isSameOrInside(childPath: string, parentPath: string): boolean {
   return isPathInside(comparablePath(childPath, IS_PATH_CASE_INSENSITIVE), comparablePath(parentPath, IS_PATH_CASE_INSENSITIVE))
 }
 
@@ -60,7 +60,7 @@ async function renameOrRefuse(from: string, to: string): Promise<void> {
   }
 }
 
-async function copyAndCheck(from: string, to: string): Promise<void> {
+export async function copyAndCheck(from: string, to: string): Promise<void> {
   await mkdir(dirname(to), { recursive: true })
   await cp(from, to, { recursive: true, errorOnExist: true, force: false, preserveTimestamps: true, verbatimSymlinks: true })
   const [expected, copied] = await Promise.all([folderTotals(from), folderTotals(to)])

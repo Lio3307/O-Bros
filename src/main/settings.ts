@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { repositorySearchDepthOf } from '../shared/repositorySearch'
+import { historyKeepDaysOf } from '../shared/universalHistory'
 import { readJsonIfExists } from './services/fileSystem'
 
 interface Settings {
@@ -10,6 +11,8 @@ interface Settings {
   useHardwareAcceleration: boolean
   conversationFolder: string | null
   repositorySearchDepth: number
+  historyFolder: string | null
+  historyKeepDays: number | null
 }
 
 function settingsFilePath(): string {
@@ -21,7 +24,9 @@ function withDefaults(saved: Partial<Settings> | null): Settings {
     projectRoots: saved?.projectRoots ?? [],
     useHardwareAcceleration: saved?.useHardwareAcceleration !== false,
     conversationFolder: typeof saved?.conversationFolder === 'string' ? saved.conversationFolder : null,
-    repositorySearchDepth: repositorySearchDepthOf(saved?.repositorySearchDepth)
+    repositorySearchDepth: repositorySearchDepthOf(saved?.repositorySearchDepth),
+    historyFolder: typeof saved?.historyFolder === 'string' ? saved.historyFolder : null,
+    historyKeepDays: historyKeepDaysOf(saved?.historyKeepDays)
   }
 }
 

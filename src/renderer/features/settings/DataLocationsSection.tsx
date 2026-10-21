@@ -47,6 +47,10 @@ const COPY_BY_KIND: Record<DataLocationKind, LocationCopy> = {
     title: 'Agent conversations',
     note: 'Written by the agent, not by o-bros.'
   },
+  universalHistory: {
+    title: 'Universal history (O-BROS copies)',
+    note: 'O-BROS keeps its copy of your conversations here, one <agent>-resume folder per agent. Move it or choose how long to keep it under Universal history above.'
+  },
   wotSkill: {
     title: 'wot skill',
     note: 'The instruction file you installed for this agent. Remove it in Settings → Team (wot); deleting the folder by hand does the same.'
@@ -94,8 +98,10 @@ export function DataLocationsSection() {
       title="Where your data lives"
       description={
         <>
-          o-bros keeps very little of its own. Your conversations stay where each agent saves them unless you move
-          them above, and your projects stay in their own folders: o-bros never copies them. Nothing here is uploaded anywhere. Other agents'
+          o-bros keeps little of its own: its settings, and the universal history (a small text copy of your Claude and
+          Codex conversations, in the folder you choose above). Each agent's own conversations stay where it saves them
+          unless you move them above, and your projects stay in their own folders: o-bros never copies them. Nothing here
+          is uploaded anywhere. Other agents'
           conversation folders are listed when they exist; o-bros only opens them and never deletes them, because each
           agent saves history its own way.
         </>

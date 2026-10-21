@@ -9,6 +9,14 @@ import {
   moveConversationsBack
 } from '../services/storage/conversationFolders'
 import { listDataLocations, openDataLocation } from '../services/storage/dataLocations'
+import { readDiskOverview } from '../services/storage/diskOverview'
+import {
+  moveUniversalHistory,
+  openUniversalHistoryFolder,
+  saveUniversalHistoryNow,
+  setUniversalHistoryKeepDays,
+  universalHistoryReport
+} from '../services/universalHistory/universalHistory'
 import { readLeftoverTempFolders, removeLeftoverTempFolders } from '../services/storage/leftoverTempFolders'
 import { readTaskFiles, removeTaskFiles } from '../services/wot/wotTaskFiles'
 
@@ -38,4 +46,12 @@ export function registerStorageIpc(): void {
   ipcMain.handle(IpcChannel.storageChooseConversationFolder, () => chooseConversationFolder())
   ipcMain.handle(IpcChannel.storageMoveConversations, (_event, id: string) => moveConversations(String(id)))
   ipcMain.handle(IpcChannel.storageMoveConversationsBack, (_event, id: string) => moveConversationsBack(String(id)))
+  ipcMain.handle(IpcChannel.storageHistory, () => universalHistoryReport())
+  ipcMain.handle(IpcChannel.storageSaveHistoryNow, async () => {
+    await saveUniversalHistoryNow()
+  })
+  ipcMain.handle(IpcChannel.storageMoveHistory, () => moveUniversalHistory())
+  ipcMain.handle(IpcChannel.storageSetHistoryKeep, (_event, days: unknown) => setUniversalHistoryKeepDays(days))
+  ipcMain.handle(IpcChannel.storageOpenHistoryFolder, (_event, agent: unknown) => openUniversalHistoryFolder(agent))
+  ipcMain.handle(IpcChannel.storageDisks, () => readDiskOverview())
 }

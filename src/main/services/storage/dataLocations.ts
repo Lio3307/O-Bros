@@ -8,6 +8,7 @@ import { isRunningFromSource } from '../../runMode'
 import { logDirectory } from '../logging/logFile'
 import { readSessionSources } from '../sessions/sessionSources'
 import { listSkillTargets } from '../wot/skillInstaller'
+import { currentHistoryFolder } from '../universalHistory/universalHistory'
 import { WOT_TASK_FOLDER } from '../wot/wotTaskFiles'
 import { isFolder } from '../fileSystem'
 
@@ -28,7 +29,7 @@ async function listAgentHistoryLocations(): Promise<DataLocation[]> {
   return (await readAgentHistoryFolders()).map((folder) => ({ ...locationOf('agentHistory', folder.path, null), copy: { title: folder.title, note: folder.note, command: folder.command } }))
 }
 
-function userCacheDirectory(): string {
+export function userCacheDirectory(): string {
   if (process.platform === 'win32') {
     return process.env.LOCALAPPDATA ?? join(homedir(), 'AppData', 'Local')
   }
@@ -39,10 +40,11 @@ function userCacheDirectory(): string {
 }
 
 export async function listDataLocations(): Promise<DataLocation[]> {
-  const [sources, skillTargets, agentHistoryLocations] = await Promise.all([
+  const [sources, skillTargets, agentHistoryLocations, historyFolder] = await Promise.all([
     readSessionSources(),
     listSkillTargets().catch(() => []),
-    listAgentHistoryLocations().catch(() => [])
+    listAgentHistoryLocations().catch(() => []),
+    currentHistoryFolder()
   ])
   const skillLocations = skillTargets
     .filter((target) => target.status !== 'missing')
@@ -66,6 +68,7 @@ export async function listDataLocations(): Promise<DataLocation[]> {
     ...updaterLocations,
     ...sessionLocations,
     ...agentHistoryLocations,
+    locationOf('universalHistory', historyFolder, null),
     locationOf('teamTaskFiles', WOT_TASK_FOLDER, null),
     ...skillLocations
   ]

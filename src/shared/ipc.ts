@@ -20,6 +20,8 @@ import type {
   AddRootResult,
   ConversationMoveResult,
   ConversationStorage,
+  DiskReport,
+  UniversalHistoryReport,
   DataLocation,
   CreateEntryRequest,
   AccountUsage,
@@ -204,6 +206,12 @@ export const IpcChannel = {
   storageChooseConversationFolder: 'storage:chooseConversationFolder',
   storageMoveConversations: 'storage:moveConversations',
   storageMoveConversationsBack: 'storage:moveConversationsBack',
+  storageHistory: 'storage:history',
+  storageSaveHistoryNow: 'storage:saveHistoryNow',
+  storageMoveHistory: 'storage:moveHistory',
+  storageSetHistoryKeep: 'storage:setHistoryKeep',
+  storageOpenHistoryFolder: 'storage:openHistoryFolder',
+  storageDisks: 'storage:disks',
   updaterStatus: 'updater:status',
   updaterCheck: 'updater:check',
   updaterDownload: 'updater:download',
@@ -395,6 +403,12 @@ export interface DesktopApi {
     chooseConversationFolder(): Promise<string | null>
     moveConversations(id: string): Promise<ConversationMoveResult>
     moveConversationsBack(id: string): Promise<ConversationMoveResult>
+    history(): Promise<UniversalHistoryReport>
+    saveHistoryNow(): Promise<void>
+    moveHistory(): Promise<ConversationMoveResult>
+    setHistoryKeep(days: number | null): Promise<void>
+    openHistoryFolder(agent: string | null): Promise<void>
+    disks(): Promise<DiskReport[]>
   }
   updater: {
     status(): Promise<UpdateStatus>

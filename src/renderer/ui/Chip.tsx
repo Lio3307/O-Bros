@@ -1,9 +1,17 @@
 import type { ReactNode } from 'react'
+import type { StatusTone } from './StatusDot'
 import './card.css'
 
-export function Chip({ icon, title, children }: { icon?: ReactNode; title?: string; children: ReactNode }) {
+interface ChipProps {
+  icon?: ReactNode
+  title?: string
+  tone?: StatusTone
+  children: ReactNode
+}
+
+export function Chip({ icon, title, tone = 'neutral', children }: ChipProps) {
   return (
-    <span className="chip" title={title}>
+    <span className={tone === 'neutral' ? 'chip' : `chip chip-${tone}`} title={title}>
       {icon}
       {children}
     </span>

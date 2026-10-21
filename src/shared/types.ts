@@ -364,6 +364,7 @@ export type DataLocationKind =
   | 'teamTaskFiles'
   | 'wotSkill'
   | 'agentHistory'
+  | 'universalHistory'
 
 export interface DataLocationCopy {
   title: string
@@ -392,6 +393,45 @@ export interface ConversationFolder {
 export interface ConversationStorage {
   targetFolder: string | null
   folders: ConversationFolder[]
+}
+
+export interface DriveSpace {
+  root: string
+  freeBytes: number
+  totalBytes: number
+}
+
+export interface AgentHistorySummary {
+  agent: string
+  folderName: string
+  conversationCount: number
+  totalBytes: number
+}
+
+export interface UniversalHistoryReport {
+  folder: string
+  isDefaultFolder: boolean
+  agents: AgentHistorySummary[]
+  conversationCount: number
+  totalBytes: number
+  keepDays: number | null
+  lastSavedAt: number | null
+  isSaving: boolean
+  drive: DriveSpace | null
+}
+
+export type DiskItemKind = 'conversations' | 'history' | 'app' | 'updates'
+
+export interface DiskItem {
+  kind: DiskItemKind
+  label: string
+  path: string
+  bytes: number
+}
+
+export interface DiskReport {
+  drive: DriveSpace
+  items: DiskItem[]
 }
 
 export interface ConversationMoveResult {

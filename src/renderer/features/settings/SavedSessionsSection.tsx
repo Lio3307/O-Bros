@@ -15,8 +15,14 @@ function bucketTitle(days: number | null): string {
   return days === null ? 'All sessions' : 'Not used for ' + days + ' days or more'
 }
 
+function deleteEffect(name: string, deletePermanently: boolean): string {
+  const where = deletePermanently ? 'gone for good' : 'in the Recycle Bin'
+  return `${name} can no longer resume them (${where}). O-BROS's copy in the universal history stays.`
+}
+
 function ProviderSessions({ report }: { report: SessionStorageReport }) {
   const removeOldSessions = useStorageStore((state) => state.removeOldSessions)
+  const deletePermanently = useHistoryStore((state) => state.deletePermanently)
   const name = PROVIDER_NAMES[report.provider]
   const oldestText = report.oldestAt === null ? 'none saved' : 'oldest ' + formatAge(report.oldestAt, Date.now())
 
@@ -30,14 +36,37 @@ function ProviderSessions({ report }: { report: SessionStorageReport }) {
           <CleanupRow
             key={bucket.days ?? 'all'}
             title={bucketTitle(bucket.days)}
-            description={'Sessions ' + name + ' can no longer resume once deleted.'}
+            description={`${name} conversations saved on this computer.`}
             amount={pluralize(bucket.sessionCount, 'session', 'sessions') + ', ' + formatBytes(bucket.totalBytes)}
             buttonLabel="Delete"
+            safety={deletePermanently ? 'permanent' : 'undoable'}
+            effect={deleteEffect(name, deletePermanently)}
             isDisabled={bucket.sessionCount === 0}
             onClean={() => removeOldSessions(report.provider, bucket)}
           />
         ))}
       </div>
+    </div>
+  )
+}
+
+function TeamChatsRow() {
+  const teamChats = useStorageStore((state) => state.teamChats)
+  const removeTeamChats = useStorageStore((state) => state.removeTeamChats)
+  const deletePermanently = useHistoryStore((state) => state.deletePermanently)
+
+  return (
+    <div className="table">
+      <CleanupRow
+        title="Team member conversations"
+        description="Conversations Claude and Codex team members had while a lead used them (marked Team member in History)."
+        amount={teamChats === null ? null : `${pluralize(teamChats.sessionCount, 'conversation', 'conversations')}, ${formatBytes(teamChats.totalBytes)}`}
+        buttonLabel="Delete"
+        safety={deletePermanently ? 'permanent' : 'undoable'}
+        effect={`a member's work in your files stays; ${deleteEffect('the member', deletePermanently)}`}
+        isDisabled={teamChats === null || teamChats.sessionCount === 0}
+        onClean={removeTeamChats}
+      />
     </div>
   )
 }
@@ -49,41 +78,39 @@ export function SavedSessionsSection() {
 
   return (
     <SettingsSection
-      title="Saved conversations (what Resume uses)"
+      title="Delete old conversations"
       description={
         <>
-          Claude and Codex save every conversation as a file so you can resume it. o-bros lists them in History, where
-          each one has a Resume button. Nothing here is loaded into memory until you open one.
+          Claude and Codex save every conversation so you can resume it from History. They only use disk space, not
+          memory. Delete the ones you will not resume to free space.
         </>
       }
     >
       <label className="toggle-row">
-        <input
-          type="checkbox"
-          checked={deletePermanently}
-          onChange={(event) => setDeletePermanently(event.target.checked)}
-        />
+        <input type="checkbox" checked={deletePermanently} onChange={(event) => setDeletePermanently(event.target.checked)} />
         <span>Delete permanently instead of moving to the Recycle Bin or Trash</span>
       </label>
+      <p className="muted">
+        {deletePermanently
+          ? 'Permanent: the space is freed at once, and deleted conversations cannot be brought back.'
+          : 'Recycle Bin or Trash: you can restore them from there, but the space is only freed when you empty it.'}
+      </p>
 
       {reports === null && <p className="muted"><LoadingText text="Measuring your saved conversations…" /></p>}
       {reports?.map((report) => <ProviderSessions key={report.provider} report={report} />)}
+      <h3 className="settings-subtitle">Team members (wot)</h3>
+      <TeamChatsRow />
 
-      <h3 className="settings-subtitle">What keeping and deleting costs you</h3>
-      <p className="muted">
-        <strong>Keeping a session</strong> costs disk space only, not memory. In exchange you can resume it later with
-        its full context and read it in History. Resuming a long session loads its whole conversation back into the
-        model, which can use more of your usage limit and be slower than starting fresh.
-      </p>
-      <p className="muted">
-        <strong>Deleting a session</strong> frees disk space, but you can no longer resume or read it. The Recycle Bin
-        keeps it recoverable, but the space is only freed when you empty it. Permanent delete frees the space at once
-        and cannot be undone.
-      </p>
-      <p className="muted">
-        Deleting never touches your project files, git history, logins, or the notes the tools keep about your
-        projects.
-      </p>
+      <div className="storage-tradeoff">
+        <p>
+          <strong>Keep</strong>: costs disk space only. You can resume with full context and read it in History. Resuming a
+          very long conversation loads all of it again, which uses more of your plan limit than starting fresh.
+        </p>
+        <p>
+          <strong>Delete</strong>: frees disk space. You can no longer resume or read it in the agent. Your project files,
+          git history and logins are never touched.
+        </p>
+      </div>
     </SettingsSection>
   )
 }

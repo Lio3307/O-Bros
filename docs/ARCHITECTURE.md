@@ -321,6 +321,7 @@ Each store is a small Zustand store with one job (`workspaceStore` for tabs, `pr
 | Data | Where |
 |---|---|
 | Project folders, graphics card setting, chosen conversation folder | `settings.json` in the user-data folder (`%APPDATA%/o-bros` on Windows, `o-bros-dev` when running from source) |
+| Universal history | `o-bros-history/<agent>-resume/<day>_<session id>.json` in the user-data folder or where the user moved it, plus `index.json` (source file → modified time and record file, relative paths). `universalHistory/historySync.ts` saves changed Claude and Codex transcripts (user and assistant text only) every minute and prunes by the keep period; `universalHistory.ts` runs it one task at a time with Move, which copies with `copyAndCheck`, switches the setting, then removes the old folder. |
 | Agent conversations you moved | `<chosen folder>/<agent>`, with a junction (Windows) or symlink in the agent's old folder. Done by `folderMove.ts`: rename the old folder (fails if a file is in use), copy and compare file count and bytes, link, then delete the old copy; any failure puts the files back. `conversationFolders.ts` refuses while the agent's process runs or the target lacks space. |
 | Custom provider keys | `provider-keys.json` in the user-data folder, encrypted |
 | Activity log | `activity.json` in the user-data folder |

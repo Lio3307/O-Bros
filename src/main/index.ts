@@ -25,6 +25,7 @@ import { killAllTerminals } from './services/ptyManager'
 import { writeLog } from './services/logging/logFile'
 import { setBridgeTarget } from './services/wot/rendererBridge'
 import { startTypedAgentWatch } from './services/activity/typedAgents'
+import { startUniversalHistory, stopUniversalHistory } from './services/universalHistory/universalHistory'
 import { startWotServer, stopWotServer } from './services/wot/wotServer'
 import { guardWindowClose } from './closeGuard'
 import { createMainWindow } from './window'
@@ -75,6 +76,7 @@ app.whenReady().then(() => {
   startWotServer()
   openMainWindow()
   startTypedAgentWatch()
+  startUniversalHistory()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -95,6 +97,7 @@ app.on('child-process-gone', (_event, details) =>
 
 app.on('before-quit', () => {
   stopWotServer()
+  stopUniversalHistory()
   killAllTerminals()
   stopAllLanguageServers()
 })
