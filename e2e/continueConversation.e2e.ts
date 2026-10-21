@@ -104,6 +104,8 @@ test.afterEach(async () => {
   await app.close()
 })
 
+const FAKE_KEY = 'sk-' + 'proj-' + 'Ab1'.repeat(14)
+
 async function readProof(): Promise<string> {
   return readFile(join(app.projectFolder, 'handoff-received.txt'), 'utf8').catch(() => '')
 }
@@ -115,7 +117,8 @@ async function writeSavedCodexConversation(): Promise<void> {
   const lines = [
     { type: 'session_meta', payload: { id: 'saved-codex-1', cwd: app.projectFolder } },
     { type: 'response_item', payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: 'Fix the login bug in auth.ts' }] } },
-    { type: 'response_item', payload: { type: 'message', role: 'assistant', content: [{ type: 'output_text', text: 'The token check is inverted.' }] } }
+    { type: 'response_item', payload: { type: 'message', role: 'assistant', content: [{ type: 'output_text', text: 'The token check is inverted.' }] } },
+    { type: 'response_item', payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `Use the test key ${FAKE_KEY} for the API` }] } }
   ]
   await writeFile(join(folder, 'rollout-saved-codex-1.jsonl'), lines.map((line) => JSON.stringify(line)).join('\n') + '\n', 'utf8')
 }
@@ -138,6 +141,8 @@ test('continues a saved conversation in another agent from History and shows the
   expect(handoff).toContain(`Working folder: ${app.projectFolder}`)
   expect(handoff).toContain('codex-resume')
   expect(handoff).toContain('## What to do now')
+  expect(handoff).toContain('Use the test key [hidden] for the API')
+  expect(handoff).not.toContain(FAKE_KEY)
 
   await app.window.getByTitle('History', { exact: true }).click()
   await expect(row.locator('.chip', { hasText: 'Codex → fakeagent' })).toBeVisible({ timeout: 20_000 })

@@ -1,7 +1,5 @@
-import { execFile } from 'node:child_process'
 import { shell } from 'electron'
 import { join } from 'node:path'
-import { promisify } from 'node:util'
 import type {
   GitBranchList,
   GitCheckoutRequest,
@@ -10,14 +8,8 @@ import type {
   GitPathsRequest
 } from '../../shared/types'
 import { isInsideDirectory, assertInsideProjectRoots } from '../pathGuard'
+import { runGit } from './gitRunner'
 
-const execFileAsync = promisify(execFile)
-const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
-
-async function runGit(repoPath: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd: repoPath, maxBuffer: MAX_GIT_OUTPUT_BYTES })
-  return stdout
-}
 
 function assertPathsInsideRepo(repoPath: string, filePaths: string[]): void {
   for (const filePath of filePaths) {
@@ -43,12 +35,17 @@ export async function unstagePaths(request: GitPathsRequest): Promise<void> {
   }
 }
 
-export async function commitStaged(request: GitCommitRequest): Promise<void> {
-  await assertInsideProjectRoots(request.repoPath)
-  const message = request.message.trim()
-  if (message === '') {
+export function requireCommitMessage(message: string): string {
+  const trimmed = message.trim()
+  if (trimmed === '') {
     throw new Error('A commit message is required.')
   }
+  return trimmed
+}
+
+export async function commitStaged(request: GitCommitRequest): Promise<void> {
+  await assertInsideProjectRoots(request.repoPath)
+  const message = requireCommitMessage(request.message)
   await runGit(request.repoPath, ['commit', '-m', message])
 }
 
@@ -76,10 +73,14 @@ export async function listBranches(repoPath: string): Promise<GitBranchList> {
   return { current: current === '' || current === 'HEAD' ? null : current, branches }
 }
 
-export async function switchBranch(request: GitCheckoutRequest): Promise<void> {
-  const { branches } = await listBranches(request.repoPath)
-  if (!branches.includes(request.branch)) {
-    throw new Error(`Unknown branch ${request.branch}`)
+export async function assertBranchExists(repoPath: string, name: string): Promise<void> {
+  const { branches } = await listBranches(repoPath)
+  if (!branches.includes(name)) {
+    throw new Error(`Unknown branch ${name}`)
   }
+}
+
+export async function switchBranch(request: GitCheckoutRequest): Promise<void> {
+  await assertBranchExists(request.repoPath, request.branch)
   await runGit(request.repoPath, ['switch', request.branch])
 }

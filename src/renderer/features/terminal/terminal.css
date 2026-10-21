@@ -297,18 +297,3 @@
 .terminal-search input:focus {
   border-color: var(--color-faint);
 }
-
-.terminal-search button {
-  display: grid;
-  place-items: center;
-  padding: 4px;
-  color: var(--color-muted);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius);
-}
-
-.terminal-search button:hover {
-  color: var(--color-white);
-  background: var(--color-hover);
-}

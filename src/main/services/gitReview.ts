@@ -1,33 +1,16 @@
-import { execFile } from 'node:child_process'
 import { shell } from 'electron'
 import { stat } from 'node:fs/promises'
 import { join } from 'node:path'
-import { promisify } from 'node:util'
 import type { ReviewBaseline, ReviewChange, ReviewFileRequest } from '../../shared/types'
 import { assertInsideProjectRoots, isInsideDirectory } from '../pathGuard'
 import { isCommitHash } from './gitLogParser'
 import { newUntrackedPaths, parseNameStatus, splitLines } from './gitReviewParser'
 import { readGitDiff } from './gitService'
 import { parseNumstat } from './gitStatusParser'
+import { isGitRepository, runGit } from './gitRunner'
 
-const execFileAsync = promisify(execFile)
-const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
 const EMPTY_TREE_HASH = '4b825dc642cb6eb9a060e54bf8d69288fbd7f3d'
 const MAX_COUNTED_FILE_BYTES = 512 * 1024
-
-async function runGit(repoPath: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd: repoPath, maxBuffer: MAX_GIT_OUTPUT_BYTES })
-  return stdout
-}
-
-async function isRepository(repoPath: string): Promise<boolean> {
-  try {
-    await stat(join(repoPath, '.git'))
-    return true
-  } catch {
-    return false
-  }
-}
 
 async function readSnapshotCommit(repoPath: string): Promise<string> {
   try {
@@ -68,7 +51,7 @@ function assertPathInsideRepo(repoPath: string, filePath: string): void {
 
 export async function captureReviewBaseline(repoPath: string): Promise<ReviewBaseline | null> {
   await assertInsideProjectRoots(repoPath)
-  if (!(await isRepository(repoPath))) {
+  if (!(await isGitRepository(repoPath))) {
     return null
   }
   const [commit, untrackedPaths] = await Promise.all([readSnapshotCommit(repoPath), listUntrackedPaths(repoPath)])

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { withAppUsage } from '../../shared/processUsage'
 import type { ResourceSnapshot } from '../../shared/types'
+import { delay } from '../../shared/delay'
 
 const MIN_FEEDBACK_MS = 500
 
@@ -11,10 +12,6 @@ interface ResourcesState {
   poll: () => Promise<void>
   pollApp: () => Promise<void>
   refresh: () => Promise<void>
-}
-
-function wait(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds))
 }
 
 export const useResourcesStore = create<ResourcesState>()((set, get) => ({
@@ -48,7 +45,7 @@ export const useResourcesStore = create<ResourcesState>()((set, get) => ({
     }
     set({ isRefreshing: true, hasFailed: false })
     try {
-      const [snapshot] = await Promise.all([window.api.resources.get(), wait(MIN_FEEDBACK_MS)])
+      const [snapshot] = await Promise.all([window.api.resources.get(), delay(MIN_FEEDBACK_MS)])
       set({ snapshot })
     } catch {
       set({ hasFailed: true })

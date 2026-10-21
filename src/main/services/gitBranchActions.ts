@@ -1,5 +1,3 @@
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 import type {
   GitAmendRequest,
   GitCreateBranchRequest,
@@ -7,16 +5,10 @@ import type {
   GitRenameBranchRequest
 } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
-import { listBranches } from './gitActions'
+import { assertBranchExists, listBranches, requireCommitMessage } from './gitActions'
+import { runGit } from './gitRunner'
 
-const execFileAsync = promisify(execFile)
-const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
 const MAX_BRANCH_NAME_LENGTH = 200
-
-async function runGit(repoPath: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd: repoPath, maxBuffer: MAX_GIT_OUTPUT_BYTES })
-  return stdout
-}
 
 async function assertValidBranchName(repoPath: string, name: string): Promise<string> {
   const trimmed = name.trim()
@@ -30,13 +22,6 @@ async function assertValidBranchName(repoPath: string, name: string): Promise<st
     throw new Error('That is not a valid branch name.')
   }
   return trimmed
-}
-
-async function assertBranchExists(repoPath: string, name: string): Promise<void> {
-  const { branches } = await listBranches(repoPath)
-  if (!branches.includes(name)) {
-    throw new Error(`Unknown branch ${name}`)
-  }
 }
 
 export async function createBranch(request: GitCreateBranchRequest): Promise<void> {
@@ -87,9 +72,6 @@ export async function readLastCommitMessage(repoPath: string): Promise<string> {
 
 export async function amendLastCommitMessage(request: GitAmendRequest): Promise<void> {
   await assertInsideProjectRoots(request.repoPath)
-  const message = request.message.trim()
-  if (message === '') {
-    throw new Error('A commit message is required.')
-  }
+  const message = requireCommitMessage(request.message)
   await runGit(request.repoPath, ['commit', '--amend', '--only', '-m', message])
 }

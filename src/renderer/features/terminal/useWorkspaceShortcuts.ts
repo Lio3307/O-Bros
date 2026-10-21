@@ -1,38 +1,7 @@
 import { useEffect } from 'react'
-import { findShortcutAction, type ShortcutAction } from '../../../shared/shortcuts'
-import { useLayoutStore } from '../../state/layoutStore'
-import { openTerminal } from '../../state/openTerminal'
+import { findShortcutAction } from '../../../shared/shortcuts'
 import { useShortcutsStore } from '../../state/shortcutsStore'
-import { useWorkspaceStore } from '../../state/workspaceStore'
-
-function focusedTerminal() {
-  const { tabs, activeTabId } = useWorkspaceStore.getState()
-  const tab = tabs.find((candidate) => candidate.id === activeTabId)
-  return tab !== undefined && tab.kind === 'terminal' ? tab : null
-}
-
-const RUN_ACTION: Record<ShortcutAction, () => void> = {
-  splitRight: () => {
-    const tab = focusedTerminal()
-    if (tab !== null) {
-      useWorkspaceStore.getState().splitPane(tab.id, tab.focusedPaneId, 'horizontal')
-    }
-  },
-  splitDown: () => {
-    const tab = focusedTerminal()
-    if (tab !== null) {
-      useWorkspaceStore.getState().splitPane(tab.id, tab.focusedPaneId, 'vertical')
-    }
-  },
-  closePane: () => {
-    const tab = focusedTerminal()
-    if (tab !== null) {
-      useWorkspaceStore.getState().closePane(tab.id, tab.focusedPaneId)
-    }
-  },
-  newTerminal: () => openTerminal(null),
-  openCommandPalette: () => useLayoutStore.getState().openCommandPalette()
-}
+import { SHORTCUT_ACTIONS } from './shortcutActions'
 
 export function useWorkspaceShortcuts(): void {
   useEffect(() => {
@@ -50,7 +19,7 @@ export function useWorkspaceShortcuts(): void {
       if (event.repeat) {
         return
       }
-      RUN_ACTION[action]()
+      SHORTCUT_ACTIONS[action]()
     }
 
     window.addEventListener('keydown', handleKeyDown, true)

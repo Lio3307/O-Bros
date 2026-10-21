@@ -1,14 +1,11 @@
-import { execFile } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { promisify } from 'node:util'
 import { hasConflictMarkers } from '../../shared/conflictMarkers'
 import type { GitOperation, GitOperationKind, GitResolveRequest } from '../../shared/types'
 import { assertInsideProjectRoots, isInsideDirectory } from '../pathGuard'
 import { pathExists } from './fileSystem'
+import { runGit } from './gitRunner'
 
-const execFileAsync = promisify(execFile)
-const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
 const BRANCH_PREFIX = 'refs/heads/'
 const CURRENT_STAGE = '2'
 const INCOMING_STAGE = '3'
@@ -27,13 +24,8 @@ const ABORT_ARGS: Record<GitOperationKind, string[]> = {
   revert: ['revert', '--abort']
 }
 
-async function runGit(repoPath: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, {
-    cwd: repoPath,
-    maxBuffer: MAX_GIT_OUTPUT_BYTES,
-    env: { ...process.env, GIT_EDITOR: 'true' }
-  })
-  return stdout
+function runGitWithoutEditor(repoPath: string, args: string[]): Promise<string> {
+  return runGit(repoPath, args, { env: { ...process.env, GIT_EDITOR: 'true' } })
 }
 
 async function readTextIfExists(path: string): Promise<string | null> {
@@ -46,7 +38,7 @@ async function readTextIfExists(path: string): Promise<string | null> {
 
 async function commitSubject(repoPath: string, ref: string): Promise<string | null> {
   try {
-    return (await runGit(repoPath, ['log', '-1', '--format=%s', ref])).trim() || null
+    return (await runGitWithoutEditor(repoPath, ['log', '-1', '--format=%s', ref])).trim() || null
   } catch {
     return null
   }
@@ -54,7 +46,7 @@ async function commitSubject(repoPath: string, ref: string): Promise<string | nu
 
 async function branchNameOf(repoPath: string, ref: string): Promise<string | null> {
   try {
-    return (await runGit(repoPath, ['name-rev', '--name-only', '--no-undefined', ref])).trim() || null
+    return (await runGitWithoutEditor(repoPath, ['name-rev', '--name-only', '--no-undefined', ref])).trim() || null
   } catch {
     return null
   }
@@ -71,7 +63,7 @@ async function rebasedBranch(gitDir: string): Promise<string | null> {
 }
 
 export async function readGitOperation(repoPath: string): Promise<GitOperation | null> {
-  const gitDir = (await runGit(repoPath, ['rev-parse', '--absolute-git-dir'])).trim()
+  const gitDir = (await runGitWithoutEditor(repoPath, ['rev-parse', '--absolute-git-dir'])).trim()
   if (await pathExists(join(gitDir, 'MERGE_HEAD'))) {
     return { kind: 'merge', incoming: await branchNameOf(repoPath, 'MERGE_HEAD') }
   }
@@ -88,7 +80,7 @@ export async function readGitOperation(repoPath: string): Promise<GitOperation |
 }
 
 async function conflictStages(repoPath: string, filePath: string): Promise<string[]> {
-  const output = await runGit(repoPath, ['ls-files', '-u', '--', filePath])
+  const output = await runGitWithoutEditor(repoPath, ['ls-files', '-u', '--', filePath])
   return output
     .split('\n')
     .filter((line) => line !== '')
@@ -106,16 +98,16 @@ export async function resolveConflict(request: GitResolveRequest): Promise<void>
     if (content !== null && hasConflictMarkers(content)) {
       throw new Error(`${request.filePath} still has conflict markers (<<<<<<< and >>>>>>>). Edit them out first.`)
     }
-    await runGit(request.repoPath, ['add', '-A', '--', request.filePath])
+    await runGitWithoutEditor(request.repoPath, ['add', '-A', '--', request.filePath])
     return
   }
   const stage = request.side === 'current' ? CURRENT_STAGE : INCOMING_STAGE
   if (!(await conflictStages(request.repoPath, request.filePath)).includes(stage)) {
-    await runGit(request.repoPath, ['rm', '-q', '--', request.filePath])
+    await runGitWithoutEditor(request.repoPath, ['rm', '-q', '--', request.filePath])
     return
   }
-  await runGit(request.repoPath, ['checkout', request.side === 'current' ? '--ours' : '--theirs', '--', request.filePath])
-  await runGit(request.repoPath, ['add', '--', request.filePath])
+  await runGitWithoutEditor(request.repoPath, ['checkout', request.side === 'current' ? '--ours' : '--theirs', '--', request.filePath])
+  await runGitWithoutEditor(request.repoPath, ['add', '--', request.filePath])
 }
 
 async function requireOperation(repoPath: string): Promise<GitOperationKind> {
@@ -129,12 +121,12 @@ async function requireOperation(repoPath: string): Promise<GitOperationKind> {
 
 export async function continueOperation(repoPath: string): Promise<void> {
   const kind = await requireOperation(repoPath)
-  if ((await runGit(repoPath, ['diff', '--name-only', '--diff-filter=U'])).trim() !== '') {
+  if ((await runGitWithoutEditor(repoPath, ['diff', '--name-only', '--diff-filter=U'])).trim() !== '') {
     throw new Error('Some files still have conflicts. Resolve them first.')
   }
-  await runGit(repoPath, CONTINUE_ARGS[kind])
+  await runGitWithoutEditor(repoPath, CONTINUE_ARGS[kind])
 }
 
 export async function abortOperation(repoPath: string): Promise<void> {
-  await runGit(repoPath, ABORT_ARGS[await requireOperation(repoPath)])
+  await runGitWithoutEditor(repoPath, ABORT_ARGS[await requireOperation(repoPath)])
 }

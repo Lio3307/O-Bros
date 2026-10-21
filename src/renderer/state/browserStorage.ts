@@ -29,3 +29,16 @@ export function writeStored(key: string, value: string): void {
 export function writeStoredJson(key: string, value: unknown): void {
   writeStored(key, JSON.stringify(value))
 }
+
+export function parseStringList(saved: string | null): string[] {
+  try {
+    const parsed: unknown = JSON.parse(saved ?? '[]')
+    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export function readStoredStringList(key: string): string[] {
+  return parseStringList(readStored(key))
+}

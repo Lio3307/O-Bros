@@ -135,13 +135,13 @@ export async function prepareContinuation(request: ContinueRequest): Promise<Con
     )
     await saveThreads(folder, continued.threads)
     const earlierParts = continued.thread.parts.slice(0, -1)
-    const handoffText = buildHandoff({
+    const handoff = buildHandoff({
       marker: continued.marker,
       cwd,
       parts: await Promise.all(earlierParts.map((part) => handoffPartOf(folder, part))),
       changedFiles: await changedFilesOf(cwd)
     })
-    return { cwd, command: commandWithSessionId(agentCommand, targetSessionId), handoffText, threadId: continued.thread.id }
+    return { cwd, command: commandWithSessionId(agentCommand, targetSessionId), handoffText: handoff.text, hiddenCount: handoff.hiddenCount, threadId: continued.thread.id }
   })
 }
 

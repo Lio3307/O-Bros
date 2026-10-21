@@ -3,6 +3,7 @@ import { looksLikeWaitingForInput } from '../../shared/waitingPrompt'
 import { writeToTerminal } from './ptyManager'
 import { terminalFactsOf } from './terminalFacts'
 import { isReadyForInput } from './wot/memberState'
+import { delay } from '../../shared/delay'
 
 const POLL_MS = 500
 const AGENT_READY_TIMEOUT_MS = 60_000
@@ -15,10 +16,6 @@ const WORKING_OUTPUT_TICKS = 8
 const SUBMIT_ATTEMPTS = 2
 const PASTE_START = '\u001b[200~'
 const PASTE_END = '\u001b[201~'
-
-export function delay(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds))
-}
 
 export async function waitUntil(condition: () => boolean, timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs

@@ -21,6 +21,14 @@ function openHandoffTerminal(cwd: string, command: string, title: string): strin
   return tab?.focusedPaneId ?? null
 }
 
+function hiddenNote(hiddenCount: number): string {
+  if (hiddenCount === 0) {
+    return ''
+  }
+  const things = hiddenCount === 1 ? '1 thing that looked like a password or key was' : `${hiddenCount} things that looked like passwords or keys were`
+  return ` ${things} replaced with [hidden] and not sent.`
+}
+
 export async function continueWithAgent(sessionFilePath: string, launcher: AgentLauncher): Promise<void> {
   toast.info(`Preparing the handoff for ${launcher.name}…`)
   let plan
@@ -37,7 +45,7 @@ export async function continueWithAgent(sessionFilePath: string, launcher: Agent
   }
   const result = await window.api.pty.typeWhenReady(paneId, plan.handoffText)
   if (result.isSent) {
-    toast.success(`${launcher.name} got the handoff and continues the conversation.`)
+    toast.success(`${launcher.name} got the handoff and continues the conversation.${hiddenNote(plan.hiddenCount)}`)
   } else {
     toast.warning(result.message)
   }

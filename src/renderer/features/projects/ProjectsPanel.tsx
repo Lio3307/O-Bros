@@ -30,6 +30,7 @@ import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { useNow } from '../../ui/useNow'
 import './projects.css'
 import { Button } from '../../ui/Button'
+import { ShowMoreToggle } from './ShowMoreToggle'
 
 const SESSION_AGE_REFRESH_MS = 60_000
 
@@ -112,16 +113,7 @@ function FolderSessions({ sessions, now }: { sessions: TerminalTab[]; now: numbe
       {shown.map((session) => (
         <SessionRow key={session.id} session={session} now={now} />
       ))}
-      {hiddenCount > 0 && (
-        <button type="button" className="folder-sessions-more" onClick={() => setIsExpanded(true)}>
-          Show {hiddenCount} more
-        </button>
-      )}
-      {isExpanded && sessions.length > VISIBLE_NESTED_SESSIONS && (
-        <button type="button" className="folder-sessions-more" onClick={() => setIsExpanded(false)}>
-          Show fewer
-        </button>
-      )}
+      <ShowMoreToggle hiddenCount={hiddenCount} canShowFewer={isExpanded && sessions.length > VISIBLE_NESTED_SESSIONS} onChange={setIsExpanded} />
     </div>
   )
 }

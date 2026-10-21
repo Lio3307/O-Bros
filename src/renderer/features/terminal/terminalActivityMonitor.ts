@@ -43,25 +43,14 @@ function showSystemNotification(tab: TerminalTab, title: string, body: string): 
   }
 }
 
-function announceFinished(paneId: string): void {
+function announce(paneId: string, happened: string, detail: string): void {
   const tab = findTabOfPane(paneId)
   if (tab === null || isUserWatching(tab)) {
     return
   }
   useAttentionStore.getState().mark(tab.id)
   if (useTerminalSettingsStore.getState().notifyWhenFinished) {
-    showSystemNotification(tab, `${tab.panes[paneId].title} finished`, 'The terminal output has gone quiet.')
-  }
-}
-
-function announceWaiting(paneId: string): void {
-  const tab = findTabOfPane(paneId)
-  if (tab === null || isUserWatching(tab)) {
-    return
-  }
-  useAttentionStore.getState().mark(tab.id)
-  if (useTerminalSettingsStore.getState().notifyWhenFinished) {
-    showSystemNotification(tab, `${tab.panes[paneId].title} is waiting for you`, 'It asked a question and needs your answer.')
+    showSystemNotification(tab, `${tab.panes[paneId].title} ${happened}`, detail)
   }
 }
 
@@ -71,7 +60,7 @@ function checkActivities(): void {
     const quietMs = now - watched.activity.lastOutputAt
     if (quietMs >= WAITING_AFTER_QUIET_MS && looksLikeWaitingForInput(watched.tail)) {
       activities.delete(paneId)
-      announceWaiting(paneId)
+      announce(paneId, 'is waiting for you', 'It asked a question and needs your answer.')
       continue
     }
     const status = classifyActivity(watched.activity, now)
@@ -80,7 +69,7 @@ function checkActivities(): void {
     }
     activities.delete(paneId)
     if (status === 'finished-long-run') {
-      announceFinished(paneId)
+      announce(paneId, 'finished', 'The terminal output has gone quiet.')
     }
   }
   if (activities.size === 0 && checkTimer !== null) {

@@ -1,19 +1,11 @@
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 import type { GitStashEntry, GitStashRefRequest, GitStashRequest } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
 import { GIT_STASH_FORMAT, isStashRef, parseStashList } from './gitStashParser'
+import { runGit } from './gitRunner'
 
-const execFileAsync = promisify(execFile)
-const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
 const MAX_STASH_MESSAGE_LENGTH = 200
 const NOT_A_REPOSITORY = 'not a git repository'
 const NOTHING_TO_STASH = 'No local changes to save'
-
-async function runGit(repoPath: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd: repoPath, maxBuffer: MAX_GIT_OUTPUT_BYTES })
-  return stdout
-}
 
 export async function listStashes(repoPath: string): Promise<GitStashEntry[]> {
   await assertInsideProjectRoots(repoPath)

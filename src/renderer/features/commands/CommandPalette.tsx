@@ -3,6 +3,7 @@ import { searchCommands } from '../../../shared/commandSearch'
 import { formatShortcut } from '../../../shared/shortcuts'
 import { useLayoutStore } from '../../state/layoutStore'
 import { isMacPlatform, useShortcutsStore } from '../../state/shortcutsStore'
+import { handlePickerKey } from '../files/pickerKeys'
 import '../files/quickOpen.css'
 import './commands.css'
 import { ALL_COMMANDS } from './allCommands'
@@ -33,17 +34,7 @@ export function CommandPalette() {
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
-    if (event.key === 'Escape') {
-      closeCommandPalette()
-    } else if (event.key === 'ArrowDown') {
-      event.preventDefault()
-      setSelectedIndex(Math.min(selectedIndex + 1, matches.length - 1))
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault()
-      setSelectedIndex(Math.max(selectedIndex - 1, 0))
-    } else if (event.key === 'Enter' && matches[selectedIndex] !== undefined) {
-      run(matches[selectedIndex])
-    }
+    handlePickerKey(event, { items: matches, selectedIndex, setSelectedIndex, onClose: closeCommandPalette, onPick: run })
   }
 
   return (

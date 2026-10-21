@@ -4,6 +4,7 @@ import type { EditorView } from '@codemirror/view'
 import { fileUriToPath, sameFileUri } from '../../../../shared/fileUri'
 import { useLayoutStore } from '../../../state/layoutStore'
 import { useWorkspaceStore } from '../../../state/workspaceStore'
+import { delay } from '../../../../shared/delay'
 
 const OPEN_WAIT_MS = 5000
 const OPEN_POLL_MS = 50
@@ -20,10 +21,6 @@ class OpenFile implements WorkspaceFile {
   getView(): EditorView {
     return this.view
   }
-}
-
-function wait(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds))
 }
 
 export class ObrosWorkspace extends Workspace {
@@ -87,7 +84,7 @@ export class ObrosWorkspace extends Workspace {
     useWorkspaceStore.getState().openFileTab(path)
     useLayoutStore.getState().showSection('projects')
     for (let waited = 0; waited < OPEN_WAIT_MS; waited += OPEN_POLL_MS) {
-      await wait(OPEN_POLL_MS)
+      await delay(OPEN_POLL_MS)
       const opened = this.getFile(uri)
       if (opened !== null) {
         return opened.view

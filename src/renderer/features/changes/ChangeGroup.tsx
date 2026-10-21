@@ -1,10 +1,9 @@
 import { Minus, Plus, Undo2 } from 'lucide-react'
-import { lastPathSegment } from '../../../shared/paths'
 import type { GitFileChange } from '../../../shared/types'
 import { useChangesStore } from '../../state/changesStore'
 import { askToConfirm } from '../../state/confirmStore'
 import { Button } from '../../ui/Button'
-import { LineCounts } from './LineCounts'
+import { ChangeRowButton } from './ChangeRowButton'
 
 const kindMark: Record<GitFileChange['kind'], string> = {
   modified: 'M',
@@ -68,16 +67,7 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
         const isSelected = selectedChange?.path === change.path && selectedChange.isStaged === change.isStaged
         return (
           <div key={`${change.isStaged}-${change.path}`} className="change-item">
-            <button
-              type="button"
-              className={isSelected ? 'row row-change row-selected' : 'row row-change'}
-              title={change.path}
-              onClick={() => select(change)}
-            >
-              <span className={`change-mark change-mark-${change.kind}`}>{kindMark[change.kind]}</span>
-              <span className="change-name">{lastPathSegment(change.path) || change.path}</span>
-              <LineCounts addedLines={change.addedLines} removedLines={change.removedLines} />
-            </button>
+            <ChangeRowButton change={change} mark={kindMark[change.kind]} isSelected={isSelected} onSelect={() => select(change)} />
             <div className="change-actions">
               {!isStagedGroup && (
                 <button

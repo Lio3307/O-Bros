@@ -1,13 +1,6 @@
-import { openTerminal } from '../../state/openTerminal'
 import { useTerminalFontStore } from '../../state/terminalFontStore'
-import { useWorkspaceStore } from '../../state/workspaceStore'
+import { SHORTCUT_ACTIONS } from '../terminal/shortcutActions'
 import type { AppCommand } from './commandTypes'
-
-function focusedTerminal() {
-  const { tabs, activeTabId } = useWorkspaceStore.getState()
-  const tab = tabs.find((candidate) => candidate.id === activeTabId)
-  return tab !== undefined && tab.kind === 'terminal' ? tab : null
-}
 
 export const TERMINAL_COMMANDS: AppCommand[] = [
   {
@@ -15,43 +8,28 @@ export const TERMINAL_COMMANDS: AppCommand[] = [
     title: 'New terminal',
     group: 'Terminal',
     shortcutAction: 'newTerminal',
-    run: () => openTerminal(null)
+    run: SHORTCUT_ACTIONS.newTerminal
   },
   {
     id: 'terminal.splitRight',
     title: 'Split the terminal to the right',
     group: 'Terminal',
     shortcutAction: 'splitRight',
-    run: () => {
-      const tab = focusedTerminal()
-      if (tab !== null) {
-        useWorkspaceStore.getState().splitPane(tab.id, tab.focusedPaneId, 'horizontal')
-      }
-    }
+    run: SHORTCUT_ACTIONS.splitRight
   },
   {
     id: 'terminal.splitDown',
     title: 'Split the terminal downward',
     group: 'Terminal',
     shortcutAction: 'splitDown',
-    run: () => {
-      const tab = focusedTerminal()
-      if (tab !== null) {
-        useWorkspaceStore.getState().splitPane(tab.id, tab.focusedPaneId, 'vertical')
-      }
-    }
+    run: SHORTCUT_ACTIONS.splitDown
   },
   {
     id: 'terminal.closePane',
     title: 'Close the focused pane',
     group: 'Terminal',
     shortcutAction: 'closePane',
-    run: () => {
-      const tab = focusedTerminal()
-      if (tab !== null) {
-        useWorkspaceStore.getState().closePane(tab.id, tab.focusedPaneId)
-      }
-    }
+    run: SHORTCUT_ACTIONS.closePane
   },
   {
     id: 'terminal.zoomIn',

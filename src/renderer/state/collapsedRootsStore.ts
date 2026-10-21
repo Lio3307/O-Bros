@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { readStored, writeStoredJson } from './browserStorage'
+import { readStoredStringList, writeStoredJson } from './browserStorage'
 
 const STORAGE_KEY = 'o-bros.collapsedProjectFolders'
 
@@ -8,17 +8,8 @@ interface CollapsedRootsState {
   toggle: (rootPath: string) => void
 }
 
-export function parseCollapsedRoots(saved: string | null): string[] {
-  try {
-    const parsed: unknown = JSON.parse(saved ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : []
-  } catch {
-    return []
-  }
-}
-
 function readSaved(): string[] {
-  return parseCollapsedRoots(readStored(STORAGE_KEY))
+  return readStoredStringList(STORAGE_KEY)
 }
 
 function save(paths: string[]): void {

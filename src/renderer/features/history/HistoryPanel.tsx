@@ -64,7 +64,7 @@ function SessionItem({ session, isSelected }: { session: SessionSummary | Sessio
         <ContinueButton session={session} />
         <button
           type="button"
-          className="session-action hover-positive"
+          className="icon-button icon-button-small hover-positive"
           title="Resume this session in a terminal"
           onClick={() => resumeSession(session)}
         >
@@ -72,7 +72,7 @@ function SessionItem({ session, isSelected }: { session: SessionSummary | Sessio
         </button>
         <button
           type="button"
-          className="session-action hover-danger"
+          className="icon-button icon-button-small hover-danger"
           title="Delete this session"
           onClick={() => removeAfterConfirm([session])}
         >
@@ -102,8 +102,12 @@ function TeamFilter({ visibleSessions, hasTeamChats, isTeamOnly, onTeamOnlyChang
         Team only
       </label>
       {isTeamOnly && visibleSessions.length > 0 && (
-        <Button variant="remove" className="history-delete-all" onClick={() => removeAfterConfirm(visibleSessions)}>
-          Delete {visibleSessions.length}
+        <Button
+          variant="remove"
+          className="history-delete-all"
+          title="Delete every team member conversation shown below"
+          onClick={() => removeAfterConfirm(visibleSessions)}>
+          <Trash2 size={14} /> Delete {visibleSessions.length}
         </Button>
       )}
     </div>

@@ -443,6 +443,7 @@ export interface ContinuePlan {
   cwd: string
   command: string
   handoffText: string
+  hiddenCount: number
   threadId: string
 }
 

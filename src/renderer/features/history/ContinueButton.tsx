@@ -29,7 +29,7 @@ export function ContinueButton({ session, isLabelled = false }: { session: Sessi
           <ArrowRightLeft size={14} /> Continue with…
         </Button>
       ) : (
-        <button type="button" className="session-action hover-positive" title={CONTINUE_TITLE} onClick={open}>
+        <button type="button" className="icon-button icon-button-small hover-positive" title={CONTINUE_TITLE} onClick={open}>
           <ArrowRightLeft size={14} />
         </button>
       )}

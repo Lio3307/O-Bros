@@ -70,7 +70,7 @@ Technical decisions and their rationale live in `docs/decisions.md`. Read it bef
   Status: User-directed.
 
 - Scope: whole repository
-  Convention: Reuse the shared helpers instead of writing local copies: `isRecord` (`src/shared/isRecord.ts`), `isSameData` (`src/shared/sameData.ts`), `readStored`, `readStoredJson`, `writeStored`, `writeStoredJson` for localStorage (`src/renderer/state/browserStorage.ts`, never call localStorage directly), `pathExists`, `entryExists`, `isFolder`, `IS_PATH_CASE_INSENSITIVE` (`src/main/services/fileSystem.ts`), and `useLiveRefresh` for panels that must stay current (`src/renderer/ui/useLiveRefresh.ts`).
+  Convention: Reuse the shared helpers instead of writing local copies: `isRecord` (`src/shared/isRecord.ts`), `isSameData` (`src/shared/sameData.ts`), `delay` (`src/shared/delay.ts`), `runGit` and `isGitRepository` for every git call in the main process (`src/main/services/gitRunner.ts`), `handlePickerKey` for keyboard lists (`src/renderer/features/files/pickerKeys.ts`), `readStored`, `readStoredJson`, `readStoredStringList`, `writeStored`, `writeStoredJson` for localStorage (`src/renderer/state/browserStorage.ts`, never call localStorage directly), `pathExists`, `entryExists`, `isFolder`, `IS_PATH_CASE_INSENSITIVE` (`src/main/services/fileSystem.ts`), and `useLiveRefresh` for panels that must stay current (`src/renderer/ui/useLiveRefresh.ts`).
   Reason: The user asked to make repeated logic reusable; these replaced 13, 18, 9 and 5 copies.
   Evidence: User request; the files named above.
   Status: User-directed.

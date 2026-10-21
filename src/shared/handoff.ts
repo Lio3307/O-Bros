@@ -1,3 +1,4 @@
+import { maskSecrets } from './secretMask'
 import type { SessionMessage } from './types'
 
 export const MAX_HANDOFF_CHARS = 24_000
@@ -18,6 +19,11 @@ export interface HandoffInput {
   cwd: string
   parts: HandoffPart[]
   changedFiles: string[]
+}
+
+export interface Handoff {
+  text: string
+  hiddenCount: number
 }
 
 interface Line {
@@ -121,7 +127,23 @@ function fitConversation(lines: Line[], budget: number): string[] {
   return result
 }
 
-export function buildHandoff(input: HandoffInput): string {
+function maskParts(parts: HandoffPart[]): { parts: HandoffPart[]; hiddenCount: number } {
+  let hiddenCount = 0
+  const hide = (text: string): string => {
+    const result = maskSecrets(text)
+    hiddenCount += result.hiddenCount
+    return result.text
+  }
+  const masked = parts.map((part) => ({
+    ...part,
+    title: hide(part.title),
+    messages: part.messages.map((message) => ({ ...message, text: hide(message.text) }))
+  }))
+  return { parts: masked, hiddenCount }
+}
+
+export function buildHandoff(input: HandoffInput): Handoff {
+  const { parts, hiddenCount } = maskParts(input.parts)
   const agentNames = [...new Set(input.parts.map((part) => part.agentName))].join(', ')
   const copies = input.parts.flatMap((part) => (part.recordPath === null ? [] : [`- ${part.recordPath}`]))
   const header = [
@@ -142,6 +164,6 @@ export function buildHandoff(input: HandoffInput): string {
     "Continue from the user's latest request above. Do not redo work that is already done. Look at the files yourself before you change them. If something is unclear, ask the user."
   ]
   const fixedLength = [...header, ...footer].join('\n').length
-  const conversation = fitConversation(conversationLines(input.parts), Math.max(MAX_HANDOFF_CHARS - fixedLength, 0))
-  return [...header, ...conversation, ...footer].join('\n')
+  const conversation = fitConversation(conversationLines(parts), Math.max(MAX_HANDOFF_CHARS - fixedLength, 0))
+  return { text: [...header, ...conversation, ...footer].join('\n'), hiddenCount }
 }

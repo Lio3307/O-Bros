@@ -5,6 +5,7 @@ import { useLayoutStore } from '../../state/layoutStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useRecentFilesStore } from '../../state/recentFilesStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
+import { handlePickerKey } from './pickerKeys'
 import './quickOpen.css'
 
 const SEARCH_DEBOUNCE_MS = 120
@@ -67,17 +68,7 @@ export function QuickOpen() {
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
-    if (event.key === 'Escape') {
-      closeQuickOpen()
-    } else if (event.key === 'ArrowDown') {
-      event.preventDefault()
-      setSelectedIndex(Math.min(selectedIndex + 1, hits.length - 1))
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault()
-      setSelectedIndex(Math.max(selectedIndex - 1, 0))
-    } else if (event.key === 'Enter' && hits[selectedIndex] !== undefined) {
-      openHit(hits[selectedIndex])
-    }
+    handlePickerKey(event, { items: hits, selectedIndex, setSelectedIndex, onClose: closeQuickOpen, onPick: openHit })
   }
 
   return (

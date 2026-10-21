@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { useAccountsStore } from './accountsStore'
 import { useUsageStore } from './usageStore'
+import { delay } from '../../shared/delay'
 
 const MIN_FEEDBACK_MS = 700
 
@@ -9,10 +10,6 @@ interface RefreshState {
   hasFailed: boolean
   lastRefreshedAt: number | null
   refresh: () => Promise<void>
-}
-
-function wait(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, milliseconds))
 }
 
 async function rescanAccountsAndReadUsage(): Promise<void> {
@@ -31,7 +28,7 @@ export const useRefreshStore = create<RefreshState>()((set, get) => ({
     }
     set({ isRefreshing: true, hasFailed: false })
     try {
-      await Promise.all([rescanAccountsAndReadUsage(), wait(MIN_FEEDBACK_MS)])
+      await Promise.all([rescanAccountsAndReadUsage(), delay(MIN_FEEDBACK_MS)])
       set({ lastRefreshedAt: Date.now() })
     } catch {
       set({ hasFailed: true })

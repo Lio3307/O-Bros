@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { buildHandoff, MAX_HANDOFF_CHARS, type HandoffPart } from './handoff'
+import { buildHandoff, MAX_HANDOFF_CHARS, type HandoffInput, type HandoffPart } from './handoff'
+
+function handoffText(input: HandoffInput): string {
+  return buildHandoff(input).text
+}
 
 function part(agentName: string, messages: [('user' | 'assistant'), string][]): HandoffPart {
   return {
@@ -13,7 +17,7 @@ function part(agentName: string, messages: [('user' | 'assistant'), string][]): 
 
 describe('buildHandoff', () => {
   it('starts with the marker and holds the conversation, the copies, the changed files and the next step', () => {
-    const text = buildHandoff({
+    const text = handoffText({
       marker: '[O-BROS handoff abcd1234-2]',
       cwd: 'E:/work',
       parts: [part('Claude', [['user', 'Fix the login bug'], ['assistant', 'I found the cause in auth.ts.']])],
@@ -31,7 +35,7 @@ describe('buildHandoff', () => {
   })
 
   it('shortens long agent answers more than the user messages', () => {
-    const text = buildHandoff({
+    const text = handoffText({
       marker: 'm',
       cwd: 'E:/work',
       parts: [part('Codex', [['user', 'u'.repeat(2000)], ['assistant', 'a'.repeat(2000)]])],
@@ -51,7 +55,7 @@ describe('buildHandoff', () => {
         messages.push(['assistant', `progress ${request}.${step} ` + 'p'.repeat(150)])
       }
     }
-    const text = buildHandoff({ marker: 'm', cwd: 'E:/work', parts: [part('Claude', messages)], changedFiles: [] })
+    const text = handoffText({ marker: 'm', cwd: 'E:/work', parts: [part('Claude', messages)], changedFiles: [] })
     expect(text.length).toBeLessThanOrEqual(MAX_HANDOFF_CHARS)
     for (let request = 0; request < 12; request += 1) {
       expect(text).toContain(`User: REQUEST ${request} `)
@@ -62,7 +66,7 @@ describe('buildHandoff', () => {
 
   it('keeps the original goal and the newest messages when the conversation is too long', () => {
     const middle: [('user' | 'assistant'), string][] = Array.from({ length: 80 }, (_, index) => ['user', `step ${index} ` + 'x'.repeat(2500)])
-    const text = buildHandoff({
+    const text = handoffText({
       marker: 'm',
       cwd: 'E:/work',
       parts: [part('Claude', [['user', 'ORIGINAL GOAL'], ...middle]), part('Codex', [['user', 'LATEST REQUEST']])],

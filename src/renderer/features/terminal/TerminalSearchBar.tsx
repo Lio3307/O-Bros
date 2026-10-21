@@ -59,13 +59,13 @@ export function TerminalSearchBar({ searchAddon, onClose }: TerminalSearchBarPro
         onChange={(event) => changeQuery(event.target.value)}
         onKeyDown={handleKeyDown}
       />
-      <button type="button" title="Previous match (Shift+Enter)" onClick={findPrevious}>
+      <button type="button" className="icon-button icon-button-small" title="Previous match (Shift+Enter)" onClick={findPrevious}>
         <ChevronUp size={14} />
       </button>
-      <button type="button" title="Next match (Enter)" onClick={findNext}>
+      <button type="button" className="icon-button icon-button-small" title="Next match (Enter)" onClick={findNext}>
         <ChevronDown size={14} />
       </button>
-      <button type="button" title="Close (Esc)" onClick={onClose}>
+      <button type="button" className="icon-button icon-button-small" title="Close (Esc)" onClick={onClose}>
         <X size={14} />
       </button>
     </div>

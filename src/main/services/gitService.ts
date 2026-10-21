@@ -1,29 +1,12 @@
-import { execFile } from 'node:child_process'
 import { readFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
-import { promisify } from 'node:util'
 import type { GitDiffRequest, GitFileChange, GitStatus } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
 import { readGitOperation } from './gitConflicts'
 import { isCommitHash } from './gitLogParser'
 import { parseNumstat, parseStatusOutput } from './gitStatusParser'
+import { isGitRepository, runGit } from './gitRunner'
 
-const execFileAsync = promisify(execFile)
-const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
-
-async function runGit(repoPath: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd: repoPath, maxBuffer: MAX_GIT_OUTPUT_BYTES })
-  return stdout
-}
-
-async function isGitRepository(repoPath: string): Promise<boolean> {
-  try {
-    await stat(join(repoPath, '.git'))
-    return true
-  } catch {
-    return false
-  }
-}
 
 async function readLastFetchedAt(repoPath: string): Promise<number | null> {
   try {

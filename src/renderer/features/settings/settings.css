@@ -96,23 +96,6 @@
   width: 80px;
 }
 
-.button-remove {
-  flex-shrink: 0;
-  height: 28px;
-  margin-left: 16px;
-  padding: 0 12px;
-  color: var(--color-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius);
-}
-
-.button-remove:hover {
-  color: var(--color-danger);
-  background: rgba(248, 81, 73, 0.12);
-  border-color: var(--color-border);
-}
-
 .account-label {
   color: var(--color-text);
 }

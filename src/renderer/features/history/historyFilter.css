@@ -3,10 +3,14 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px 8px;
+  min-height: 36px;
+  padding: 0 8px 8px;
 }
 
 .history-delete-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   margin-left: auto;
 }
 
@@ -23,23 +27,14 @@
   opacity: 0;
 }
 
-.session-item:hover .session-actions {
+.session-item:hover .session-actions,
+.session-item:focus-within .session-actions {
   opacity: 1;
 }
 
-.session-action {
-  display: grid;
-  place-items: center;
-  padding: 4px;
-  color: var(--color-muted);
-  background: var(--color-panel);
-  border: none;
-  border-radius: var(--radius);
-}
-
-.session-action:hover {
-  color: var(--color-white);
-  background: var(--color-hover);
+.session-item:hover .session-title,
+.session-item:focus-within .session-title {
+  padding-right: 84px;
 }
 
 .history-team-toggle {
@@ -51,4 +46,9 @@
   color: var(--color-muted);
   white-space: nowrap;
   cursor: pointer;
+}
+
+.history-team-toggle input {
+  margin: 0;
+  accent-color: var(--color-white);
 }

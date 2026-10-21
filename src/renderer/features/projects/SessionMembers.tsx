@@ -11,6 +11,7 @@ import { StatusDot } from '../../ui/StatusDot'
 import { openTeamMember } from '../team/openTeamMember'
 import { stopTeamMember } from '../team/stopTeamMember'
 import { firstLineOf } from '../team/teamMemberText'
+import { ShowMoreToggle } from './ShowMoreToggle'
 
 const VISIBLE_MEMBERS = 3
 
@@ -63,16 +64,7 @@ export function SessionMembers({ members, now }: { members: TeamMember[]; now: n
       {shown.map((member) => (
         <MemberRow key={member.id} member={member} now={now} />
       ))}
-      {hiddenCount > 0 && (
-        <button type="button" className="folder-sessions-more" onClick={() => setIsExpanded(true)}>
-          Show {hiddenCount} more
-        </button>
-      )}
-      {isExpanded && members.length > VISIBLE_MEMBERS && (
-        <button type="button" className="folder-sessions-more" onClick={() => setIsExpanded(false)}>
-          Show fewer
-        </button>
-      )}
+      <ShowMoreToggle hiddenCount={hiddenCount} canShowFewer={isExpanded && members.length > VISIBLE_MEMBERS} onChange={setIsExpanded} />
     </div>
   )
 }

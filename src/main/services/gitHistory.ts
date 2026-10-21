@@ -1,27 +1,16 @@
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 import type { GitCommit, GitCommitFile, GitCommitFilesRequest, GitLogRequest } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
 import { GIT_LOG_FORMAT, isCommitHash, parseGitLog } from './gitLogParser'
-import { listBranches } from './gitActions'
+import { assertBranchExists } from './gitActions'
 import { parseNumstat } from './gitStatusParser'
+import { runGit } from './gitRunner'
 
-const execFileAsync = promisify(execFile)
-const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
 const MAX_COMMITS = 500
 const NOT_A_REPOSITORY_MESSAGE = 'fatal: not a git repository'
 
-async function runGit(repoPath: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd: repoPath, maxBuffer: MAX_GIT_OUTPUT_BYTES })
-  return stdout
-}
-
 async function branchArgumentsFor(request: GitLogRequest): Promise<string[]> {
   if (request.branch !== undefined) {
-    const { branches } = await listBranches(request.repoPath)
-    if (!branches.includes(request.branch)) {
-      throw new Error(`Unknown branch ${request.branch}`)
-    }
+    await assertBranchExists(request.repoPath, request.branch)
     return ['--date-order', request.branch]
   }
   return request.allBranches === true ? ['--all', '--date-order'] : []

@@ -86,6 +86,12 @@ input {
   background: var(--color-hover);
 }
 
+.icon-button-small {
+  width: auto;
+  height: auto;
+  padding: 4px;
+}
+
 .icon-button-on {
   color: var(--color-white);
   background: var(--color-selected);
@@ -127,6 +133,23 @@ input {
   color: var(--color-terminal);
   background: var(--color-white);
   border: none;
+}
+
+.button-remove {
+  flex-shrink: 0;
+  height: 28px;
+  margin-left: 16px;
+  padding: 0 12px;
+  color: var(--color-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+}
+
+.button-remove:hover {
+  color: var(--color-danger);
+  background: rgba(248, 81, 73, 0.12);
+  border-color: var(--color-border);
 }
 
 .link-button {

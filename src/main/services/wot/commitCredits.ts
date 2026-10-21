@@ -1,12 +1,10 @@
-import { execFile, spawn } from 'node:child_process'
-import { promisify } from 'node:util'
+import { spawn } from 'node:child_process'
 import { stripAgentCredits } from '../../../shared/agentTraces'
 import { identityEnvironment, type CommitIdentity } from '../../../shared/commitIdentity'
 import { loadAgentCatalog } from './agentCatalog'
 import { gitGlobalArguments } from '../../../shared/gitGuard'
 import { writeLog } from '../logging/logFile'
-
-const execFileAsync = promisify(execFile)
+import { runGit } from '../gitRunner'
 
 function amendMessage(cwd: string, globalArguments: string[], message: string, environment: NodeJS.ProcessEnv): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -32,7 +30,7 @@ export async function removeAgentCredits(
 ): Promise<void> {
   const globalArguments = gitGlobalArguments(gitArguments)
   try {
-    const { stdout } = await execFileAsync('git', [...globalArguments, 'log', '-1', '--format=%B'], { cwd })
+    const stdout = await runGit(cwd, [...globalArguments, 'log', '-1', '--format=%B'])
     const original = stdout.split('\r\n').join('\n').trimEnd()
     const cleaned = stripAgentCredits(original, (await loadAgentCatalog()).hints)
     if (cleaned === original || cleaned.trim() === '') {

@@ -1,17 +1,9 @@
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 import { GIT_TRACE_LOG_FORMAT, parseCommitLog, traceOfCommit, type CommitTrace } from '../../../shared/agentTraces'
 import { gitGlobalArguments } from '../../../shared/gitGuard'
 import type { AgentCatalog } from './agentCatalog'
+import { runGit } from '../gitRunner'
 
-const execFileAsync = promisify(execFile)
 const MAX_CHECKED_COMMITS = '200'
-const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
-
-async function runGit(cwd: string, args: string[]): Promise<string> {
-  const { stdout } = await execFileAsync('git', args, { cwd, maxBuffer: MAX_GIT_OUTPUT_BYTES })
-  return stdout
-}
 
 async function rangeToPush(cwd: string, globalArguments: string[]): Promise<string[]> {
   try {
