@@ -43,7 +43,7 @@ function configure(autoUpdater: AppUpdater): AppUpdater {
 
 function loadUpdater(): Promise<AppUpdater> {
   if (updaterLoad === null) {
-    updaterLoad = import('electron-updater').then((module) => configure(module.autoUpdater))
+    updaterLoad = import('electron-updater').then((module) => configure(module.default.autoUpdater))
   }
   return updaterLoad
 }

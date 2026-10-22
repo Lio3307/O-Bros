@@ -4,6 +4,11 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-10-22
+
+### Fixed
+- **Check for updates always failed** with "Could not check for updates" in 0.1.5 and 0.1.6. The updater was loaded in a way that left it empty, so no check ever reached GitHub. If you have 0.1.5 or 0.1.6, download 0.1.7 once from the Releases page; updates work from the app again after that.
+
 ## [0.1.6] - 2026-10-21
 
 ### Added
