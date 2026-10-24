@@ -52,7 +52,7 @@ export function AboutPage() {
         />
         <label className="toggle-row">
           <input
-            type="checkbox"
+            type="checkbox" role="switch"
             checked={isAutoCheckEnabled}
             onChange={(event) => setAutoCheckEnabled(event.target.checked)}
           />

@@ -5,7 +5,12 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 ## [Unreleased]
 
 ### Added
-- **Svelte, Vue and Astro files have colors.** Their markup, their `<script>` (also `lang="ts"`) and their `<style>` (also `lang="scss"`, `"less"` and `"postcss"`) are colored with the HTML, TypeScript and CSS support O-BROS already has, so nothing new is downloaded. Template expressions such as `{#if}` and `{{ }}` stay plain. You can turn each one off in Settings > Editor > Languages.
+- **Colors for about 140 more languages**, such as Vue, Shell, TOML, Dockerfile, Kotlin, Swift, Ruby, C#, Lua, PowerShell, Sass and Less, from CodeMirror's official language list. Each one loads only when you open a matching file. A file without a known name is recognized by its first line: `#!/usr/bin/env python3` opens as Python, `#!/bin/bash` as Shell, and a file that starts with `<` as HTML. Settings > Editor > Languages has one switch for all of them, **Every other language**.
+- **Svelte and Astro files have colors.** Their markup, their `<script>` (also `lang="ts"`) and their `<style>` (also `lang="scss"`, `"less"` and `"postcss"`) are colored with the HTML, TypeScript and CSS support O-BROS already has. Template expressions such as `{#if}` stay plain.
+
+### Changed
+- **Every on/off setting is a switch** instead of a checkbox, in all of Settings and the History filter.
+- **Storage and memory is easier to read.** Four tiles at the top show the fullest drive, what O-BROS and your agents keep, what is safe to free (with **Free it**) and the memory in use. Deleting old conversations is one row per agent with an age picker instead of four rows each. What a button does is now in its tooltip instead of a line under every row; anything that cannot be undone still asks first. "Where your data lives" is folded away until you open it.
 
 ## [0.1.7] - 2026-10-22
 

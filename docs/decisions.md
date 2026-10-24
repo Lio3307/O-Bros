@@ -494,6 +494,17 @@
 - Implementation / validation / outcome: Written / unit, e2e and a real-data run / not yet used day to day.
 - Result acceptance: Pending user feedback.
 - Learning: A settings page that can delete things should say the consequence on the button's own row, not in a paragraph above it.
+- Update 2026-10-24: The user still found the page confusing. It now opens with four overview tiles (fullest drive, kept by O-BROS and agents, safe to free, memory), the "If you press …" lines moved into each button's tooltip, conversation deletes became one row per agent with an age picker (90+ days chosen first), the copy was cut by about half, and the folder reference list is folded. Sacrifice: the consequence is no longer visible without hovering; every Can undo and Permanent action still explains itself in its confirmation, and the Safe, Can undo and Permanent chips stay on the rows. Revisit if users delete something by surprise.
+
+### Colors for any language from CodeMirror's language list
+
+- Scope and goal: The user wants syntax colors to work for any framework or language, not a fixed list.
+- Choice and authority: User-requested. An earlier attempt with downloadable executable packs was reverted at the user's choice, because it removed the built-in colors and let a pack run code with the app bridge. Built-in languages stay first (they carry lint and format). Then `@codemirror/language-data` (official, pure JavaScript, no install scripts) matches about 140 more by file name or extension and loads each parser only when a file opens. Then the first line: a `#!` line names its interpreter, and a file starting with `<` opens as HTML. Svelte and Astro use the HTML parser, with TypeScript scripts and SCSS, Less and PostCSS styles read as CSS. One "Every other language" switch covers the catalog.
+- Evidence: languageRegistry.test.ts covers Vue, Shell, TOML, Dockerfile, Kotlin, shebang lines and markup; a real Svelte file was opened in the built app and its markup, TypeScript and SCSS were colored. npm audit reports 0 vulnerabilities after adding the package. The full unit (520) and e2e (64) suites pass.
+- Alternatives and sacrifice: Downloadable packs (reverted, see above). A separate switch for each of 140 languages was left out; one switch covers them. Template blocks of frameworks without their own parser, such as Svelte's `{#if}`, stay plain inside the markup.
+- Residual risk/debt: The package depends on every official CodeMirror language package, so `node_modules` grows; parsers are separate chunks, so the window only loads what it opens.
+- Recovery and ownership: src/renderer/features/editor/languageRegistry.ts, languageFromContent.ts, src/renderer/features/settings/EditorSettingsPage.tsx.
+- Result acceptance: Pending user feedback.
 
 ### Continue a conversation in another agent (universal history step 2)
 - Scope and goal: When an agent hits its limit, the user wants another agent to continue without starting from zero, and the conversations to be tracked as one thread across agents.

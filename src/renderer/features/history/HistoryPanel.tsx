@@ -98,7 +98,7 @@ function TeamFilter({ visibleSessions, hasTeamChats, isTeamOnly, onTeamOnlyChang
   return (
     <div className="history-filter">
       <label className="history-team-toggle" title="Show only conversations of wot team members">
-        <input type="checkbox" checked={isTeamOnly} onChange={(event) => onTeamOnlyChange(event.target.checked)} />
+        <input type="checkbox" role="switch" checked={isTeamOnly} onChange={(event) => onTeamOnlyChange(event.target.checked)} />
         Team only
       </label>
       {isTeamOnly && visibleSessions.length > 0 && (

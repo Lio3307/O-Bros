@@ -16,7 +16,9 @@ import { DiskOverviewSection } from './DiskOverviewSection'
 import { HardwareAccelerationSetting } from './HardwareAccelerationSetting'
 import { SafetyLabel, SAFETY_COPY, type Safety } from './SafetyLabel'
 import { SavedSessionsSection } from './SavedSessionsSection'
+import { StorageOverview } from './StorageOverview'
 import { UniversalHistorySection } from './UniversalHistorySection'
+import { useDiskReports } from './useDiskReports'
 import './settings.css'
 import './settingsControls.css'
 
@@ -59,7 +61,7 @@ function SafeCleanupSection() {
   return (
     <SettingsSection
       title="Free space safely"
-      description="Everything here is rebuilt when needed. The worst case is that something loads a little slower once."
+      description="Rebuilt when needed. At worst, something loads a little slower once."
       actions={
         <Button variant="outline" onClick={() => clearSafeItems()}>
           Clear all safe items
@@ -134,7 +136,7 @@ function MemorySection() {
   return (
     <SettingsSection
       title="Memory right now"
-      description="What uses your computer's memory (RAM) while O-BROS is open. Nothing here deletes files."
+      description="What uses memory (RAM) while O-BROS is open. Nothing here deletes files."
       actions={
         <Button variant="outline" onClick={openTeamSettings}>
           <Timer size={14} /> Team auto-stop settings
@@ -169,6 +171,7 @@ function MemorySection() {
 
 export function StoragePage() {
   const refresh = useStorageStore((state) => state.refresh)
+  const disks = useDiskReports()
 
   useEffect(() => {
     void refresh()
@@ -177,26 +180,20 @@ export function StoragePage() {
   return (
     <SettingsPageLayout
       title="Storage and memory"
-      description={
-        <>
-          See what O-BROS and your agents keep on your disks and in memory, and free space when you need it. Every action
-          says what happens before you press it, and anything that cannot be undone asks first. Your project files, git
-          history and agent logins are never touched here.
-        </>
-      }
+      description="What O-BROS and your agents keep on your disks and in memory. Hover a button to see what it does; anything that cannot be undone asks first. Project files, git history and logins are never touched."
       actions={
         <Button variant="outline" onClick={() => refresh()}>
           <RefreshCw size={14} /> Measure again
         </Button>
       }
     >
+      <StorageOverview reports={disks} />
       <SafetyLegend />
-      <DiskOverviewSection />
+      <DiskOverviewSection reports={disks} />
       <SafeCleanupSection />
-      <h2 className="storage-group-title">Conversations</h2>
-      <UniversalHistorySection />
-      <ConversationFolderSection />
       <SavedSessionsSection />
+      <ConversationFolderSection />
+      <UniversalHistorySection />
       <MemorySection />
       <HardwareAccelerationSetting />
       <DataLocationsSection />

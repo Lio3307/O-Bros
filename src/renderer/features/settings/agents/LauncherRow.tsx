@@ -32,7 +32,7 @@ export function LauncherRow({ launcher, isShown, canShowMore }: LauncherRowProps
       </span>
       <label className="agent-show" title={hint}>
         <input
-          type="checkbox"
+          type="checkbox" role="switch"
           checked={isShown}
           disabled={!isShown && !canShowMore}
           onChange={() => toggleShown(launcher.id)}

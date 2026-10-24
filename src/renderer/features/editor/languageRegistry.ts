@@ -1,5 +1,8 @@
+import { LanguageDescription } from '@codemirror/language'
+import { languages as CATALOG_LANGUAGES } from '@codemirror/language-data'
 import type { Extension } from '@codemirror/state'
 import { fileExtension, lastPathSegment } from '../../../shared/paths'
+import { interpreterOf, looksLikeMarkup } from './languageFromContent'
 
 export const LANGUAGE_IDS = [
   'javascript',
@@ -17,10 +20,10 @@ export const LANGUAGE_IDS = [
   'sql',
   'yaml',
   'svelte',
-  'vue',
   'astro',
   'env',
-  'text'
+  'text',
+  'other'
 ] as const
 
 export type LanguageId = (typeof LANGUAGE_IDS)[number]
@@ -30,6 +33,7 @@ export interface LanguageDefinition {
   label: string
   extensions: string[]
   matchesFileName?: (fileName: string) => boolean
+  serverLanguageId?: string
   canLint: boolean
   canFormat: boolean
   load: () => Promise<Extension>
@@ -161,7 +165,6 @@ export const LANGUAGES: LanguageDefinition[] = [
     load: async () => (await import('@codemirror/lang-yaml')).yaml()
   },
   componentLanguage('svelte', 'Svelte', 'svelte'),
-  componentLanguage('vue', 'Vue', 'vue'),
   componentLanguage('astro', 'Astro', 'astro'),
   {
     id: 'env',
@@ -182,12 +185,47 @@ export const LANGUAGES: LanguageDefinition[] = [
   }
 ]
 
-export function findLanguageForFile(filePath: string): LanguageDefinition | null {
+function isBuiltInExtension(extension: string): boolean {
+  return LANGUAGES.some((language) => language.extensions.includes(extension))
+}
+
+export const OTHER_LANGUAGE_NAMES = CATALOG_LANGUAGES.filter((description) => !description.extensions.some(isBuiltInExtension)).map(
+  (description) => description.name
+)
+
+function catalogLanguage(description: LanguageDescription): LanguageDefinition {
+  return {
+    id: 'other',
+    label: description.name,
+    extensions: [...description.extensions],
+    serverLanguageId: description.name.toLowerCase(),
+    canLint: false,
+    canFormat: false,
+    load: () => description.load()
+  }
+}
+
+function languageFromFirstLine(firstLine: string): LanguageDefinition | null {
+  const interpreter = interpreterOf(firstLine)
+  const description = interpreter === null ? null : LanguageDescription.matchLanguageName(CATALOG_LANGUAGES, interpreter, true)
+  if (description !== null) {
+    const builtIn = LANGUAGES.find((language) => language.id === description.name.toLowerCase())
+    return builtIn === undefined ? catalogLanguage(description) : { ...builtIn, canLint: false, canFormat: false }
+  }
+  return looksLikeMarkup(firstLine) ? { ...findLanguageById('html'), canFormat: false } : null
+}
+
+export function findLanguageForFile(filePath: string, firstLine = ''): LanguageDefinition | null {
   const extension = fileExtension(filePath)
-  const fileName = lastPathSegment(filePath).toLowerCase()
+  const fileName = lastPathSegment(filePath)
   const matches = (language: LanguageDefinition): boolean =>
-    language.extensions.includes(extension) || (language.matchesFileName?.(fileName) ?? false)
-  return LANGUAGES.find(matches) ?? null
+    language.extensions.includes(extension) || (language.matchesFileName?.(fileName.toLowerCase()) ?? false)
+  const builtIn = LANGUAGES.find(matches)
+  if (builtIn !== undefined) {
+    return builtIn
+  }
+  const listed = LanguageDescription.matchFilename(CATALOG_LANGUAGES, fileName)
+  return listed === null ? languageFromFirstLine(firstLine) : catalogLanguage(listed)
 }
 
 export function findLanguageById(id: LanguageId): LanguageDefinition {

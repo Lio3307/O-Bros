@@ -40,7 +40,7 @@ export function AgentCommitSetting() {
       {showWarning && <p className="muted">Fill in both a name and a valid email address.</p>}
       <label className="toggle-row">
         <input
-          type="checkbox"
+          type="checkbox" role="switch"
           checked={allowAgentCoAuthors}
           onChange={(event) => setAllowAgentCoAuthors(event.target.checked)}
         />

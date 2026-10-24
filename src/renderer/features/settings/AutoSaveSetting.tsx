@@ -38,7 +38,7 @@ export function AutoSaveSetting() {
       }
     >
       <label className="toggle-row">
-        <input type="checkbox" checked={isEnabled} onChange={(event) => setEnabled(event.target.checked)} />
+        <input type="checkbox" role="switch" checked={isEnabled} onChange={(event) => setEnabled(event.target.checked)} />
         <span>Save files automatically</span>
       </label>
 

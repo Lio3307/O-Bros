@@ -96,24 +96,18 @@ export function DataLocationsSection() {
   return (
     <SettingsSection
       title="Where your data lives"
-      description={
-        <>
-          o-bros keeps little of its own: its settings, and the universal history (a small text copy of your Claude and
-          Codex conversations, in the folder you choose above). Each agent's own conversations stay where it saves them
-          unless you move them above, and your projects stay in their own folders: o-bros never copies them. Nothing here
-          is uploaded anywhere. Other agents'
-          conversation folders are listed when they exist; o-bros only opens them and never deletes them, because each
-          agent saves history its own way.
-        </>
-      }
+      description="Every folder O-BROS and your agents use on this computer. Nothing is uploaded anywhere, and O-BROS never copies your projects."
     >
       {locations === null && <p className="panel-empty"><LoadingText text="Looking for your data folders…" /></p>}
       {locations !== null && (
-        <div className="table">
-          {locations.map((location) => (
-            <LocationRow key={location.id} location={location} />
-          ))}
-        </div>
+        <details className="storage-details">
+          <summary>Show {locations.length} folders</summary>
+          <div className="table">
+            {locations.map((location) => (
+              <LocationRow key={location.id} location={location} />
+            ))}
+          </div>
+        </details>
       )}
     </SettingsSection>
   )

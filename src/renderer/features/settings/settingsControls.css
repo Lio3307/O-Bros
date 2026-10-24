@@ -35,10 +35,6 @@
   cursor: pointer;
 }
 
-.toggle-row input[type='checkbox'] {
-  accent-color: var(--color-white);
-}
-
 .field-prefix {
   flex: 0 0 140px;
 }
@@ -217,10 +213,6 @@
   margin-right: 12px;
   color: var(--color-muted);
   cursor: pointer;
-}
-
-.agent-show input[type='checkbox'] {
-  accent-color: var(--color-white);
 }
 
 .location-row {
@@ -456,15 +448,6 @@
   gap: 8px;
 }
 
-.cleanup-effect {
-  font-size: 12px;
-  color: var(--color-text);
-}
-
-.cleanup-effect-label {
-  color: var(--color-muted);
-}
-
 .safety-legend {
   display: flex;
   flex-wrap: wrap;
@@ -479,34 +462,6 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-}
-
-.storage-group-title {
-  margin: 8px 0 -8px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--color-muted);
-  text-transform: uppercase;
-}
-
-.storage-tradeoff {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
-}
-
-.storage-tradeoff p {
-  margin: 0;
-  padding: 10px 12px;
-  font-size: 12px;
-  color: var(--color-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-}
-
-.storage-tradeoff strong {
-  color: var(--color-text);
 }
 
 .disk-card {
@@ -595,4 +550,79 @@
 
 .disk-card-low .usage-fill {
   background: var(--color-danger);
+}
+
+.storage-tiles .stat-tile {
+  gap: 4px;
+}
+
+.storage-tiles .usage-track {
+  width: 100%;
+  height: 6px;
+  margin-top: 6px;
+}
+
+.storage-tiles-low .stat-tile:first-child {
+  border-color: color-mix(in srgb, var(--color-danger) 55%, var(--color-border));
+}
+
+.storage-tiles-low .stat-tile:first-child .stat-tile-value {
+  color: var(--color-danger);
+}
+
+.storage-tiles-low .stat-tile:first-child .usage-fill {
+  background: var(--color-danger);
+}
+
+.stat-tile-warning {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--color-danger);
+}
+
+.stat-tile-action {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+
+.cleanup-amount {
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.disk-card-free strong {
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.session-cleanup-row {
+  flex-wrap: wrap;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.session-cleanup-row .cell-account {
+  flex: 1 1 200px;
+}
+
+.session-age .segment {
+  padding: 0 10px;
+  white-space: nowrap;
+}
+
+.storage-details summary {
+  width: fit-content;
+  margin-bottom: 8px;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.storage-details summary:hover {
+  color: var(--color-white);
+}
+
+.storage-tiles + .safety-legend {
+  margin-top: 12px;
 }

@@ -38,7 +38,7 @@ function FolderRow({
     ? 'This folder also holds the agent login, so it stays where it is.'
     : targetFolder === null
       ? 'Choose a folder first.'
-      : `Move to ${targetFolder}`
+      : `Move to ${targetFolder}. A link stays here, so the agent, History and resume keep working. Close the agent first.`
 
   return (
     <div className="table-row location-row conversation-row">
@@ -50,20 +50,12 @@ function FolderRow({
         <span className="muted mono location-path">{folder.path}</span>
         {isMoved && <span className="muted mono location-path">Saved in {folder.movedTo}</span>}
         {folder.holdsLogin && <span className="muted">Shares its folder with the agent login, so O-BROS does not move it.</span>}
-        {!folder.holdsLogin && (
-          <span className="cleanup-effect">
-            <span className="cleanup-effect-label">{isMoved ? 'If you press Move back:' : 'If you press Move:'}</span>{' '}
-            {isMoved
-              ? 'the files come back to the original folder and the link is removed. Close the agent first.'
-              : 'the files go to the chosen folder and a link stays here, so the agent, History and resume keep working. Close the agent first.'}
-          </span>
-        )}
       </div>
-      <span className="muted conversation-size">{formatBytes(folder.sizeBytes)}</span>
+      <span className="conversation-size">{formatBytes(folder.sizeBytes)}</span>
       {isBusy ? (
         <LoadingText text={isMoved ? 'Moving back…' : 'Moving…'} />
       ) : isMoved ? (
-        <Button variant="outline" onClick={onMoveBack}>
+        <Button variant="outline" title="The files come back to the original folder and the link is removed. Close the agent first." onClick={onMoveBack}>
           <FolderOutput size={14} /> Move back
         </Button>
       ) : (
@@ -137,15 +129,8 @@ export function ConversationFolderSection() {
 
   return (
     <SettingsSection
-      title="Where each agent saves its conversations"
-      description={
-        <>
-          Agents save conversations on the drive where they are installed, which can fill it up. Choose a folder, for
-          example on another drive, and move each agent's conversations there. The agent, History and resume keep
-          working, and new conversations are saved there too. Only conversation folders move, never logins or settings.
-          Close the agent before you move its conversations.
-        </>
-      }
+      title="Move conversations to another drive"
+      description="Pick a folder, then move each agent's conversations there. The agent, History and resume keep working. Logins and settings never move."
       actions={
         <Button variant="outline" onClick={() => void chooseFolder()}>
           <FolderSearch size={14} /> {storage?.targetFolder === null || storage === null ? 'Choose folder…' : 'Change folder…'}

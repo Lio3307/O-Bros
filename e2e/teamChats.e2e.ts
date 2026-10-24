@@ -111,7 +111,7 @@ test('marks a team member conversation in History and deletes it from Storage', 
   await expect(app.window.locator('.session-row')).toHaveCount(1)
 
   await openStoragePage()
-  await app.window.getByText('Delete permanently instead of moving to the Recycle Bin or Trash').click()
+  await app.window.getByRole('switch', { name: 'Delete permanently' }).check()
   const chatsRow = app.window.locator('.table-row', { hasText: 'Team member conversations' })
   await expect(chatsRow).toContainText('1 conversation')
   await chatsRow.getByRole('button', { name: 'Delete' }).click()

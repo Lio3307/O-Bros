@@ -34,7 +34,7 @@ export function TeamMemorySetting() {
       />
       <label className="toggle-row">
         <input
-          type="checkbox"
+          type="checkbox" role="switch"
           checked={policy.stopWhenSummonerCloses}
           onChange={(event) => setPolicy({ stopWhenSummonerCloses: event.target.checked })}
         />
@@ -42,7 +42,7 @@ export function TeamMemorySetting() {
       </label>
       <label className="toggle-row">
         <input
-          type="checkbox"
+          type="checkbox" role="switch"
           checked={policy.deleteChatWhenStopped}
           onChange={(event) => setPolicy({ deleteChatWhenStopped: event.target.checked })}
         />

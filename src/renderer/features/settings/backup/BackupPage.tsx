@@ -31,7 +31,7 @@ export function BackupPage() {
       >
         <label className="toggle-row">
           <input
-            type="checkbox"
+            type="checkbox" role="switch"
             checked={includeProjectFolders}
             onChange={(event) => setIncludeProjectFolders(event.target.checked)}
           />

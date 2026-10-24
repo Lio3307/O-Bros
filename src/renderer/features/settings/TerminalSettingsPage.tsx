@@ -64,7 +64,7 @@ export function TerminalSettingsPage() {
         }
       >
         <label className="toggle-row">
-          <input type="checkbox" checked={useGpuRendering} onChange={(event) => setUseGpuRendering(event.target.checked)} />
+          <input type="checkbox" role="switch" checked={useGpuRendering} onChange={(event) => setUseGpuRendering(event.target.checked)} />
           <span>Draw terminals with the graphics card (faster, uses more memory)</span>
         </label>
       </SettingsSection>
@@ -94,7 +94,7 @@ export function TerminalSettingsPage() {
         <h2 className="settings-subtitle">Notifications</h2>
         <label className="toggle-row">
           <input
-            type="checkbox"
+            type="checkbox" role="switch"
             checked={notifyWhenFinished}
             onChange={(event) => setNotifyWhenFinished(event.target.checked)}
           />

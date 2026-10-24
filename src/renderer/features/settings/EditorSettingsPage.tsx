@@ -1,6 +1,6 @@
 import { isLanguageEnabled, useEditorSettingsStore } from '../../state/editorSettingsStore'
 import { LINT_MODES, type LintMode } from '../editor/editorSettings'
-import { LANGUAGES } from '../editor/languageRegistry'
+import { LANGUAGES, OTHER_LANGUAGE_NAMES, type LanguageId } from '../editor/languageRegistry'
 import { AutoSaveSetting } from './AutoSaveSetting'
 import { ColorThemeSetting } from './ColorThemeSetting'
 import './settings.css'
@@ -8,6 +8,33 @@ import './settingsControls.css'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../ui/SettingsSection'
 import { SegmentedControl } from '../../ui/SegmentedControl'
+
+const OTHER_LANGUAGE_EXAMPLES = ['Vue', 'Shell', 'TOML', 'Dockerfile', 'Kotlin', 'Swift', 'Ruby', 'C#'].filter((name) =>
+  OTHER_LANGUAGE_NAMES.includes(name)
+)
+const OTHER_LANGUAGES_DETAIL = `${OTHER_LANGUAGE_EXAMPLES.join(', ')} and ${OTHER_LANGUAGE_NAMES.length - OTHER_LANGUAGE_EXAMPLES.length} more`
+
+interface LanguageRowProps {
+  id: LanguageId
+  label: string
+  detail: string
+  tools: string
+}
+
+function LanguageRow({ id, label, detail, tools }: LanguageRowProps) {
+  const isEnabled = useEditorSettingsStore((state) => isLanguageEnabled(state, id))
+  const setLanguageEnabled = useEditorSettingsStore((state) => state.setLanguageEnabled)
+  return (
+    <label className="table-row toggle-row">
+      <input type="checkbox" role="switch" checked={isEnabled} onChange={(event) => setLanguageEnabled(id, event.target.checked)} />
+      <div className="cell cell-account">
+        <span className="account-label">{label}</span>
+        <span className="muted">{detail}</span>
+      </div>
+      <span className="muted">{tools}</span>
+    </label>
+  )
+}
 
 const LINT_MODE_LABELS: Record<LintMode, string> = {
   off: 'Off',
@@ -50,7 +77,7 @@ export function EditorSettingsPage() {
       >
         <label className="toggle-row">
           <input
-            type="checkbox"
+            type="checkbox" role="switch"
             checked={settings.formatOnSave}
             onChange={(event) => settings.setFormatOnSave(event.target.checked)}
           />
@@ -58,27 +85,23 @@ export function EditorSettingsPage() {
         </label>
       </SettingsSection>
 
-      <section className="settings-section">
-        <h2 className="settings-subtitle">Languages</h2>
+      <SettingsSection
+        title="Languages"
+        description="Colors come with O-BROS and load only when you open a matching file. A file is recognized by its name, or by its first line when the name says nothing."
+      >
         <div className="table">
           {LANGUAGES.map((language) => (
-            <label key={language.id} className="table-row toggle-row">
-              <input
-                type="checkbox"
-                checked={isLanguageEnabled(settings, language.id)}
-                onChange={(event) => settings.setLanguageEnabled(language.id, event.target.checked)}
-              />
-              <div className="cell cell-account">
-                <span className="account-label">{language.label}</span>
-                <span className="muted">{language.extensions.map((extension) => `.${extension}`).join('  ')}</span>
-              </div>
-              <span className="muted">
-                {[language.canLint ? 'Lint' : null, language.canFormat ? 'Format' : null].filter(Boolean).join(' · ')}
-              </span>
-            </label>
+            <LanguageRow
+              key={language.id}
+              id={language.id}
+              label={language.label}
+              detail={language.extensions.map((extension) => `.${extension}`).join('  ')}
+              tools={[language.canLint ? 'Lint' : null, language.canFormat ? 'Format' : null].filter(Boolean).join(' · ')}
+            />
           ))}
+          <LanguageRow id="other" label="Every other language" detail={OTHER_LANGUAGES_DETAIL} tools="" />
         </div>
-      </section>
+      </SettingsSection>
     </SettingsPageLayout>
   )
 }

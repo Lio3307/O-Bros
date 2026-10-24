@@ -29,12 +29,9 @@ export function CleanupRow({ title, description, amount, buttonLabel, safety, ef
           <SafetyLabel safety={safety} />
         </span>
         <span className="muted">{description}</span>
-        <span className="cleanup-effect">
-          <span className="cleanup-effect-label">If you press {buttonLabel}:</span> {effect}
-        </span>
       </div>
-      <span className="muted cleanup-amount">{amount ?? MEASURING}</span>
-      <Button variant="outline" disabled={isDisabled} onClick={onClean}>
+      <span className="cleanup-amount">{amount ?? MEASURING}</span>
+      <Button variant="outline" title={`${buttonLabel}: ${effect}`} disabled={isDisabled} onClick={onClean}>
         {buttonLabel}
       </Button>
     </div>

@@ -104,10 +104,8 @@ export function UniversalHistorySection() {
       title="Universal history"
       description={
         <>
-          O-BROS keeps its own copy of your conversations in one folder you choose, one folder per agent, so your chats
-          stay in a place you control even when you switch agents or delete an agent's own files. It is plain text: your
-          messages and the agent's answers, without tool output, so it stays small. Claude and Codex conversations are
-          saved today. The agents keep their own files too.
+          O-BROS's own small text copy of your Claude and Codex conversations, so you can continue them in another agent.
+          It keeps your messages and the answers, not tool output.
         </>
       }
       actions={
@@ -137,16 +135,16 @@ export function UniversalHistorySection() {
                   {report.drive === null ? '' : `Drive ${report.drive.root} has ${formatBytes(report.drive.freeBytes)} free. `}
                   {savedText(report)}
                 </span>
-                <span className="cleanup-effect">
-                  <span className="cleanup-effect-label">If you press Move:</span> you pick a folder, O-BROS creates o-bros-history
-                  inside it, copies everything there, checks the copy, then removes the old folder. New conversations are saved
-                  in the new place. Move it back the same way.
-                </span>
               </div>
-              <span className="muted cleanup-amount">
+              <span className="cleanup-amount">
                 {pluralize(report.conversationCount, 'conversation', 'conversations')}, {formatBytes(report.totalBytes)}
               </span>
-              <Button variant="outline" disabled={isBusy} onClick={() => void move()}>
+              <Button
+                variant="outline"
+                title="Pick a folder. O-BROS copies everything into o-bros-history there, checks the copy, then removes the old folder. Move it back the same way."
+                disabled={isBusy}
+                onClick={() => void move()}
+              >
                 <FolderInput size={14} /> Move…
               </Button>
             </div>
@@ -156,7 +154,7 @@ export function UniversalHistorySection() {
                   <span className="account-label">{agent.folderName}</span>
                   <span className="muted">Copies of {agent.agent} conversations</span>
                 </div>
-                <span className="muted cleanup-amount">
+                <span className="cleanup-amount">
                   {pluralize(agent.conversationCount, 'conversation', 'conversations')}, {formatBytes(agent.totalBytes)}
                 </span>
                 <Button variant="outline" onClick={() => void openFolder(agent.agent)}>
@@ -177,8 +175,7 @@ export function UniversalHistorySection() {
               onChange={(value) => void changeKeep(value)}
             />
             <p className="muted">
-              Choosing a number of days deletes O-BROS's copies of older conversations for good, which frees space but means
-              those chats cannot be handed to another agent. The agents' own conversations stay, and you can still resume them.
+              Older copies are deleted for good and can no longer be continued in another agent. The agents' own conversations stay.
             </p>
           </div>
         </>

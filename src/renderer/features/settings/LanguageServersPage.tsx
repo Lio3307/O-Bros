@@ -104,7 +104,7 @@ function ServerRow({ server }: { server: LanguageServerStatus }) {
         )}
       </div>
       <label className="toggle-row language-server-toggle">
-        <input type="checkbox" checked={choice.isEnabled} onChange={(event) => setEnabled(server.id, event.target.checked)} />
+        <input type="checkbox" role="switch" checked={choice.isEnabled} onChange={(event) => setEnabled(server.id, event.target.checked)} />
         <span>Use</span>
       </label>
     </div>

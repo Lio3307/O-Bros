@@ -22,13 +22,31 @@ describe('findLanguageForFile', () => {
   })
 
   it('colors Svelte, Vue and Astro markup, TypeScript scripts and SCSS styles', async () => {
-    expect(['App.svelte', 'App.vue', 'Page.astro'].map((name) => findLanguageForFile(`C:/app/${name}`)?.id)).toEqual(['svelte', 'vue', 'astro'])
+    expect(['App.svelte', 'Page.astro'].map((name) => findLanguageForFile(`C:/app/${name}`)?.id)).toEqual(['svelte', 'astro'])
     const component = '<script lang="ts">let count: number = 0</script>\n<button>{count}</button>\n<style lang="scss">.a { color: red; }</style>'
     const language = findLanguageForFile('C:/app/App.svelte')
     const state = EditorState.create({ doc: component, extensions: language === null ? [] : [await language.load()] })
     const names = new Set<string>()
     ensureSyntaxTree(state, component.length, 5000)?.iterate({ enter: (node) => { names.add(node.name) } })
     expect([...names]).toEqual(expect.arrayContaining(['Element', 'TypeAnnotation', 'ClassName', 'PropertyName']))
+  })
+
+  it('finds every other language in the catalog by extension or file name', () => {
+    expect(findLanguageForFile('C:/app/App.vue')?.label).toBe('Vue')
+    expect(findLanguageForFile('C:/app/deploy.sh')?.label).toBe('Shell')
+    expect(findLanguageForFile('C:/app/Cargo.toml')?.label).toBe('TOML')
+    expect(findLanguageForFile('C:/app/Dockerfile')?.label).toBe('Dockerfile')
+    expect(findLanguageForFile('C:/app/Main.kt')?.id).toBe('other')
+    expect(findLanguageForFile('C:/app/deploy.sh')?.serverLanguageId).toBe('shell')
+  })
+
+  it('reads the first line when the name says nothing', () => {
+    expect(findLanguageForFile('C:/app/bin/release', '#!/usr/bin/env python3')?.id).toBe('python')
+    expect(findLanguageForFile('C:/app/bin/release', '#!/usr/bin/env -S node --no-warnings')?.id).toBe('javascript')
+    expect(findLanguageForFile('C:/app/bin/release', '#!/bin/bash')?.label).toBe('Shell')
+    expect(findLanguageForFile('C:/app/Widget.riot', '<widget>')?.id).toBe('html')
+    expect(findLanguageForFile('C:/app/bin/release', '#!/usr/bin/env python3')?.canLint).toBe(false)
+    expect(findLanguageForFile('C:/app/notes', 'just words')).toBeNull()
   })
 
   it('returns null for unknown files', () => {

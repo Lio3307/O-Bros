@@ -36,8 +36,8 @@ function currentColorThemeExtension(): Extension {
   return colorThemeExtension(findColorTheme(useColorThemeStore.getState().themeId))
 }
 
-function enabledLanguageFor(filePath: string): LanguageDefinition | null {
-  const language = findLanguageForFile(filePath)
+function enabledLanguageFor(filePath: string, firstLine: string): LanguageDefinition | null {
+  const language = findLanguageForFile(filePath, firstLine)
   const settings = useEditorSettingsStore.getState()
   return language !== null && isLanguageEnabled(settings, language.id) ? language : null
 }
@@ -90,11 +90,9 @@ async function saveFile(
 }
 
 async function buildEditorState(tabId: string, filePath: string): Promise<EditorState> {
-  const language = enabledLanguageFor(filePath)
-  const [content, languageExtensions] = await Promise.all([
-    window.api.files.read(filePath),
-    languageExtensionsFor(filePath, language)
-  ])
+  const content = await window.api.files.read(filePath)
+  const language = enabledLanguageFor(filePath, content.split('\n', 1)[0])
+  const languageExtensions = await languageExtensionsFor(filePath, language)
 
   const fileShortcuts = keymap.of([
     {
@@ -175,7 +173,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
     let server: PreparedServer | null = null
 
     async function connectLanguageServer(mountedView: EditorView, language: LanguageDefinition): Promise<void> {
-      const prepared = await prepareLanguageServer(filePath, language.id)
+      const prepared = await prepareLanguageServer(filePath, language.serverLanguageId ?? language.id)
       if (prepared === null) {
         return
       }
@@ -196,7 +194,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
       view.dispatch({ effects: colorThemeCompartment.reconfigure(currentColorThemeExtension()) })
       viewRef.current = view
       revealPendingTarget(view, filePath)
-      const language = enabledLanguageFor(filePath)
+      const language = enabledLanguageFor(filePath, view.state.doc.line(1).text)
       if (language !== null && language.canLint) {
         lintNow(view)
       }

@@ -34,7 +34,7 @@ export function UsageVisibility() {
       {sources.length === 0 && <p className="muted">Nothing on this computer reports usage.</p>}
       {sources.map((source) => (
         <label key={source.id} className="toggle-row">
-          <input type="checkbox" checked={!hiddenSources.includes(source.id)} onChange={() => toggle(source.id)} />
+          <input type="checkbox" role="switch" checked={!hiddenSources.includes(source.id)} onChange={() => toggle(source.id)} />
           {source.icon}
           <span>Show {source.label}</span>
         </label>

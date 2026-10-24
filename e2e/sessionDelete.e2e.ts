@@ -44,12 +44,12 @@ test.afterEach(async () => {
 test('deletes all Codex sessions from Storage and memory', async () => {
   await app.window.getByTitle('Settings').click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
-  await app.window.getByText('Delete permanently instead of moving to the Recycle Bin or Trash').click()
+  await app.window.getByRole('switch', { name: 'Delete permanently' }).check()
 
-  const codexHeading = app.window.getByRole('heading', { name: 'Codex: 3 sessions', exact: false })
-  await expect(codexHeading).toBeVisible({ timeout: 20_000 })
-  const allSessionsRow = app.window.locator('.table-row', { hasText: 'All sessions' }).last()
-  await allSessionsRow.getByRole('button', { name: 'Delete' }).click()
+  const codexRow = app.window.locator('.session-cleanup-row', { hasText: 'Codex' })
+  await expect(codexRow).toContainText('3 conversations', { timeout: 20_000 })
+  await codexRow.getByRole('button', { name: 'All', exact: true }).click()
+  await codexRow.getByRole('button', { name: 'Delete' }).click()
   await app.window.getByRole('button', { name: 'Delete permanently', exact: true }).click()
 
   await expect.poll(countSessionFiles, { timeout: 20_000 }).toBe(0)
@@ -69,10 +69,11 @@ test('keeps deleting when one session is in use, and says which could not be del
     await new Promise((resolve) => setTimeout(resolve, 2000))
     await app.window.getByTitle('Settings').click()
     await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
-    await app.window.getByText('Delete permanently instead of moving to the Recycle Bin or Trash').click()
-    await expect(app.window.getByRole('heading', { name: 'Codex: 3 sessions', exact: false })).toBeVisible({ timeout: 20_000 })
-    const allSessionsRow = app.window.locator('.table-row', { hasText: 'All sessions' }).last()
-    await allSessionsRow.getByRole('button', { name: 'Delete' }).click()
+    await app.window.getByRole('switch', { name: 'Delete permanently' }).check()
+    const codexRow = app.window.locator('.session-cleanup-row', { hasText: 'Codex' })
+    await expect(codexRow).toContainText('3 conversations', { timeout: 20_000 })
+    await codexRow.getByRole('button', { name: 'All', exact: true }).click()
+    await codexRow.getByRole('button', { name: 'Delete' }).click()
     await app.window.getByRole('button', { name: 'Delete permanently', exact: true }).click()
 
     await expect(app.window.getByText('1 session could not be deleted', { exact: false })).toBeVisible({ timeout: 20_000 })

@@ -64,7 +64,7 @@ export function HardwareAccelerationSetting() {
       }
     >
       <label className="toggle-row">
-        <input type="checkbox" checked={state.isSaved} onChange={(event) => void change(event.target.checked)} />
+        <input type="checkbox" role="switch" checked={state.isSaved} onChange={(event) => void change(event.target.checked)} />
         <span>Use the graphics card (hardware acceleration)</span>
       </label>
       {needsRestart && (

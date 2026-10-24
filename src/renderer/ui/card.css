@@ -29,6 +29,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+.monitor-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
 .stat-tile {
   gap: 2px;
   padding: 14px 16px;
