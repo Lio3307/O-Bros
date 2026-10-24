@@ -13,9 +13,11 @@ import { measureHistory, pruneHistory, syncHistory, type HistorySource } from '.
 
 const FIRST_SAVE_DELAY_MS = 15_000
 const SAVE_EVERY_MS = 60_000
+const BACKGROUND_QUIET_MS = 120_000
 
 let queue: Promise<unknown> = Promise.resolve()
 let isSaveQueued = false
+let queuedQuietMs = 0
 let isSaving = false
 let lastSavedAt: number | null = null
 let firstTimer: NodeJS.Timeout | null = null
@@ -46,17 +48,19 @@ async function historySources(): Promise<HistorySource[]> {
   }))
 }
 
-export function saveUniversalHistoryNow(): Promise<unknown> {
+function queueSave(waitForQuietMs: number): Promise<unknown> {
+  queuedQuietMs = isSaveQueued ? Math.min(queuedQuietMs, waitForQuietMs) : waitForQuietMs
   if (isSaveQueued) {
     return queue
   }
   isSaveQueued = true
   return exclusive(async () => {
     isSaveQueued = false
+    const quietMs = queuedQuietMs
     isSaving = true
     try {
       const settings = await loadSettings()
-      await syncHistory(await currentHistoryFolder(), await historySources(), settings.historyKeepDays, Date.now())
+      await syncHistory(await currentHistoryFolder(), await historySources(), settings.historyKeepDays, Date.now(), quietMs)
       lastSavedAt = Date.now()
     } finally {
       isSaving = false
@@ -64,10 +68,14 @@ export function saveUniversalHistoryNow(): Promise<unknown> {
   }).catch((error: unknown) => writeLog('error', `Universal history: ${error instanceof Error ? error.message : String(error)}`))
 }
 
+export function saveUniversalHistoryNow(): Promise<unknown> {
+  return queueSave(0)
+}
+
 export function startUniversalHistory(): void {
   firstTimer = setTimeout(() => {
-    void saveUniversalHistoryNow()
-    repeatTimer = setInterval(() => void saveUniversalHistoryNow(), SAVE_EVERY_MS)
+    void queueSave(BACKGROUND_QUIET_MS)
+    repeatTimer = setInterval(() => void queueSave(BACKGROUND_QUIET_MS), SAVE_EVERY_MS)
   }, FIRST_SAVE_DELAY_MS)
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { appendToTail, isRepaintOfQuestion, looksLikeWaitingForInput, stripTerminalControl } from './waitingPrompt'
+import { appendToTail, isRepaintOfQuestion, looksLikeStillWorking, looksLikeWaitingForInput, stripTerminalControl } from './waitingPrompt'
 
 describe('stripTerminalControl', () => {
   it('removes color and cursor sequences', () => {
@@ -47,5 +47,16 @@ describe('isRepaintOfQuestion', () => {
   it('counts any output when no question is shown', () => {
     const working = appendToTail('', 'Reading src/todos.ts')
     expect(isRepaintOfQuestion(working, appendToTail(working, 'Reading src/todos.ts'))).toBe(false)
+  })
+})
+
+describe('looksLikeStillWorking', () => {
+  it('sees an agent turn that is still running even when its spinner stopped', () => {
+    expect(looksLikeStillWorking('✻ Pondering… (12s · esc to interrupt)\n> ')).toBe(true)
+    expect(looksLikeStillWorking('• Working (8s • Esc to interrupt)')).toBe(true)
+  })
+
+  it('treats a screen without the marker as done', () => {
+    expect(looksLikeStillWorking('Done. The tests pass.\n> ')).toBe(false)
   })
 })

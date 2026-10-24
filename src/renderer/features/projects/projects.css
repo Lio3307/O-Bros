@@ -204,3 +204,30 @@
 .session-member-stop:focus-visible {
   opacity: 1;
 }
+
+.folder-row {
+  display: flex;
+  align-items: center;
+}
+
+.folder-row > .row {
+  flex: 1;
+  min-width: 0;
+  padding-left: 2px;
+}
+
+.folder-toggle {
+  flex-shrink: 0;
+  width: 20px;
+  height: 28px;
+}
+
+.folder-session-count {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}

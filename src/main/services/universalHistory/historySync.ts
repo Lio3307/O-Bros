@@ -79,13 +79,24 @@ async function writeRecord(folder: string, source: HistorySource, known: IndexEn
   return { modifiedAt: source.modifiedAt, recordFile }
 }
 
-export async function syncHistory(folder: string, sources: HistorySource[], keepDays: number | null, now: number): Promise<number> {
+function isStillChanging(source: HistorySource, known: IndexEntry | undefined, now: number, waitForQuietMs: number): boolean {
+  return known !== undefined && now - source.modifiedAt < waitForQuietMs
+}
+
+export async function syncHistory(
+  folder: string,
+  sources: HistorySource[],
+  keepDays: number | null,
+  now: number,
+  waitForQuietMs = 0
+): Promise<number> {
   const index = await readIndex(folder)
   let savedCount = 0
   const ordered = [...sources].sort((first, second) => first.modifiedAt - second.modifiedAt)
   for (const source of ordered) {
     const known = index[source.filePath]
-    if ((known !== undefined && known.modifiedAt === source.modifiedAt) || isHistoryExpired(source.modifiedAt, keepDays, now)) {
+    const isUnchanged = known !== undefined && known.modifiedAt === source.modifiedAt
+    if (isUnchanged || isStillChanging(source, known, now, waitForQuietMs) || isHistoryExpired(source.modifiedAt, keepDays, now)) {
       continue
     }
     const entry = await writeRecord(folder, source, known, now).catch(() => null)

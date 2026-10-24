@@ -62,3 +62,10 @@ export function isRepaintOfQuestion(before: string, after: string): boolean {
   const ending = before.trimEnd().slice(-REPAINT_MATCH_LENGTH)
   return looksLikeWaitingForInput(before) && ending !== '' && after.trimEnd().endsWith(ending)
 }
+
+const WORKING_PHRASES = ['esc to interrupt']
+
+export function looksLikeStillWorking(screen: string): boolean {
+  const lowered = screen.toLowerCase()
+  return WORKING_PHRASES.some((phrase) => lowered.includes(phrase))
+}

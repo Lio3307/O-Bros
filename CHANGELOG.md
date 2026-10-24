@@ -6,7 +6,13 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ### Added
 - **Colors for about 140 more languages**, such as Vue, Shell, TOML, Dockerfile, Kotlin, Swift, Ruby, C#, Lua, PowerShell, Sass and Less, from CodeMirror's official language list. Each one loads only when you open a matching file. A file without a known name is recognized by its first line: `#!/usr/bin/env python3` opens as Python, `#!/bin/bash` as Shell, and a file that starts with `<` as HTML. Settings > Editor > Languages has one switch for all of them, **Every other language**.
+- **Hide a folder's terminals in Projects.** A folder with open terminals has an arrow in front of it. Collapsed, it shows how many terminals it hides, and O-BROS remembers the choice.
 - **Svelte and Astro files have colors.** Their markup, their `<script>` (also `lang="ts"`) and their `<style>` (also `lang="scss"`, `"less"` and `"postcss"`) are colored with the HTML, TypeScript and CSS support O-BROS already has. Template expressions such as `{#if}` stay plain.
+
+### Fixed
+- **"Finished" notifications while the agent was still working.** When you switched to another app or page, the terminal told the agent it lost focus, the agent stopped redrawing its spinner, and the silence looked like the end of its turn. O-BROS now also checks the terminal screen: while it still shows "esc to interrupt", it keeps waiting.
+- **Less work in the background, so the app responds faster.** Searching a whole drive such as `C:\` for repositories took 8 seconds every time you came back to the window on the Git page; it now skips Windows system folders (`Windows`, `Program Files`, `ProgramData`, `AppData` and others) and takes about 0.1 seconds. The universal history no longer re-reads a conversation that is still growing every minute (a 300 MB conversation cost 3 seconds each time); it saves it once it has been quiet for 2 minutes. **Save now** and **Continue with…** still save everything at once.
+- **The arrows that show or hide project folders react to every click.** A second click within a third of a second used to be ignored.
 
 ### Changed
 - **Every on/off setting is a switch** instead of a checkbox, in all of Settings and the History filter.

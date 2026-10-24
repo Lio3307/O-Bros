@@ -88,3 +88,20 @@ test('keeps a project folder collapsed after visiting another page', async () =>
   await app.window.waitForSelector('.rail')
   await expect(rootBlock.getByText('src', { exact: true })).toHaveCount(0)
 })
+
+test('hides and shows the terminals of a folder', async () => {
+  await mkdir(join(app.projectFolder, 'web'))
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+  await app.window.getByTitle(join(app.projectFolder, 'web'), { exact: true }).click()
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  const folderSessions = app.window.locator('.folder-sessions .row-session')
+  await expect(folderSessions).toHaveCount(1, { timeout: 15_000 })
+
+  await app.window.getByTitle('Hide its terminals').click()
+  await expect(folderSessions).toHaveCount(0)
+  await expect(app.window.getByTitle('1 open terminal')).toBeVisible()
+
+  await app.window.getByTitle('Show its terminals').click()
+  await expect(folderSessions).toHaveCount(1)
+})

@@ -3,10 +3,12 @@ import { useLayoutStore } from '../../state/layoutStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { classifyActivity, recordOutput, type TerminalActivity } from './terminalActivity'
-import { appendToTail, looksLikeWaitingForInput } from '../../../shared/waitingPrompt'
+import { appendToTail, looksLikeStillWorking, looksLikeWaitingForInput } from '../../../shared/waitingPrompt'
+import { readTerminalText } from './terminalRegistry'
 
 const CHECK_INTERVAL_MS = 1000
 const WAITING_AFTER_QUIET_MS = 1500
+const SCREEN_LINES = 15
 
 interface WatchedTerminal {
   activity: TerminalActivity
@@ -54,6 +56,11 @@ function announce(paneId: string, happened: string, detail: string): void {
   }
 }
 
+function isStillWorkingOnScreen(paneId: string): boolean {
+  const screen = readTerminalText(paneId, SCREEN_LINES)
+  return screen !== null && looksLikeStillWorking(screen)
+}
+
 function checkActivities(): void {
   const now = Date.now()
   for (const [paneId, watched] of activities) {
@@ -64,7 +71,7 @@ function checkActivities(): void {
       continue
     }
     const status = classifyActivity(watched.activity, now)
-    if (status === 'running') {
+    if (status === 'running' || isStillWorkingOnScreen(paneId)) {
       continue
     }
     activities.delete(paneId)

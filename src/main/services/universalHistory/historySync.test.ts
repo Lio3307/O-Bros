@@ -53,6 +53,20 @@ describe('syncHistory', () => {
     expect(await readdir(join(folder, 'claude-resume'))).toEqual(['2026-10-21_a1.json'])
   })
 
+  it('waits until a saved conversation stops changing before reading it again', async () => {
+    const folder = await createFolder()
+    const quietMs = 120_000
+    expect(await syncHistory(folder, [source('claude', 'a1', NOW - 1000, [{ role: 'user', text: 'start' }])], null, NOW, quietMs)).toBe(1)
+
+    const growing = source('claude', 'a1', NOW + 10_000, [{ role: 'user', text: 'start' }, { role: 'assistant', text: 'still going' }])
+    expect(await syncHistory(folder, [growing], null, NOW + 20_000, quietMs)).toBe(0)
+    expect(growing.reads).toBe(0)
+
+    expect(await syncHistory(folder, [growing], null, NOW + 10_000 + quietMs, quietMs)).toBe(1)
+    const changedJustNow = source('claude', 'a1', NOW + quietMs * 2, [{ role: 'user', text: 'one more' }])
+    expect(await syncHistory(folder, [changedJustNow], null, NOW + quietMs * 2)).toBe(1)
+  })
+
   it('skips empty conversations and ones older than the keep period', async () => {
     const folder = await createFolder()
     const empty = source('claude', 'empty', NOW, [])

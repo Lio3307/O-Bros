@@ -4,7 +4,7 @@ import { closestProject } from '../../../shared/closestProject'
 import { findTerminalPane } from '../../state/focusTerminalPane'
 import { membersOfTab, useTeamStore } from '../../state/teamStore'
 import { SessionMembers } from './SessionMembers'
-import { Fragment, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { isPrimaryBranch } from '../../../shared/gitSync'
 import { isPathInside } from '../../../shared/paths'
 import { formatAge } from '../../../shared/time'
@@ -151,9 +151,61 @@ interface FolderListProps {
   now: number
 }
 
-function FolderList({ root, sessionsByFolder, now }: FolderListProps) {
+interface FolderRowProps {
+  folder: ProjectRoot['folders'][number]
+  sessions: TerminalTab[]
+  hasFinished: boolean
+  now: number
+}
+
+function FolderRow({ folder, sessions, hasFinished, now }: FolderRowProps) {
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const selectProject = useProjectsStore((state) => state.selectProject)
+  const isCollapsed = useCollapsedRootsStore((state) => state.paths.includes(folder.path))
+  const toggleCollapsed = useCollapsedRootsStore((state) => state.toggle)
+  const hasSessions = sessions.length > 0
+  const Chevron = isCollapsed ? ChevronRight : ChevronDown
+
+  return (
+    <>
+      <div className="folder-row">
+        {hasSessions ? (
+          <button
+            type="button"
+            className="icon-button folder-toggle"
+            title={isCollapsed ? 'Show its terminals' : 'Hide its terminals'}
+            aria-expanded={!isCollapsed}
+            onClick={() => toggleCollapsed(folder.path)}
+          >
+            <Chevron size={14} />
+          </button>
+        ) : (
+          <span className="folder-toggle" />
+        )}
+        <button
+          type="button"
+          title={folder.path}
+          className={folder.path === activeProjectPath ? 'row row-selected' : 'row'}
+          onClick={() => selectProject(folder.path)}
+        >
+          <Folder size={14} />
+          <span className="row-name">{folder.name}</span>
+          {folder.branch !== null && <BranchLabel branch={folder.branch} />}
+          {hasSessions && isCollapsed && (
+            <span className="folder-session-count" title={`${sessions.length} open terminal${sessions.length === 1 ? '' : 's'}`}>
+              <Terminal size={12} />
+              {sessions.length}
+            </span>
+          )}
+          {hasFinished && <span className="tab-attention-dot" title="A terminal here finished while you were away" />}
+        </button>
+      </div>
+      {!isCollapsed && <FolderSessions sessions={sessions} now={now} />}
+    </>
+  )
+}
+
+function FolderList({ root, sessionsByFolder, now }: FolderListProps) {
   const hasFinishedElsewhere = useFinishedElsewhere()
 
   if (root.folders.length === 0) {
@@ -164,22 +216,13 @@ function FolderList({ root, sessionsByFolder, now }: FolderListProps) {
     <div className="root-section">
       <h3 className="section-label">Folders</h3>
       {root.folders.map((folder) => (
-        <Fragment key={folder.path}>
-          <button
-            type="button"
-            title={folder.path}
-            className={folder.path === activeProjectPath ? 'row row-selected' : 'row'}
-            onClick={() => selectProject(folder.path)}
-          >
-            <Folder size={14} />
-            <span className="row-name">{folder.name}</span>
-            {folder.branch !== null && <BranchLabel branch={folder.branch} />}
-            {hasFinishedElsewhere(folder.path) && (
-              <span className="tab-attention-dot" title="A terminal here finished while you were away" />
-            )}
-          </button>
-          <FolderSessions sessions={sessionsByFolder.get(folder.path) ?? []} now={now} />
-        </Fragment>
+        <FolderRow
+          key={folder.path}
+          folder={folder}
+          sessions={sessionsByFolder.get(folder.path) ?? []}
+          hasFinished={hasFinishedElsewhere(folder.path)}
+          now={now}
+        />
       ))}
     </div>
   )
@@ -204,9 +247,15 @@ function RootBlock({ root }: { root: ProjectRoot }) {
   return (
     <section className="root-block">
       <div className={headerClassName}>
-        <Button variant="icon" title="Show or hide folders" onClick={() => toggleCollapsed(root.path)}>
+        <button
+          type="button"
+          className="icon-button"
+          title="Show or hide folders"
+          aria-expanded={!isCollapsed}
+          onClick={() => toggleCollapsed(root.path)}
+        >
           <Chevron size={14} />
-        </Button>
+        </button>
         <button type="button" className="root-name" title={root.path} onClick={() => selectProject(root.path)}>
           {root.name}
         </button>

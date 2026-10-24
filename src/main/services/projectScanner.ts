@@ -6,7 +6,19 @@ import { readDirectoryIfExists, readTextIfExists } from './fileSystem'
 
 const HEAD_REFERENCE_PREFIX = 'ref: refs/heads/'
 const DETACHED_HASH_LENGTH = 7
-const HIDDEN_OR_GENERATED_FOLDERS = new Set(['node_modules', 'dist', 'out', 'System Volume Information'])
+const HIDDEN_OR_GENERATED_FOLDERS = new Set([
+  'node_modules',
+  'dist',
+  'out',
+  'System Volume Information',
+  'Windows',
+  'Program Files',
+  'Program Files (x86)',
+  'ProgramData',
+  'AppData',
+  'Recovery',
+  'PerfLogs'
+])
 const SYSTEM_FOLDER_PREFIXES = ['.', '$']
 
 export async function readCurrentBranch(folderPath: string): Promise<string | null> {
