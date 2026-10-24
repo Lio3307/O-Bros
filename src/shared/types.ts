@@ -44,6 +44,7 @@ export interface ProjectRoot {
   path: string
   branch: string | null
   folders: ProjectFolder[]
+  isMissing: boolean
 }
 
 export type FileChangeKind = 'modified' | 'added' | 'deleted' | 'renamed' | 'untracked' | 'conflicted'
@@ -252,6 +253,11 @@ export interface FormatResult {
 }
 
 export type AddRootOutcome = 'added' | 'cancelled' | 'already-added' | 'inside-existing'
+
+export interface RelocateRootResult {
+  roots: ProjectRoot[]
+  newPath: string | null
+}
 
 export interface AddRootResult {
   roots: ProjectRoot[]

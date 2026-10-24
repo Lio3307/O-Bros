@@ -1,6 +1,7 @@
 import { spawn, type IPty } from '@lydell/node-pty'
 import type { WebContents } from 'electron'
 import { homedir } from 'node:os'
+import { isFolder } from './fileSystem'
 import { IpcChannel, type PtyCreateRequest } from '../../shared/ipc'
 import { buildAccountEnvironment } from './accountEnvironment'
 import {
@@ -83,6 +84,9 @@ function createBatchedSender(send: (chunk: string) => void) {
 }
 
 export async function createTerminal(owner: WebContents, request: PtyCreateRequest): Promise<void> {
+  if (request.cwd !== null && !(await isFolder(request.cwd))) {
+    throw new Error(`The folder is not available: ${request.cwd}`)
+  }
   const providerVariables = request.startsAgent ? await customProviderEnvironment(request.provider) : {}
   runningTerminals.get(request.id)?.kill()
 

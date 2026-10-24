@@ -23,7 +23,7 @@ function terminalTab(id: string, cwd: string | null, paneIds: string[]): Termina
   return { kind: 'terminal', id, title: id, cwd, createdAt: 0, layout, panes, focusedPaneId: paneIds[0] }
 }
 
-const roots: ProjectRoot[] = [{ name: 'PersonalRepo', path: 'E:\\PersonalRepo', branch: null, folders: [] }]
+const roots: ProjectRoot[] = [{ name: 'PersonalRepo', path: 'E:\\PersonalRepo', branch: null, folders: [], isMissing: false }]
 
 function resource(paneId: string, workingSetMb: number, cpuPercent: number): TerminalResource {
   return { paneId, cpuPercent, workingSetBytes: workingSetMb * MB, privateBytes: workingSetMb * MB }
@@ -50,7 +50,8 @@ describe('groupTerminalsByWorkspace', () => {
         folders: [
           { name: 'o-bros', path: 'E:\\PersonalRepo\\o-bros', branch: null },
           { name: 'site', path: 'E:\\PersonalRepo\\site', branch: null }
-        ]
+        ],
+        isMissing: false
       }
     ]
     const tabs = [terminalTab('a', 'E:\\PersonalRepo\\o-bros', ['1']), terminalTab('b', 'E:\\PersonalRepo\\site', ['2'])]

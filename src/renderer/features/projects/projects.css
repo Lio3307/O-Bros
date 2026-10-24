@@ -231,3 +231,11 @@
   color: var(--color-muted);
   font-variant-numeric: tabular-nums;
 }
+
+.root-header-missing .root-name {
+  color: var(--color-muted);
+}
+
+.missing-root-notice {
+  margin: 4px 0 8px;
+}

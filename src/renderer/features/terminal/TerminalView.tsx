@@ -15,6 +15,7 @@ import { useColorThemeStore } from '../../state/colorThemeStore'
 import { useTerminalFontStore } from '../../state/terminalFontStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
+import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { findColorTheme, terminalThemeOf } from '../../theme/colorThemes'
 import { DRAGGED_PATH_TYPE } from '../files/dragData'
 import { createFileLinkProvider } from './fileLinkProvider'
@@ -151,7 +152,10 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
         commitIdentity: useAgentCommitStore.getState().identity,
         provider: startsAgent ? providerForCommand(startCommand) : null
       })
-      .then(fitToHost)
+      .then(fitToHost, (error: unknown) => {
+        terminal.writeln(friendlyErrorMessage(error, 'The terminal could not start.'))
+        terminal.writeln(cwd ?? '')
+      })
 
     return () => {
       resizeObserver.disconnect()

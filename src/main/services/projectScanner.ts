@@ -2,7 +2,7 @@ import { join } from 'node:path'
 import { lastPathSegment } from '../../shared/paths'
 import type { ProjectFolder, ProjectRoot } from '../../shared/types'
 import { loadSettings } from '../settings'
-import { readDirectoryIfExists, readTextIfExists } from './fileSystem'
+import { isFolder, readDirectoryIfExists, readTextIfExists } from './fileSystem'
 
 const HEAD_REFERENCE_PREFIX = 'ref: refs/heads/'
 const DETACHED_HASH_LENGTH = 7
@@ -42,6 +42,9 @@ async function describeFolder(parentPath: string, name: string): Promise<Project
 }
 
 async function describeRoot(rootPath: string): Promise<ProjectRoot> {
+  if (!(await isFolder(rootPath))) {
+    return { name: lastPathSegment(rootPath), path: rootPath, branch: null, folders: [], isMissing: true }
+  }
   const entries = await readDirectoryIfExists(rootPath)
   const folderNames = entries
     .filter((entry) => entry.isDirectory() && isVisibleFolder(entry.name))
@@ -51,7 +54,8 @@ async function describeRoot(rootPath: string): Promise<ProjectRoot> {
     name: lastPathSegment(rootPath),
     path: rootPath,
     branch: await readCurrentBranch(rootPath),
-    folders: await Promise.all(folderNames.map((name) => describeFolder(rootPath, name)))
+    folders: await Promise.all(folderNames.map((name) => describeFolder(rootPath, name))),
+    isMissing: false
   }
 }
 

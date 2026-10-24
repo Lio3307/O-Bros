@@ -3,7 +3,10 @@ interface KnownProblem {
   message: string
 }
 
+export const MISSING_FOLDER_MESSAGE = 'This folder is not available. It was moved or deleted, or its drive is not connected.'
+
 const KNOWN_PROBLEMS: KnownProblem[] = [
+  { needle: 'The folder is not available', message: MISSING_FOLDER_MESSAGE },
   { needle: 'ENOENT', message: 'That file or folder no longer exists.' },
   { needle: 'EEXIST', message: 'A file or folder with that name already exists.' },
   { needle: 'EACCES', message: 'o-bros does not have permission to do that.' },

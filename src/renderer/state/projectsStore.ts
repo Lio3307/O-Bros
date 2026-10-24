@@ -10,6 +10,7 @@ interface ProjectsState {
   load: () => Promise<void>
   addRoot: (dialogTitle?: string) => Promise<string | null>
   removeRoot: (rootPath: string) => Promise<void>
+  relocateRoot: (oldPath: string) => Promise<void>
   selectProject: (projectPath: string) => void
 }
 
@@ -57,6 +58,15 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => {
       const roots = await window.api.projects.removeRoot(rootPath)
       const wasActive = get().activeProjectPath === rootPath
       set({ roots, activeProjectPath: wasActive ? (roots[0]?.path ?? null) : get().activeProjectPath })
+    },
+
+    relocateRoot: async (oldPath) => {
+      const { roots, newPath } = await window.api.projects.relocateRoot(oldPath)
+      const wasActive = get().activeProjectPath === oldPath
+      set({ roots, activeProjectPath: wasActive && newPath !== null ? newPath : get().activeProjectPath })
+      if (newPath !== null) {
+        toast.success('Now using "' + lastPathSegment(newPath) + '".')
+      }
     },
 
     selectProject: (activeProjectPath) => set({ activeProjectPath })

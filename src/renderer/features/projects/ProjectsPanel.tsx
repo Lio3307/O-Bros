@@ -30,6 +30,8 @@ import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { useNow } from '../../ui/useNow'
 import './projects.css'
 import { Button } from '../../ui/Button'
+import { cn } from '../../ui/cn'
+import { Notice } from '../../ui/Notice'
 import { ShowMoreToggle } from './ShowMoreToggle'
 
 const SESSION_AGE_REFRESH_MS = 60_000
@@ -228,6 +230,31 @@ function FolderList({ root, sessionsByFolder, now }: FolderListProps) {
   )
 }
 
+function MissingRootNotice({ root }: { root: ProjectRoot }) {
+  const relocateRoot = useProjectsStore((state) => state.relocateRoot)
+  const removeRoot = useProjectsStore((state) => state.removeRoot)
+
+  return (
+    <Notice
+      tone="warning"
+      className="missing-root-notice"
+      title="Folder not found"
+      actions={
+        <>
+          <Button variant="primary" onClick={() => relocateRoot(root.path)}>
+            Locate…
+          </Button>
+          <Button variant="outline" onClick={() => removeRoot(root.path)}>
+            Remove
+          </Button>
+        </>
+      }
+    >
+      It was moved or deleted, or its drive is not connected. When the folder is back, it shows up again by itself.
+    </Notice>
+  )
+}
+
 function RootBlock({ root }: { root: ProjectRoot }) {
   const isCollapsed = useCollapsedRootsStore((state) => state.paths.includes(root.path))
   const toggleCollapsed = useCollapsedRootsStore((state) => state.toggle)
@@ -242,11 +269,10 @@ function RootBlock({ root }: { root: ProjectRoot }) {
   )
 
   const Chevron = isCollapsed ? ChevronRight : ChevronDown
-  const headerClassName = root.path === activeProjectPath ? 'root-header root-header-selected' : 'root-header'
 
   return (
     <section className="root-block">
-      <div className={headerClassName}>
+      <div className={cn('root-header', root.path === activeProjectPath && 'root-header-selected', root.isMissing && 'root-header-missing')}>
         <button
           type="button"
           className="icon-button"
@@ -261,6 +287,7 @@ function RootBlock({ root }: { root: ProjectRoot }) {
         </button>
         {root.branch !== null && <BranchLabel branch={root.branch} />}
       </div>
+      {root.isMissing && <MissingRootNotice root={root} />}
       {!isCollapsed && (
         <>
           <RootSessions sessions={placement.atRoot} now={now} />

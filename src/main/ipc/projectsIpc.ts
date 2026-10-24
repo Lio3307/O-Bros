@@ -1,8 +1,9 @@
 import { dialog, ipcMain } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
+import { lastPathSegment } from '../../shared/paths'
 import { classifyNewRoot } from '../../shared/projectRoots'
 import { repositorySearchDepthOf } from '../../shared/repositorySearch'
-import type { AddRootResult } from '../../shared/types'
+import type { AddRootResult, RelocateRootResult } from '../../shared/types'
 import { listProjectRoots } from '../services/projectScanner'
 import { findRepositories } from '../services/repositoryFinder'
 import { readProjectScripts } from '../services/scriptService'
@@ -32,6 +33,20 @@ async function addProjectRoot(title: unknown): Promise<AddRootResult> {
   }
 }
 
+async function relocateProjectRoot(oldPath: string): Promise<RelocateRootResult> {
+  const choice = await dialog.showOpenDialog({ title: `Where is "${lastPathSegment(oldPath)}" now?`, properties: ['openDirectory'] })
+  const [newPath] = choice.filePaths
+  if (choice.canceled || newPath === undefined) {
+    return { roots: await listProjectRoots(), newPath: null }
+  }
+  const settings = await loadSettings()
+  const otherRoots = settings.projectRoots.filter((root) => root !== oldPath)
+  const isAlreadyListed = classifyNewRoot(newPath, otherRoots, IS_PATH_CASE_INSENSITIVE).kind === 'same'
+  const projectRoots = isAlreadyListed ? otherRoots : settings.projectRoots.map((root) => (root === oldPath ? newPath : root))
+  await saveSettings({ ...settings, projectRoots })
+  return { roots: await listProjectRoots(), newPath }
+}
+
 async function removeProjectRoot(rootPath: string) {
   const settings = await loadSettings()
   await saveSettings({ ...settings, projectRoots: settings.projectRoots.filter((root) => root !== rootPath) })
@@ -41,6 +56,7 @@ async function removeProjectRoot(rootPath: string) {
 export function registerProjectsIpc(): void {
   ipcMain.handle(IpcChannel.projectsList, () => listProjectRoots())
   ipcMain.handle(IpcChannel.projectsAddRoot, (_event, title: unknown) => addProjectRoot(title))
+  ipcMain.handle(IpcChannel.projectsRelocateRoot, (_event, oldPath: string) => relocateProjectRoot(oldPath))
   ipcMain.handle(IpcChannel.projectsRemoveRoot, (_event, rootPath: string) => removeProjectRoot(rootPath))
   ipcMain.handle(IpcChannel.projectsScripts, (_event, rootPath: string) => readProjectScripts(rootPath))
   ipcMain.handle(IpcChannel.projectsRepositories, async (_event, folderPath: string) =>

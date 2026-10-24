@@ -66,6 +66,7 @@ On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → 
 
 | Feature | Details |
 |---|---|
+| Missing folders | A project folder that was moved, deleted or is on a drive that is not connected shows **Folder not found** with **Locate…** and **Remove**. It comes back by itself when the folder is there again. Terminals and Changes explain that the folder is not available. |
 | Paste images | With a screenshot or other image on the clipboard, Ctrl+Shift+V (or Paste in the terminal menu) saves it as a PNG under O-BROS's data folder (`pasted-images`) and pastes its path for the agent to read. Pasted images are removed after 7 days. |
 | Terminal menu | Right-click a terminal for Copy, Paste, Select all, Continue in another agent (agent terminals), Split right, Split down and Clear screen. The right-click never reaches the program running in the terminal. |
 | Image preview | Image files (PNG, JPG, GIF, WebP, AVIF, BMP, ICO, SVG, up to 32 MB) open as a picture with their pixel size and file size. Switch between **Fit to window** and **Actual size**. The preview follows changes on disk. |

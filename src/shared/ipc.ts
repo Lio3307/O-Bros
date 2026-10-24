@@ -61,6 +61,7 @@ import type {
   GitStashRequest,
   GitStatus,
   ImageFile,
+  RelocateRootResult,
   RepositoryEntry,
   LintRequest,
   LintResult,
@@ -104,6 +105,7 @@ export const IpcChannel = {
   projectsList: 'projects:list',
   projectsAddRoot: 'projects:addRoot',
   projectsRemoveRoot: 'projects:removeRoot',
+  projectsRelocateRoot: 'projects:relocateRoot',
   projectsScripts: 'projects:scripts',
   projectsRepositories: 'projects:repositories',
   projectsSearchDepth: 'projects:searchDepth',
@@ -281,6 +283,7 @@ export interface DesktopApi {
     list(): Promise<ProjectRoot[]>
     addRoot(dialogTitle?: string): Promise<AddRootResult>
     removeRoot(rootPath: string): Promise<ProjectRoot[]>
+    relocateRoot(oldPath: string): Promise<RelocateRootResult>
     scripts(rootPath: string): Promise<ProjectScripts>
     repositories(folderPath: string): Promise<RepositoryEntry[]>
     searchDepth(): Promise<number>

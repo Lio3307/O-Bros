@@ -4,6 +4,8 @@ import { useCommitHistoryStore } from '../../state/commitHistoryStore'
 import { closestProject } from '../../../shared/closestProject'
 import { comparablePath, isPathInside, lastPathSegment, parentPath } from '../../../shared/paths'
 import { useProjectsStore } from '../../state/projectsStore'
+import { useIsInMissingProject } from '../../state/missingProject'
+import { MISSING_FOLDER_MESSAGE } from '../../../shared/friendlyError'
 import { useGitRepositoryPath, useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { LoadingText } from '../../ui/LoadingText'
 import { PanelHeader } from '../../ui/PanelHeader'
@@ -22,6 +24,7 @@ import './changes.css'
 
 export function ChangesPanel() {
   const repoPath = useGitRepositoryPath()
+  const isMissing = useIsInMissingProject(repoPath)
   const roots = useProjectsStore((state) => state.roots)
   const originPath = useGitRepositoryStore((state) => state.originPath)
   const openRepository = useGitRepositoryStore((state) => state.open)
@@ -95,7 +98,7 @@ export function ChangesPanel() {
         <RepositorySwitcher repoPath={repoPath} />
         {backButton}
         <p className="panel-empty">
-          {isLoaded ? (errorMessage ?? 'This folder is not a git repository. Pick a repository above or from the list.') : <LoadingText text="Reading the folder…" />}
+          {isMissing ? MISSING_FOLDER_MESSAGE : isLoaded ? (errorMessage ?? 'This folder is not a git repository. Pick a repository above or from the list.') : <LoadingText text="Reading the folder…" />}
         </p>
       </div>
     )

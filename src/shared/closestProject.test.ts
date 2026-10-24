@@ -10,7 +10,8 @@ const roots: ProjectRoot[] = [
     folders: [
       { name: 'o-bros', path: 'E:\\PersonalRepo\\o-bros', branch: null },
       { name: 'site', path: 'E:\\PersonalRepo\\site', branch: null }
-    ]
+    ],
+    isMissing: false
   }
 ]
 
