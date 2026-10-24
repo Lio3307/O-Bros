@@ -2,11 +2,12 @@ import { FitAddon } from '@xterm/addon-fit'
 import type { SearchAddon } from '@xterm/addon-search'
 import type { WebglAddon } from '@xterm/addon-webgl'
 import { Terminal } from '@xterm/xterm'
-import { useCallback, useEffect, useRef, useState, type DragEvent, type MouseEvent as ReactMouseEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import { useShortcutLabel } from '../../state/shortcutsStore'
 import { isTerminalTab, useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { terminalMenuItems } from './terminalContextMenu'
+import { pasteClipboardImage } from './pasteClipboardImage'
 import type { AccountRef } from '../../../shared/types'
 import { useAgentCommitStore } from '../../state/agentCommitStore'
 import { providerForCommand } from '../../state/customProvidersStore'
@@ -238,6 +239,16 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     }
   }
 
+  function pasteImageWhenNoText(event: ClipboardEvent): void {
+    const terminal = terminalRef.current
+    if (terminal === null || event.clipboardData.getData('text/plain') !== '') {
+      return
+    }
+    event.preventDefault()
+    event.stopPropagation()
+    void pasteClipboardImage(terminal)
+  }
+
   function keepRightButtonFromTerminal(event: ReactMouseEvent): void {
     if (event.button === RIGHT_BUTTON) {
       event.stopPropagation()
@@ -269,6 +280,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
         onMouseDownCapture={keepRightButtonFromTerminal}
         onMouseUpCapture={keepRightButtonFromTerminal}
         onContextMenuCapture={openContextMenu}
+        onPasteCapture={pasteImageWhenNoText}
       />
       {contextMenu !== null && <PopupMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} onClose={closeContextMenu} />}
       {searchAddon !== null && <TerminalSearchBar searchAddon={searchAddon} onClose={closeSearch} />}

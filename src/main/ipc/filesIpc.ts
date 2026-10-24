@@ -4,11 +4,13 @@ import type { CreateEntryRequest, RenameEntryRequest, SearchRequest } from '../.
 import { createEntry, moveEntryToTrash, renameEntry } from '../services/entryService'
 import { listDirectory, readImageFile, readTextFile, searchFiles, writeTextFile } from '../services/fileService'
 import { unwatchFile, watchFile } from '../services/fileWatcher'
+import { saveClipboardImage } from '../services/pastedImages'
 
 export function registerFilesIpc(): void {
   ipcMain.handle(IpcChannel.fsList, (_event, directoryPath: string) => listDirectory(directoryPath))
   ipcMain.handle(IpcChannel.fsRead, (_event, filePath: string) => readTextFile(filePath))
   ipcMain.handle(IpcChannel.fsReadImage, (_event, filePath: string) => readImageFile(filePath))
+  ipcMain.handle(IpcChannel.fsSaveClipboardImage, () => saveClipboardImage())
   ipcMain.handle(IpcChannel.fsWrite, (_event, filePath: string, content: string) => writeTextFile(filePath, content))
   ipcMain.handle(IpcChannel.fsSearch, (_event, request: SearchRequest) => searchFiles(request))
   ipcMain.handle(IpcChannel.fsCreate, (_event, request: CreateEntryRequest) => createEntry(request))

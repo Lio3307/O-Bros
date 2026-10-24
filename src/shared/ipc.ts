@@ -111,6 +111,7 @@ export const IpcChannel = {
   fsList: 'fs:list',
   fsRead: 'fs:read',
   fsReadImage: 'fs:readImage',
+  fsSaveClipboardImage: 'fs:saveClipboardImage',
   fsWrite: 'fs:write',
   fsSearch: 'fs:search',
   fsCreate: 'fs:create',
@@ -289,6 +290,7 @@ export interface DesktopApi {
     list(directoryPath: string): Promise<DirectoryEntry[]>
     read(filePath: string): Promise<string>
     readImage(filePath: string): Promise<ImageFile>
+    saveClipboardImage(): Promise<string | null>
     write(filePath: string, content: string): Promise<void>
     search(request: SearchRequest): Promise<SearchHit[]>
     create(request: CreateEntryRequest): Promise<string>

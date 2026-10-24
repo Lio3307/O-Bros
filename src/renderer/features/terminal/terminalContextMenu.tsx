@@ -4,6 +4,7 @@ import { toast } from '../../state/toastStore'
 import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import type { PopupMenuItem } from '../../ui/PopupMenu'
 import { continueInAnotherAgentItem } from '../history/continueFromTab'
+import { pasteClipboardImage } from './pasteClipboardImage'
 
 const ICON_SIZE = 14
 
@@ -19,9 +20,11 @@ export interface TerminalMenuContext {
 async function pasteClipboard(terminal: Terminal): Promise<void> {
   try {
     const text = await navigator.clipboard.readText()
-    if (text !== '') {
-      terminal.paste(text)
+    if (text === '') {
+      await pasteClipboardImage(terminal)
+      return
     }
+    terminal.paste(text)
   } catch {
     toast.warning('Could not read the clipboard.')
   }

@@ -45,6 +45,7 @@ const api: DesktopApi = {
     list: (directoryPath) => ipcRenderer.invoke(IpcChannel.fsList, directoryPath),
     read: (filePath) => ipcRenderer.invoke(IpcChannel.fsRead, filePath),
     readImage: (filePath) => ipcRenderer.invoke(IpcChannel.fsReadImage, filePath),
+    saveClipboardImage: () => ipcRenderer.invoke(IpcChannel.fsSaveClipboardImage),
     write: (filePath, content) => ipcRenderer.invoke(IpcChannel.fsWrite, filePath, content),
     search: (request) => ipcRenderer.invoke(IpcChannel.fsSearch, request),
     create: (request) => ipcRenderer.invoke(IpcChannel.fsCreate, request),
