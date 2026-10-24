@@ -1,6 +1,7 @@
 import type { ShortcutAction } from '../../../shared/shortcuts'
 import { useLayoutStore } from '../../state/layoutStore'
 import { openTerminal } from '../../state/openTerminal'
+import { requestClosePane } from '../../state/requestCloseTab'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 
 function focusedTerminal() {
@@ -25,7 +26,7 @@ export const SHORTCUT_ACTIONS: Record<ShortcutAction, () => void> = {
   closePane: () => {
     const tab = focusedTerminal()
     if (tab !== null) {
-      useWorkspaceStore.getState().closePane(tab.id, tab.focusedPaneId)
+      void requestClosePane(tab.id, tab.focusedPaneId)
     }
   },
   newTerminal: () => openTerminal(null),

@@ -2,6 +2,7 @@ import { Columns2, Rows2, X } from 'lucide-react'
 import { isAgentCommand } from '../../../shared/agentLaunchers'
 import { useAgentCatalogStore } from '../../state/agentCatalogStore'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
+import { requestClosePane } from '../../state/requestCloseTab'
 import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { useShortcutLabel } from '../../state/shortcutsStore'
 import { EditableTitle } from '../../ui/EditableTitle'
@@ -15,7 +16,6 @@ interface PaneFrameProps {
 
 export function PaneFrame({ tab, paneId, isVisible }: PaneFrameProps) {
   const splitPane = useWorkspaceStore((state) => state.splitPane)
-  const closePane = useWorkspaceStore((state) => state.closePane)
   const renamePane = useWorkspaceStore((state) => state.renamePane)
   const focusPane = useWorkspaceStore((state) => state.focusPane)
   const splitRightLabel = useShortcutLabel('splitRight')
@@ -45,7 +45,7 @@ export function PaneFrame({ tab, paneId, isVisible }: PaneFrameProps) {
             <button type="button" title={`Split down (${splitDownLabel})`} onClick={() => splitPane(tab.id, paneId, 'vertical')}>
               <Rows2 size={14} />
             </button>
-            <button type="button" title={`Close pane (${closePaneLabel})`} onClick={() => closePane(tab.id, paneId)}>
+            <button type="button" title={`Close pane (${closePaneLabel})`} onClick={() => requestClosePane(tab.id, paneId)}>
               <X size={14} />
             </button>
           </div>
