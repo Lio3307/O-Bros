@@ -19,9 +19,11 @@ function editorChrome(theme: ColorTheme): Extension {
         border: 'none',
         paddingRight: '8px'
       },
-      '.cm-activeLine': { backgroundColor: 'var(--color-hover)' },
+      '.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--color-white) 4%, transparent)' },
       '.cm-activeLineGutter': { backgroundColor: 'transparent', color: theme.foreground, fontWeight: '700' },
-      '.cm-selectionBackground, &.cm-focused .cm-selectionBackground': { backgroundColor: theme.selection },
+      '.cm-selectionLayer .cm-selectionBackground, &.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-content ::selection': {
+        backgroundColor: theme.selection
+      },
       '.cm-matchingBracket': { backgroundColor: theme.selection, outline: '1px solid var(--color-faint)' },
       '&.cm-focused': { outline: 'none' }
     },

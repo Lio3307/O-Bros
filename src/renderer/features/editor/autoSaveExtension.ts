@@ -1,6 +1,7 @@
 import type { Extension } from '@codemirror/state'
 import { ViewPlugin, type EditorView, type ViewUpdate } from '@codemirror/view'
 import { useEditorSettingsStore } from '../../state/editorSettingsStore'
+import { isFromDisk } from './diskSync'
 
 export function autoSaveExtension(save: (view: EditorView) => void): Extension {
   return ViewPlugin.fromClass(
@@ -10,7 +11,7 @@ export function autoSaveExtension(save: (view: EditorView) => void): Extension {
       constructor(private readonly view: EditorView) {}
 
       update(update: ViewUpdate): void {
-        if (!update.docChanged) {
+        if (!update.docChanged || isFromDisk(update)) {
           return
         }
         const { autoSaveEnabled, autoSaveDelayMs } = useEditorSettingsStore.getState()

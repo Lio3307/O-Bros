@@ -114,6 +114,9 @@ export const IpcChannel = {
   fsCreate: 'fs:create',
   fsRename: 'fs:rename',
   fsTrash: 'fs:trash',
+  fsWatch: 'fs:watch',
+  fsUnwatch: 'fs:unwatch',
+  fsChanged: 'fs:changed',
   gitStatus: 'git:status',
   gitDiff: 'git:diff',
   gitFetch: 'git:fetch',
@@ -289,6 +292,9 @@ export interface DesktopApi {
     rename(request: RenameEntryRequest): Promise<string>
     trash(path: string): Promise<void>
     pathOf(file: File): string
+    watch(filePath: string): Promise<void>
+    unwatch(filePath: string): Promise<void>
+    onChanged(listener: (filePath: string) => void): () => void
   }
   git: {
     status(repoPath: string): Promise<GitStatus | null>

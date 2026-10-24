@@ -1,5 +1,6 @@
 import { useRef, useState, type ButtonHTMLAttributes, type MouseEvent } from 'react'
 import { createClickCooldown } from '../../shared/clickCooldown'
+import { cn } from './cn'
 
 export type ButtonVariant = 'outline' | 'primary' | 'icon' | 'link' | 'remove' | 'plain'
 
@@ -17,11 +18,6 @@ const CLASS_BY_VARIANT: Record<ButtonVariant, string> = {
 interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'> {
   variant?: ButtonVariant
   onClick?: (event: MouseEvent<HTMLButtonElement>) => void | Promise<unknown>
-}
-
-function joinClassNames(...names: (string | undefined)[]): string | undefined {
-  const joined = names.filter((name) => name !== undefined && name !== '').join(' ')
-  return joined === '' ? undefined : joined
 }
 
 export function Button({ variant = 'outline', className, type = 'button', onClick, disabled, ...rest }: ButtonProps) {
@@ -49,7 +45,7 @@ export function Button({ variant = 'outline', className, type = 'button', onClic
   return (
     <button
       type={type}
-      className={joinClassNames(CLASS_BY_VARIANT[variant], className)}
+      className={cn(CLASS_BY_VARIANT[variant], className)}
       disabled={disabled === true || isPending}
       aria-busy={isPending || undefined}
       onClick={handleClick}

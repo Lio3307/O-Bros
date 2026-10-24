@@ -1,7 +1,8 @@
-import { HardDrive, TriangleAlert } from 'lucide-react'
+import { HardDrive } from 'lucide-react'
 import { formatBytes } from '../../../shared/format'
 import type { DiskItemKind, DiskReport } from '../../../shared/types'
 import { LoadingText } from '../../ui/LoadingText'
+import { Notice } from '../../ui/Notice'
 import { SettingsSection } from '../../ui/SettingsSection'
 import { UsageBar } from '../../ui/UsageBar'
 import { isLowOnSpace, keptBytesOf } from './useDiskReports'
@@ -30,9 +31,9 @@ function DriveCard({ report }: { report: DiskReport }) {
       </div>
       <UsageBar percentUsed={usedPercent} />
       {isLow && (
-        <p className="disk-card-warning">
-          <TriangleAlert size={14} /> Almost full. Move conversations to another drive or delete old ones below.
-        </p>
+        <Notice tone="danger" title="This drive is almost full.">
+          Move conversations to another drive or delete old ones below.
+        </Notice>
       )}
       <div className="disk-items">
         {items.map((item) => (

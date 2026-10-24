@@ -49,7 +49,10 @@ const api: DesktopApi = {
     create: (request) => ipcRenderer.invoke(IpcChannel.fsCreate, request),
     rename: (request) => ipcRenderer.invoke(IpcChannel.fsRename, request),
     trash: (path) => ipcRenderer.invoke(IpcChannel.fsTrash, path),
-    pathOf: (file) => webUtils.getPathForFile(file)
+    pathOf: (file) => webUtils.getPathForFile(file),
+    watch: (filePath) => ipcRenderer.invoke(IpcChannel.fsWatch, filePath),
+    unwatch: (filePath) => ipcRenderer.invoke(IpcChannel.fsUnwatch, filePath),
+    onChanged: (listener) => subscribe<string>(IpcChannel.fsChanged, listener)
   },
   git: {
     status: (repoPath) => ipcRenderer.invoke(IpcChannel.gitStatus, repoPath),

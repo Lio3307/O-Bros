@@ -11,7 +11,10 @@ import { useEditorNavigationStore } from '../../state/editorNavigationStore'
 import { findColorTheme } from '../../theme/colorThemes'
 import { toast } from '../../state/toastStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
+import { Button } from '../../ui/Button'
+import { Notice } from '../../ui/Notice'
 import { autoSaveExtension } from './autoSaveExtension'
+import { followDiskChanges, isFromDisk, showDiskText } from './diskSync'
 import { selectAllOccurrences } from './selectAllOccurrences'
 import { getSavedEditorState, saveEditorState } from './editorSessions'
 import { colorThemeCompartment, colorThemeExtension, editorLayoutTheme } from './editorTheme'
@@ -116,7 +119,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
   ])
 
   const reportModification = EditorView.updateListener.of((update) => {
-    if (update.docChanged) {
+    if (update.docChanged && !isFromDisk(update)) {
       useWorkspaceStore.getState().setFileModified(tabId, true)
     }
   })
@@ -138,6 +141,11 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
   })
 }
 
+function isFileModified(tabId: string): boolean {
+  const tab = useWorkspaceStore.getState().tabs.find((candidate) => candidate.id === tabId)
+  return tab?.kind === 'file' && tab.isModified
+}
+
 function revealPendingTarget(view: EditorView, filePath: string): void {
   const { target, consume } = useEditorNavigationStore.getState()
   if (target === null || target.path !== filePath) {
@@ -155,7 +163,16 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   const viewRef = useRef<EditorView | null>(null)
   const target = useEditorNavigationStore((state) => state.target)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [diskText, setDiskText] = useState<string | null>(null)
   const colorThemeId = useColorThemeStore((state) => state.themeId)
+
+  function reloadFromDisk(): void {
+    if (viewRef.current !== null && diskText !== null) {
+      showDiskText(viewRef.current, diskText)
+      useWorkspaceStore.getState().setFileModified(tabId, false)
+    }
+    setDiskText(null)
+  }
 
   useEffect(() => {
     viewRef.current?.dispatch({ effects: colorThemeCompartment.reconfigure(currentColorThemeExtension()) })
@@ -171,6 +188,22 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
     let view: EditorView | null = null
     let isCancelled = false
     let server: PreparedServer | null = null
+    let stopFollowingDisk: (() => void) | null = null
+
+    async function checkDisk(mountedView: EditorView): Promise<void> {
+      const text = await window.api.files.read(filePath).catch(() => null)
+      if (text === null || isCancelled) {
+        return
+      }
+      if (text === mountedView.state.doc.toString()) {
+        setDiskText(null)
+      } else if (isFileModified(tabId)) {
+        setDiskText(text)
+      } else {
+        showDiskText(mountedView, text)
+        setDiskText(null)
+      }
+    }
 
     async function connectLanguageServer(mountedView: EditorView, language: LanguageDefinition): Promise<void> {
       const prepared = await prepareLanguageServer(filePath, language.serverLanguageId ?? language.id)
@@ -193,6 +226,9 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
       view = new EditorView({ state, parent: hostRef.current })
       view.dispatch({ effects: colorThemeCompartment.reconfigure(currentColorThemeExtension()) })
       viewRef.current = view
+      const mountedView = view
+      stopFollowingDisk = followDiskChanges(filePath, () => void checkDisk(mountedView))
+      void checkDisk(mountedView)
       revealPendingTarget(view, filePath)
       const language = enabledLanguageFor(filePath, view.state.doc.line(1).text)
       if (language !== null && language.canLint) {
@@ -209,6 +245,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
     return () => {
       isCancelled = true
       viewRef.current = null
+      stopFollowingDisk?.()
       if (server !== null) {
         detachLanguageServer(view, server)
       }
@@ -222,5 +259,27 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   if (errorMessage !== null) {
     return <div className="editor-error">{errorMessage}</div>
   }
-  return <div className="editor-host" ref={hostRef} />
+  return (
+    <div className="editor-frame">
+      {diskText !== null && (
+        <Notice
+          tone="warning"
+          title="This file changed on disk."
+          actions={
+            <>
+              <Button variant="primary" onClick={reloadFromDisk}>
+                Reload
+              </Button>
+              <Button variant="outline" onClick={() => setDiskText(null)}>
+                Keep mine
+              </Button>
+            </>
+          }
+        >
+          You have unsaved changes. Reload shows the new version; Keep mine leaves your text, and saving writes over the file.
+        </Notice>
+      )}
+      <div className="editor-host" ref={hostRef} />
+    </div>
+  )
 }

@@ -22,6 +22,7 @@ import { registerToolsIpc } from './ipc/toolsIpc'
 import { registerWotIpc } from './ipc/wotIpc'
 import { registerSettingsBackupIpc } from './ipc/settingsBackupIpc'
 import { killAllTerminals } from './services/ptyManager'
+import { unwatchAllFiles } from './services/fileWatcher'
 import { writeLog } from './services/logging/logFile'
 import { setBridgeTarget } from './services/wot/rendererBridge'
 import { startTypedAgentWatch } from './services/activity/typedAgents'
@@ -99,6 +100,7 @@ app.on('before-quit', () => {
   stopWotServer()
   stopUniversalHistory()
   killAllTerminals()
+  unwatchAllFiles()
   stopAllLanguageServers()
 })
 

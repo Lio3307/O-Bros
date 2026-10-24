@@ -1,5 +1,17 @@
-.editor-host {
+.editor-frame {
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
+  background: var(--color-terminal);
+}
+
+.editor-frame > .notice {
+  margin: 8px 8px 0;
+}
+
+.editor-host {
+  flex: 1;
   min-height: 0;
   background: var(--color-terminal);
 }

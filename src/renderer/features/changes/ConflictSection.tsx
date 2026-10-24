@@ -1,4 +1,4 @@
-import { Check, CircleAlert, FileWarning } from 'lucide-react'
+import { Check, FileWarning } from 'lucide-react'
 import { summarizeOperation } from '../../../shared/gitOperation'
 import { lastPathSegment, resolvePath } from '../../../shared/paths'
 import type { GitFileChange, GitOperation } from '../../../shared/types'
@@ -6,6 +6,7 @@ import { useChangesStore } from '../../state/changesStore'
 import { askToConfirm } from '../../state/confirmStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 import { Button } from '../../ui/Button'
+import { Notice } from '../../ui/Notice'
 
 interface ConflictSectionProps {
   repoPath: string
@@ -86,27 +87,29 @@ export function ConflictSection({ repoPath, operation, conflicts }: ConflictSect
 
   return (
     <section className="conflict-section">
-      <div className="conflict-banner">
-        <span className="conflict-title">
-          <CircleAlert size={14} />
-          {summary.title}
-        </span>
-        <p className="conflict-detail">{summary.detail}</p>
-        {summary.continueLabel !== null && (
-          <div className="conflict-buttons">
-            <Button
-              variant="primary"
-              disabled={isWorking || conflicts.length > 0}
-              onClick={() => continueOperation(repoPath)}
-            >
-              {summary.continueLabel}
-            </Button>
-            <Button variant="outline" disabled={isWorking} onClick={() => abortAfterConfirm(repoPath, summary.title)}>
-              Abort
-            </Button>
-          </div>
-        )}
-      </div>
+      <Notice
+        tone="danger"
+        className="conflict-banner"
+        title={summary.title}
+        actions={
+          summary.continueLabel === null ? undefined : (
+            <>
+              <Button
+                variant="primary"
+                disabled={isWorking || conflicts.length > 0}
+                onClick={() => continueOperation(repoPath)}
+              >
+                {summary.continueLabel}
+              </Button>
+              <Button variant="outline" disabled={isWorking} onClick={() => abortAfterConfirm(repoPath, summary.title)}>
+                Abort
+              </Button>
+            </>
+          )
+        }
+      >
+        {summary.detail}
+      </Notice>
       {conflicts.length > 0 && (
         <>
           <h3 className="section-label change-group-title">
