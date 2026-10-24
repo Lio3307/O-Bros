@@ -6,9 +6,9 @@ import { removeAgentCredits } from './commitCredits'
 import { terminalFactsOf } from '../terminalFacts'
 import {
   availableAgents,
-  findMember,
+  findOwnMember,
   isTeamMember,
-  listMembers,
+  listOwnMembers,
   readMemberScreen,
   sendToMember,
   spawnMember,
@@ -76,7 +76,7 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
   '/status': async (body) => {
     const paneId = teamCallerPaneOf(body)
     const skillNote = skillUpdateNoteForAgents(await listSkillTargets().catch(() => []))
-    return { paneId, isMember: isTeamMember(paneId), memberCount: listMembers().length, skillNote }
+    return { paneId, isMember: isTeamMember(paneId), memberCount: listOwnMembers(paneId).length, skillNote }
   },
 
   '/agents': async (body) => {
@@ -94,19 +94,15 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
       cwd: textField(body, 'cwd', false)
     }),
 
-  '/list': async (body) => {
-    teamCallerPaneOf(body)
-    return listMembers()
-  },
+  '/list': async (body) => listOwnMembers(teamCallerPaneOf(body)),
 
   '/send': async (body) => {
-    teamCallerPaneOf(body)
-    return { member: await sendToMember(textField(body, 'member', true), textField(body, 'text', true)) }
+    const member = findOwnMember(textField(body, 'member', true), teamCallerPaneOf(body))
+    return { member: await sendToMember(member.id, textField(body, 'text', true)) }
   },
 
   '/read': async (body) => {
-    teamCallerPaneOf(body)
-    const member = findMember(textField(body, 'member', true))
+    const member = findOwnMember(textField(body, 'member', true), teamCallerPaneOf(body))
     return { member, screen: await readMemberScreen(member.id, numberField(body, 'lines')) }
   },
 
@@ -115,7 +111,7 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
     if (body.any === true) {
       return { any: await waitForAnyMember(callerPaneId, numberField(body, 'timeout')) }
     }
-    return waitForMember(textField(body, 'member', true), numberField(body, 'timeout'))
+    return waitForMember(findOwnMember(textField(body, 'member', true), callerPaneId).id, numberField(body, 'timeout'))
   },
 
   '/git-check': async (body) =>
@@ -133,7 +129,7 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
   },
 
   '/stop': async (body) => {
-    teamCallerPaneOf(body)
-    return { member: stopMember(textField(body, 'member', true)) }
+    const member = findOwnMember(textField(body, 'member', true), teamCallerPaneOf(body))
+    return { member: stopMember(member.id) }
   }
 }

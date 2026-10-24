@@ -3,7 +3,7 @@ name: wot
 description: wot (work of teams) lets you summon other AI coding agents (Claude, Codex, Gemini, OpenCode and any other agent CLI installed on this computer) as hidden team members inside the O-BROS app, give them tasks, wait for them, read their answers and stop them. Use it when the user asks you to "use codex", "ask claude", "get a second opinion from another agent", "summon an agent", "make a team", "work in parallel with other agents", "wot", or names another agent CLI to help. It only works inside a terminal opened by the O-BROS app.
 license: MIT
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
   publisher: O-BROS
 ---
 
@@ -41,7 +41,7 @@ Do NOT use wot when:
 5. **A team member cannot summon members.** If `wot status` says "You are a TEAM MEMBER", do not try to summon anyone. Just do your task.
 6. **At most 6 members at the same time.** Stop members you do not need any more.
 7. **Always stop the members you summoned when their work is done** (`wot stop <name>`).
-8. **Never let two members edit the same files at the same time.** Give each member different files or a read-only job.
+8. **Never let two members edit the same files at the same time.** Give each member different files or a read-only job. Do not edit those files yourself while the member works on them.
 9. **You stay responsible.** Check what members did before you tell the user it is done.
 10. **No commits, pushes, branches or worktrees.** Do not run `git commit`, `git push`, `git merge`, `git cherry-pick`, `git revert`, `git rebase`, or create, delete or rename a branch or worktree (`git branch <name>`, `git checkout -b`, `git switch -c`, `git worktree add`). By default O-BROS refuses all of these for agents, because the user does them. Members must never do it. When your work is ready, tell the user which files changed and suggest a commit message they can use. Only if the user changed the setting in O-BROS and asked you in this conversation may you try; O-BROS then asks the user first.
 11. **Commits are made as the user.** When a commit is allowed, O-BROS sets the author and committer to the name and email the user chose in O-BROS. Never pass `--author`, never set `user.name` or `user.email`, and never add a `Co-Authored-By` line unless the user asked for it. O-BROS removes such lines unless the user allowed them.
@@ -49,6 +49,8 @@ Do NOT use wot when:
 13. **If you see `GIT_BLOCKED`, stop.** It means the user does not let agents do this, refused, or did not answer. Tell the user what you wanted to do and ask. Never try another way: no full path to the git program, no other git tool, no script, alias or environment variable to get around it.
 14. **Slow is normal. Never stop a member because it takes long.** There is no time limit. Stop a member only when its work is done, when it `EXITED`, or when the user asks. While it works, tell the user every few minutes that it is still working and what it is on (`wot read <name>`).
 15. **A connection error is not a reason to replace a member.** If a member's screen shows a connection, network, timeout, overloaded or rate-limit error, keep it and tell it to go on (section 8). A new member would start from nothing and lose everything this one did.
+16. **Only touch your own members.** Other O-BROS terminals may have their own teams. `wot list` shows only yours. If wot says a member "belongs to another terminal's team", leave it alone.
+17. **The user may step in.** The user can watch, type into and stop any member in O-BROS. If a member's screen shows messages you did not send, or says it was interrupted, or wot says the user stopped it, the user did that on purpose: do not send it more work or summon it again until you asked the user.
 
 ---
 
@@ -174,6 +176,8 @@ Use `--task "the task"`.
 
 Choose a short name that says the job, using only lowercase letters, numbers and `-`. Examples: `reviewer`, `test-writer`, `docs`, `codex-review`.
 
+If the path from `wot new-file` contains spaces, put it in double quotes: `--task-file "C:\Users\Jane Doe\AppData\Local\Temp\o-bros-wot\reviewer-1712345678901.md"`.
+
 Run:
 
 ```
@@ -199,10 +203,10 @@ Results:
 
 | Result | What you do |
 |---|---|
-| `OK: Summoned team member "<name>"` | Tell the user in one sentence that you summoned it (they can watch it under your terminal in Projects). Go to step 5. |
+| `OK: Summoned team member "<name>"` | Use exactly the name in this line from now on: if your name was taken, O-BROS added a number (for example `reviewer-2`). Tell the user in one sentence that you summoned it (they can watch it under your terminal in Projects). Go to step 5. |
 | A line starting with `NOTE:` | Read it. If it says the member works at the top of a drive and the member later reports shell or file-write failures, stop it and summon it again with `--cwd`. |
 | Exit code 3 (`is not installed`, `is not an agent O-BROS knows`) | Section 5. |
-| `The team is full` | Stop a member you do not need (`wot list`, then `wot stop <name>`) and try again. |
+| `The team is full` | If it says some of them are yours, stop one you do not need (`wot list`, then `wot stop <name>`) and try again. If none are yours, tell the user and do the work yourself or wait; never stop another terminal's members. |
 | `A team member cannot summon more agents` | You are a member. Do your own task only. |
 | `Team members only work inside a project folder` | You were started in the home folder. Tell the user to open a project folder in O-BROS and start you from a terminal in that folder. Stop. |
 | `stopped right after it started` | Run `wot read <name>` to see why (often: not signed in). Tell the user what you saw. Then `wot stop <name>`. |
@@ -219,11 +223,24 @@ Repeat this loop until the member is finished:
 
 | First word | Meaning | What you do |
 |---|---|---|
-| `FINISHED:` | It finished its turn. | Run `wot read <name>`. Read the screen. Look for `DONE:` or `BLOCKED:`. If it shows a connection or rate-limit error instead, see the notes below. |
+| `FINISHED:` | It stopped printing. | Run `wot read <name>` and check what the screen really shows (see "Reading a FINISHED screen" below). |
 | `QUESTION:` | It is asking a question or asking permission. | Run `wot read <name>`. Go to section 9. |
 | `STILL_WORKING:` | It is still busy. | Run `wot wait <name>` again. You can run `wot read <name>` to peek. |
 | `EXITED:` | The agent program stopped: it crashed, it could not start (for example not signed in, or a wrong agent option), or the user stopped it with Ctrl+C. | Run `wot read <name>` to see its last screen. Fix the cause if you can (for example pass an agent option after `--`) and summon it again once; otherwise tell the user what you saw. Then `wot stop <name>`. Do not send it more messages; `wot send` is refused. |
-| `There is no team member named` … `It was stopped:` | O-BROS removed it and says why. | Tell the user the reason. Summon it again at most once. |
+| `There is no team member named` … `It was stopped:` | O-BROS removed it and says why. | Tell the user the reason. If the reason says the user stopped it, do not summon it again unless the user asks. Otherwise summon it again at most once. |
+| `belongs to another terminal's team` | You used a name that is not yours. | Run `wot list` and use only the names listed there. |
+
+Reading a FINISHED screen. Look at the end of the screen and do the first thing that matches:
+
+| The screen shows | What you do |
+|---|---|
+| `DONE:` or `BLOCKED:` with its answer | Go to section 11. |
+| A question, a menu or a permission prompt (for example "1. Yes 2. No", "(y/n)", "Allow?") | It is asking. Go to section 9. |
+| It is still busy (for example "esc to interrupt", a spinner, "Working", "Thinking", a running command) | It only paused printing. Run `wot wait <name>` again. |
+| "Interrupted", "Request interrupted by user", or an empty prompt after the user typed something | The user stopped or redirected it on purpose. Ask the user before you send it more work. |
+| A connection, network, timeout, overloaded or rate-limit error | See the notes below. Keep the member. |
+| A usage or plan limit ("limit reached", "resets at …", "out of credits") or a sign-in request ("/login", "not signed in", "API key") | Waiting will not fix it. Tell the user exactly what the screen says. Do not keep sending "continue". |
+| Its answer without `DONE:` | Read the answer. If it looks complete, use it. If not, send a short follow-up (section 10). |
 
 Notes:
 
@@ -231,6 +248,8 @@ Notes:
 - If the screen shows a connection, network, timeout, overloaded or rate-limit error (for example "stream disconnected", "reconnecting", "network error", "429", "overloaded"), the member keeps everything it did so far. If the agent is still retrying on its own, just wait. If it stopped and waits for you, wait about a minute, then `wot send <name> "The connection is back. Please continue where you stopped."` and wait again. After two more failures in a row, tell the user that the connection or the agent's service has a problem, and ask whether to keep trying. Do not `wot stop` it and summon a new one for this.
 - `wot wait` returns after at most about 100 seconds. That is normal. Just run it again. Use `--timeout <seconds>` (maximum 280) if your own command timeout allows longer.
 - If your shell stops commands sooner than 100 seconds (some agents stop them after about 10 seconds), pass a `--timeout` a few seconds below that limit, for example `wot wait <name> --timeout 8`, and run it again as often as needed. A `wot wait` that your shell stops does no harm: nothing is cancelled.
+- Always use the longest `--timeout` your shell allows, and peek with `wot read` only every few minutes, not after every wait. Every command fills your own conversation, and a long task can take hundreds of short waits.
+- If you lost track of your members (your conversation was shortened, or you were resumed), run `wot list`. It shows only your members and their state. Members summoned from a terminal that was closed are gone; check the files they were working on before you summon new ones.
 - `wot read <name>` shows the last 80 lines of its screen. Use `--lines 200` to see more.
 - The screen is the agent's own terminal interface. It may contain boxes, menus and progress lines. Look for the actual answer text.
 - "FINISHED" only means it stopped printing. Always read the screen to check that it really says `DONE:`.
@@ -270,6 +289,8 @@ To ask a member to do more, or to correct it:
 3. Then go back to section 8 (`wot wait <name>`).
 
 `wot send` types the text and presses Enter for you. Do not add Enter yourself.
+
+Send follow-ups after `FINISHED:` or `QUESTION:`. While a member is `STILL_WORKING`, only send something if it is clearly going the wrong way: some agents put the message in a queue, others read it at once and change course.
 
 ---
 
@@ -340,7 +361,7 @@ If it fails, or the variables are empty, you are not inside O-BROS. Follow secti
 | `wot spawn <agent> --name <name> --task "<text>"` | Summons a member with a short one-line task. |
 | `wot spawn ... --cwd <folder>` | The member works in that folder of the project. |
 | `wot spawn ... -- <agent options>` | Passes the options after `--` to the agent program. |
-| `wot list` | Lists members, their state and their task. |
+| `wot list` | Lists your members, their state and their task. |
 | `wot wait <name> [--timeout <seconds>]` | Waits until the member finishes its turn, asks something, or stops. |
 | `wot wait --any [--timeout <seconds>]` | Waits for whichever of your members finishes, asks or stops first, and names it. |
 | `wot read <name> [--lines <number>]` | Prints the member's screen. |

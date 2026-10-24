@@ -249,7 +249,7 @@ async function showStatus() {
     ? 'You are a TEAM MEMBER. You cannot summon agents. Just do the task you were given.'
     : 'You are the LEAD agent. You can summon team members.'
   const note = status.skillNote ? `\n${status.skillNote}` : ''
-  finish(EXIT_CODES.ok, `OK: O-BROS is running and wot is ready.\n${role}\nTeam members right now: ${status.memberCount}${note}`)
+  finish(EXIT_CODES.ok, `OK: O-BROS is running and wot is ready.\n${role}\nYour team members right now: ${status.memberCount}${note}`)
 }
 
 async function showAgents() {
@@ -307,9 +307,9 @@ async function spawnMember(positional, flags, agentArgs) {
 async function listMembers() {
   const members = await call('/list', {})
   if (members.length === 0) {
-    finish(EXIT_CODES.ok, 'There are no team members right now. Summon one with: wot spawn <agent> --name <name> --task-file <path>')
+    finish(EXIT_CODES.ok, 'You have no team members right now. Summon one with: wot spawn <agent> --name <name> --task-file <path>')
   }
-  const lines = [`Team members (${members.length}):`]
+  const lines = [`Your team members (${members.length}):`]
   for (const member of members) {
     lines.push(`- ${member.name} (${member.agentName}): ${describeState(member.state)}`)
     lines.push(`    task: ${oneLine(member.task, 120) || '(none)'}`)

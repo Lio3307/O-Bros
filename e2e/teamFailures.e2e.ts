@@ -72,12 +72,19 @@ function oneLine(text: string): string {
   return text.split(/\s+/).join(' ')
 }
 
-async function runInTerminal(command: string, proofFile: string): Promise<string> {
+function firstTerminalInput() {
+  return app.window.locator('.workspace .xterm-helper-textarea').first()
+}
+
+function activeTabTerminalInput() {
+  return app.window.locator('.tab-content:not(.tab-content-hidden) .xterm-helper-textarea').first()
+}
+
+async function runInTerminal(command: string, proofFile: string, terminalInput = firstTerminalInput()): Promise<string> {
   const doneFile = `${proofFile}.done`
   const saved = isWindows
     ? `${command} 2>&1 | Out-File -Encoding ascii ${proofFile}; 'done' | Out-File -Encoding ascii ${doneFile}`
     : `${command} > ${proofFile} 2>&1; echo done > ${doneFile}`
-  const terminalInput = app.window.locator('.workspace .xterm-helper-textarea').first()
   await terminalInput.focus()
   await app.window.keyboard.type(saved)
   await app.window.keyboard.press('Enter')
@@ -139,6 +146,36 @@ test('asks before stopping a member from its row, and keeps it on cancel', async
   await app.window.locator('.modal-actions').getByRole('button', { name: 'Stop member' }).click()
   await expect(member).toHaveCount(0, { timeout: 15_000 })
   await expect(app.window.locator('.rail-badge')).toHaveCount(0)
+})
+
+test('another terminal cannot see or stop a member it did not summon', async () => {
+  test.setTimeout(180_000)
+  await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
+  await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 60_000 }).toBe('first job')
+
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  await app.window.waitForTimeout(2000)
+  const otherTerminal = activeTabTerminalInput()
+  expect(await runInTerminal('wot list', 'other-list.txt', otherTerminal)).toContain('You have no team members right now')
+  const refused = await runInTerminal('wot stop helper', 'other-stop.txt', otherTerminal)
+  expect(refused).toContain("belongs to another terminal's team")
+  expect(await runInTerminal('wot send helper "hijack"', 'other-send.txt', otherTerminal)).toContain("belongs to another terminal's team")
+
+  await expect(app.window.locator('.session-member', { hasText: 'helper' })).toHaveCount(1)
+  expect(await readProof('fake-agent-received.txt')).toBe('first job')
+})
+
+test('tells the lead that the user stopped its member in O-BROS', async () => {
+  test.setTimeout(180_000)
+  await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
+  await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 60_000 }).toBe('first job')
+  const member = app.window.locator('.session-member', { hasText: 'helper' })
+  await member.hover()
+  await member.getByTitle('Stop "helper"').click()
+  await app.window.locator('.modal-actions').getByRole('button', { name: 'Stop member' }).click()
+  await expect(member).toHaveCount(0, { timeout: 15_000 })
+
+  expect(await runInTerminal('wot wait helper', 'wait-proof.txt')).toContain('It was stopped: the user stopped it in O-BROS')
 })
 
 test('wot wait --any reports each member that has news once, then says nothing is new', async () => {

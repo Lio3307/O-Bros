@@ -125,6 +125,26 @@ export function listMembers(): TeamMember[] {
   return [...members.values()].sort((first, second) => first.createdAt - second.createdAt)
 }
 
+export function listOwnMembers(callerPaneId: string): TeamMember[] {
+  return listMembers().filter((member) => member.summonedByPaneId === callerPaneId)
+}
+
+function ownNamesText(callerPaneId: string): string {
+  const names = listOwnMembers(callerPaneId).map((member) => member.name)
+  return names.length === 0 ? 'You have no team members right now.' : `Your team members: ${names.join(', ')}.`
+}
+
+export function findOwnMember(nameOrId: string, callerPaneId: string): TeamMember {
+  const member = findMember(nameOrId)
+  if (member.summonedByPaneId !== callerPaneId) {
+    throw new WotError(
+      'not-allowed',
+      `"${member.name}" belongs to another terminal's team, so you cannot use it. Leave it alone. ${ownNamesText(callerPaneId)}`
+    )
+  }
+  return member
+}
+
 function publish(): void {
   sendToInterface(IpcChannel.wotMembers, listMembers())
 }
@@ -349,7 +369,12 @@ export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> 
     throw new WotError('not-allowed', 'A team member cannot summon more agents. Only the agent the user talks to can.')
   }
   if (members.size >= MAX_MEMBERS) {
-    throw new WotError('limit', `The team is full (${MAX_MEMBERS} members). Stop one with "wot stop <name>" first.`)
+    const ownCount = listOwnMembers(request.callerPaneId).length
+    const advice =
+      ownCount === 0
+        ? 'All of them belong to other terminals. Tell the user, and wait until some of them are stopped.'
+        : `${ownCount} of them are yours. Stop one you do not need with "wot stop <name>" first.`
+    throw new WotError('limit', `The team is full (${MAX_MEMBERS} members in O-BROS). ${advice}`)
   }
   assertTextLength(request.task)
   const cwd = await memberFolderOf(request.callerPaneId, request.cwd)
@@ -467,12 +492,12 @@ export function stopMember(nameOrId: string): TeamMember {
 
 export function stopAllMembers(): number {
   const ids = [...members.keys()]
-  ids.forEach((id) => removeMember(id))
+  ids.forEach((id) => removeMember(id, 'the user stopped all team members in O-BROS'))
   return ids.length
 }
 
 export function closeMemberById(memberId: string): void {
   if (members.has(memberId)) {
-    removeMember(memberId)
+    removeMember(memberId, 'the user stopped it in O-BROS')
   }
 }
