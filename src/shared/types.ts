@@ -132,6 +132,11 @@ export interface SearchRequest {
   mode: SearchMode
 }
 
+export interface ImageFile {
+  dataUrl: string
+  size: number
+}
+
 export interface SearchHit {
   name: string
   path: string

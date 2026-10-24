@@ -1,9 +1,11 @@
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { DirectoryEntry, SearchHit, SearchRequest } from '../../shared/types'
+import { imageTypeOf } from '../../shared/imageFiles'
+import type { DirectoryEntry, ImageFile, SearchHit, SearchRequest } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
 
 const MAX_EDITABLE_BYTES = 2 * 1024 * 1024
+const MAX_IMAGE_BYTES = 32 * 1024 * 1024
 const MAX_SEARCHABLE_BYTES = 1024 * 1024
 const MAX_SEARCH_HITS = 200
 const SEARCH_SKIPPED_FOLDERS = new Set(['node_modules', '.git', 'dist', 'out', '.next'])
@@ -34,6 +36,20 @@ export async function readTextFile(filePath: string): Promise<string> {
     throw new Error('This file is larger than 2 MB and was not opened.')
   }
   return readFile(filePath, 'utf8')
+}
+
+export async function readImageFile(filePath: string): Promise<ImageFile> {
+  await assertInsideProjectRoots(filePath)
+  const type = imageTypeOf(filePath)
+  if (type === null) {
+    throw new Error('This file is not an image.')
+  }
+  const { size } = await stat(filePath)
+  if (size > MAX_IMAGE_BYTES) {
+    throw new Error('This image is larger than 32 MB and was not opened.')
+  }
+  const bytes = await readFile(filePath)
+  return { dataUrl: `data:${type};base64,${bytes.toString('base64')}`, size }
 }
 
 export async function writeTextFile(filePath: string, content: string): Promise<void> {

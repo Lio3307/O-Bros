@@ -10,6 +10,7 @@ import { TabBar } from './TabBar'
 import './terminal.css'
 import { Button } from '../../ui/Button'
 import { lazyComponent } from '../../ui/lazyComponent'
+import { imageTypeOf } from '../../../shared/imageFiles'
 
 function FirstRunState() {
   const addRoot = useProjectsStore((state) => state.addRoot)
@@ -29,6 +30,7 @@ function FirstRunState() {
 }
 
 const CodeEditor = lazyComponent(() => import('../editor/CodeEditor').then((module) => module.CodeEditor))
+const ImageViewer = lazyComponent(() => import('../editor/ImageViewer').then((module) => module.ImageViewer))
 
 interface TerminalWorkspaceProps {
   isVisible: boolean
@@ -75,7 +77,11 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
         {!isMemberShown && activeFileTab?.kind === 'file' && (
           <div className="tab-content">
             <Suspense fallback={null}>
-              <CodeEditor tabId={activeFileTab.id} filePath={activeFileTab.path} />
+              {imageTypeOf(activeFileTab.path) === null ? (
+                <CodeEditor tabId={activeFileTab.id} filePath={activeFileTab.path} />
+              ) : (
+                <ImageViewer filePath={activeFileTab.path} />
+              )}
             </Suspense>
           </div>
         )}

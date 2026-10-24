@@ -60,6 +60,7 @@ import type {
   ReviewFileRequest,
   GitStashRequest,
   GitStatus,
+  ImageFile,
   RepositoryEntry,
   LintRequest,
   LintResult,
@@ -109,6 +110,7 @@ export const IpcChannel = {
   projectsSetSearchDepth: 'projects:setSearchDepth',
   fsList: 'fs:list',
   fsRead: 'fs:read',
+  fsReadImage: 'fs:readImage',
   fsWrite: 'fs:write',
   fsSearch: 'fs:search',
   fsCreate: 'fs:create',
@@ -286,6 +288,7 @@ export interface DesktopApi {
   files: {
     list(directoryPath: string): Promise<DirectoryEntry[]>
     read(filePath: string): Promise<string>
+    readImage(filePath: string): Promise<ImageFile>
     write(filePath: string, content: string): Promise<void>
     search(request: SearchRequest): Promise<SearchHit[]>
     create(request: CreateEntryRequest): Promise<string>
