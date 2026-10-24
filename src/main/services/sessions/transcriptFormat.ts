@@ -1,4 +1,5 @@
 import type { ProviderId, SessionMessage } from '../../../shared/types'
+import type { ReadMessages } from './transcriptLines'
 
 export const TRANSCRIPT_EXTENSION = '.jsonl'
 export const MAX_TITLE_LENGTH = 80
@@ -22,4 +23,5 @@ export interface TranscriptFormat {
   folderDepthToTranscripts: number
   readHeader: (filePath: string) => Promise<TranscriptHeader>
   readMessages: (filePath: string) => Promise<SessionMessage[]>
+  readMessagesFrom: (filePath: string, startByte: number) => Promise<ReadMessages>
 }

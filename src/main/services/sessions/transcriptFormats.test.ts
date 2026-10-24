@@ -44,6 +44,22 @@ describe('claudeFormat', () => {
       { role: 'assistant', text: 'hi' }
     ])
   })
+
+  it('reads only what was added since the last read and leaves a line still being written for later', async () => {
+    const first = JSON.stringify({ type: 'user', message: { content: 'héllo' } })
+    const second = JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'hi' }] } })
+    const filePath = await writeTranscript('grow.jsonl', [])
+    await writeFile(filePath, `${first}\r\n${second.slice(0, 20)}`, 'utf8')
+
+    const earlier = await claudeFormat.readMessagesFrom(filePath, 0)
+    expect(earlier.messages).toEqual([{ role: 'user', text: 'héllo' }])
+    expect(earlier.endByte).toBe(Buffer.byteLength(`${first}\r\n`))
+
+    await writeFile(filePath, `${first}\r\n${second}\n`, 'utf8')
+    const later = await claudeFormat.readMessagesFrom(filePath, earlier.endByte)
+    expect(later.messages).toEqual([{ role: 'assistant', text: 'hi' }])
+    expect(later.endByte).toBe(Buffer.byteLength(`${first}\r\n${second}\n`))
+  })
 })
 
 describe('codexFormat', () => {

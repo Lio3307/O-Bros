@@ -41,6 +41,29 @@ test('a launched agent shows its own icon and name, and dims after a restart', a
   await expect(tabIcon()).toHaveAttribute('title', 'ShellAgent is not running here any more')
 })
 
+test('a launched agent turns grey after you quit it and the terminal stays open', async () => {
+  test.setTimeout(90_000)
+  app = await launchApp()
+  await app.window.evaluate((launchers) => {
+    localStorage.setItem('o-bros.agentLaunchers', launchers)
+    localStorage.setItem('o-bros.shownAgents', JSON.stringify(['shell-agent']))
+  }, JSON.stringify([{ id: 'shell-agent', name: 'ShellAgent', command: SHELL_AGENT_COMMAND }]))
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.getByRole('button', { name: 'ShellAgent', exact: true }).click()
+  await expect(tabIcon()).toHaveAttribute('title', 'ShellAgent is running here')
+
+  await app.window.waitForTimeout(11_000)
+  const input = app.window.locator('.workspace .xterm-helper-textarea').first()
+  await input.focus()
+  await app.window.keyboard.type('exit')
+  await app.window.keyboard.press('Enter')
+
+  await expect(tabIcon()).toHaveClass(/tab-agent-icon-stopped/, { timeout: 15_000 })
+  await expect(app.window.locator('.tab', { hasText: 'ShellAgent' })).toBeVisible()
+})
+
 test('an agent typed into a plain terminal shows its icon while it runs', async () => {
   test.setTimeout(90_000)
   app = await launchApp()

@@ -7,7 +7,7 @@ import {
   type TranscriptFormat,
   type TranscriptHeader
 } from './transcriptFormat'
-import { readTranscriptLines } from './transcriptLines'
+import { readMessagesFrom, readTranscriptLines } from './transcriptLines'
 import { extractText, isReadableUserText, type ContentBlock } from './transcriptText'
 
 interface ClaudeLine {
@@ -36,20 +36,20 @@ async function readHeader(filePath: string): Promise<TranscriptHeader> {
   return { sessionId, title: 'Untitled session', projectPath }
 }
 
-async function readMessages(filePath: string): Promise<SessionMessage[]> {
-  const messages: SessionMessage[] = []
-
-  for await (const line of readTranscriptLines<ClaudeLine>(filePath)) {
-    if (line.type !== 'user' && line.type !== 'assistant') {
-      continue
-    }
-    const text = extractText(line.message?.content, TEXT_BLOCK_TYPES).trim()
-    if (text.length > 0) {
-      messages.push({ role: line.type, text })
-    }
+function messageOf(line: ClaudeLine): SessionMessage | null {
+  if (line.type !== 'user' && line.type !== 'assistant') {
+    return null
   }
+  const text = extractText(line.message?.content, TEXT_BLOCK_TYPES).trim()
+  return text.length > 0 ? { role: line.type, text } : null
+}
 
-  return messages
+function readMessagesFromByte(filePath: string, startByte: number) {
+  return readMessagesFrom(filePath, startByte, messageOf)
+}
+
+async function readMessages(filePath: string): Promise<SessionMessage[]> {
+  return (await readMessagesFromByte(filePath, 0)).messages
 }
 
 export const claudeFormat: TranscriptFormat = {
@@ -57,5 +57,6 @@ export const claudeFormat: TranscriptFormat = {
   transcriptsFolderName: 'projects',
   folderDepthToTranscripts: 1,
   readHeader,
-  readMessages
+  readMessages,
+  readMessagesFrom: readMessagesFromByte
 }

@@ -7,7 +7,7 @@ import {
   type TranscriptFormat,
   type TranscriptHeader
 } from './transcriptFormat'
-import { readTranscriptLines } from './transcriptLines'
+import { readMessagesFrom, readTranscriptLines } from './transcriptLines'
 import { extractText, isReadableUserText, type ContentBlock } from './transcriptText'
 
 interface CodexLine {
@@ -55,17 +55,12 @@ async function readHeader(filePath: string): Promise<TranscriptHeader> {
   return { sessionId, title: 'Untitled session', projectPath }
 }
 
+function readMessagesFromByte(filePath: string, startByte: number) {
+  return readMessagesFrom(filePath, startByte, readableMessage)
+}
+
 async function readMessages(filePath: string): Promise<SessionMessage[]> {
-  const messages: SessionMessage[] = []
-
-  for await (const line of readTranscriptLines<CodexLine>(filePath)) {
-    const message = readableMessage(line)
-    if (message !== null) {
-      messages.push(message)
-    }
-  }
-
-  return messages
+  return (await readMessagesFromByte(filePath, 0)).messages
 }
 
 export const codexFormat: TranscriptFormat = {
@@ -73,5 +68,6 @@ export const codexFormat: TranscriptFormat = {
   transcriptsFolderName: 'sessions',
   folderDepthToTranscripts: 3,
   readHeader,
-  readMessages
+  readMessages,
+  readMessagesFrom: readMessagesFromByte
 }

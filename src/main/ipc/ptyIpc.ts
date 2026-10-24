@@ -10,7 +10,7 @@ export function registerPtyIpc(): void {
   })
   ipcMain.on(IpcChannel.ptyInput, (_event, id: string, data: string) => {
     writeToTerminal(id, data)
-    noteTerminalInputForAgents(id, data)
+    noteTerminalInputForAgents(data)
   })
   ipcMain.on(IpcChannel.ptyResize, (_event, id: string, columns: number, rows: number) =>
     resizeTerminal(id, columns, rows)

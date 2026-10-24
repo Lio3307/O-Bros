@@ -4,7 +4,7 @@ import { sendToInterface } from '../wot/rendererBridge'
 const agentByPane = new Map<string, string | null>()
 
 export function notePaneAgent(paneId: string, agentCommand: string | null): void {
-  if ((agentByPane.get(paneId) ?? null) === agentCommand) {
+  if (agentByPane.has(paneId) && agentByPane.get(paneId) === agentCommand) {
     return
   }
   agentByPane.set(paneId, agentCommand)

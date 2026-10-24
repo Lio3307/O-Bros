@@ -7,12 +7,13 @@ import {
   historyFileName,
   isHistoryExpired,
   isHistoryFile,
+  readHistoryRecord,
   type HistoryRecord
 } from '../../../shared/universalHistory'
 import { isRecord } from '../../../shared/isRecord'
-import type { SessionMessage } from '../../../shared/types'
 import { readJsonIfExists } from '../fileSystem'
 import type { TranscriptHeader } from '../sessions/transcriptFormat'
+import type { ReadMessages } from '../sessions/transcriptLines'
 
 const INDEX_FILE_NAME = 'index.json'
 const INDEX_SAVE_EVERY = 20
@@ -21,13 +22,15 @@ export interface HistorySource {
   agent: string
   filePath: string
   modifiedAt: number
+  sizeBytes: number
   readHeader: (filePath: string) => Promise<TranscriptHeader>
-  readMessages: (filePath: string) => Promise<SessionMessage[]>
+  readMessagesFrom: (filePath: string, startByte: number) => Promise<ReadMessages>
 }
 
 interface IndexEntry {
   modifiedAt: number
   recordFile: string
+  readBytes?: number
 }
 
 type HistoryIndex = Record<string, IndexEntry>
@@ -40,7 +43,8 @@ export interface AgentHistorySize {
 }
 
 function isIndexEntry(value: unknown): value is IndexEntry {
-  return isRecord(value) && typeof value.modifiedAt === 'number' && typeof value.recordFile === 'string'
+  const hasValidReadBytes = !isRecord(value) || value.readBytes === undefined || typeof value.readBytes === 'number'
+  return isRecord(value) && typeof value.modifiedAt === 'number' && typeof value.recordFile === 'string' && hasValidReadBytes
 }
 
 async function readIndex(folder: string): Promise<HistoryIndex> {
@@ -56,27 +60,54 @@ async function saveIndex(folder: string, index: HistoryIndex): Promise<void> {
   await writeFile(join(folder, INDEX_FILE_NAME), JSON.stringify(index), 'utf8')
 }
 
-async function writeRecord(folder: string, source: HistorySource, known: IndexEntry | undefined, now: number): Promise<IndexEntry | null> {
-  const [header, messages] = await Promise.all([source.readHeader(source.filePath), source.readMessages(source.filePath)])
-  if (messages.length === 0) {
+interface ReadRecord {
+  record: HistoryRecord
+  readBytes: number
+}
+
+async function savedRecordToExtend(folder: string, source: HistorySource, known: IndexEntry | undefined): Promise<ReadRecord | null> {
+  if (known?.readBytes === undefined || source.sizeBytes < known.readBytes) {
     return null
   }
-  const recordFile = known?.recordFile ?? join(agentFolderName(source.agent), historyFileName(header.sessionId, now))
+  const record = readHistoryRecord(await readJsonIfExists<unknown>(join(folder, known.recordFile)).catch(() => null))
+  return record === null ? null : { record, readBytes: known.readBytes }
+}
+
+async function readWholeRecord(source: HistorySource, now: number): Promise<ReadRecord | null> {
+  const [header, read] = await Promise.all([source.readHeader(source.filePath), source.readMessagesFrom(source.filePath, 0)])
+  if (read.messages.length === 0) {
+    return null
+  }
   const record: HistoryRecord = {
     formatVersion: HISTORY_FORMAT_VERSION,
     agent: source.agent,
     sessionId: header.sessionId,
     title: header.title,
     projectPath: header.projectPath,
-    updatedAt: source.modifiedAt,
+    updatedAt: now,
     source: 'transcript',
     sourceFile: source.filePath,
-    messages
+    messages: read.messages
   }
+  return { record, readBytes: read.endByte }
+}
+
+async function extendRecord(saved: ReadRecord, source: HistorySource): Promise<ReadRecord> {
+  const read = await source.readMessagesFrom(source.filePath, saved.readBytes)
+  return { record: { ...saved.record, messages: [...saved.record.messages, ...read.messages] }, readBytes: read.endByte }
+}
+
+async function writeRecord(folder: string, source: HistorySource, known: IndexEntry | undefined, now: number): Promise<IndexEntry | null> {
+  const saved = await savedRecordToExtend(folder, source, known)
+  const result = saved === null ? await readWholeRecord(source, now) : await extendRecord(saved, source)
+  if (result === null) {
+    return null
+  }
+  const recordFile = known?.recordFile ?? join(agentFolderName(source.agent), historyFileName(result.record.sessionId, now))
   const fullPath = join(folder, recordFile)
   await mkdir(dirname(fullPath), { recursive: true })
-  await writeFile(fullPath, JSON.stringify(record, null, 1), 'utf8')
-  return { modifiedAt: source.modifiedAt, recordFile }
+  await writeFile(fullPath, JSON.stringify({ ...result.record, updatedAt: source.modifiedAt }, null, 1), 'utf8')
+  return { modifiedAt: source.modifiedAt, recordFile, readBytes: result.readBytes }
 }
 
 function isStillChanging(source: HistorySource, known: IndexEntry | undefined, now: number, waitForQuietMs: number): boolean {

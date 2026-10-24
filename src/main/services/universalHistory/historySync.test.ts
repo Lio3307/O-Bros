@@ -19,19 +19,24 @@ afterEach(async () => {
   await Promise.all(createdFolders.splice(0).map((folder) => rm(folder, { recursive: true, force: true })))
 })
 
-function source(agent: string, sessionId: string, modifiedAt: number, messages: SessionMessage[]): HistorySource & { reads: number } {
+function source(agent: string, sessionId: string, modifiedAt: number, messages: SessionMessage[]): HistorySource & { reads: number[] } {
   const result = {
     agent,
     filePath: `C:/transcripts/${sessionId}.jsonl`,
     modifiedAt,
-    reads: 0,
+    sizeBytes: messages.length,
+    reads: [] as number[],
     readHeader: async () => ({ sessionId, title: `Chat ${sessionId}`, projectPath: 'E:/work' }),
-    readMessages: async () => {
-      result.reads += 1
-      return messages
+    readMessagesFrom: async (_filePath: string, startByte: number) => {
+      result.reads.push(startByte)
+      return { messages: messages.slice(startByte), endByte: messages.length }
     }
   }
   return result
+}
+
+async function savedMessages(folder: string, fileName: string): Promise<SessionMessage[]> {
+  return JSON.parse(await readFile(join(folder, 'claude-resume', fileName), 'utf8')).messages
 }
 
 describe('syncHistory', () => {
@@ -46,11 +51,26 @@ describe('syncHistory', () => {
     expect(saved).toMatchObject({ agent: 'codex', sessionId: 'b2', title: 'Chat b2', messages: [{ role: 'assistant', text: 'done' }] })
 
     expect(await syncHistory(folder, [claude, codex], null, NOW)).toBe(0)
-    expect(claude.reads).toBe(1)
+    expect(claude.reads).toEqual([0])
 
-    const later = { ...claude, modifiedAt: NOW, readMessages: async () => [{ role: 'user' as const, text: 'fix login' }, { role: 'assistant' as const, text: 'fixed' }] }
+    const later = source('claude', 'a1', NOW, [{ role: 'user', text: 'fix login' }, { role: 'assistant', text: 'fixed' }])
     expect(await syncHistory(folder, [later], null, NOW + DAY_MS)).toBe(1)
     expect(await readdir(join(folder, 'claude-resume'))).toEqual(['2026-10-21_a1.json'])
+    expect(later.reads).toEqual([1])
+    expect(await savedMessages(folder, '2026-10-21_a1.json')).toEqual([
+      { role: 'user', text: 'fix login' },
+      { role: 'assistant', text: 'fixed' }
+    ])
+  })
+
+  it('reads a conversation from the start again when its file got shorter', async () => {
+    const folder = await createFolder()
+    await syncHistory(folder, [source('claude', 'a1', NOW - 1000, [{ role: 'user', text: 'one' }, { role: 'assistant', text: 'two' }])], null, NOW)
+
+    const rewritten = source('claude', 'a1', NOW, [{ role: 'user', text: 'summary' }])
+    expect(await syncHistory(folder, [rewritten], null, NOW)).toBe(1)
+    expect(rewritten.reads).toEqual([0])
+    expect(await savedMessages(folder, '2026-10-21_a1.json')).toEqual([{ role: 'user', text: 'summary' }])
   })
 
   it('waits until a saved conversation stops changing before reading it again', async () => {
@@ -60,7 +80,7 @@ describe('syncHistory', () => {
 
     const growing = source('claude', 'a1', NOW + 10_000, [{ role: 'user', text: 'start' }, { role: 'assistant', text: 'still going' }])
     expect(await syncHistory(folder, [growing], null, NOW + 20_000, quietMs)).toBe(0)
-    expect(growing.reads).toBe(0)
+    expect(growing.reads).toEqual([])
 
     expect(await syncHistory(folder, [growing], null, NOW + 10_000 + quietMs, quietMs)).toBe(1)
     const changedJustNow = source('claude', 'a1', NOW + quietMs * 2, [{ role: 'user', text: 'one more' }])

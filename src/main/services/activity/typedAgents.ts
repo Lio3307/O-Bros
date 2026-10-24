@@ -16,14 +16,15 @@ export interface TypedAgent {
 
 const SCAN_EVERY_MS = 20_000
 const FRESH_ENOUGH_MS = 10_000
-const SCAN_AFTER_ENTER_MS = 3000
-const ENTER_KEY = '\r'
+const SCAN_AFTER_KEY_MS = 3000
+const KEYS_THAT_MAY_START_OR_STOP_AN_AGENT = ['\r', '\u0003', '\u0004']
+
+const LAUNCH_GRACE_MS = 10_000
 
 const typedAgents = new Map<string, TypedAgent>()
-const launchedAgentsSeen = new Set<string>()
 let lastScanAt = 0
 let scanning: Promise<void> | null = null
-let enterScanTimer: NodeJS.Timeout | null = null
+let keyScanTimer: NodeJS.Timeout | null = null
 
 function recordSession(agent: TypedAgent, text: string, durationMs: number | null): void {
   void recordActivity({ kind: 'session', agentCommand: agent.program, folder: agent.cwd, text, detail: null, outcome: null, durationMs })
@@ -46,28 +47,19 @@ function launchedAgentTerminals(): { id: string; pid: number; agentCommand: stri
   })
 }
 
-function hasAgentsToWatch(): boolean {
-  return typedAgents.size > 0 || launchedAgentTerminals().length > 0
-}
-
 function checkLaunchedAgents(table: ProcessEntry[]): void {
   for (const { id, pid, agentCommand } of launchedAgentTerminals()) {
     const program = programOf(agentCommand).toLowerCase()
     const isRunning = collectProcessTree(table, pid).some((entry) => entry.pid !== pid && agentProgramOf(entry, [program]) !== null)
-    if (isRunning) {
-      launchedAgentsSeen.add(id)
-      notePaneAgent(id, agentCommand)
-    } else if (launchedAgentsSeen.has(id)) {
-      launchedAgentsSeen.delete(id)
-      notePaneAgent(id, null)
-    }
+    const hasHadTimeToStart = Date.now() - (terminalFactsOf(id)?.startedAt ?? Date.now()) > LAUNCH_GRACE_MS
+    notePaneAgent(id, isRunning ? agentCommand : hasHadTimeToStart ? null : agentCommand)
   }
 }
 
 async function scan(): Promise<void> {
   const terminals = plainTerminals()
   const now = Date.now()
-  if (terminals.length === 0 && !hasAgentsToWatch()) {
+  if (terminals.length === 0 && typedAgents.size === 0 && launchedAgentTerminals().length === 0) {
     return
   }
   const [table, catalog] = await Promise.all([readProcessTable(), loadAgentCatalog()])
@@ -123,19 +115,21 @@ export function noteAgentSeen(paneId: string, program: string): void {
   recordSession(agent, 'started', null)
 }
 
-export function noteTerminalInputForAgents(paneId: string, data: string): void {
-  if (!data.includes(ENTER_KEY) || enterScanTimer !== null || (terminalFactsOf(paneId)?.agentCommand ?? null) !== null) {
+export function noteTerminalInputForAgents(data: string): void {
+  const mayStartOrStopAnAgent = KEYS_THAT_MAY_START_OR_STOP_AN_AGENT.some((key) => data.includes(key))
+  if (!mayStartOrStopAnAgent || keyScanTimer !== null) {
     return
   }
-  enterScanTimer = setTimeout(() => {
-    enterScanTimer = null
-    void freshTypedAgents()
-  }, SCAN_AFTER_ENTER_MS)
+  const delay = Math.max(SCAN_AFTER_KEY_MS, lastScanAt + FRESH_ENOUGH_MS - Date.now())
+  keyScanTimer = setTimeout(() => {
+    keyScanTimer = null
+    void scanTypedAgents()
+  }, delay)
 }
 
 export function startTypedAgentWatch(): void {
   setInterval(() => {
-    if (hasAgentsToWatch()) {
+    if (typedAgents.size > 0) {
       void scanTypedAgents()
     }
   }, SCAN_EVERY_MS)

@@ -43,8 +43,9 @@ async function historySources(): Promise<HistorySource[]> {
     agent: file.source.format.provider,
     filePath: file.filePath,
     modifiedAt: file.modifiedAt,
+    sizeBytes: file.sizeBytes,
     readHeader: file.source.format.readHeader,
-    readMessages: file.source.format.readMessages
+    readMessagesFrom: file.source.format.readMessagesFrom
   }))
 }
 
