@@ -2,7 +2,11 @@ import { FitAddon } from '@xterm/addon-fit'
 import type { SearchAddon } from '@xterm/addon-search'
 import type { WebglAddon } from '@xterm/addon-webgl'
 import { Terminal } from '@xterm/xterm'
-import { useEffect, useRef, useState, type DragEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type DragEvent, type MouseEvent as ReactMouseEvent } from 'react'
+import { useShortcutLabel } from '../../state/shortcutsStore'
+import { isTerminalTab, useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
+import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
+import { terminalMenuItems } from './terminalContextMenu'
 import type { AccountRef } from '../../../shared/types'
 import { useAgentCommitStore } from '../../state/agentCommitStore'
 import { providerForCommand } from '../../state/customProvidersStore'
@@ -30,6 +34,14 @@ interface TerminalViewProps {
   isVisible: boolean
 }
 
+const RIGHT_BUTTON = 2
+
+interface OpenContextMenu {
+  x: number
+  y: number
+  items: PopupMenuItem[]
+}
+
 function createWebglAddon(WebglAddonClass: typeof WebglAddon): WebglAddon | null {
   try {
     const addon = new WebglAddonClass()
@@ -51,6 +63,10 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
   const useGpuRendering = useTerminalSettingsStore((state) => state.useGpuRendering)
   const colorThemeId = useColorThemeStore((state) => state.themeId)
+  const splitRightHint = useShortcutLabel('splitRight')
+  const splitDownHint = useShortcutLabel('splitDown')
+  const [contextMenu, setContextMenu] = useState<OpenContextMenu | null>(null)
+  const closeContextMenu = useCallback(() => setContextMenu(null), [])
 
   async function openSearch(): Promise<void> {
     const terminal = terminalRef.current
@@ -222,6 +238,26 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     }
   }
 
+  function keepRightButtonFromTerminal(event: ReactMouseEvent): void {
+    if (event.button === RIGHT_BUTTON) {
+      event.stopPropagation()
+    }
+  }
+
+  function openContextMenu(event: ReactMouseEvent): void {
+    event.preventDefault()
+    event.stopPropagation()
+    const terminal = terminalRef.current
+    const tab = useWorkspaceStore.getState().tabs.find((candidate): candidate is TerminalTab => isTerminalTab(candidate) && paneId in candidate.panes)
+    if (terminal === null || tab === undefined) {
+      return
+    }
+    useWorkspaceStore.getState().focusPane(tab.id, paneId)
+    const position = { x: event.clientX, y: event.clientY }
+    const show = (items: PopupMenuItem[]): void => setContextMenu({ ...position, items })
+    show(terminalMenuItems({ terminal, tab, paneId, splitRightHint, splitDownHint, reopen: show }))
+  }
+
   return (
     <>
       <div
@@ -230,7 +266,11 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
         ref={hostRef}
         onDragOver={(event) => acceptsDrop(event) && event.preventDefault()}
         onDrop={pasteDroppedPath}
+        onMouseDownCapture={keepRightButtonFromTerminal}
+        onMouseUpCapture={keepRightButtonFromTerminal}
+        onContextMenuCapture={openContextMenu}
       />
+      {contextMenu !== null && <PopupMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} onClose={closeContextMenu} />}
       {searchAddon !== null && <TerminalSearchBar searchAddon={searchAddon} onClose={closeSearch} />}
     </>
   )

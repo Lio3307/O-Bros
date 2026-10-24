@@ -290,12 +290,14 @@ async function spawnMember(positional, flags, agentArgs) {
     finish(EXIT_CODES.failed, 'ERROR: The agent is missing. Usage: wot spawn <agent> --name <name> --task-file <path>\nRun "wot agents" to see which agents you can use.')
   }
   const task = textFrom(flags, positional.slice(1), 'task-file', 'task')
-  const { member, taskSent, warnings } = await call('/spawn', { agent, name: flags.name ?? '', task, agentArgs, cwd: flags.cwd ?? '' })
+  const { member, taskQueued, warnings } = await call('/spawn', { agent, name: flags.name ?? '', task, agentArgs, cwd: flags.cwd ?? '' })
   const lines = [
     `OK: Summoned team member "${member.name}" (${member.agentName}).`,
     `It runs: ${member.command}`,
     `It works in: ${member.cwd ?? 'the home folder'}`,
-    taskSent ? 'Its task was typed in and sent.' : 'No task was sent. Send one with: wot send ' + member.name + ' --file <path>',
+    taskQueued
+      ? 'It is starting now. O-BROS types its task in as soon as the agent has opened (usually within a minute). You do not need to wait for that or send the task again.'
+      : 'No task was sent. Send one with: wot send ' + member.name + ' --file <path>',
     ...(warnings ?? []).map((warning) => `NOTE: ${warning}`),
     `Next: run  wot wait ${member.name}  and then  wot read ${member.name}`
   ]

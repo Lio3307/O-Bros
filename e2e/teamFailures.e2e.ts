@@ -88,9 +88,12 @@ async function runInTerminal(command: string, proofFile: string): Promise<string
 test('reports an agent that exits at start instead of typing the task into a shell', async () => {
   test.setTimeout(180_000)
   const output = await runInTerminal('wot spawn codex --name broken --task "write the file" -- --fail', 'spawn-proof.txt')
-  expect(output).toContain('exited right after it started, so no task was sent')
-  expect(output).toContain('Access is denied')
-  expect(output).not.toContain('OK: Summoned')
+  expect(output).toContain('OK: Summoned team member "broken"')
+  const waited = await runInTerminal('wot wait broken', 'wait-proof.txt')
+  expect(waited).toContain('EXITED')
+  const screen = await runInTerminal('wot read broken', 'read-proof.txt')
+  expect(screen).toContain('Access is denied')
+  expect(screen).not.toContain('write the file')
 
   const list = await runInTerminal('wot list', 'list-proof.txt')
   expect(list).toContain('broken (Codex): exited')
@@ -102,6 +105,7 @@ test('a member the user interrupts with Ctrl+C becomes exited and refuses new me
   test.setTimeout(180_000)
   const spawned = await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
   expect(spawned).toContain('OK: Summoned team member "helper"')
+  await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 60_000 }).toBe('first job')
 
   const memberRow = app.window.locator('.session-member-row', { hasText: 'helper' })
   await memberRow.click()

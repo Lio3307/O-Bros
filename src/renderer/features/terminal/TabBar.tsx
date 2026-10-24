@@ -7,7 +7,7 @@ import { copyPath, revealInFileExplorer } from '../files/fileActions'
 import { openTerminal } from '../../state/openTerminal'
 import { requestCloseOtherTabs, requestCloseTab } from '../../state/requestCloseTab'
 import { isTerminalTab, useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore'
-import { continueItemsForTab, readableProviderOfTab } from '../history/continueFromTab'
+import { continueInAnotherAgentItem } from '../history/continueFromTab'
 import { showTab } from '../../state/showTab'
 import { EditableTitle } from '../../ui/EditableTitle'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
@@ -27,26 +27,8 @@ function locationOf(tab: WorkspaceTab): string | null {
 }
 
 function continueItem(tab: WorkspaceTab, reopen: (items: PopupMenuItem[]) => void): PopupMenuItem[] {
-  if (!isTerminalTab(tab)) {
-    return []
-  }
-  const provider = readableProviderOfTab(tab)
-  if (provider === null) {
-    return []
-  }
-  return [
-    {
-      label: 'Continue in another agent…',
-      hasSeparatorBefore: true,
-      onSelect: () => {
-        void continueItemsForTab(tab, provider).then((items) => {
-          if (items !== null) {
-            reopen(items)
-          }
-        })
-      }
-    }
-  ]
+  const item = isTerminalTab(tab) ? continueInAnotherAgentItem(tab, reopen) : null
+  return item === null ? [] : [{ ...item, hasSeparatorBefore: true }]
 }
 
 function contextMenuItemsFor(tab: WorkspaceTab, reopen: (items: PopupMenuItem[]) => void): PopupMenuItem[] {

@@ -19,3 +19,20 @@ export async function continueItemsForTab(tab: TerminalTab, provider: ProviderId
   }
   return continueMenuItems(sessionFilePath, provider)
 }
+
+export function continueInAnotherAgentItem(tab: TerminalTab, reopen: (items: PopupMenuItem[]) => void): PopupMenuItem | null {
+  const provider = readableProviderOfTab(tab)
+  if (provider === null) {
+    return null
+  }
+  return {
+    label: 'Continue in another agent…',
+    onSelect: () => {
+      void continueItemsForTab(tab, provider).then((items) => {
+        if (items !== null) {
+          reopen(items)
+        }
+      })
+    }
+  }
+}

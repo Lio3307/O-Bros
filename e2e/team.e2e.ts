@@ -167,3 +167,28 @@ test('stops team members when the terminal that summoned them closes', async () 
   await expect(app.window.getByText('Stopped team member "helper" to free memory', { exact: false })).toBeVisible({ timeout: 15_000 })
   await expect(app.window.locator('.rail-badge')).toHaveCount(0)
 })
+
+test('wot spawn returns at once while a slow agent is still starting, and the task still arrives', async () => {
+  test.setTimeout(150_000)
+  const slowAgentPath = join(app.projectFolder, 'slow-agent.cjs')
+  await writeFile(slowAgentPath, "setTimeout(() => require(require('path').join(__dirname, 'fake-agent.cjs')), 20000)\n", 'utf8')
+  const launchers = [{ id: 'slow', name: 'Slow', command: `node "${slowAgentPath}"` }]
+  await app.window.evaluate((saved) => localStorage.setItem('o-bros.agentLaunchers', saved), JSON.stringify(launchers))
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+  await installSharedSkill()
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  await app.window.locator('.workspace .xterm-helper-textarea').first().waitFor({ state: 'attached' })
+
+  const startedAt = Date.now()
+  await typeInTerminal(savedOutput('wot spawn slow --name late --task "hello later"', 'spawn-proof.txt'))
+  await expect.poll(() => readProof('spawn-proof.txt'), { timeout: 15_000 }).toContain('It is starting now')
+  expect(Date.now() - startedAt).toBeLessThan(15_000)
+
+  await typeInTerminal(savedOutput('wot wait late --timeout 3', 'wait-proof.txt'))
+  await expect.poll(() => readProof('wait-proof.txt'), { timeout: 20_000 }).toContain('STILL_WORKING')
+
+  await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 60_000 }).toBe('hello later')
+  await typeInTerminal('wot stop late')
+})

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import { cn } from './cn'
 import './popupMenu.css'
 
 export interface PopupMenuItem {
@@ -24,15 +25,8 @@ interface PopupMenuProps {
 const VIEWPORT_MARGIN = 8
 const MAX_WIDTH = 320
 
-function itemClassName(item: PopupMenuItem): string {
-  const classNames = ['popup-menu-item']
-  if (item.isActive === true) {
-    classNames.push('popup-menu-item-active')
-  }
-  if (item.isDanger === true) {
-    classNames.push('popup-menu-item-danger')
-  }
-  return classNames.join(' ')
+function itemClassName(item: PopupMenuItem): string | undefined {
+  return cn('popup-menu-item', item.isActive === true && 'popup-menu-item-active', item.isDanger === true && 'popup-menu-item-danger')
 }
 
 export function PopupMenu({ x, y, items, onClose, minWidth, anchor }: PopupMenuProps) {

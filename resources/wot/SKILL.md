@@ -3,7 +3,7 @@ name: wot
 description: wot (work of teams) lets you summon other AI coding agents (Claude, Codex, Gemini, OpenCode and any other agent CLI installed on this computer) as hidden team members inside the O-BROS app, give them tasks, wait for them, read their answers and stop them. Use it when the user asks you to "use codex", "ask claude", "get a second opinion from another agent", "summon an agent", "make a team", "work in parallel with other agents", "wot", or names another agent CLI to help. It only works inside a terminal opened by the O-BROS app.
 license: MIT
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
   publisher: O-BROS
 ---
 
@@ -184,7 +184,9 @@ Example:
 wot spawn codex --name reviewer --task-file C:\Users\me\AppData\Local\Temp\o-bros-wot\reviewer-1712345678901.md
 ```
 
-This command can take up to about a minute, because it waits until the agent has opened before it types the task. Do not cancel it.
+This command returns within a few seconds. The member keeps starting in the background, and O-BROS types the task in by itself as soon as the agent has opened (usually within a minute). While it starts, `wot wait` says it is still starting. Do not summon it again, do not send the task again, and do not stop it because it is still starting: go to step 5.
+
+No wot command cancels anything when your shell stops it because of a time limit. If your shell stops a wot command, do not `wot stop` the member: run `wot list` or `wot wait <name>` to see where it is.
 
 Options:
 
@@ -197,7 +199,6 @@ Results:
 |---|---|
 | `OK: Summoned team member "<name>"` | Tell the user in one sentence that you summoned it (they can watch it under your terminal in Projects). Go to step 5. |
 | A line starting with `NOTE:` | Read it. If it says the member works at the top of a drive and the member later reports shell or file-write failures, stop it and summon it again with `--cwd`. |
-| `exited right after it started, so no task was sent` | The output shows the agent's own error. Fix the cause if you can (for example pass an agent option after `--`), `wot stop <name>`, then summon it again. Otherwise tell the user the error. |
 | Exit code 3 (`is not installed`, `is not an agent O-BROS knows`) | Section 5. |
 | `The team is full` | Stop a member you do not need (`wot list`, then `wot stop <name>`) and try again. |
 | `A team member cannot summon more agents` | You are a member. Do your own task only. |
@@ -219,11 +220,13 @@ Repeat this loop until the member is finished:
 | `FINISHED:` | It finished its turn. | Run `wot read <name>`. Read the screen. Look for `DONE:` or `BLOCKED:`. |
 | `QUESTION:` | It is asking a question or asking permission. | Run `wot read <name>`. Go to section 9. |
 | `STILL_WORKING:` | It is still busy. | Run `wot wait <name>` again. You can run `wot read <name>` to peek. |
-| `EXITED:` | The agent program stopped: it crashed, or the user stopped it with Ctrl+C. | Run `wot read <name>` to see its last screen. Tell the user. Then `wot stop <name>`. Do not send it more messages; `wot send` is refused. |
+| `EXITED:` | The agent program stopped: it crashed, it could not start (for example not signed in, or a wrong agent option), or the user stopped it with Ctrl+C. | Run `wot read <name>` to see its last screen. Fix the cause if you can (for example pass an agent option after `--`) and summon it again once; otherwise tell the user what you saw. Then `wot stop <name>`. Do not send it more messages; `wot send` is refused. |
+| `There is no team member named` … `It was stopped:` | O-BROS removed it and says why. | Tell the user the reason. Summon it again at most once. |
 
 Notes:
 
 - `wot wait` returns after at most about 100 seconds. That is normal. Just run it again. Use `--timeout <seconds>` (maximum 280) if your own command timeout allows longer.
+- If your shell stops commands sooner than 100 seconds (some agents stop them after about 10 seconds), pass a `--timeout` a few seconds below that limit, for example `wot wait <name> --timeout 8`, and run it again as often as needed. A `wot wait` that your shell stops does no harm: nothing is cancelled.
 - `wot read <name>` shows the last 80 lines of its screen. Use `--lines 200` to see more.
 - The screen is the agent's own terminal interface. It may contain boxes, menus and progress lines. Look for the actual answer text.
 - "FINISHED" only means it stopped printing. Always read the screen to check that it really says `DONE:`.

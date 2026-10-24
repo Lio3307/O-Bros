@@ -56,7 +56,7 @@ export interface AnyWaitOutcome {
 
 export interface SpawnOutcome {
   member: TeamMember
-  taskSent: boolean
+  taskQueued: boolean
   warnings: string[]
 }
 
@@ -129,9 +129,16 @@ function publish(): void {
   sendToInterface(IpcChannel.wotMembers, listMembers())
 }
 
+const startingIds = new Set<string>()
+const goneReasons = new Map<string, string>()
+
 function currentStateOf(member: TeamMember): TeamMember['state'] {
   const facts = terminalFactsOf(member.id)
-  return facts === undefined ? 'starting' : memberStateOf(facts, Date.now())
+  if (facts === undefined) {
+    return 'starting'
+  }
+  const state = memberStateOf(facts, Date.now())
+  return startingIds.has(member.id) && state !== 'exited' ? 'starting' : state
 }
 
 function isTerminalOpen(paneId: string): boolean {
@@ -249,7 +256,11 @@ export function findMember(nameOrId: string): TeamMember {
   if (member === undefined) {
     const names = listMembers().map((candidate) => candidate.name)
     const known = names.length === 0 ? 'There are no team members right now.' : `Team members: ${names.join(', ')}.`
-    const hint = 'If it finished earlier, O-BROS may have stopped it to free memory; its answer is in its saved conversation.'
+    const reason = goneReasons.get(wanted)
+    const hint =
+      reason === undefined
+        ? 'If it finished earlier, O-BROS may have stopped it to free memory; its answer is in its saved conversation.'
+        : `It was stopped: ${reason}`
     throw new WotError('not-found', `There is no team member named "${nameOrId}". ${known} ${hint}`)
   }
   return member
@@ -267,8 +278,12 @@ function removeMember(memberId: string, reason: string | null = null): void {
     const text = reason === null ? `left the team ("${member.name}")` : `was stopped ("${member.name}"): ${reason}`
     recordTeamChange(member, text, Date.now() - member.createdAt)
   }
+  if (member !== undefined && reason !== null) {
+    goneReasons.set(member.name, reason)
+  }
   members.delete(memberId)
   unreportedIds.delete(memberId)
+  startingIds.delete(memberId)
   finishedSinceById.delete(memberId)
   killTerminal(memberId)
   keepStatesFresh()
@@ -286,15 +301,47 @@ async function lastScreenOf(member: TeamMember): Promise<string> {
   }
 }
 
-async function failBecauseExited(member: TeamMember): Promise<never> {
-  updateState(member, 'exited')
-  unreportedIds.delete(member.id)
-  publish()
+async function noteExitedAtStart(member: TeamMember): Promise<void> {
   const screen = await lastScreenOf(member)
-  throw new WotError(
-    'failed',
-    `"${member.name}" exited right after it started, so no task was sent. Its last output:\n${screen}\nFix the cause (for example pass agent options after --), then stop it with "wot stop ${member.name}" and summon it again.`
+  goneReasons.set(
+    member.name,
+    `it exited right after it started, so its task was not sent. Its last output:\n${screen}\nFix the cause (for example pass agent options after --) and summon it again.`
   )
+  updateState(member, 'exited')
+  publish()
+}
+
+async function deliverFirstTask(member: TeamMember, task: string): Promise<void> {
+  try {
+    const hasStarted = await waitUntil(() => terminalFactsOf(member.id) !== undefined, TERMINAL_START_TIMEOUT_MS)
+    if (!members.has(member.id)) {
+      return
+    }
+    if (!hasStarted) {
+      removeMember(member.id, 'the O-BROS window did not open its terminal. Is the window open?')
+      return
+    }
+    await waitUntil(() => {
+      const facts = terminalFactsOf(member.id)
+      return facts === undefined || facts.hasExited || isReadyForInput(facts, Date.now())
+    }, READY_TIMEOUT_MS)
+    if (!members.has(member.id)) {
+      return
+    }
+    if (terminalFactsOf(member.id)?.hasExited ?? true) {
+      await noteExitedAtStart(member)
+      return
+    }
+    if (task.trim() !== '') {
+      await typeAndSubmit(member.id, task)
+    }
+  } catch (error) {
+    if (members.has(member.id)) {
+      removeMember(member.id, `its task could not be typed in: ${error instanceof Error ? error.message : String(error)}`)
+    }
+  } finally {
+    startingIds.delete(member.id)
+  }
 }
 
 export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> {
@@ -324,6 +371,8 @@ export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> 
     state: 'starting'
   }
   members.set(member.id, member)
+  startingIds.add(member.id)
+  goneReasons.delete(member.name)
   recordTeamChange(member, `joined the team as "${member.name}"`, null)
   if (provider !== null) {
     void rememberTeamSession({
@@ -340,23 +389,8 @@ export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> 
   keepStatesFresh()
   publish()
 
-  const hasStarted = await waitUntil(() => terminalFactsOf(member.id) !== undefined, TERMINAL_START_TIMEOUT_MS)
-  if (!hasStarted) {
-    removeMember(member.id)
-    throw new WotError('failed', 'The O-BROS window did not start the terminal for this agent. Is the window open?')
-  }
-  await waitUntil(() => {
-    const facts = terminalFactsOf(member.id)
-    return facts === undefined || facts.hasExited || isReadyForInput(facts, Date.now())
-  }, READY_TIMEOUT_MS)
-  if (terminalFactsOf(member.id)?.hasExited ?? true) {
-    return failBecauseExited(member)
-  }
-  if (request.task.trim() === '') {
-    return { member, taskSent: false, warnings }
-  }
-  await typeAndSubmit(member.id, request.task)
-  return { member, taskSent: true, warnings }
+  void deliverFirstTask(member, request.task)
+  return { member, taskQueued: request.task.trim() !== '', warnings }
 }
 
 export async function sendToMember(nameOrId: string, text: string): Promise<TeamMember> {
