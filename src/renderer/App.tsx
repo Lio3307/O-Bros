@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { startPaneAgentTracking } from './state/paneAgentTracking'
 import { FilesPanel } from './features/files/FilesPanel'
 import { FileActionDialogs } from './features/files/FileActionDialogs'
 import { QuickOpen } from './features/files/QuickOpen'
@@ -43,6 +44,7 @@ function useStartupData(): void {
   useEffect(() => {
     restoreSavedSession()
     const stopPersistence = startSessionPersistence()
+    const stopPaneAgentTracking = startPaneAgentTracking()
     const stopProjectTabSync = startProjectTabSync()
     const stopReviewBaselines = startReviewBaselines()
     const stopTeamBridge = startTeamBridge()
@@ -53,6 +55,7 @@ function useStartupData(): void {
     void offerSkillUpdates()
     return () => {
       stopPersistence()
+      stopPaneAgentTracking()
       stopProjectTabSync()
       stopReviewBaselines()
       stopTeamBridge()

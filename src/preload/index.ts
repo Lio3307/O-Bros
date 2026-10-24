@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
-import { IpcChannel, type DesktopApi, type PtyDataEvent, type PtyExitEvent } from '../shared/ipc'
+import { IpcChannel, type DesktopApi, type PaneAgentEvent, type PtyDataEvent, type PtyExitEvent } from '../shared/ipc'
 import type { ActivityEntry } from '../shared/activity'
 import type { TeamMember, UpdateStatus, WotRendererEnvelope } from '../shared/types'
 
@@ -17,7 +17,8 @@ const api: DesktopApi = {
     kill: (id) => ipcRenderer.send(IpcChannel.ptyKill, id),
     typeWhenReady: (id, text) => ipcRenderer.invoke(IpcChannel.ptyTypeWhenReady, id, text),
     onData: (listener) => subscribe<PtyDataEvent>(IpcChannel.ptyData, listener),
-    onExit: (listener) => subscribe<PtyExitEvent>(IpcChannel.ptyExit, listener)
+    onExit: (listener) => subscribe<PtyExitEvent>(IpcChannel.ptyExit, listener),
+    onAgentChanged: (listener) => subscribe<PaneAgentEvent>(IpcChannel.ptyAgentChanged, listener)
   },
   accounts: {
     scan: () => ipcRenderer.invoke(IpcChannel.accountsScan),

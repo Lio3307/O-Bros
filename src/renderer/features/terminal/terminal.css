@@ -297,3 +297,13 @@
 .terminal-search input:focus {
   border-color: var(--color-faint);
 }
+
+.tab-agent-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.tab-agent-icon-stopped {
+  opacity: 0.45;
+  filter: grayscale(1);
+}

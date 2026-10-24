@@ -1,10 +1,12 @@
+import { programOf } from '../../../shared/agentLaunchers'
 import { formatDuration } from '../../../shared/time'
 import { listRunningTerminals } from '../ptyManager'
-import { collectProcessTree, readProcessTable } from '../resources/processTable'
+import { collectProcessTree, readProcessTable, type ProcessEntry } from '../resources/processTable'
 import { terminalFactsOf } from '../terminalFacts'
 import { loadAgentCatalog } from '../wot/agentCatalog'
 import { agentProgramOf } from '../wot/agentCaller'
 import { recordActivity } from './activityLog'
+import { forgetPanesExcept, notePaneAgent } from './paneAgents'
 
 export interface TypedAgent {
   program: string
@@ -18,6 +20,7 @@ const SCAN_AFTER_ENTER_MS = 3000
 const ENTER_KEY = '\r'
 
 const typedAgents = new Map<string, TypedAgent>()
+const launchedAgentsSeen = new Set<string>()
 let lastScanAt = 0
 let scanning: Promise<void> | null = null
 let enterScanTimer: NodeJS.Timeout | null = null
@@ -28,6 +31,7 @@ function recordSession(agent: TypedAgent, text: string, durationMs: number | nul
 
 function finish(paneId: string, agent: TypedAgent, now: number): void {
   typedAgents.delete(paneId)
+  notePaneAgent(paneId, null)
   recordSession(agent, `closed after ${formatDuration(now - agent.since)}`, now - agent.since)
 }
 
@@ -35,14 +39,41 @@ function plainTerminals(): { id: string; pid: number }[] {
   return listRunningTerminals().filter(({ id }) => (terminalFactsOf(id)?.agentCommand ?? null) === null)
 }
 
+function launchedAgentTerminals(): { id: string; pid: number; agentCommand: string }[] {
+  return listRunningTerminals().flatMap(({ id, pid }) => {
+    const agentCommand = terminalFactsOf(id)?.agentCommand ?? null
+    return agentCommand === null ? [] : [{ id, pid, agentCommand }]
+  })
+}
+
+function hasAgentsToWatch(): boolean {
+  return typedAgents.size > 0 || launchedAgentTerminals().length > 0
+}
+
+function checkLaunchedAgents(table: ProcessEntry[]): void {
+  for (const { id, pid, agentCommand } of launchedAgentTerminals()) {
+    const program = programOf(agentCommand).toLowerCase()
+    const isRunning = collectProcessTree(table, pid).some((entry) => entry.pid !== pid && agentProgramOf(entry, [program]) !== null)
+    if (isRunning) {
+      launchedAgentsSeen.add(id)
+      notePaneAgent(id, agentCommand)
+    } else if (launchedAgentsSeen.has(id)) {
+      launchedAgentsSeen.delete(id)
+      notePaneAgent(id, null)
+    }
+  }
+}
+
 async function scan(): Promise<void> {
   const terminals = plainTerminals()
   const now = Date.now()
-  if (terminals.length === 0 && typedAgents.size === 0) {
+  if (terminals.length === 0 && !hasAgentsToWatch()) {
     return
   }
   const [table, catalog] = await Promise.all([readProcessTable(), loadAgentCatalog()])
   const runningIds = new Set(terminals.map(({ id }) => id))
+  forgetPanesExcept(new Set(listRunningTerminals().map(({ id }) => id)))
+  checkLaunchedAgents(table)
   for (const [paneId, agent] of typedAgents) {
     if (!runningIds.has(paneId)) {
       finish(paneId, agent, now)
@@ -58,6 +89,7 @@ async function scan(): Promise<void> {
     if (program !== null && typedAgents.get(id) === undefined) {
       const agent = { program, since: now, cwd: terminalFactsOf(id)?.cwd ?? null }
       typedAgents.set(id, agent)
+      notePaneAgent(id, program)
       recordSession(agent, 'started', null)
     }
   }
@@ -87,6 +119,7 @@ export function noteAgentSeen(paneId: string, program: string): void {
   }
   const agent = { program, since: Date.now(), cwd: facts.cwd }
   typedAgents.set(paneId, agent)
+  notePaneAgent(paneId, program)
   recordSession(agent, 'started', null)
 }
 
@@ -102,7 +135,7 @@ export function noteTerminalInputForAgents(paneId: string, data: string): void {
 
 export function startTypedAgentWatch(): void {
   setInterval(() => {
-    if (typedAgents.size > 0) {
+    if (hasAgentsToWatch()) {
       void scanTypedAgents()
     }
   }, SCAN_EVERY_MS)

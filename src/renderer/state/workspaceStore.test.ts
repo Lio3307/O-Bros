@@ -94,3 +94,31 @@ describe('resizeSplit', () => {
     expect(listPaneIds(tab.layout)).toEqual(before)
   })
 })
+
+describe('setPaneAgent', () => {
+  it('shows the agent that started in a plain terminal and names the tab after it', () => {
+    const tabId = openTab()
+    const [paneId] = listPaneIds(terminalTabOf(tabId).layout)
+
+    useWorkspaceStore.getState().setPaneAgent(paneId, { command: 'codex', label: 'Codex' })
+
+    const tab = terminalTabOf(tabId)
+    expect(tab.title).toBe('Codex')
+    expect(tab.panes[paneId].agentCommand).toBe('codex')
+    expect(tab.panes[paneId].isAgentRunning).toBe(true)
+  })
+
+  it('remembers the agent after it stops and keeps a name the user chose', () => {
+    const tabId = openTab()
+    const [paneId] = listPaneIds(terminalTabOf(tabId).layout)
+    useWorkspaceStore.getState().renameTab(tabId, 'review')
+
+    useWorkspaceStore.getState().setPaneAgent(paneId, { command: 'gemini', label: 'Gemini' })
+    useWorkspaceStore.getState().setPaneAgent(paneId, null)
+
+    const tab = terminalTabOf(tabId)
+    expect(tab.title).toBe('review')
+    expect(tab.panes[paneId].agentCommand).toBe('gemini')
+    expect(tab.panes[paneId].isAgentRunning).toBe(false)
+  })
+})

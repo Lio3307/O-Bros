@@ -20,9 +20,11 @@ const terminalTab: TerminalTab = {
       title: 'api',
       cwd: 'E:/work/api',
       account: { provider: 'claude', configDir: 'C:/Users/me/.claude' },
-      startCommand: 'claude'
+      startCommand: 'claude',
+      agentCommand: 'claude',
+      isAgentRunning: true
     },
-    'pane-2': { id: 'pane-2', title: 'Terminal 2', cwd: 'E:/work/api', account: null, startCommand: null }
+    'pane-2': { id: 'pane-2', title: 'Terminal 2', cwd: 'E:/work/api', account: null, startCommand: null, agentCommand: null, isAgentRunning: false }
   },
   focusedPaneId: 'pane-2'
 }
@@ -37,6 +39,8 @@ describe('session snapshot', () => {
     expect(restored?.activeTabId).toBe('tab-2')
     const restoredTerminal = restored?.tabs[0]
     expect(restoredTerminal?.kind === 'terminal' && restoredTerminal.panes['pane-1'].startCommand).toBeNull()
+    expect(restoredTerminal?.kind === 'terminal' && restoredTerminal.panes['pane-1'].agentCommand).toBe('claude')
+    expect(restoredTerminal?.kind === 'terminal' && restoredTerminal.panes['pane-1'].isAgentRunning).toBe(false)
     expect(restoredTerminal?.kind === 'terminal' && restoredTerminal.layout).toEqual(terminalTab.layout)
     expect(restored?.tabs[1]).toEqual({ ...fileTab, isModified: false })
   })

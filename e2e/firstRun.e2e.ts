@@ -40,5 +40,5 @@ test('asks for a project folder before starting an agent, but opens a plain term
   await answerFolderDialogWith(app.projectFolder)
   await app.window.getByRole('button', { name: 'ShellAgent' }).click()
   await expect(app.window.getByTitle(app.projectFolder, { exact: true })).toBeVisible()
-  await expect(app.window.locator('.tab-title', { hasText: 'sample-project' })).toHaveCount(1)
+  await expect(app.window.locator('.tab-title', { hasText: 'ShellAgent' })).toHaveCount(1)
 })

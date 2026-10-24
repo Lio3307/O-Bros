@@ -23,6 +23,13 @@ export interface TerminalPaneInfo {
   cwd: string | null
   account: AccountRef | null
   startCommand: string | null
+  agentCommand: string | null
+  isAgentRunning: boolean
+}
+
+export interface PaneAgent {
+  command: string
+  label: string
 }
 
 export interface TerminalTab {
@@ -70,6 +77,7 @@ interface WorkspaceState {
   resizeSplit: (tabId: string, path: SplitPath, ratio: number) => void
   renamePane: (tabId: string, paneId: string, title: string) => void
   focusPane: (tabId: string, paneId: string) => void
+  setPaneAgent: (paneId: string, agent: PaneAgent | null) => void
   setFileModified: (tabId: string, isModified: boolean) => void
 }
 
@@ -79,6 +87,10 @@ function newId(): string {
 
 function terminalTitleFor(cwd: string | null, existingCount: number): string {
   return cwd === null ? (existingCount === 0 ? 'Home' : `Home ${existingCount + 1}`) : lastPathSegment(cwd)
+}
+
+function hasDefaultTitle(tab: TerminalTab): boolean {
+  return tab.cwd === null ? tab.title.startsWith('Home') : tab.title === lastPathSegment(tab.cwd)
 }
 
 function buildTerminalTab(options: NewTerminalOptions, existingTerminalCount: number): TerminalTab {
@@ -97,7 +109,9 @@ function buildTerminalTab(options: NewTerminalOptions, existingTerminalCount: nu
         title,
         cwd: options.cwd,
         account: options.account,
-        startCommand: options.startCommand ?? null
+        startCommand: options.startCommand ?? null,
+        agentCommand: options.startCommand ?? null,
+        isAgentRunning: options.startCommand !== undefined
       }
     },
     focusedPaneId: paneId
@@ -221,7 +235,9 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
           title: `Terminal ${listPaneIds(tab.layout).length + 1}`,
           cwd: source.cwd,
           account: source.account,
-          startCommand: null
+          startCommand: null,
+          agentCommand: null,
+          isAgentRunning: false
         }
         return {
           ...tab,
@@ -266,6 +282,27 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
       tabs: mapTerminalTab(get().tabs, tabId, (tab) => ({
         ...tab,
         panes: { ...tab.panes, [paneId]: { ...tab.panes[paneId], title } }
+      }))
+    })
+  },
+
+  setPaneAgent: (paneId, agent) => {
+    const tab = get().tabs.find((candidate): candidate is TerminalTab => isTerminalTab(candidate) && paneId in candidate.panes)
+    if (tab === undefined) {
+      return
+    }
+    const pane = tab.panes[paneId]
+    const isRunning = agent !== null
+    const agentCommand = agent?.command ?? pane.agentCommand
+    if (pane.isAgentRunning === isRunning && pane.agentCommand === agentCommand) {
+      return
+    }
+    const title = agent !== null && hasDefaultTitle(tab) ? agent.label : tab.title
+    set({
+      tabs: mapTerminalTab(get().tabs, tab.id, (current) => ({
+        ...current,
+        title,
+        panes: { ...current.panes, [paneId]: { ...current.panes[paneId], agentCommand, isAgentRunning: isRunning } }
       }))
     })
   },

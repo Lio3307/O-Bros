@@ -48,7 +48,8 @@ function toPane(value: unknown): TerminalPaneInfo | null {
   if (!isRecord(value) || typeof value.id !== 'string' || typeof value.title !== 'string' || !isNullableString(value.cwd)) {
     return null
   }
-  return { id: value.id, title: value.title, cwd: value.cwd, account: toAccount(value.account), startCommand: null }
+  const agentCommand = typeof value.agentCommand === 'string' ? value.agentCommand : typeof value.startCommand === 'string' ? value.startCommand : null
+  return { id: value.id, title: value.title, cwd: value.cwd, account: toAccount(value.account), startCommand: null, agentCommand, isAgentRunning: false }
 }
 
 function toTerminalTab(value: JsonRecord): TerminalTab | null {

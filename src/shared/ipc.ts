@@ -93,6 +93,7 @@ export const IpcChannel = {
   ptyTypeWhenReady: 'pty:typeWhenReady',
   ptyData: 'pty:data',
   ptyExit: 'pty:exit',
+  ptyAgentChanged: 'pty:agentChanged',
   accountsScan: 'accounts:scan',
   accountsCreateFolder: 'accounts:createFolder',
   usageGet: 'usage:get',
@@ -256,6 +257,11 @@ export interface PtyExitEvent {
   exitCode: number
 }
 
+export interface PaneAgentEvent {
+  id: string
+  agentCommand: string | null
+}
+
 export interface DesktopApi {
   pty: {
     create(request: PtyCreateRequest): Promise<void>
@@ -265,6 +271,7 @@ export interface DesktopApi {
     typeWhenReady(id: string, text: string): Promise<TypeResult>
     onData(listener: (event: PtyDataEvent) => void): () => void
     onExit(listener: (event: PtyExitEvent) => void): () => void
+    onAgentChanged(listener: (event: PaneAgentEvent) => void): () => void
   }
   accounts: {
     scan(): Promise<DetectedAccount[]>

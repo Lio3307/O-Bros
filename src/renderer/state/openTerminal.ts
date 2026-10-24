@@ -25,18 +25,18 @@ async function folderForAgent(agentName: string): Promise<string | null> {
   return useProjectsStore.getState().addRoot(`Choose a project folder for ${agentName}`)
 }
 
-function openIn(cwd: string | null, startCommand: string | undefined): void {
+function openIn(cwd: string | null, startCommand: string | undefined, title?: string): void {
   const provider = startCommand === undefined ? null : providerOfCommand(startCommand)
   const account = provider === null ? null : selectActiveAccount(useAccountsStore.getState(), provider)
 
-  useWorkspaceStore.getState().openTerminalTab({ cwd, account: accountToRef(account), startCommand })
+  useWorkspaceStore.getState().openTerminalTab({ cwd, account: accountToRef(account), startCommand, title })
   useLayoutStore.getState().showSection('projects')
 }
 
 async function openAgentIn(agentName: string, startCommand: string): Promise<void> {
   const cwd = await folderForAgent(agentName)
   if (cwd !== null) {
-    openIn(cwd, startCommand)
+    openIn(cwd, startCommand, agentName)
   }
 }
 

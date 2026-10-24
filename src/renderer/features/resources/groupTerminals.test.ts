@@ -7,7 +7,7 @@ const MB = 1024 * 1024
 
 function terminalTab(id: string, cwd: string | null, paneIds: string[]): TerminalTab {
   const panes = Object.fromEntries(
-    paneIds.map((paneId) => [paneId, { id: paneId, title: `Terminal ${paneId}`, cwd, account: null, startCommand: null }])
+    paneIds.map((paneId) => [paneId, { id: paneId, title: `Terminal ${paneId}`, cwd, account: null, startCommand: null, agentCommand: null, isAgentRunning: false }])
   )
   const layout = paneIds
     .slice(1)
