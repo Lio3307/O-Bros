@@ -4,6 +4,9 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Added
+- **Svelte, Vue and Astro files have colors.** Their markup, their `<script>` (also `lang="ts"`) and their `<style>` (also `lang="scss"`, `"less"` and `"postcss"`) are colored with the HTML, TypeScript and CSS support O-BROS already has, so nothing new is downloaded. Template expressions such as `{#if}` and `{{ }}` stay plain. You can turn each one off in Settings > Editor > Languages.
+
 ## [0.1.7] - 2026-10-22
 
 ### Fixed

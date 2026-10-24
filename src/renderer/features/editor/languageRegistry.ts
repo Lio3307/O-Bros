@@ -16,6 +16,9 @@ export const LANGUAGE_IDS = [
   'php',
   'sql',
   'yaml',
+  'svelte',
+  'vue',
+  'astro',
   'env',
   'text'
 ] as const
@@ -30,6 +33,18 @@ export interface LanguageDefinition {
   canLint: boolean
   canFormat: boolean
   load: () => Promise<Extension>
+}
+
+async function loadComponentLanguage(): Promise<Extension> {
+  const [{ html }, { cssLanguage }] = await Promise.all([import('@codemirror/lang-html'), import('@codemirror/lang-css')])
+  const otherStyleLanguages = ['scss', 'less', 'postcss']
+  return html({
+    nestedLanguages: [{ tag: 'style', attrs: (attrs) => otherStyleLanguages.includes(attrs.lang), parser: cssLanguage.parser }]
+  })
+}
+
+function componentLanguage(id: LanguageId, label: string, extension: string): LanguageDefinition {
+  return { id, label, extensions: [extension], canLint: false, canFormat: false, load: loadComponentLanguage }
 }
 
 export const LANGUAGES: LanguageDefinition[] = [
@@ -145,6 +160,9 @@ export const LANGUAGES: LanguageDefinition[] = [
     canFormat: true,
     load: async () => (await import('@codemirror/lang-yaml')).yaml()
   },
+  componentLanguage('svelte', 'Svelte', 'svelte'),
+  componentLanguage('vue', 'Vue', 'vue'),
+  componentLanguage('astro', 'Astro', 'astro'),
   {
     id: 'env',
     label: 'Environment and config',
