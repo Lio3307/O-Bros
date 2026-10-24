@@ -3,7 +3,7 @@ name: wot
 description: wot (work of teams) lets you summon other AI coding agents (Claude, Codex, Gemini, OpenCode and any other agent CLI installed on this computer) as hidden team members inside the O-BROS app, give them tasks, wait for them, read their answers and stop them. Use it when the user asks you to "use codex", "ask claude", "get a second opinion from another agent", "summon an agent", "make a team", "work in parallel with other agents", "wot", or names another agent CLI to help. It only works inside a terminal opened by the O-BROS app.
 license: MIT
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
   publisher: O-BROS
 ---
 
@@ -47,6 +47,8 @@ Do NOT use wot when:
 11. **Commits are made as the user.** When a commit is allowed, O-BROS sets the author and committer to the name and email the user chose in O-BROS. Never pass `--author`, never set `user.name` or `user.email`, and never add a `Co-Authored-By` line unless the user asked for it. O-BROS removes such lines unless the user allowed them.
 12. **No agent names in history.** Never put an agent name in a branch name (no `claude/...`, `codex-...`), a commit author, or a commit message credit. Name branches after the work, for example `fix/login-timeout`. Before a push, O-BROS checks the commits and asks the user if any of them still mentions an agent.
 13. **If you see `GIT_BLOCKED`, stop.** It means the user does not let agents do this, refused, or did not answer. Tell the user what you wanted to do and ask. Never try another way: no full path to the git program, no other git tool, no script, alias or environment variable to get around it.
+14. **Slow is normal. Never stop a member because it takes long.** There is no time limit. Stop a member only when its work is done, when it `EXITED`, or when the user asks. While it works, tell the user every few minutes that it is still working and what it is on (`wot read <name>`).
+15. **A connection error is not a reason to replace a member.** If a member's screen shows a connection, network, timeout, overloaded or rate-limit error, keep it and tell it to go on (section 8). A new member would start from nothing and lose everything this one did.
 
 ---
 
@@ -217,7 +219,7 @@ Repeat this loop until the member is finished:
 
 | First word | Meaning | What you do |
 |---|---|---|
-| `FINISHED:` | It finished its turn. | Run `wot read <name>`. Read the screen. Look for `DONE:` or `BLOCKED:`. |
+| `FINISHED:` | It finished its turn. | Run `wot read <name>`. Read the screen. Look for `DONE:` or `BLOCKED:`. If it shows a connection or rate-limit error instead, see the notes below. |
 | `QUESTION:` | It is asking a question or asking permission. | Run `wot read <name>`. Go to section 9. |
 | `STILL_WORKING:` | It is still busy. | Run `wot wait <name>` again. You can run `wot read <name>` to peek. |
 | `EXITED:` | The agent program stopped: it crashed, it could not start (for example not signed in, or a wrong agent option), or the user stopped it with Ctrl+C. | Run `wot read <name>` to see its last screen. Fix the cause if you can (for example pass an agent option after `--`) and summon it again once; otherwise tell the user what you saw. Then `wot stop <name>`. Do not send it more messages; `wot send` is refused. |
@@ -225,6 +227,8 @@ Repeat this loop until the member is finished:
 
 Notes:
 
+- There is no time limit. A member may work for many minutes or even hours; keep running `wot wait <name>` for as long as it says `STILL_WORKING`. Do not stop it, do not summon a replacement, and do not do its task yourself because it is slow. If the user asks, tell them it is still working and what its screen shows.
+- If the screen shows a connection, network, timeout, overloaded or rate-limit error (for example "stream disconnected", "reconnecting", "network error", "429", "overloaded"), the member keeps everything it did so far. If the agent is still retrying on its own, just wait. If it stopped and waits for you, wait about a minute, then `wot send <name> "The connection is back. Please continue where you stopped."` and wait again. After two more failures in a row, tell the user that the connection or the agent's service has a problem, and ask whether to keep trying. Do not `wot stop` it and summon a new one for this.
 - `wot wait` returns after at most about 100 seconds. That is normal. Just run it again. Use `--timeout <seconds>` (maximum 280) if your own command timeout allows longer.
 - If your shell stops commands sooner than 100 seconds (some agents stop them after about 10 seconds), pass a `--timeout` a few seconds below that limit, for example `wot wait <name> --timeout 8`, and run it again as often as needed. A `wot wait` that your shell stops does no harm: nothing is cancelled.
 - `wot read <name>` shows the last 80 lines of its screen. Use `--lines 200` to see more.
