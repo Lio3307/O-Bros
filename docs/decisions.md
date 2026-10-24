@@ -357,6 +357,17 @@
 - Result acceptance: Pending user feedback.
 - Learning: Measure per process before optimising; the GPU process was the one that grew.
 
+### Terminals drawn with the GPU by default again
+- Scope and goal: User-reported. Agent screens looked broken: horizontal rules were dashed and block-character logos (Claude Code's) had gaps and colour fringes.
+- Choice and authority: User-directed (the user asked for a smooth terminal), replacing "Memory: terminals drawn without the GPU by default". The WebGL renderer is on unless the user turned it off; a saved "false" is kept.
+- Evidence: xterm.js documents that customGlyphs (box-drawing and block characters drawn to fill the cell) "doesn't work with the DOM renderer". Screenshots of the same text: DOM renderer ragged with gaps, WebGL clean. Private memory with one terminal on screen: GPU process 68 to 102 MB, window 62 to 69 MB. WebGL is already disposed for terminals that are not on screen.
+- Alternatives and sacrifice: Keeping the DOM renderer with a line height of 1 would close vertical gaps but not the dashed lines or fringes. About 40 MB more for each terminal on screen.
+- Residual risk/debt: Machines without WebGL keep the DOM renderer and its gaps; the creation of the WebGL addon already falls back.
+- Recovery and ownership: src/renderer/state/terminalSettingsStore.ts, src/renderer/features/terminal/TerminalView.tsx.
+- Implementation / validation / outcome: Written / screenshots and memory measured / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: Check what a renderer cannot draw before trading it for memory.
+
 ### Agent logos ship as a data pack
 - Scope and goal: User-requested. Show each detected agent with its original logo and colours.
 - Choice and authority: Agent-selected. Colored SVG logos from @lobehub/icons-static-svg 1.95.1 (MIT) are stored in resources/agents/logos with an index.json that maps the typed command to a file and a style (color or mono). Colour logos render as images; single-colour logos render as a CSS mask in the interface colour so they stay visible on the dark background. Agents missing from the pack fall back to the ACP registry icon, then a generic icon.

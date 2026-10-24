@@ -30,7 +30,7 @@ export const useTerminalSettingsStore = create<TerminalSettingsState>()((set) =>
   scrollback: loadScrollback(),
   notifyWhenFinished: readStored(NOTIFY_KEY) !== 'false',
   agentGitPolicy: readAgentGitPolicy(readStored(AGENT_GIT_KEY)),
-  useGpuRendering: readStored(GPU_KEY) === 'true',
+  useGpuRendering: readStored(GPU_KEY) !== 'false',
 
   setScrollback: (scrollback) => {
     writeStored(SCROLLBACK_KEY, String(scrollback))

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { launchApp, type RunningApp } from './launchApp'
+import { drawTerminalsAsText, launchApp, type RunningApp } from './launchApp'
 
 let app: RunningApp
 let goneParent: string
@@ -12,6 +12,7 @@ test.beforeEach(async () => {
   goneParent = join(tmpdir(), `o-bros-gone-${Date.now()}`)
   gonePath = join(goneParent, 'my-app')
   app = await launchApp({ settings: { projectRoots: [gonePath] } })
+  await drawTerminalsAsText(app)
 })
 
 test.afterEach(async () => {

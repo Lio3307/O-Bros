@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { readdir, readFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { launchApp, type RunningApp } from './launchApp'
+import { drawTerminalsAsText, launchApp, type RunningApp } from './launchApp'
 
 const ONE_PIXEL_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='
 const PNG_SIGNATURE = '89504e47'
@@ -10,6 +10,7 @@ let app: RunningApp
 
 test.beforeEach(async () => {
   app = await launchApp()
+  await drawTerminalsAsText(app)
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByTitle('Plain terminal in the selected folder').click()
   await app.window.locator('.terminal-host').last().waitFor()

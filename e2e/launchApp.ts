@@ -74,3 +74,9 @@ export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp
     }
   }
 }
+
+export async function drawTerminalsAsText(app: RunningApp): Promise<void> {
+  await app.window.evaluate(() => localStorage.setItem('o-bros.terminalGpuRendering', 'false'))
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+}

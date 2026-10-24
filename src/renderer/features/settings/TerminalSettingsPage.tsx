@@ -58,14 +58,15 @@ export function TerminalSettingsPage() {
         title="Drawing"
         description={
           <>
-            By default terminals are drawn without the graphics card, which uses less memory (about 25 MB less per open
-            terminal). Turn this on only if a terminal that prints a lot of output feels slow.
+            With the graphics card, lines, boxes and block characters (such as an agent's logo) join up cleanly and heavy
+            output scrolls faster. Only the terminals on screen use it, about 40 MB for one. Without it, terminals use less
+            memory, but those characters come from the font and can show small gaps.
           </>
         }
       >
         <label className="toggle-row">
           <input type="checkbox" role="switch" checked={useGpuRendering} onChange={(event) => setUseGpuRendering(event.target.checked)} />
-          <span>Draw terminals with the graphics card (faster, uses more memory)</span>
+          <span>Draw terminals with the graphics card (smoother, uses more memory)</span>
         </label>
       </SettingsSection>
 
