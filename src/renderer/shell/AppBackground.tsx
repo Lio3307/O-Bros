@@ -7,6 +7,8 @@ export function AppBackground() {
   const wallpaperUrl = useAppearanceStore((state) => state.wallpaperUrl)
   const loadWallpaper = useAppearanceStore((state) => state.loadWallpaper)
   const surfaceAlpha = useSurfaceAlpha()
+  const isDesktop = appearance.background === 'desktop'
+  const isSeeThrough = surfaceAlpha < 1
 
   useEffect(() => {
     void loadWallpaper()
@@ -15,13 +17,20 @@ export function AppBackground() {
   useEffect(() => {
     const root = document.documentElement
     root.style.setProperty('--surface-alpha', String(surfaceAlpha))
-    root.toggleAttribute('data-see-through', surfaceAlpha < 1)
-  }, [surfaceAlpha])
+    root.toggleAttribute('data-see-through', isSeeThrough)
+  }, [surfaceAlpha, isSeeThrough])
 
   useEffect(() => {
-    void window.api.appearance.showDesktop(appearance.background === 'desktop').catch(() => undefined)
-  }, [appearance.background])
+    void window.api.appearance.setWindowBackground({ isDesktop, isSeeThrough }).catch(() => undefined)
+  }, [isDesktop, isSeeThrough])
 
+  if (isDesktop) {
+    return (
+      <div className="app-wallpaper app-wallpaper-desktop" aria-hidden="true">
+        <div className="app-wallpaper-dim" style={{ opacity: appearance.wallpaperDim }} />
+      </div>
+    )
+  }
   if (appearance.background !== 'wallpaper' || wallpaperUrl === null) {
     return null
   }

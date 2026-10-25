@@ -50,11 +50,3 @@ export async function chooseWallpaper(window: BrowserWindow | null): Promise<str
 export async function removeWallpaper(): Promise<void> {
   await rm(wallpaperFolder(), { recursive: true, force: true })
 }
-
-export function showDesktopBehind(window: BrowserWindow, isSeeThrough: boolean): void {
-  if (process.platform !== 'win32') {
-    return
-  }
-  window.setBackgroundColor(isSeeThrough ? '#00000000' : '#000000')
-  window.setBackgroundMaterial(isSeeThrough ? 'acrylic' : 'none')
-}

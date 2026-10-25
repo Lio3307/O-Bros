@@ -1,6 +1,7 @@
 import type { ActivityEntry, LiveAgent } from './activity'
 import type { AgentLogin } from './agentLogins'
 import type { AgentLogo } from './agentLogos'
+import type { WindowBackground } from './appearance'
 import type {
   LanguageServerChoices,
   LanguageServerSession,
@@ -238,7 +239,7 @@ export const IpcChannel = {
   appearanceLoadWallpaper: 'appearance:loadWallpaper',
   appearanceChooseWallpaper: 'appearance:chooseWallpaper',
   appearanceRemoveWallpaper: 'appearance:removeWallpaper',
-  appearanceShowDesktop: 'appearance:showDesktop'
+  appearanceSetWindowBackground: 'appearance:setWindowBackground'
 } as const
 
 export interface PtyCreateRequest {
@@ -459,6 +460,6 @@ export interface DesktopApi {
     loadWallpaper(): Promise<string | null>
     chooseWallpaper(): Promise<string | null>
     removeWallpaper(): Promise<void>
-    showDesktop(isSeeThrough: boolean): Promise<void>
+    setWindowBackground(background: WindowBackground): Promise<void>
   }
 }

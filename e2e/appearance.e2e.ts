@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { execFileSync } from 'node:child_process'
 import { writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { launchApp, type RunningApp } from './launchApp'
@@ -18,6 +19,16 @@ const WALLPAPER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="1600" heig
 </svg>`
 
 let app: RunningApp
+
+async function captureScreen(path: string) {
+  const bounds = await app.application.evaluate(({ BrowserWindow, screen }) => {
+    const scale = screen.getPrimaryDisplay().scaleFactor
+    const box = BrowserWindow.getAllWindows()[0].getBounds()
+    return { x: Math.round(box.x * scale), y: Math.round(box.y * scale), width: Math.round(box.width * scale), height: Math.round(box.height * scale) }
+  })
+  const script = `Add-Type -AssemblyName System.Drawing; $image = New-Object System.Drawing.Bitmap ${bounds.width}, ${bounds.height}; [System.Drawing.Graphics]::FromImage($image).CopyFromScreen(${bounds.x}, ${bounds.y}, 0, 0, $image.Size); $image.Save('${path}')`
+  execFileSync('powershell', ['-NoProfile', '-Command', script])
+}
 
 test.afterEach(async () => {
   await app.close()
@@ -51,12 +62,16 @@ test('shows a wallpaper behind see-through panels, keeps menus solid, and goes b
   await app.window.getByTitle('Plain terminal in the selected folder').click()
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
+  await expect(app.window.getByRole('button', { name: 'Choose image…' })).toHaveCount(0)
+  await app.window.getByRole('button', { name: 'Wallpaper' }).click()
+  await expect(app.window.getByText('Panels', { exact: true })).toHaveCount(0)
   await app.window.getByRole('button', { name: 'Choose image…' }).click()
 
   await expect(app.window.locator('.app-wallpaper-image')).toBeVisible()
   await expect(app.window.locator('.appearance-wallpaper-preview')).toHaveAttribute('src', /^data:image\/svg\+xml;base64,/)
   await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
   await expect.poll(() => backgroundAlphaOf('.status-bar')).toBeLessThan(1)
+  await expect(app.window.getByText('Blur', { exact: true })).toBeVisible()
 
   if (SHOTS !== undefined) {
     await app.window.waitForTimeout(600)
@@ -80,30 +95,49 @@ test('shows a wallpaper behind see-through panels, keeps menus solid, and goes b
   await app.window.getByRole('button', { name: 'Remove' }).click()
   await expect(app.window.locator('.app-wallpaper-image')).toHaveCount(0)
   await expect.poll(() => backgroundAlphaOf('.side-panel')).toBe(1)
+  await expect(app.window.getByRole('button', { name: 'Choose image…' })).toHaveCount(0)
 })
 
-test('Desktop lets the window show what is behind it, and Solid turns that off', async () => {
+test('Desktop shows what is behind the window in dark acrylic with clear window buttons, and Solid turns that off', async () => {
   test.skip(process.platform !== 'win32', 'the desktop background is a Windows 11 feature')
   app = await launchApp({ separateHome: true })
   await app.application.evaluate(({ BrowserWindow }) => {
     const window = BrowserWindow.getAllWindows()[0]
-    const calls: string[] = []
-    ;(globalThis as Record<string, unknown>).materialCalls = calls
-    const original = window.setBackgroundMaterial.bind(window)
+    const materials: string[] = []
+    const overlayColors: string[] = []
+    Object.assign(globalThis, { materials, overlayColors })
+    const setMaterial = window.setBackgroundMaterial.bind(window)
+    const setOverlay = window.setTitleBarOverlay.bind(window)
     window.setBackgroundMaterial = (material) => {
-      calls.push(material)
-      original(material)
+      materials.push(material)
+      setMaterial(material)
+    }
+    window.setTitleBarOverlay = (options) => {
+      overlayColors.push(options.color ?? '')
+      setOverlay(options)
     }
   })
-  const lastMaterial = () => app.application.evaluate(() => ((globalThis as Record<string, unknown>).materialCalls as string[]).at(-1) ?? null)
+  const lastOf = (name: 'materials' | 'overlayColors') =>
+    app.application.evaluate((_electron, key) => ((globalThis as Record<string, unknown>)[key] as string[]).at(-1) ?? null, name)
+  expect(await app.application.evaluate(({ nativeTheme }) => nativeTheme.shouldUseDarkColors)).toBe(true)
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
 
   await app.window.getByRole('button', { name: 'Desktop (Windows 11)' }).click()
-  await expect.poll(lastMaterial).toBe('acrylic')
+  await expect.poll(() => lastOf('materials')).toBe('acrylic')
+  await expect.poll(() => lastOf('overlayColors')).toBe('#00000000')
   await expect.poll(() => app.window.evaluate(() => document.documentElement.hasAttribute('data-see-through'))).toBe(true)
+  await expect(app.window.locator('.app-wallpaper-desktop .app-wallpaper-dim')).toBeAttached()
+  await expect(app.window.getByText('Dim', { exact: true })).toBeVisible()
+  await expect(app.window.getByText('Blur', { exact: true })).toHaveCount(0)
+  await expect(app.window.getByRole('button', { name: 'Choose image…' })).toHaveCount(0)
+  if (SHOTS !== undefined) {
+    await app.window.waitForTimeout(600)
+    await captureScreen(`${SHOTS}/appearance-desktop.png`)
+  }
 
   await app.window.getByRole('button', { name: 'Solid' }).click()
-  await expect.poll(lastMaterial).toBe('none')
+  await expect.poll(() => lastOf('materials')).toBe('none')
+  await expect.poll(() => lastOf('overlayColors')).toBe('#0B0B0B')
   await expect.poll(() => app.window.evaluate(() => document.documentElement.hasAttribute('data-see-through'))).toBe(false)
 })

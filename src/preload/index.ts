@@ -202,7 +202,7 @@ const api: DesktopApi = {
     loadWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceLoadWallpaper),
     chooseWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceChooseWallpaper),
     removeWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceRemoveWallpaper),
-    showDesktop: (isSeeThrough) => ipcRenderer.invoke(IpcChannel.appearanceShowDesktop, isSeeThrough)
+    setWindowBackground: (background) => ipcRenderer.invoke(IpcChannel.appearanceSetWindowBackground, background)
   }
 }
 

@@ -671,7 +671,3 @@
   font-variant-numeric: tabular-nums;
   color: var(--color-muted);
 }
-
-.appearance-slider:has(input:disabled) {
-  opacity: 0.45;
-}

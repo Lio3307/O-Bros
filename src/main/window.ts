@@ -5,6 +5,7 @@ import { writeLog } from './services/logging/logFile'
 import { showWithSavedState } from './windowState'
 
 const TITLE_BAR_HEIGHT = 36
+const CLEAR_COLOR = '#00000000'
 const CHROME_COLOR = '#0B0B0B'
 const TEXT_COLOR = '#EDEDED'
 const TERMINAL_COLOR = '#000000'
@@ -18,6 +19,10 @@ function isWebLink(url: string): boolean {
   } catch {
     return false
   }
+}
+
+export function showTitleBarSeeThrough(window: BrowserWindow, isSeeThrough: boolean): void {
+  window.setTitleBarOverlay({ color: isSeeThrough ? CLEAR_COLOR : CHROME_COLOR, symbolColor: TEXT_COLOR, height: TITLE_BAR_HEIGHT })
 }
 
 export function createMainWindow(): BrowserWindow {

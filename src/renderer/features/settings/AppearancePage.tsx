@@ -27,11 +27,10 @@ interface SliderProps {
   range: Range
   step: number
   display: string
-  disabled?: boolean
   onChange: (value: number) => void
 }
 
-function Slider({ label, value, range, step, display, disabled = false, onChange }: SliderProps) {
+function Slider({ label, value, range, step, display, onChange }: SliderProps) {
   const fill = ((value - range.min) / (range.max - range.min)) * 100
   return (
     <label className="appearance-slider">
@@ -42,7 +41,6 @@ function Slider({ label, value, range, step, display, disabled = false, onChange
         max={range.max}
         step={step}
         value={value}
-        disabled={disabled}
         style={{ '--range-fill': `${fill}%` } as Record<string, string>}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(Number(event.target.value))}
       />
@@ -61,8 +59,8 @@ export function AppearancePage() {
   const update = useAppearanceStore((state) => state.update)
   const chooseWallpaper = useAppearanceStore((state) => state.chooseWallpaper)
   const removeWallpaper = useAppearanceStore((state) => state.removeWallpaper)
-  const isSolid = appearance.background === 'solid'
   const isWallpaper = appearance.background === 'wallpaper'
+  const isDesktop = appearance.background === 'desktop'
 
   return (
     <SettingsPageLayout title="Appearance" description="Show a wallpaper or your desktop behind O-BROS. Text, menus and dialogs stay solid and readable.">
@@ -73,62 +71,68 @@ export function AppearancePage() {
         <SegmentedControl options={BACKGROUND_OPTIONS} value={appearance.background} onChange={(background) => update({ background })} />
       </SettingsSection>
 
-      <SettingsSection title="Wallpaper" description="The image is copied into O-BROS's own folder, so it stays even if you move the original. Up to 20 MB.">
-        <div className="appearance-wallpaper">
-          {wallpaperUrl === null ? (
-            <div className="appearance-wallpaper-preview appearance-wallpaper-empty">No image yet</div>
-          ) : (
-            <img className="appearance-wallpaper-preview" src={wallpaperUrl} alt="Your wallpaper" />
-          )}
-          <div className="appearance-wallpaper-actions">
-            <Button variant="outline" onClick={() => chooseWallpaper()}>
-              <ImagePlus size={14} /> {wallpaperUrl === null ? 'Choose image…' : 'Change image…'}
-            </Button>
-            {wallpaperUrl !== null && (
-              <Button variant="outline" className="hover-danger" onClick={() => removeWallpaper()}>
-                <Trash2 size={14} /> Remove
+      {isWallpaper && (
+        <SettingsSection title="Wallpaper" description="The image is copied into O-BROS's own folder, so it stays even if you move the original. Up to 20 MB.">
+          <div className="appearance-wallpaper">
+            {wallpaperUrl === null ? (
+              <div className="appearance-wallpaper-preview appearance-wallpaper-empty">No image yet</div>
+            ) : (
+              <img className="appearance-wallpaper-preview" src={wallpaperUrl} alt="Your wallpaper" />
+            )}
+            <div className="appearance-wallpaper-actions">
+              <Button variant="outline" onClick={() => chooseWallpaper()}>
+                <ImagePlus size={14} /> {wallpaperUrl === null ? 'Choose image…' : 'Change image…'}
               </Button>
+              {wallpaperUrl !== null && (
+                <Button variant="outline" className="hover-danger" onClick={() => removeWallpaper()}>
+                  <Trash2 size={14} /> Remove
+                </Button>
+              )}
+            </div>
+          </div>
+          {wallpaperUrl === null && <p className="muted">Choose an image to see it behind O-BROS.</p>}
+        </SettingsSection>
+      )}
+
+      {(isDesktop || (isWallpaper && wallpaperUrl !== null)) && (
+        <SettingsSection
+          title="See-through"
+          description={
+            isDesktop
+              ? 'How solid the panels are over your desktop, and how much to darken it. If text is hard to read over bright windows, raise Dim.'
+              : 'How solid the panels, terminals and editor are over the wallpaper. Lower shows more of it; text always stays fully visible.'
+          }
+        >
+          <div className="appearance-sliders">
+            <Slider
+              label="Panels"
+              value={appearance.surfaceOpacity}
+              range={SURFACE_OPACITY_RANGE}
+              step={0.01}
+              display={percent(appearance.surfaceOpacity)}
+              onChange={(surfaceOpacity) => update({ surfaceOpacity })}
+            />
+            <Slider
+              label="Dim"
+              value={appearance.wallpaperDim}
+              range={WALLPAPER_DIM_RANGE}
+              step={0.01}
+              display={percent(appearance.wallpaperDim)}
+              onChange={(wallpaperDim) => update({ wallpaperDim })}
+            />
+            {isWallpaper && (
+              <Slider
+                label="Blur"
+                value={appearance.wallpaperBlur}
+                range={WALLPAPER_BLUR_RANGE}
+                step={1}
+                display={`${appearance.wallpaperBlur} px`}
+                onChange={(wallpaperBlur) => update({ wallpaperBlur })}
+              />
             )}
           </div>
-        </div>
-        {isWallpaper && wallpaperUrl === null && <p className="muted">Choose an image to see it behind O-BROS.</p>}
-      </SettingsSection>
-
-      <SettingsSection
-        title="See-through"
-        description="How solid the panels, terminals and editor are over the background. Lower shows more of it; text always stays fully visible."
-      >
-        <div className="appearance-sliders">
-          <Slider
-            label="Panels"
-            value={appearance.surfaceOpacity}
-            range={SURFACE_OPACITY_RANGE}
-            step={0.01}
-            display={percent(appearance.surfaceOpacity)}
-            disabled={isSolid}
-            onChange={(surfaceOpacity) => update({ surfaceOpacity })}
-          />
-          <Slider
-            label="Dim wallpaper"
-            value={appearance.wallpaperDim}
-            range={WALLPAPER_DIM_RANGE}
-            step={0.01}
-            display={percent(appearance.wallpaperDim)}
-            disabled={!isWallpaper}
-            onChange={(wallpaperDim) => update({ wallpaperDim })}
-          />
-          <Slider
-            label="Blur wallpaper"
-            value={appearance.wallpaperBlur}
-            range={WALLPAPER_BLUR_RANGE}
-            step={1}
-            display={`${appearance.wallpaperBlur} px`}
-            disabled={!isWallpaper}
-            onChange={(wallpaperBlur) => update({ wallpaperBlur })}
-          />
-        </div>
-        {isSolid && <p className="muted">Pick Wallpaper or Desktop above to use these.</p>}
-      </SettingsSection>
+        </SettingsSection>
+      )}
     </SettingsPageLayout>
   )
 }

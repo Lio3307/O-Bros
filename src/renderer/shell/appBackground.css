@@ -8,6 +8,10 @@
   animation: motion-fade var(--motion-slow) var(--ease-out);
 }
 
+.app-wallpaper-desktop {
+  background: transparent;
+}
+
 .app-wallpaper-image,
 .app-wallpaper-dim {
   position: absolute;
