@@ -91,12 +91,12 @@
 }
 
 .root-name-current {
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .row-current-project {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .row-session {
@@ -114,7 +114,7 @@
 }
 
 .branch-label-feature {
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .folder-sessions {
@@ -133,7 +133,7 @@
 }
 
 .folder-sessions .row-selected {
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .folder-sessions-more {
@@ -146,7 +146,7 @@
 }
 
 .folder-sessions-more:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .session-group {

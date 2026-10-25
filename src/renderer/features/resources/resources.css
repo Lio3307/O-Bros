@@ -28,7 +28,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .resource-summary {
@@ -57,7 +57,7 @@
   font-size: 18px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .resource-stat-detail {
@@ -79,7 +79,7 @@
 
 .resource-row-group {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
   border-top: 1px solid var(--color-border);
 }
 
@@ -97,7 +97,7 @@
 
 .resource-row-app {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -134,14 +134,14 @@
 .resource-number-strong {
   width: 88px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .resource-dot {
   width: 7px;
   height: 7px;
   flex-shrink: 0;
-  background: var(--color-white);
+  background: var(--color-strong);
   border-radius: 50%;
 }
 
@@ -162,7 +162,7 @@
 .port-number {
   font-family: var(--font-mono);
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .port-owner {
@@ -183,7 +183,7 @@
 }
 
 .port-stop:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 

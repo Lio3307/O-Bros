@@ -12,6 +12,7 @@ import { Button } from '../../ui/Button'
 import { SegmentedControl } from '../../ui/SegmentedControl'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../ui/SettingsSection'
+import { ThemeSettings } from './theme/ThemeSettings'
 import './settings.css'
 import './settingsControls.css'
 
@@ -88,7 +89,9 @@ export function AppearancePage() {
   const backgroundOptions = BACKGROUND_OPTIONS.filter((option) => option.value !== 'desktop' || IS_WINDOWS || isDesktop)
 
   return (
-    <SettingsPageLayout title="Appearance" description="Show a picture behind O-BROS. Text, menus and dialogs stay solid and readable.">
+    <SettingsPageLayout title="Appearance" description="The colors of O-BROS, and a picture behind it. Text, menus and dialogs always stay readable.">
+      <ThemeSettings />
+
       <SettingsSection
         title="Background"
         description={

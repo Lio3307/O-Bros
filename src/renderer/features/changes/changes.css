@@ -64,7 +64,7 @@
 }
 
 .conflict-actions .conflict-action:hover:not(:disabled) {
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .section-label svg {
@@ -87,7 +87,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .branch-card-upstream,
@@ -109,7 +109,7 @@
   align-items: center;
   gap: 6px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .branch-card-fetch-group {
@@ -191,7 +191,7 @@
 
 .diff-path {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .diff-body {
@@ -376,7 +376,7 @@
   align-items: center;
   padding-left: 68px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .diff-split-count {
@@ -461,7 +461,7 @@
 }
 
 .change-actions button:hover:not(:disabled) {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 
@@ -479,7 +479,7 @@
 .branch-switch {
   flex: 1;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .commit-item {
@@ -539,7 +539,7 @@
   overflow: hidden;
   font-weight: 500;
   line-height: 18px;
-  color: var(--color-white);
+  color: var(--color-strong);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -565,8 +565,8 @@
 }
 
 .commit-ref-tag {
-  color: #d29922;
-  border-color: #d29922;
+  color: var(--color-warning);
+  border-color: var(--color-warning);
 }
 
 .commit-files {
@@ -607,16 +607,16 @@
 }
 
 .changes-tab:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 
 .changes-tab-active,
 .changes-tab-active:hover {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-terminal);
-  border-top-color: var(--color-white);
+  border-top-color: var(--color-strong);
 }
 
 .changes-main-content {
@@ -651,7 +651,7 @@
 
 .graph-title {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .graph-option {
@@ -715,7 +715,7 @@
   min-width: 0;
   overflow: hidden;
   font-weight: 500;
-  color: var(--color-white);
+  color: var(--color-strong);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -781,7 +781,7 @@
 
 .stash-message {
   overflow: hidden;
-  color: var(--color-white);
+  color: var(--color-strong);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -799,7 +799,7 @@
 }
 
 .branch-more:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-selected);
 }
 
@@ -831,7 +831,7 @@
 }
 
 .changes-back:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 
@@ -908,7 +908,7 @@
 }
 
 .repository-row:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 
@@ -933,7 +933,7 @@
   align-items: center;
   gap: 12px;
   min-width: 0;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .folder-overview-header svg {
@@ -966,5 +966,5 @@
   width: calc(100% - 16px);
   margin: 0 8px 8px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }

@@ -19,7 +19,7 @@
 
 .tab-team:hover,
 .tab-team-open {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
   border-color: var(--color-faint);
 }
@@ -70,7 +70,7 @@
   min-width: 0;
   overflow: hidden;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

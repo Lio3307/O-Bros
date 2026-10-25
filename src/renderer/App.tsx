@@ -18,6 +18,7 @@ import { ConfirmHost } from './ui/ConfirmHost'
 import { ToastHost } from './ui/ToastHost'
 import { UpdateNoticeCard } from './features/settings/update/UpdateNoticeCard'
 import { AppBackground } from './shell/AppBackground'
+import { AppTheme } from './shell/AppTheme'
 import { useCloseRequestStore } from './state/closeRequestStore'
 import { useInstalledCommandsStore } from './state/installedCommandsStore'
 import { useLayoutStore } from './state/layoutStore'
@@ -106,6 +107,7 @@ export function App() {
 
   return (
     <div className="app">
+      <AppTheme />
       <AppBackground />
       <TitleBar />
       <div className="app-body">

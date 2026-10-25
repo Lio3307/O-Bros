@@ -26,7 +26,7 @@
 }
 
 .popup-menu-item:hover:not(:disabled) {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 
@@ -37,7 +37,7 @@
 
 .popup-menu-item-active {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .popup-menu-entry {
@@ -80,6 +80,6 @@
 
 .popup-menu-item-danger,
 .popup-menu-item-danger .popup-menu-icon {
-  color: var(--color-white);
+  color: var(--color-strong);
   font-weight: 600;
 }

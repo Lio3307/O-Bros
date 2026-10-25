@@ -23,7 +23,7 @@
   gap: 8px;
   font-size: 18px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .monitor-pulse {
@@ -160,12 +160,12 @@
 }
 
 .hour-bar-now {
-  background: var(--color-white);
+  background: var(--color-strong);
 }
 
 .hour-bar-hovered {
   background: var(--color-text);
-  outline: 1px solid var(--color-white);
+  outline: 1px solid var(--color-strong);
 }
 
 .hour-axis {
@@ -241,7 +241,7 @@
   font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
   font-variant-numeric: tabular-nums;
 }
 
@@ -300,7 +300,7 @@
 }
 
 .server-action:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 

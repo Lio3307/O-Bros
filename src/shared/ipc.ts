@@ -1,7 +1,9 @@
 import type { ActivityEntry, LiveAgent } from './activity'
 import type { AgentLogin } from './agentLogins'
 import type { AgentLogo } from './agentLogos'
+import type { WindowColors } from './appearance'
 import type { DesktopPlacement, DesktopView, DesktopWallpaper } from './desktopWallpaper'
+import type { WarpThemeFiles } from './themeImport'
 import type {
   LanguageServerChoices,
   LanguageServerSession,
@@ -239,7 +241,8 @@ export const IpcChannel = {
   appearanceLoadWallpaper: 'appearance:loadWallpaper',
   appearanceChooseWallpaper: 'appearance:chooseWallpaper',
   appearanceRemoveWallpaper: 'appearance:removeWallpaper',
-  appearanceSetTitleBarSeeThrough: 'appearance:setTitleBarSeeThrough',
+  appearanceSetWindowColors: 'appearance:setWindowColors',
+  appearanceReadWarpThemes: 'appearance:readWarpThemes',
   appearanceFollowDesktop: 'appearance:followDesktop',
   appearanceDesktopPlacementChanged: 'appearance:desktopPlacementChanged',
   appearanceDesktopWallpaperChanged: 'appearance:desktopWallpaperChanged'
@@ -463,7 +466,8 @@ export interface DesktopApi {
     loadWallpaper(): Promise<string | null>
     chooseWallpaper(): Promise<string | null>
     removeWallpaper(): Promise<void>
-    setTitleBarSeeThrough(isSeeThrough: boolean): Promise<void>
+    setWindowColors(colors: WindowColors): Promise<void>
+    readWarpThemes(): Promise<WarpThemeFiles>
     followDesktop(isFollowing: boolean): Promise<DesktopView | null>
     onDesktopPlacementChanged(listener: (placement: DesktopPlacement) => void): () => void
     onDesktopWallpaperChanged(listener: (wallpaper: DesktopWallpaper) => void): () => void

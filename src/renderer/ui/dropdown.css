@@ -14,7 +14,7 @@
 
 .dropdown:hover:not(:disabled),
 .dropdown[aria-expanded='true'] {
-  color: var(--color-white);
+  color: var(--color-strong);
   border-color: var(--color-faint);
 }
 

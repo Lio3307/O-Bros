@@ -20,10 +20,6 @@ export function AppBackground() {
     root.toggleAttribute('data-see-through', isSeeThrough)
   }, [surfaceAlpha, isSeeThrough])
 
-  useEffect(() => {
-    void window.api.appearance.setTitleBarSeeThrough(isSeeThrough).catch(() => undefined)
-  }, [isSeeThrough])
-
   if (appearance.background === 'desktop') {
     return (
       <div className="app-wallpaper" aria-hidden="true">

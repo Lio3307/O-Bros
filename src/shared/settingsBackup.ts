@@ -5,6 +5,9 @@ export const SETTING_KEY_PREFIX = 'o-bros.'
 
 export const BACKUP_SETTING_KEYS = [
   'colorTheme',
+  'lightColorTheme',
+  'themeMode',
+  'importedThemes',
   'editorSettings',
   'shortcuts',
   'agentLaunchers',

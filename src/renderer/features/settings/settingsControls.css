@@ -11,7 +11,7 @@
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .settings-segmented {
@@ -64,7 +64,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .table-row .field {
@@ -222,62 +222,6 @@
 
 .location-path {
   overflow-wrap: anywhere;
-}
-
-.theme-summary {
-  display: flex;
-  justify-content: space-between;
-  margin: 8px 0 4px;
-  font-size: 12px;
-}
-
-.theme-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 320px;
-  overflow-y: auto;
-}
-
-.theme-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 10px;
-  color: var(--color-text);
-  text-align: left;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius);
-}
-
-.theme-row:hover {
-  background: var(--color-hover);
-}
-
-.theme-row-selected {
-  background: var(--color-selected);
-}
-
-.theme-name {
-  flex: 1;
-  min-width: 0;
-  font-size: 13px;
-}
-
-.theme-preview {
-  padding: 3px 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  white-space: nowrap;
-  border-radius: var(--radius);
-}
-
-.theme-current {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--color-white);
 }
 
 .commit-identity-fields {
@@ -585,7 +529,7 @@
 
 .disk-card-free strong {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .session-cleanup-row {
@@ -611,7 +555,7 @@
 }
 
 .storage-details summary:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .storage-tiles + .safety-legend {

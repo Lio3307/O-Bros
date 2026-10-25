@@ -13,7 +13,7 @@
 }
 
 .update-card-attention {
-  border-color: var(--color-white);
+  border-color: var(--color-strong);
 }
 
 .update-dot {
@@ -30,8 +30,8 @@
 }
 
 .update-card-attention .update-dot {
-  background: var(--color-white);
-  border-color: var(--color-white);
+  background: var(--color-strong);
+  border-color: var(--color-strong);
 }
 
 .update-card-busy .update-dot {
@@ -62,7 +62,7 @@
 
 .update-title {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .update-tag {
@@ -80,8 +80,8 @@
 }
 
 .update-card-attention .update-tag {
-  color: var(--color-white);
-  border-color: var(--color-white);
+  color: var(--color-strong);
+  border-color: var(--color-strong);
 }
 
 .update-progress {
@@ -95,7 +95,7 @@
 
 .update-progress-fill {
   height: 100%;
-  background: var(--color-white);
+  background: var(--color-strong);
   border-radius: var(--radius);
   transition: width 0.2s ease;
 }

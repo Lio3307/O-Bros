@@ -24,7 +24,7 @@
 
 .session-row-selected .session-title {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .session-title {
@@ -65,7 +65,7 @@
 
 .replay-title {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .replay-meta {
@@ -88,7 +88,7 @@
 }
 
 .message-user {
-  color: var(--color-white);
+  color: var(--color-strong);
   font-weight: 700;
 }
 

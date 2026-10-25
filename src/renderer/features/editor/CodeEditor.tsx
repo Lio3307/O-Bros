@@ -6,9 +6,8 @@ import { EditorView, keymap } from '@codemirror/view'
 import { basicSetup } from 'codemirror'
 import { useEffect, useRef, useState } from 'react'
 import { isLanguageEnabled, useEditorSettingsStore } from '../../state/editorSettingsStore'
-import { useColorThemeStore } from '../../state/colorThemeStore'
+import { activeColorTheme, useActiveColorTheme } from '../../state/colorThemeStore'
 import { useEditorNavigationStore } from '../../state/editorNavigationStore'
-import { findColorTheme } from '../../theme/colorThemes'
 import { toast } from '../../state/toastStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 import { Button } from '../../ui/Button'
@@ -37,7 +36,7 @@ interface CodeEditorProps {
 }
 
 function currentColorThemeExtension(): Extension {
-  return colorThemeExtension(findColorTheme(useColorThemeStore.getState().themeId))
+  return colorThemeExtension(activeColorTheme())
 }
 
 function enabledLanguageFor(filePath: string, firstLine: string): LanguageDefinition | null {
@@ -166,7 +165,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   const target = useEditorNavigationStore((state) => state.target)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [diskText, setDiskText] = useState<string | null>(null)
-  const colorThemeId = useColorThemeStore((state) => state.themeId)
+  const colorTheme = useActiveColorTheme()
 
   function reloadFromDisk(): void {
     if (viewRef.current !== null && diskText !== null) {
@@ -178,7 +177,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
 
   useEffect(() => {
     viewRef.current?.dispatch({ effects: colorThemeCompartment.reconfigure(currentColorThemeExtension()) })
-  }, [colorThemeId])
+  }, [colorTheme])
 
   useEffect(() => {
     if (viewRef.current !== null) {

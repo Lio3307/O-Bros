@@ -12,6 +12,7 @@ files:
   - resources/wot/**
   - resources/agents/**
   - package.json
+  - THIRD-PARTY-NOTICES.md
 
 asar: false
 

@@ -3,6 +3,7 @@ import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { EditorView } from '@codemirror/view'
 import { tags } from '@lezer/highlight'
 import type { ColorTheme } from '../../theme/colorThemes'
+import { isDarkTheme } from '../../theme/themeDerivation'
 
 export const colorThemeCompartment = new Compartment()
 
@@ -23,7 +24,7 @@ function editorChrome(theme: ColorTheme): Extension {
         border: 'none',
         paddingRight: '8px'
       },
-      '.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--color-white) 4%, transparent)' },
+      '.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--color-strong) 4%, transparent)' },
       '.cm-activeLineGutter': { backgroundColor: 'transparent', color: theme.foreground, fontWeight: '700' },
       '.cm-selectionLayer .cm-selectionBackground, &.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-content ::selection': {
         backgroundColor: theme.selection
@@ -31,7 +32,7 @@ function editorChrome(theme: ColorTheme): Extension {
       '.cm-matchingBracket': { backgroundColor: theme.selection, outline: '1px solid var(--color-faint)' },
       '&.cm-focused': { outline: 'none' }
     },
-    { dark: true }
+    { dark: isDarkTheme(theme) }
   )
 }
 
@@ -97,12 +98,11 @@ export const editorLayoutTheme = EditorView.theme(
     '.cm-tooltip-autocomplete > ul > li': { padding: '3px 10px', lineHeight: '20px' },
     '.cm-tooltip-autocomplete > ul > li[aria-selected]': {
       backgroundColor: 'var(--color-selected)',
-      color: 'var(--color-white)'
+      color: 'var(--color-strong)'
     },
-    '.cm-completionMatchedText': { textDecoration: 'none', fontWeight: '700', color: 'var(--color-white)' },
+    '.cm-completionMatchedText': { textDecoration: 'none', fontWeight: '700', color: 'var(--color-strong)' },
     '.cm-completionDetail': { color: 'var(--color-muted)', marginLeft: '12px', fontStyle: 'normal' },
     '.cm-completionInfo': { padding: '6px 10px', color: 'var(--color-muted)' },
     '.cm-snippetField': { backgroundColor: 'var(--color-selected)', outline: '1px solid var(--color-faint)' }
-  },
-  { dark: true }
+  }
 )

@@ -116,4 +116,4 @@ Uninstalling leaves O-BROS's data folder in place, so your settings come back if
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE). The built-in theme colors include color schemes from iTerm2-Color-Schemes; see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

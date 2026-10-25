@@ -70,13 +70,13 @@
 }
 
 .rail-button:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 
 .rail-button-active,
 .rail-button-active:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-selected);
 }
 
@@ -104,7 +104,7 @@
 
 .panel-title {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .panel-header-actions {
@@ -152,7 +152,7 @@
 }
 
 .status-usage:hover {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-hover);
 }
 
@@ -162,7 +162,7 @@
 
 .status-percent {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .status-separator {
@@ -226,12 +226,12 @@
   line-height: 14px;
   color: var(--color-terminal-solid);
   text-align: center;
-  background: var(--color-white);
+  background: var(--color-strong);
   border-radius: var(--radius);
 }
 
 .rail-badge-waiting {
-  color: var(--color-white);
+  color: var(--color-strong);
   background: var(--color-danger);
 }
 

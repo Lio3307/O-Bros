@@ -9,6 +9,12 @@ export interface Appearance {
   wallpaperBlur: number
 }
 
+export interface WindowColors {
+  window: string
+  titleBar: string
+  symbols: string
+}
+
 export interface Range {
   min: number
   max: number

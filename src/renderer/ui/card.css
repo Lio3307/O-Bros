@@ -20,7 +20,7 @@
   margin: 0;
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .card-aside {
@@ -44,7 +44,7 @@
   font-size: 26px;
   font-weight: 600;
   line-height: 1.2;
-  color: var(--color-white);
+  color: var(--color-strong);
   font-variant-numeric: tabular-nums;
 }
 
@@ -84,7 +84,7 @@
 
 .agent-name-strong .agent-name-text {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .chip-success {

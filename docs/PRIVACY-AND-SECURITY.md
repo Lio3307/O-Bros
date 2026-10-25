@@ -14,6 +14,7 @@ This page lists everything o-bros reads, writes and sends, so you can decide whe
 | Claude conversation files under `~/.claude*/projects` and Codex conversation files under `~/.codex*/sessions` | The History panel and Settings → Storage and memory (titles, sizes and ages; full text only when you open a session) |
 | `package.json` and lock file names in a project | The scripts list |
 | The operating-system process list and open ports | Resource Manager, ports, and the "still running" list when you close the app |
+| Warp's custom themes folder (`~/.warp/themes`, `%LOCALAPPDATA%\warp\Warp\data\themes` on Windows, `~/.local/share/warp-terminal/themes` on Linux) | Only when you press **Import from Warp** in Settings → Appearance → Theme: the `.yaml` theme files, for their colors and names. Nothing else in Warp's folders is opened. |
 | Your Windows wallpaper (`%APPDATA%\Microsoft\Windows\Themes\TranscodedWallpaper`, or the file named in the registry) and the wallpaper fit and desktop color under `HKCU\Control Panel` | Only while Settings → Appearance is set to **Desktop wallpaper**, to show it behind O-BROS. It is read again when O-BROS becomes the active window, never copied, saved or uploaded. |
 
 **Agent sign-ins.** For the agents listed in resources/agents/agent-auth.json, o-bros checks whether their API key environment variables (for example GEMINI_API_KEY) are set. It looks only at whether the variable has a value; the value itself is never kept, shown or sent.
@@ -30,7 +31,7 @@ This page lists everything o-bros reads, writes and sends, so you can decide whe
 | `team-sessions.json` in the Electron user-data folder (newest 1000 entries) | When wot summons a Claude or Codex member: its name, agent, folder, start time, session ID and the first 30 characters of its task, so History can mark its conversation. |
 | Moves a team member's conversation to the Recycle Bin or Trash | Only when the member stops and you turned on that option in Settings → Team (wot) |
 | `activity.json` in the Electron user-data folder (newest 500 entries) | When an agent session starts or ends, an agent asks for a guarded git action, or a team member joins or leaves. It holds times, folder paths, agent names and the git command line, never file contents. Clear it from the Activity panel. |
-| Browser storage (`localStorage`) | Editor and terminal settings, the last session, recent files, and the name and email for commits made by agents |
+| Browser storage (`localStorage`) | Your theme choices and the themes you imported (only their names and colors), editor and terminal settings, the last session, recent files, and the name and email for commits made by agents |
 | An empty folder such as `~/.claude-work` or `~/.codex-work` | Only when you press **Add account** |
 | Git changes in your repositories | Only when you stage, unstage, discard, commit or switch branches |
 | `window-state.json` in the Electron user-data folder | When you move, resize, maximize or close the window: its size, position, and whether it was maximized or full screen, so it opens the same way next time. |

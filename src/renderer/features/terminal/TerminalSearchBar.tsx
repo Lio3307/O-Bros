@@ -1,22 +1,30 @@
 import type { SearchAddon } from '@xterm/addon-search'
 import { ChevronDown, ChevronUp, X } from 'lucide-react'
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useActiveColorTheme } from '../../state/colorThemeStore'
+import type { ColorTheme } from '../../theme/colorThemes'
+import { appColorsOf } from '../../theme/themeDerivation'
 
 interface TerminalSearchBarProps {
   searchAddon: SearchAddon
   onClose: () => void
 }
 
-const MATCH_DECORATIONS = {
-  matchBackground: '#444444',
-  activeMatchBackground: '#FFFFFF',
-  activeMatchColorOverviewRuler: '#FFFFFF',
-  matchOverviewRuler: '#777777'
+function matchDecorationsOf(theme: ColorTheme) {
+  const app = appColorsOf(theme)
+  return {
+    matchBackground: theme.selection,
+    activeMatchBackground: app.strong,
+    activeMatchColorOverviewRuler: app.strong,
+    matchOverviewRuler: app.muted
+  }
 }
 
 export function TerminalSearchBar({ searchAddon, onClose }: TerminalSearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState('')
+  const colorTheme = useActiveColorTheme()
+  const matchDecorations = useMemo(() => matchDecorationsOf(colorTheme), [colorTheme])
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -24,11 +32,11 @@ export function TerminalSearchBar({ searchAddon, onClose }: TerminalSearchBarPro
   }, [searchAddon])
 
   function findNext(): void {
-    searchAddon.findNext(query, { decorations: MATCH_DECORATIONS })
+    searchAddon.findNext(query, { decorations: matchDecorations })
   }
 
   function findPrevious(): void {
-    searchAddon.findPrevious(query, { decorations: MATCH_DECORATIONS })
+    searchAddon.findPrevious(query, { decorations: matchDecorations })
   }
 
   function changeQuery(nextQuery: string): void {
@@ -37,7 +45,7 @@ export function TerminalSearchBar({ searchAddon, onClose }: TerminalSearchBarPro
       searchAddon.clearDecorations()
       return
     }
-    searchAddon.findNext(nextQuery, { incremental: true, decorations: MATCH_DECORATIONS })
+    searchAddon.findNext(nextQuery, { incremental: true, decorations: matchDecorations })
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>): void {

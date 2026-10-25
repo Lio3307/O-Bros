@@ -196,7 +196,7 @@ test('Desktop wallpaper shows the Windows wallpaper lined up with the screen, fo
 
   await app.window.getByRole('button', { name: 'Solid', exact: true }).click()
   await expect(app.window.locator('.app-desktop-screen')).toHaveCount(0)
-  await expect.poll(lastOverlayColor).toBe('#0B0B0B')
+  await expect.poll(lastOverlayColor).toBe('#0b0b0b')
   await expect.poll(() => app.window.evaluate(() => document.documentElement.hasAttribute('data-see-through'))).toBe(false)
   await expect.poll(() => mainWindowListeners('move')).toBe(moveListenersBefore)
 })

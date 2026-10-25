@@ -17,7 +17,7 @@
 .problems-header {
   padding: 12px 16px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
   border-bottom: 1px solid var(--color-border);
 }
 

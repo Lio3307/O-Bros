@@ -1,10 +1,30 @@
 import { withAlpha } from '../../shared/appearance'
 import type { ITheme } from '@xterm/xterm'
+import { CATALOG_PALETTES } from './catalogThemes'
 import { EXTRA_COLOR_THEMES } from './colorThemesExtra'
+import { isDarkTheme, themeFromPalette } from './themeDerivation'
 
 export type ColorThemeId = string
 
 export const DEFAULT_COLOR_THEME_ID: ColorThemeId = 'o-bros'
+export const DEFAULT_LIGHT_COLOR_THEME_ID: ColorThemeId = 'o-bros-light'
+
+export interface AppColors {
+  terminal: string
+  chrome: string
+  panel: string
+  hover: string
+  selected: string
+  border: string
+  text: string
+  muted: string
+  faint: string
+  strong: string
+  success: string
+  danger: string
+  info: string
+  warning: string
+}
 
 export interface CodeColors {
   keyword: string
@@ -30,6 +50,7 @@ export interface ColorTheme {
   selection: string
   code: CodeColors
   ansi: string[]
+  app?: AppColors
 }
 
 const ANSI_NAMES = [
@@ -59,6 +80,22 @@ const BUILT_IN_COLOR_THEMES: ColorTheme[] = [
     foreground: '#EDEDED',
     cursor: '#B8B8B8',
     selection: '#3A3A3A',
+    app: {
+      terminal: '#000000',
+      chrome: '#0b0b0b',
+      panel: '#111111',
+      hover: '#1a1a1a',
+      selected: '#242424',
+      border: '#2a2a2a',
+      text: '#ededed',
+      muted: '#8c8c8c',
+      faint: '#5a5a5a',
+      strong: '#ffffff',
+      success: '#3fb950',
+      danger: '#f85149',
+      info: '#58a6ff',
+      warning: '#d29922'
+    },
     code: {
       keyword: '#CF8E6D',
       string: '#6AAB73',
@@ -291,19 +328,77 @@ const BUILT_IN_COLOR_THEMES: ColorTheme[] = [
       '#93A1A1',
       '#FDF6E3'
     ]
+  },
+  {
+    id: 'o-bros-light',
+    label: 'O-BROS Light',
+    background: '#FFFFFF',
+    foreground: '#1F1F1F',
+    cursor: '#1F1F1F',
+    selection: '#ADD6FF',
+    code: {
+      keyword: '#0033B3',
+      string: '#067D17',
+      number: '#1750EB',
+      comment: '#7A7A7A',
+      functionName: '#00627A',
+      typeName: '#0E7C86',
+      property: '#871094',
+      htmlTag: '#0033B3',
+      attribute: '#174AD4',
+      punctuation: '#4A4A4A',
+      link: '#2A5DB0',
+      variable: '#871094'
+    },
+    ansi: [
+      '#000000',
+      '#CD3131',
+      '#00BC00',
+      '#949800',
+      '#0451A5',
+      '#BC05BC',
+      '#0598BC',
+      '#555555',
+      '#666666',
+      '#CD3131',
+      '#14CE14',
+      '#B5BA00',
+      '#0451A5',
+      '#BC05BC',
+      '#0598BC',
+      '#A5A5A5'
+    ]
   }
 ]
 
-export const COLOR_THEMES: ColorTheme[] = [...BUILT_IN_COLOR_THEMES, ...EXTRA_COLOR_THEMES].sort((first, second) =>
-  first.id === DEFAULT_COLOR_THEME_ID ? -1 : second.id === DEFAULT_COLOR_THEME_ID ? 1 : first.label.localeCompare(second.label)
-)
+const DEFAULT_IDS = [DEFAULT_COLOR_THEME_ID, DEFAULT_LIGHT_COLOR_THEME_ID]
 
-export function findColorTheme(id: ColorThemeId): ColorTheme {
-  return COLOR_THEMES.find((theme) => theme.id === id) ?? COLOR_THEMES[0]
+function defaultsFirst(first: ColorTheme, second: ColorTheme): number {
+  const firstIsDefault = DEFAULT_IDS.includes(first.id)
+  const secondIsDefault = DEFAULT_IDS.includes(second.id)
+  if (firstIsDefault !== secondIsDefault) {
+    return firstIsDefault ? -1 : 1
+  }
+  return first.label.localeCompare(second.label)
 }
 
-export function isColorThemeId(value: unknown): value is ColorThemeId {
-  return COLOR_THEMES.some((theme) => theme.id === value)
+export const COLOR_THEMES: ColorTheme[] = [...BUILT_IN_COLOR_THEMES, ...EXTRA_COLOR_THEMES, ...CATALOG_PALETTES.map(themeFromPalette)].sort(
+  defaultsFirst
+)
+
+export function findColorTheme(id: ColorThemeId): ColorTheme | undefined {
+  return COLOR_THEMES.find((theme) => theme.id === id)
+}
+
+export function defaultThemeFor(isDark: boolean): ColorTheme {
+  return findColorTheme(isDark ? DEFAULT_COLOR_THEME_ID : DEFAULT_LIGHT_COLOR_THEME_ID) ?? COLOR_THEMES[0]
+}
+
+const DARK_TERMINAL_CONTRAST = 1
+const LIGHT_TERMINAL_CONTRAST = 4.5
+
+export function terminalContrastOf(theme: ColorTheme): number {
+  return isDarkTheme(theme) ? DARK_TERMINAL_CONTRAST : LIGHT_TERMINAL_CONTRAST
 }
 
 const SCROLLBAR_ALPHA = { resting: 0.1, hovered: 0.2, dragged: 0.28 }

@@ -24,7 +24,7 @@
   margin: 0 0 6px;
   font-size: 15px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .provider-block {
@@ -41,7 +41,7 @@
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .table {
@@ -102,7 +102,7 @@
 
 .account-label-active {
   font-weight: 600;
-  color: var(--color-white);
+  color: var(--color-strong);
 }
 
 .usage-cell {
