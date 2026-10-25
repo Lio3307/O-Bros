@@ -24,7 +24,7 @@ async function addProjectRoot(title: unknown): Promise<AddRootResult> {
     await saveSettings({ ...settings, projectRoots: [...settings.projectRoots, chosenPath] })
   }
 
-  const outcomeByKind = { new: 'added', same: 'already-added', inside: 'inside-existing' } as const
+  const outcomeByKind = { new: 'added', same: 'already-added' } as const
   return {
     roots: await listProjectRoots(),
     outcome: outcomeByKind[classification.kind],

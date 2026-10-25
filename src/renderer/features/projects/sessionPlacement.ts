@@ -19,14 +19,16 @@ function deepestFolderContaining(cwd: string, folderPaths: string[]): string | n
 export function placeSessions<Session extends { cwd: string | null }>(
   sessions: Session[],
   rootPath: string,
-  folderPaths: string[]
+  folderPaths: string[],
+  nestedRootPaths: string[] = []
 ): SessionPlacement<Session> {
   const placement: SessionPlacement<Session> = { byFolderPath: new Map(), atRoot: [] }
   for (const session of sessions) {
-    if (session.cwd === null || !isPathInside(session.cwd, rootPath)) {
+    const cwd = session.cwd
+    if (cwd === null || !isPathInside(cwd, rootPath) || nestedRootPaths.some((nestedPath) => isPathInside(cwd, nestedPath))) {
       continue
     }
-    const folderPath = deepestFolderContaining(session.cwd, folderPaths)
+    const folderPath = deepestFolderContaining(cwd, folderPaths)
     if (folderPath === null) {
       placement.atRoot.push(session)
       continue

@@ -12,8 +12,8 @@ describe('classifyNewRoot', () => {
     expect(classifyNewRoot('/home/me/App', ['/home/me/app'], false).kind).toBe('new')
   })
 
-  it('detects a folder inside an existing root', () => {
-    expect(classifyNewRoot('C:\\Work\\App\\src', roots, true)).toEqual({ kind: 'inside', matchedRootPath: 'C:\\Work\\App' })
+  it('accepts a folder inside an existing root as its own project', () => {
+    expect(classifyNewRoot('C:\\Work\\App\\src', roots, true)).toEqual({ kind: 'new', matchedRootPath: null })
   })
 
   it('does not confuse a sibling that shares a name prefix', () => {

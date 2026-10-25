@@ -32,6 +32,13 @@ describe('placeSessions', () => {
     expect(placement.byFolderPath.size).toBe(0)
   })
 
+  it('leaves sessions of a project opened inside this one to that project', () => {
+    const nested = 'C:/Work/CompanyRepo/Web'
+    const placement = placeSessions([session('a', 'C:/Work/CompanyRepo/Web/src'), session('b', ROOT)], ROOT, FOLDERS, [nested])
+    expect(placement.atRoot.map((item) => item.id)).toEqual(['b'])
+    expect(placement.byFolderPath.size).toBe(0)
+  })
+
   it('does not treat a sibling with the same prefix as inside the folder', () => {
     const placement = placeSessions([session('a', 'C:/Work/CompanyRepo/Web-Old')], ROOT, FOLDERS)
     expect(placement.atRoot.map((item) => item.id)).toEqual(['a'])

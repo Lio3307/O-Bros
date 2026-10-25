@@ -20,15 +20,13 @@ function announceAddResult(result: AddRootResult): void {
 
   if (result.outcome === 'already-added') {
     toast.warning('"' + existingName + '" is already in your sidebar. It is selected now.')
-  } else if (result.outcome === 'inside-existing') {
-    toast.warning('"' + chosenName + '" is already inside "' + existingName + '", which is in your sidebar.')
   } else if (result.outcome === 'added') {
     toast.success('Added "' + chosenName + '" to your sidebar.')
   }
 }
 
 function folderToWorkIn(result: AddRootResult): string | null {
-  if (result.outcome === 'added' || result.outcome === 'inside-existing') {
+  if (result.outcome === 'added') {
     return result.chosenPath
   }
   return result.outcome === 'already-added' ? result.matchedRootPath : null

@@ -1,6 +1,6 @@
-import { comparablePath, isPathInside } from './paths'
+import { comparablePath } from './paths'
 
-export type NewRootKind = 'new' | 'same' | 'inside'
+export type NewRootKind = 'new' | 'same'
 
 export interface NewRootClassification {
   kind: NewRootKind
@@ -9,16 +9,6 @@ export interface NewRootClassification {
 
 export function classifyNewRoot(chosenPath: string, existingRoots: string[], ignoreCase: boolean): NewRootClassification {
   const chosen = comparablePath(chosenPath, ignoreCase)
-
-  for (const rootPath of existingRoots) {
-    if (comparablePath(rootPath, ignoreCase) === chosen) {
-      return { kind: 'same', matchedRootPath: rootPath }
-    }
-  }
-  for (const rootPath of existingRoots) {
-    if (isPathInside(chosen, comparablePath(rootPath, ignoreCase))) {
-      return { kind: 'inside', matchedRootPath: rootPath }
-    }
-  }
-  return { kind: 'new', matchedRootPath: null }
+  const matchedRootPath = existingRoots.find((rootPath) => comparablePath(rootPath, ignoreCase) === chosen) ?? null
+  return matchedRootPath === null ? { kind: 'new', matchedRootPath: null } : { kind: 'same', matchedRootPath }
 }

@@ -264,10 +264,13 @@ function RootBlock({ root }: { root: ProjectRoot }) {
   const selectProject = useProjectsStore((state) => state.selectProject)
   const projectTabs = useActiveProjectTabs()
   const now = useNow(SESSION_AGE_REFRESH_MS)
+  const allRoots = useProjectsStore((state) => state.roots)
+  const nestedRootPaths = allRoots.filter((other) => other.path !== root.path && isPathInside(other.path, root.path)).map((other) => other.path)
   const placement = placeSessions(
     projectTabs.filter(isTerminalTab),
     root.path,
-    root.folders.map((folder) => folder.path)
+    root.folders.map((folder) => folder.path),
+    nestedRootPaths
   )
 
 
