@@ -1,3 +1,13 @@
+@property --surface-alpha {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+html[data-see-through] {
+  transition: --surface-alpha var(--motion-slow) var(--ease-out);
+}
+
 .app-wallpaper {
   position: fixed;
   inset: 0;
