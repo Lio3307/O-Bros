@@ -30,6 +30,7 @@ import { startUniversalHistory, stopUniversalHistory } from './services/universa
 import { startWotServer, stopWotServer } from './services/wot/wotServer'
 import { guardWindowClose } from './closeGuard'
 import { createMainWindow } from './window'
+import { closeWarmPowerShell } from './services/resources/warmPowerShell'
 import { applyHardwareAccelerationSetting } from './hardwareAcceleration'
 import { dataFolderName } from './runMode'
 
@@ -97,6 +98,7 @@ app.on('child-process-gone', (_event, details) =>
 )
 
 app.on('before-quit', () => {
+  closeWarmPowerShell()
   stopWotServer()
   stopUniversalHistory()
   killAllTerminals()

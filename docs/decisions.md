@@ -368,6 +368,17 @@
 - Result acceptance: Pending user feedback.
 - Learning: Check what a renderer cannot draw before trading it for memory.
 
+### One PowerShell kept open for process scans
+- Scope and goal: User-requested performance pass. Lower the CPU cost of reading the process table on Windows.
+- Choice and authority: Agent-selected after measuring. readProcessTable sends its query to one PowerShell started with -Command - and reads until an end mark (src/main/services/resources/warmPowerShell.ts). Queries are queued one at a time, time out after 20 seconds (the shell is then restarted), and the shell closes 15 seconds after the last query and when O-BROS quits.
+- Evidence: With the Activity monitor open and two terminals, O-BROS started 8 PowerShell processes in 30 seconds, each about 640 ms of CPU and 1.2 seconds of wall time. A kept-open shell answers in about 100 ms and used 500 ms of CPU in the same 30 seconds; no PowerShell was started during the window, and the shell was gone 20 seconds after leaving the page.
+- Alternatives and sacrifice: A native process-list package needs node-gyp (not allowed here); wmic is no longer installed by default; tasklist and Get-Process lack the parent process. The open shell holds about 86 MB of private memory while views are refreshing.
+- Residual risk/debt: Scans that run less often than every 15 seconds (agent watch every 20 seconds) still start a new shell each time.
+- Recovery and ownership: src/main/services/resources/warmPowerShell.ts, src/main/services/resources/processTable.ts.
+- Implementation / validation / outcome: Written / measured with an e2e harness / pending user feedback.
+- Result acceptance: Pending user feedback.
+- Learning: Starting a runtime costs far more than the query it runs; keep it warm only while something polls.
+
 ### Agent logos ship as a data pack
 - Scope and goal: User-requested. Show each detected agent with its original logo and colours.
 - Choice and authority: Agent-selected. Colored SVG logos from @lobehub/icons-static-svg 1.95.1 (MIT) are stored in resources/agents/logos with an index.json that maps the typed command to a file and a style (color or mono). Colour logos render as images; single-colour logos render as a CSS mask in the interface colour so they stay visible on the dark background. Agents missing from the pack fall back to the ACP registry icon, then a generic icon.

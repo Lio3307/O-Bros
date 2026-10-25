@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
+import { runInWarmPowerShell } from './warmPowerShell'
 
 const execFileAsync = promisify(execFile)
 
@@ -32,10 +33,7 @@ interface WindowsProcessRow {
   UserModeTime: number | null
 }
 
-const LOWER_PRIORITY = "[System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = 'BelowNormal'; "
-
 const WINDOWS_QUERY =
-  LOWER_PRIORITY +
   'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CommandLine,WorkingSetSize,PrivatePageCount,KernelModeTime,UserModeTime | ConvertTo-Json -Compress'
 
 export function withoutControlCharacters(text: string): string {
@@ -47,11 +45,7 @@ export function withoutControlCharacters(text: string): string {
 }
 
 async function readWindowsProcessTable(): Promise<ProcessEntry[]> {
-  const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_QUERY], {
-    maxBuffer: MAX_OUTPUT_BYTES,
-    windowsHide: true,
-    timeout: READ_TIMEOUT_MS
-  })
+  const stdout = await runInWarmPowerShell(WINDOWS_QUERY, READ_TIMEOUT_MS)
   const parsed = JSON.parse(withoutControlCharacters(stdout)) as WindowsProcessRow | WindowsProcessRow[]
   const rows = Array.isArray(parsed) ? parsed : [parsed]
 
