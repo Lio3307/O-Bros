@@ -2,6 +2,8 @@
 
 This page lists everything o-bros reads, writes and sends, so you can decide whether you are comfortable running it.
 
+**In short:** O-BROS has no account, no analytics, no crash reporting and no server of its own. Nothing about you, your projects or your conversations ever reaches the people who make O-BROS. Everything below either stays on your computer or goes only to a service you already use.
+
 ## What o-bros reads
 
 | What | Why |
@@ -30,6 +32,9 @@ This page lists everything o-bros reads, writes and sends, so you can decide whe
 | Browser storage (`localStorage`) | Editor and terminal settings, the last session, recent files, and the name and email for commits made by agents |
 | An empty folder such as `~/.claude-work` or `~/.codex-work` | Only when you press **Add account** |
 | Git changes in your repositories | Only when you stage, unstage, discard, commit or switch branches |
+| `window-state.json` in the Electron user-data folder | When you move, resize, maximize or close the window: its size, position, and whether it was maximized or full screen, so it opens the same way next time. |
+| `pasted-images` in the Electron user-data folder | When you paste an image into a terminal (Ctrl+Shift+V or Paste in the terminal menu): the image as a PNG, so the agent can read it. Images older than 7 days are deleted the next time you paste one. They are never put in your projects or uploaded by O-BROS; the agent you paste the path into may send the image to its own provider. |
+| `acp-registry.json` and `agent-icons` in the Electron user-data folder | A cached copy of the public agent list and the agents' logos, so Settings → Agents works offline. |
 | `provider-keys.json` in the Electron user-data folder | Only when you paste an API key into a custom provider (Settings → Provider accounts → Custom providers). The key is encrypted with the operating system's protection (Windows DPAPI, macOS Keychain, the Linux secret store) and only its last 4 characters are kept readable. It is decrypted only in the background process, when an agent that uses the provider starts, and is never sent to the app window, shown, logged or exported. **Forget key** or deleting the provider removes it. |
 | Temporary copies of an open file | While linting. They are deleted right away. |
 | A log file `o-bros.log` in the Electron logs folder (about 1 MB, then one older copy is kept) | When the app crashes, a helper process stops, or an error is hidden behind a friendly message. It stays on your computer and may contain file paths. Open it from Settings → About and updates. |
@@ -54,12 +59,12 @@ Language servers are programs you installed (for example typescript-language-ser
 | `openrouter.ai` | The OpenRouter key saved in OpenCode (or `OPENROUTER_API_KEY`), to read that key's spending and credit | Every few minutes and when you press refresh, only if such a key exists |
 | The URL of a custom provider you added | A request for its model list, with the provider's saved key | Only when you press **Test connection** on that provider |
 | Your git remote | Whatever `git fetch` does | Only when you press fetch |
-| `cdn.agentclientprotocol.com` | A plain request for the public ACP Registry list of agents. Nothing about you is sent | When you open Settings → Agents, at most once an hour |
+| `cdn.agentclientprotocol.com` | A plain request for the public ACP Registry list of agents and their logos. Nothing about you is sent | When you open Settings → Agents, at most once an hour; each logo once, then it is cached |
 | `github.com` (the o-bros releases) | A request for the latest release information, and then the installer file | Release information: 30 seconds after start and every 6 hours, unless you turn off "Check for new versions automatically" in Settings → About and updates, and when you press **Check for updates**. The installer: only when you press **Download** |
 
 Nothing else leaves your computer. There is no analytics and no crash reporting. Update checks only ask GitHub which version is the latest; they send no information about you or your projects. If the ACP Registry cannot be reached, o-bros uses its built-in list of agents and nothing breaks.
 
-Usage requests identify themselves honestly as `o-bros`. The two usage endpoints are not documented by the providers, so they may change or be restricted.
+Usage requests identify themselves honestly as `o-bros` and its version number, nothing about you. The two usage endpoints are not documented by the providers, so they may change or be restricted.
 
 ## What o-bros never does
 
@@ -85,6 +90,7 @@ Usage requests identify themselves honestly as `o-bros`. The two usage endpoints
 - Terminals are real shells. Anything you or a tool types in them runs with your permissions.
 - Linting and formatting run bundled tools on your files.
 - On macOS, Claude logins stored in the keychain are not read.
+- Uninstalling O-BROS leaves its user-data folder (settings, activity log, universal history, pasted images, logs and encrypted custom-provider keys) in place, so your setup comes back if you reinstall. Delete that folder yourself to remove everything. Settings → Storage and memory shows where it is.
 
 ## Reporting a problem
 

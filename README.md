@@ -97,9 +97,15 @@ If `npm install` leaves Electron without its binary, run `node node_modules/elec
 | [Decisions](docs/decisions.md) | Why things are the way they are, and known risks |
 | [Contributing](CONTRIBUTING.md) | How to propose a change |
 
-## Privacy in one paragraph
+## Privacy
 
-o-bros never asks for your password and never stores your tokens. It reads the login files your agent CLIs already saved, uses the Claude and Codex ones only to ask those providers for your own usage numbers, and keeps nothing. Everything else stays on your computer. The Team feature (wot) listens only on `127.0.0.1` with a random key that only O-BROS terminals receive. Details are in [Privacy and security](docs/PRIVACY-AND-SECURITY.md).
+O-BROS has no account, no analytics, no crash reporting and no server of its own. Nothing about you, your projects or your conversations is sent to the people who make O-BROS.
+
+- **What leaves your computer**, and only to the service it belongs to: your own Claude and Codex logins go to Anthropic and OpenAI to read your plan usage, an OpenRouter key (if you have one) goes to OpenRouter for its balance, a custom provider's key goes to the address you entered when you press **Test connection**, `git` talks to your own remotes, and O-BROS asks GitHub whether a new version exists and downloads the public list of agents and their logos.
+- **What stays on your computer**: your settings, open tabs and window size, a short activity log, copies of your Claude and Codex conversations (the universal history, so they can be resumed), images you paste into a terminal (deleted after 7 days), the app log, and API keys you paste for custom providers, which are encrypted with your system's protection.
+- **What O-BROS never does**: it never asks for or stores your password, never copies or rewrites your agents' login files, never sends a login anywhere except the provider that issued it, and never logs one.
+
+Uninstalling leaves O-BROS's data folder in place, so your settings come back if you reinstall. Delete it yourself to remove everything. Every file and every connection is listed in [Privacy and security](docs/PRIVACY-AND-SECURITY.md).
 
 ## Known limits
 

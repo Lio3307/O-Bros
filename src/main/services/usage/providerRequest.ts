@@ -1,11 +1,12 @@
+import { app } from 'electron'
+
 const REQUEST_TIMEOUT_MS = 10_000
-const USER_AGENT = 'o-bros/0.1.0'
 
 export class UsageRequestError extends Error {}
 
 export async function fetchJson<Payload>(url: string, headers: Record<string, string>): Promise<Payload> {
   const response = await fetch(url, {
-    headers: { ...headers, 'User-Agent': USER_AGENT },
+    headers: { ...headers, 'User-Agent': `o-bros/${app.getVersion()}` },
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS)
   })
 
