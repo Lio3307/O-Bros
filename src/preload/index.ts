@@ -202,7 +202,8 @@ const api: DesktopApi = {
     loadWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceLoadWallpaper),
     chooseWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceChooseWallpaper),
     removeWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceRemoveWallpaper),
-    setWindowBackground: (background) => ipcRenderer.invoke(IpcChannel.appearanceSetWindowBackground, background)
+    setWindowBackground: (background) => ipcRenderer.invoke(IpcChannel.appearanceSetWindowBackground, background),
+    onWindowFocusChanged: (listener) => subscribe<boolean>(IpcChannel.appearanceWindowFocusChanged, listener)
   }
 }
 

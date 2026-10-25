@@ -131,6 +131,12 @@ test('Desktop shows what is behind the window in dark acrylic with clear window 
   await expect(app.window.getByText('Dim', { exact: true })).toBeVisible()
   await expect(app.window.getByText('Blur', { exact: true })).toHaveCount(0)
   await expect(app.window.getByRole('button', { name: 'Choose image…' })).toHaveCount(0)
+  await app.application.evaluate(({ BrowserWindow }, name) => BrowserWindow.getAllWindows()[0].emit(name), 'focus')
+  await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
+  await app.application.evaluate(({ BrowserWindow }, name) => BrowserWindow.getAllWindows()[0].emit(name), 'blur')
+  await expect.poll(() => backgroundAlphaOf('.side-panel')).toBe(1)
+  await app.application.evaluate(({ BrowserWindow }, name) => BrowserWindow.getAllWindows()[0].emit(name), 'focus')
+  await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
   if (SHOTS !== undefined) {
     await app.window.waitForTimeout(600)
     await captureScreen(`${SHOTS}/appearance-desktop.png`)

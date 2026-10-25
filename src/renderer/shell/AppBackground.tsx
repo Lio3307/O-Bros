@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useAppearanceStore, useSurfaceAlpha } from '../state/appearanceStore'
+import { useWindowFocused } from '../ui/useWindowFocused'
 import './appBackground.css'
 
 export function AppBackground() {
@@ -9,6 +10,8 @@ export function AppBackground() {
   const surfaceAlpha = useSurfaceAlpha()
   const isDesktop = appearance.background === 'desktop'
   const isSeeThrough = surfaceAlpha < 1
+  const isWindowFocused = useWindowFocused()
+  const shownSurfaceAlpha = isDesktop && !isWindowFocused ? 1 : surfaceAlpha
 
   useEffect(() => {
     void loadWallpaper()
@@ -16,9 +19,9 @@ export function AppBackground() {
 
   useEffect(() => {
     const root = document.documentElement
-    root.style.setProperty('--surface-alpha', String(surfaceAlpha))
+    root.style.setProperty('--surface-alpha', String(shownSurfaceAlpha))
     root.toggleAttribute('data-see-through', isSeeThrough)
-  }, [surfaceAlpha, isSeeThrough])
+  }, [shownSurfaceAlpha, isSeeThrough])
 
   useEffect(() => {
     void window.api.appearance.setWindowBackground({ isDesktop, isSeeThrough }).catch(() => undefined)

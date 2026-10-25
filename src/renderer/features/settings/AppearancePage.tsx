@@ -99,7 +99,7 @@ export function AppearancePage() {
           title="See-through"
           description={
             isDesktop
-              ? 'How solid the panels are over your desktop, and how much to darken it. If text is hard to read over bright windows, raise Dim.'
+              ? 'How solid the panels are over your desktop, and how much to darken it. If text is hard to read over bright windows, raise Dim. Windows shows the desktop only while O-BROS is the active window, so O-BROS turns solid when you switch to another app.'
               : 'How solid the panels, terminals and editor are over the wallpaper. Lower shows more of it; text always stays fully visible.'
           }
         >

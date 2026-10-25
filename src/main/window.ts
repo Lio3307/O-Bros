@@ -1,5 +1,6 @@
 import { BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
+import { IpcChannel } from '../shared/ipc'
 import { devServerUrl, isRunningFromSource } from './runMode'
 import { writeLog } from './services/logging/logFile'
 import { showWithSavedState } from './windowState'
@@ -58,6 +59,8 @@ export function createMainWindow(): BrowserWindow {
       event.preventDefault()
     }
   })
+  window.on('focus', () => window.webContents.send(IpcChannel.appearanceWindowFocusChanged, true))
+  window.on('blur', () => window.webContents.send(IpcChannel.appearanceWindowFocusChanged, false))
   window.webContents.on('render-process-gone', (_event, details) => {
     writeLog('error', 'The interface process stopped: ' + details.reason)
   })

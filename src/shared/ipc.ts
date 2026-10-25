@@ -239,7 +239,8 @@ export const IpcChannel = {
   appearanceLoadWallpaper: 'appearance:loadWallpaper',
   appearanceChooseWallpaper: 'appearance:chooseWallpaper',
   appearanceRemoveWallpaper: 'appearance:removeWallpaper',
-  appearanceSetWindowBackground: 'appearance:setWindowBackground'
+  appearanceSetWindowBackground: 'appearance:setWindowBackground',
+  appearanceWindowFocusChanged: 'appearance:windowFocusChanged'
 } as const
 
 export interface PtyCreateRequest {
@@ -461,5 +462,6 @@ export interface DesktopApi {
     chooseWallpaper(): Promise<string | null>
     removeWallpaper(): Promise<void>
     setWindowBackground(background: WindowBackground): Promise<void>
+    onWindowFocusChanged(listener: (isFocused: boolean) => void): () => void
   }
 }
