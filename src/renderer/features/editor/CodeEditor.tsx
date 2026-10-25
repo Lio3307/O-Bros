@@ -18,6 +18,7 @@ import { followDiskChanges, isFromDisk, showDiskText } from './diskSync'
 import { selectAllOccurrences } from './selectAllOccurrences'
 import { getSavedEditorState, saveEditorState } from './editorSessions'
 import { colorThemeCompartment, colorThemeExtension, editorLayoutTheme } from './editorTheme'
+import { editorMotionTheme } from './editorMotion'
 import { formatDocument } from './formatDocument'
 import { findLanguageForFile, type LanguageDefinition } from './languageRegistry'
 import { lintExtensionFor, lintNow } from './lintExtension'
@@ -131,6 +132,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
     extensions: [
       basicSetup,
       editorLayoutTheme,
+      editorMotionTheme,
       colorThemeCompartment.of(currentColorThemeExtension()),
       fileShortcuts,
       reportModification,
