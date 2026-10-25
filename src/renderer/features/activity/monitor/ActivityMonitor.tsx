@@ -8,6 +8,7 @@ import { ActivityLog } from './ActivityLog'
 import { AgentTimeBars } from './AgentTimeBars'
 import { HourlyChart } from './HourlyChart'
 import { LiveAgentCards } from './LiveAgentCards'
+import { LocalServers } from './LocalServers'
 import { TodayTiles } from './TodayTiles'
 import { useLiveAgents } from './useLiveAgents'
 import './activityMonitor.css'
@@ -48,6 +49,8 @@ export function ActivityMonitor() {
         <h2 className="monitor-section-title">Running now</h2>
         {live === null ? <p className="monitor-empty"><LoadingText text="Looking for running agents…" /></p> : <LiveAgentCards agents={liveAgents} />}
       </section>
+
+      <LocalServers />
 
       <section className="monitor-section">
         <h2 className="monitor-section-title">Today</h2>

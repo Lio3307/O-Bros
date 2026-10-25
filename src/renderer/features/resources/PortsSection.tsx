@@ -1,34 +1,14 @@
 import { ExternalLink, Square } from 'lucide-react'
-import { useEffect } from 'react'
-import { usePortsStore } from '../../state/portsStore'
-import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
+import { terminalTitleOf, usePortsStore } from '../../state/portsStore'
+import { usePortPolling } from '../../state/usePortPolling'
 import { Button } from '../../ui/Button'
 import { LoadingText } from '../../ui/LoadingText'
 
-const PORTS_POLL_MS = 5000
-
 export function PortsSection() {
   const ports = usePortsStore((state) => state.ports)
-  const load = usePortsStore((state) => state.load)
   const stop = usePortsStore((state) => state.stop)
   const open = usePortsStore((state) => state.open)
-  const tabs = useWorkspaceStore((state) => state.tabs)
-
-  useEffect(() => {
-    void load()
-    const timer = setInterval(() => void load(), PORTS_POLL_MS)
-    return () => clearInterval(timer)
-  }, [load])
-
-  function terminalTitle(paneId: string): string {
-    for (const tab of tabs.filter(isTerminalTab)) {
-      const pane = tab.panes[paneId]
-      if (pane !== undefined) {
-        return pane.title
-      }
-    }
-    return 'Terminal'
-  }
+  usePortPolling()
 
   return (
     <div className="ports-section">
@@ -40,7 +20,7 @@ export function PortsSection() {
           <span className="resource-name">
             <span className="port-number">:{entry.port}</span>
             <span className="muted port-owner">
-              {entry.processName} · {terminalTitle(entry.paneId)}
+              {entry.processName} · {terminalTitleOf(entry.paneId)}
             </span>
           </span>
           <Button
@@ -51,7 +31,7 @@ export function PortsSection() {
           >
             <ExternalLink size={12} /> Open
           </Button>
-          <Button variant="plain" className="port-stop hover-danger" title="Stop this process" onClick={() => stop(entry)}>
+          <Button variant="plain" className="port-stop hover-danger" title="Stop this server" onClick={() => stop(entry)}>
             <Square size={12} /> Stop
           </Button>
         </div>

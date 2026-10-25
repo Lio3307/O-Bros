@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
 import type { ListeningPort } from '../../shared/types'
+import { askToConfirm } from './confirmStore'
+import { findTerminalPane } from './focusTerminalPane'
 import { toast } from './toastStore'
 
 interface PortsState {
@@ -8,6 +10,24 @@ interface PortsState {
   load: () => Promise<void>
   stop: (port: ListeningPort) => Promise<void>
   open: (port: ListeningPort) => Promise<void>
+}
+
+export function terminalTitleOf(paneId: string): string {
+  return findTerminalPane(paneId)?.title ?? 'a terminal'
+}
+
+export function localUrlOf(port: ListeningPort): string {
+  return `http://localhost:${port.port}`
+}
+
+function confirmStop(port: ListeningPort): Promise<boolean> {
+  return askToConfirm({
+    title: `Stop the server on port ${port.port}?`,
+    message:
+      `${port.processName} (process ${port.pid}), started in "${terminalTitleOf(port.paneId)}", will be stopped. ` +
+      `${localUrlOf(port)} stops answering until you start it again. The terminal stays open.`,
+    confirmLabel: 'Stop server'
+  })
 }
 
 export const usePortsStore = create<PortsState>()((set, get) => ({
@@ -22,6 +42,9 @@ export const usePortsStore = create<PortsState>()((set, get) => ({
   },
 
   stop: async (port) => {
+    if (!(await confirmStop(port))) {
+      return
+    }
     try {
       await window.api.ports.stop(port.pid)
       toast.success('Stopped ' + port.processName + ' on port ' + port.port + '.')
