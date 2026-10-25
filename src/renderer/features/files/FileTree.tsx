@@ -1,9 +1,10 @@
-import { ChevronDown, ChevronRight, File, Folder } from 'lucide-react'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useCallback, useEffect, useState, type DragEvent, type KeyboardEvent, type MouseEvent } from 'react'
 import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import type { DirectoryEntry } from '../../../shared/types'
 import { useFileDialogStore } from '../../state/fileDialogStore'
 import { useFileTreeStore } from '../../state/fileTreeStore'
+import { FileTypeIcon, FolderTypeIcon } from '../../ui/FileTypeIcon'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { DRAGGED_PATH_TYPE } from './dragData'
 import { buildEntryMenuItems } from './fileTreeMenu'
@@ -77,7 +78,7 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
           onContextMenu={showMenu}
           onKeyDown={handleKeyDown}
         >
-          <File size={14} />
+          <FileTypeIcon path={entry.path} />
           <span>{entry.name}</span>
         </button>
         {menu}
@@ -100,7 +101,7 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
         onKeyDown={handleKeyDown}
       >
         <Chevron size={14} />
-        <Folder size={14} />
+        <FolderTypeIcon name={entry.name} isOpen={isExpanded} />
         <span>{entry.name}</span>
       </button>
       {menu}

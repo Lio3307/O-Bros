@@ -4,6 +4,7 @@ import { lastPathSegment } from '../../../shared/paths'
 import { useFileTreeStore } from '../../state/fileTreeStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
+import { FileTypeIcon } from '../../ui/FileTypeIcon'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { FileTree } from './FileTree'
@@ -109,6 +110,7 @@ export function FilesPanel() {
         {isSearching ? (
           hits.map(({ hit, isContentOnly }) => (
             <button key={hit.path} type="button" title={hit.path} className="row" onClick={() => openFileTab(hit.path)}>
+              <FileTypeIcon path={hit.path} />
               <span>{hit.name}</span>
               {isContentOnly && <span className="muted search-tag">in text</span>}
             </button>

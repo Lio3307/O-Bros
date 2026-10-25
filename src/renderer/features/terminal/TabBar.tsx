@@ -1,4 +1,5 @@
-import { ChevronDown, Columns2, File, Plus, Rows2, X } from 'lucide-react'
+import { ChevronDown, Columns2, Plus, Rows2, X } from 'lucide-react'
+import { FileTypeIcon } from '../../ui/FileTypeIcon'
 import { TerminalTabIcon } from './TerminalTabIcon'
 import { TabTeamButton } from './TabTeamButton'
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
@@ -90,7 +91,7 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
         moveTab(event.dataTransfer.getData('text/plain'), tab.id)
       }}
     >
-      {tab.kind === 'terminal' ? <TerminalTabIcon tab={tab} /> : <File size={14} />}
+      {tab.kind === 'terminal' ? <TerminalTabIcon tab={tab} /> : <FileTypeIcon path={tab.path} />}
       {tab.kind === 'terminal' ? (
         <EditableTitle className="tab-title" value={tab.title} onCommit={(title) => renameTab(tab.id, title)} />
       ) : (

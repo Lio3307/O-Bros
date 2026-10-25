@@ -1,0 +1,23 @@
+.file-type-icon {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.file-type-icon-ready {
+  animation: file-type-icon-in 120ms ease-out;
+}
+
+@keyframes file-type-icon-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .file-type-icon-ready {
+    animation: none;
+  }
+}

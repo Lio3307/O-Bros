@@ -5,6 +5,7 @@ import { useLayoutStore } from '../../state/layoutStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useRecentFilesStore } from '../../state/recentFilesStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
+import { FileTypeIcon } from '../../ui/FileTypeIcon'
 import { handlePickerKey } from './pickerKeys'
 import './quickOpen.css'
 
@@ -92,6 +93,7 @@ export function QuickOpen() {
               onMouseEnter={() => setSelectedIndex(index)}
               onClick={() => openHit(hit)}
             >
+              <FileTypeIcon path={hit.path} size={16} />
               <span className="quick-open-name">{hit.name}</span>
               <span className="quick-open-path">{rootPath === null ? hit.path : relativePathFrom(hit.path, rootPath)}</span>
             </button>
