@@ -13,5 +13,5 @@ export function registerUpdaterIpc(): void {
   ipcMain.handle(IpcChannel.updaterCheck, () => checkForUpdate())
   ipcMain.handle(IpcChannel.updaterDownload, () => downloadUpdate())
   ipcMain.handle(IpcChannel.updaterInstall, () => installUpdateAndRestart())
-  ipcMain.handle(IpcChannel.updaterOpenReleases, () => openReleasesPage())
+  ipcMain.handle(IpcChannel.updaterOpenReleases, (_event, version: unknown) => openReleasesPage(version))
 }

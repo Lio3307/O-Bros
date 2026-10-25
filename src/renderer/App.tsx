@@ -16,6 +16,7 @@ import { StatusBar } from './shell/StatusBar'
 import { TitleBar } from './shell/TitleBar'
 import { ConfirmHost } from './ui/ConfirmHost'
 import { ToastHost } from './ui/ToastHost'
+import { UpdateNoticeCard } from './features/settings/update/UpdateNoticeCard'
 import { useCloseRequestStore } from './state/closeRequestStore'
 import { useInstalledCommandsStore } from './state/installedCommandsStore'
 import { useLayoutStore } from './state/layoutStore'
@@ -118,7 +119,9 @@ export function App() {
       <CloseConfirmModal />
       <ConfirmHost />
       <TextPromptHost />
-      <ToastHost />
+      <ToastHost>
+        <UpdateNoticeCard />
+      </ToastHost>
     </div>
   )
 }

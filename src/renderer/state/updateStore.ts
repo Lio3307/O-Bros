@@ -18,7 +18,7 @@ interface UpdateState {
   watch: () => () => void
   check: () => Promise<void>
   download: () => Promise<void>
-  openReleases: () => Promise<void>
+  openReleases: (version?: string) => Promise<void>
 }
 
 export const useUpdateStore = create<UpdateState>()((set) => ({
@@ -52,7 +52,7 @@ export const useUpdateStore = create<UpdateState>()((set) => ({
     }
   },
 
-  openReleases: async () => {
-    await window.api.updater.openReleases()
+  openReleases: async (version) => {
+    await window.api.updater.openReleases(version)
   }
 }))

@@ -195,7 +195,7 @@ const api: DesktopApi = {
     check: () => ipcRenderer.invoke(IpcChannel.updaterCheck),
     download: () => ipcRenderer.invoke(IpcChannel.updaterDownload),
     install: () => ipcRenderer.invoke(IpcChannel.updaterInstall),
-    openReleases: () => ipcRenderer.invoke(IpcChannel.updaterOpenReleases),
+    openReleases: (version) => ipcRenderer.invoke(IpcChannel.updaterOpenReleases, version),
     onStatusChanged: (listener) => subscribe<UpdateStatus>(IpcChannel.updaterStatusChanged, listener)
   }
 }

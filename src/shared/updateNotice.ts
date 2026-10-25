@@ -15,7 +15,8 @@ export function updateNoticeFor(status: UpdateStatus | null, announced: Announce
     return null
   }
   const version = status.latestVersion
-  if (status.state === 'available' && announced.available !== version) {
+  const isAvailable = status.state === 'available' || status.state === 'downloading'
+  if (isAvailable && announced.available !== version) {
     return {
       kind: 'available',
       version,

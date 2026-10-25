@@ -5,8 +5,8 @@ import { createSingleFlight } from '../../../shared/singleFlight'
 import { allowEveryWindowToClose } from '../../closeGuard'
 import { isRunningFromSource } from '../../runMode'
 import type { UpdateStatus } from '../../../shared/types'
+import { releaseNotesUrl } from '../../../shared/releaseNotes'
 
-const RELEASES_URL = 'https://github.com/Lio3307/O-Bros/releases'
 const FAILURE_MESSAGE = 'Could not check for updates. Check your connection, or open the releases page.'
 
 let status: UpdateStatus = {
@@ -86,6 +86,6 @@ export async function installUpdateAndRestart(): Promise<void> {
   })
 }
 
-export async function openReleasesPage(): Promise<void> {
-  await shell.openExternal(RELEASES_URL)
+export async function openReleasesPage(version: unknown): Promise<void> {
+  await shell.openExternal(releaseNotesUrl(version))
 }

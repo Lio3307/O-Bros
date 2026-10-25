@@ -17,6 +17,11 @@ describe('update notices', () => {
     expect(updateNoticeFor(status('ready', '0.1.5'), { available: '0.1.5', ready: '0.1.5' })).toBeNull()
   })
 
+  it('keeps showing the available notice while the update downloads', () => {
+    expect(updateNoticeFor(status('downloading', '0.1.5'), {})?.kind).toBe('available')
+    expect(updateNoticeFor(status('downloading', '0.1.5'), { available: '0.1.5' })).toBeNull()
+  })
+
   it('announces a newer version even after an older one was announced', () => {
     expect(updateNoticeFor(status('available', '0.1.6'), { available: '0.1.5' })?.version).toBe('0.1.6')
   })

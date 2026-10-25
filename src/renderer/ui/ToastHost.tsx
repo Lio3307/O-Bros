@@ -1,4 +1,5 @@
 import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useToastStore, type ToastKind } from '../state/toastStore'
 import './toast.css'
 
@@ -9,12 +10,13 @@ const ICON_BY_KIND: Record<ToastKind, typeof CircleCheck> = {
   error: CircleAlert
 }
 
-export function ToastHost() {
+export function ToastHost({ children }: { children?: ReactNode }) {
   const toasts = useToastStore((state) => state.toasts)
   const dismiss = useToastStore((state) => state.dismiss)
 
   return (
     <div className="toast-host" aria-live="polite">
+      {children}
       {toasts.map((item) => {
         const Icon = ICON_BY_KIND[item.kind]
         return (

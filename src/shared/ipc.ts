@@ -448,7 +448,7 @@ export interface DesktopApi {
     check(): Promise<void>
     download(): Promise<void>
     install(): Promise<void>
-    openReleases(): Promise<void>
+    openReleases(version?: string): Promise<void>
     onStatusChanged(listener: (status: UpdateStatus) => void): () => void
   }
 }
