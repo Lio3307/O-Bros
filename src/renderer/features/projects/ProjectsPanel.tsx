@@ -1,4 +1,4 @@
-import { Bot, ChevronDown, ChevronRight, Folder, FolderPlus, GitBranch, Terminal } from 'lucide-react'
+import { Bot, ChevronDown, ChevronRight, Folder, FolderOpen, FolderPlus, GitBranch, Terminal } from 'lucide-react'
 import { showTab } from '../../state/showTab'
 import { closestProject } from '../../../shared/closestProject'
 import { findTerminalPane } from '../../state/focusTerminalPane'
@@ -166,6 +166,7 @@ function FolderRow({ folder, sessions, hasFinished, now }: FolderRowProps) {
   const isCollapsed = useCollapsedRootsStore((state) => state.paths.includes(folder.path))
   const toggleCollapsed = useCollapsedRootsStore((state) => state.toggle)
   const hasSessions = sessions.length > 0
+  const isCurrentProject = folder.path === activeProjectPath
   const Chevron = isCollapsed ? ChevronRight : ChevronDown
 
   return (
@@ -187,10 +188,11 @@ function FolderRow({ folder, sessions, hasFinished, now }: FolderRowProps) {
         <button
           type="button"
           title={folder.path}
-          className={folder.path === activeProjectPath ? 'row row-selected' : 'row'}
+          className={cn('row', isCurrentProject && 'row-current-project')}
+          aria-current={isCurrentProject ? 'true' : undefined}
           onClick={() => selectProject(folder.path)}
         >
-          <Folder size={14} />
+          {isCurrentProject ? <FolderOpen size={14} /> : <Folder size={14} />}
           <span className="row-name">{folder.name}</span>
           {folder.branch !== null && <BranchLabel branch={folder.branch} />}
           {hasSessions && isCollapsed && (
@@ -272,7 +274,7 @@ function RootBlock({ root }: { root: ProjectRoot }) {
 
   return (
     <section className="root-block">
-      <div className={cn('root-header', root.path === activeProjectPath && 'root-header-selected', root.isMissing && 'root-header-missing')}>
+      <div className={cn('root-header', root.isMissing && 'root-header-missing')}>
         <button
           type="button"
           className="icon-button"
@@ -282,7 +284,13 @@ function RootBlock({ root }: { root: ProjectRoot }) {
         >
           <Chevron size={14} />
         </button>
-        <button type="button" className="root-name" title={root.path} onClick={() => selectProject(root.path)}>
+        <button
+          type="button"
+          className={cn('root-name', root.path === activeProjectPath && 'root-name-current')}
+          title={root.path}
+          aria-current={root.path === activeProjectPath ? 'true' : undefined}
+          onClick={() => selectProject(root.path)}
+        >
           {root.name}
         </button>
         {root.branch !== null && <BranchLabel branch={root.branch} />}
