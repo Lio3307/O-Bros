@@ -18,7 +18,8 @@ export const BACKUP_SETTING_KEYS = [
   'agentGitPolicy',
   'agentCommitIdentity',
   'allowAgentCoAuthors',
-  'teamPolicy'
+  'teamPolicy',
+  'appearance'
 ]
 
 export interface SettingsBackup {

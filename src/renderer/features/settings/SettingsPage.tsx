@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react'
 import { useLayoutStore, type SettingsPage as SettingsPageId } from '../../state/layoutStore'
 import { AboutPage } from './AboutPage'
+import { AppearancePage } from './AppearancePage'
 import { AgentsPage } from './AgentsPage'
 import { BackupPage } from './backup/BackupPage'
 import { EditorSettingsPage } from './EditorSettingsPage'
@@ -23,7 +24,8 @@ const pageByName: Record<SettingsPageId, () => ReactElement> = {
   shortcuts: () => <ShortcutsPage />,
   storage: () => <StoragePage />,
   backup: () => <BackupPage />,
-  about: () => <AboutPage />
+  about: () => <AboutPage />,
+  appearance: () => <AppearancePage />
 }
 
 export function SettingsPage() {

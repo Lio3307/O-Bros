@@ -15,3 +15,7 @@ const IMAGE_TYPES: Record<string, string> = {
 export function imageTypeOf(path: string): string | null {
   return IMAGE_TYPES[fileExtension(path)] ?? null
 }
+
+export function imageExtensions(): string[] {
+  return Object.keys(IMAGE_TYPES)
+}

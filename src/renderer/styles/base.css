@@ -14,8 +14,55 @@ body {
   font-size: 13px;
   line-height: 18px;
   color: var(--color-text);
-  background: var(--color-terminal);
+  background: var(--color-terminal-solid);
   overflow: hidden;
+}
+
+html[data-see-through] body {
+  background: transparent;
+}
+
+html[data-see-through] {
+  --inner-alpha: 0;
+  --color-hover: rgba(255, 255, 255, 0.07);
+  --color-selected: rgba(255, 255, 255, 0.12);
+}
+
+input[type='range'] {
+  flex: 1;
+  min-width: 120px;
+  height: 16px;
+  margin: 0;
+  appearance: none;
+  cursor: pointer;
+  background: transparent;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  background: linear-gradient(to right, var(--color-white) var(--range-fill, 0%), var(--color-selected) var(--range-fill, 0%));
+  border-radius: var(--radius);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  appearance: none;
+  background: var(--color-white);
+  border: 2px solid var(--color-terminal-solid);
+  border-radius: var(--radius);
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+input[type='range']:hover::-webkit-slider-thumb,
+input[type='range']:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+input[type='range']:focus-visible {
+  outline: 1px solid var(--color-info);
+  outline-offset: 4px;
 }
 
 button {
@@ -73,7 +120,7 @@ input[role='switch']:checked {
 }
 
 input[role='switch']:checked::before {
-  background: var(--color-terminal);
+  background: var(--color-terminal-solid);
   transform: translateX(14px);
 }
 
@@ -184,7 +231,7 @@ input[role='switch']:disabled {
 
 .button-primary {
   font-weight: 600;
-  color: var(--color-terminal);
+  color: var(--color-terminal-solid);
   background: var(--color-white);
   border: none;
 }

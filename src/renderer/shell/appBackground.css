@@ -1,0 +1,40 @@
+.app-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--color-terminal-solid);
+  animation: motion-fade var(--motion-slow) var(--ease-out);
+}
+
+.app-wallpaper-image,
+.app-wallpaper-dim {
+  position: absolute;
+  inset: 0;
+}
+
+.app-wallpaper-image {
+  background-position: center;
+  background-size: cover;
+  transition:
+    filter var(--motion-slow) var(--ease-out),
+    transform var(--motion-slow) var(--ease-out);
+}
+
+.app-wallpaper-dim {
+  background: var(--color-terminal-solid);
+  transition: opacity var(--motion-base) var(--ease-out);
+}
+
+html[data-see-through] .workspace,
+html[data-see-through] .editor-frame,
+html[data-see-through] .editor-host,
+html[data-see-through] .tab-active,
+html[data-see-through] .pane-frame-focused .pane-header {
+  background: transparent;
+}
+
+html[data-see-through] .xterm .xterm-viewport {
+  background-color: transparent !important;
+}

@@ -197,6 +197,12 @@ const api: DesktopApi = {
     install: () => ipcRenderer.invoke(IpcChannel.updaterInstall),
     openReleases: (version) => ipcRenderer.invoke(IpcChannel.updaterOpenReleases, version),
     onStatusChanged: (listener) => subscribe<UpdateStatus>(IpcChannel.updaterStatusChanged, listener)
+  },
+  appearance: {
+    loadWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceLoadWallpaper),
+    chooseWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceChooseWallpaper),
+    removeWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceRemoveWallpaper),
+    showDesktop: (isSeeThrough) => ipcRenderer.invoke(IpcChannel.appearanceShowDesktop, isSeeThrough)
   }
 }
 

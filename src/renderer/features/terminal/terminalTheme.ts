@@ -5,5 +5,6 @@ export const terminalOptions: ITerminalOptions = {
   fontSize: 13,
   lineHeight: 1.15,
   cursorStyle: 'block',
-  cursorBlink: true
+  cursorBlink: true,
+  allowTransparency: true
 }

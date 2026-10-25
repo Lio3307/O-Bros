@@ -12,6 +12,8 @@ import type { AccountRef } from '../../../shared/types'
 import { useAgentCommitStore } from '../../state/agentCommitStore'
 import { providerForCommand } from '../../state/customProvidersStore'
 import { useColorThemeStore } from '../../state/colorThemeStore'
+import { useAppearanceStore, useSurfaceAlpha } from '../../state/appearanceStore'
+import { innerAlphaOf, surfaceAlphaOf, withAlpha } from '../../../shared/appearance'
 import { useTerminalFontStore } from '../../state/terminalFontStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
@@ -65,6 +67,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
   const useGpuRendering = useTerminalSettingsStore((state) => state.useGpuRendering)
   const colorThemeId = useColorThemeStore((state) => state.themeId)
+  const surfaceAlpha = useSurfaceAlpha()
   const splitRightHint = useShortcutLabel('splitRight')
   const splitDownHint = useShortcutLabel('splitDown')
   const [contextMenu, setContextMenu] = useState<OpenContextMenu | null>(null)
@@ -110,7 +113,10 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     const terminal = new Terminal({
       ...terminalOptions,
       fontSize: useTerminalFontStore.getState().fontSize,
-      theme: terminalThemeOf(findColorTheme(useColorThemeStore.getState().themeId)),
+      theme: terminalThemeOf(
+        findColorTheme(useColorThemeStore.getState().themeId),
+        innerAlphaOf(surfaceAlphaOf(useAppearanceStore.getState().appearance, useAppearanceStore.getState().wallpaperUrl !== null))
+      ),
       scrollback: useTerminalSettingsStore.getState().scrollback
     })
     const fitAddon = new FitAddon()
@@ -233,9 +239,9 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
 
   useEffect(() => {
     if (terminalRef.current !== null) {
-      terminalRef.current.options.theme = terminalThemeOf(findColorTheme(colorThemeId))
+      terminalRef.current.options.theme = terminalThemeOf(findColorTheme(colorThemeId), innerAlphaOf(surfaceAlpha))
     }
-  }, [colorThemeId])
+  }, [colorThemeId, surfaceAlpha])
 
   function acceptsDrop(event: DragEvent): boolean {
     const types = Array.from(event.dataTransfer.types)
@@ -290,7 +296,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     <>
       <div
         className="terminal-host"
-        style={{ backgroundColor: findColorTheme(colorThemeId).background }}
+        style={{ backgroundColor: withAlpha(findColorTheme(colorThemeId).background, innerAlphaOf(surfaceAlpha)) }}
         ref={hostRef}
         onDragOver={(event) => acceptsDrop(event) && event.preventDefault()}
         onDrop={pasteDroppedPath}

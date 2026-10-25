@@ -234,7 +234,11 @@ export const IpcChannel = {
   updaterDownload: 'updater:download',
   updaterInstall: 'updater:install',
   updaterOpenReleases: 'updater:openReleases',
-  updaterStatusChanged: 'updater:statusChanged'
+  updaterStatusChanged: 'updater:statusChanged',
+  appearanceLoadWallpaper: 'appearance:loadWallpaper',
+  appearanceChooseWallpaper: 'appearance:chooseWallpaper',
+  appearanceRemoveWallpaper: 'appearance:removeWallpaper',
+  appearanceShowDesktop: 'appearance:showDesktop'
 } as const
 
 export interface PtyCreateRequest {
@@ -450,5 +454,11 @@ export interface DesktopApi {
     install(): Promise<void>
     openReleases(version?: string): Promise<void>
     onStatusChanged(listener: (status: UpdateStatus) => void): () => void
+  }
+  appearance: {
+    loadWallpaper(): Promise<string | null>
+    chooseWallpaper(): Promise<string | null>
+    removeWallpaper(): Promise<void>
+    showDesktop(isSeeThrough: boolean): Promise<void>
   }
 }

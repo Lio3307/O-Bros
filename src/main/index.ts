@@ -8,6 +8,7 @@ import { stopAllLanguageServers } from './services/languageServers/languageServe
 import { registerAgentsIpc } from './ipc/agentsIpc'
 import { reportHandlerErrors } from './ipc/handlerErrors'
 import { registerAppIpc } from './ipc/appIpc'
+import { registerAppearanceIpc } from './ipc/appearanceIpc'
 import { registerFilesIpc } from './ipc/filesIpc'
 import { registerGitIpc } from './ipc/gitIpc'
 import { registerHistoryIpc } from './ipc/historyIpc'
@@ -57,6 +58,7 @@ function registerAllIpc(): void {
   registerToolsIpc()
   registerShellIpc()
   registerAppIpc()
+  registerAppearanceIpc()
   registerPortsIpc()
   registerActivityIpc()
   registerLanguageServersIpc()

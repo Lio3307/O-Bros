@@ -18,6 +18,8 @@ const KNOWN_PROBLEMS: KnownProblem[] = [
   { needle: 'ENOTDIR', message: 'That is a file, not a folder.' },
   { needle: 'outside the opened project folders', message: 'That location is outside your project folders.' },
   { needle: 'Not a known session file', message: 'That session file is not recognized.' },
+  { needle: 'larger than 20 MB', message: 'That image is larger than 20 MB. Pick a smaller one.' },
+  { needle: 'not an image O-BROS can show', message: 'That file is not an image O-BROS can show.' },
   { needle: 'larger than 2 MB', message: 'This file is larger than 2 MB, so it was not opened.' },
   { needle: 'took longer than', message: 'The tool took too long and was stopped.' },
   { needle: 'would be overwritten', message: 'Your changes would be overwritten. Commit or discard them first.' },

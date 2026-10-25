@@ -6,6 +6,7 @@ import {
   HardDrive,
   Info,
   Keyboard,
+  Palette,
   Braces,
   SquareTerminal,
   UserRound,
@@ -47,6 +48,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
   {
     title: 'App',
     pages: [
+      { page: 'appearance', label: 'Appearance', Icon: Palette },
       { page: 'storage', label: 'Storage and memory', Icon: HardDrive },
       { page: 'backup', label: 'Backup and restore', Icon: ArchiveRestore },
       { page: 'about', label: 'About and updates', Icon: Info }

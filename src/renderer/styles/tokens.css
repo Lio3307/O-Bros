@@ -1,7 +1,13 @@
 :root {
-  --color-terminal: #000000;
-  --color-chrome: #0b0b0b;
-  --color-panel: #111111;
+  --color-terminal-solid: #000000;
+  --color-chrome-solid: #0b0b0b;
+  --color-panel-solid: #111111;
+  --surface-alpha: 1;
+  --inner-alpha: 1;
+  --color-terminal: color-mix(in srgb, var(--color-terminal-solid) calc(var(--surface-alpha) * 100%), transparent);
+  --color-chrome: color-mix(in srgb, var(--color-chrome-solid) calc(var(--surface-alpha) * 100%), transparent);
+  --color-panel: color-mix(in srgb, var(--color-panel-solid) calc(var(--surface-alpha) * 100%), transparent);
+  --color-popover: var(--color-panel-solid);
   --color-hover: #1a1a1a;
   --color-selected: #242424;
   --color-border: #2a2a2a;

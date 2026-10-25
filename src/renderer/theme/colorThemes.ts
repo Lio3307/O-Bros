@@ -1,3 +1,4 @@
+import { withAlpha } from '../../shared/appearance'
 import type { ITheme } from '@xterm/xterm'
 import { EXTRA_COLOR_THEMES } from './colorThemesExtra'
 
@@ -305,14 +306,14 @@ export function isColorThemeId(value: unknown): value is ColorThemeId {
   return COLOR_THEMES.some((theme) => theme.id === value)
 }
 
-export function terminalThemeOf(theme: ColorTheme): ITheme {
+export function terminalThemeOf(theme: ColorTheme, backgroundAlpha = 1): ITheme {
   const ansiColors: Record<string, string> = {}
   ANSI_NAMES.forEach((name, index) => {
     ansiColors[name] = theme.ansi[index]
   })
   return {
     ...ansiColors,
-    background: theme.background,
+    background: withAlpha(theme.background, backgroundAlpha),
     foreground: theme.foreground,
     cursor: theme.cursor,
     cursorAccent: theme.background,

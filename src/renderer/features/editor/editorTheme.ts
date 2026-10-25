@@ -6,15 +6,19 @@ import type { ColorTheme } from '../../theme/colorThemes'
 
 export const colorThemeCompartment = new Compartment()
 
+function seeThrough(color: string): string {
+  return `color-mix(in srgb, ${color} calc(var(--inner-alpha) * 100%), transparent)`
+}
+
 function editorChrome(theme: ColorTheme): Extension {
   return EditorView.theme(
     {
-      '&': { height: '100%', backgroundColor: theme.background, color: theme.foreground },
+      '&': { height: '100%', backgroundColor: seeThrough(theme.background), color: theme.foreground },
       '.cm-scroller': { fontFamily: 'var(--font-mono)', fontSize: '13px', lineHeight: '22px' },
       '.cm-content': { caretColor: theme.cursor, padding: '8px 0' },
       '.cm-cursor': { borderLeftColor: theme.cursor },
       '.cm-gutters': {
-        backgroundColor: theme.background,
+        backgroundColor: 'transparent',
         color: theme.code.comment,
         border: 'none',
         paddingRight: '8px'
@@ -80,7 +84,7 @@ export function colorThemeExtension(theme: ColorTheme): Extension {
 export const editorLayoutTheme = EditorView.theme(
   {
     '.cm-tooltip': {
-      backgroundColor: 'var(--color-panel)',
+      backgroundColor: 'var(--color-popover)',
       color: 'var(--color-text)',
       border: '1px solid var(--color-border)',
       borderRadius: 'var(--radius)',

@@ -17,6 +17,7 @@ import { TitleBar } from './shell/TitleBar'
 import { ConfirmHost } from './ui/ConfirmHost'
 import { ToastHost } from './ui/ToastHost'
 import { UpdateNoticeCard } from './features/settings/update/UpdateNoticeCard'
+import { AppBackground } from './shell/AppBackground'
 import { useCloseRequestStore } from './state/closeRequestStore'
 import { useInstalledCommandsStore } from './state/installedCommandsStore'
 import { useLayoutStore } from './state/layoutStore'
@@ -105,6 +106,7 @@ export function App() {
 
   return (
     <div className="app">
+      <AppBackground />
       <TitleBar />
       <div className="app-body">
         {sidebarMode !== 'hidden' && <Rail />}
