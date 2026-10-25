@@ -18,7 +18,7 @@ const HIGHEST_PORT = 65_535
 
 async function readListeningSockets(): Promise<ListeningSocket[]> {
   if (process.platform === 'win32') {
-    const { stdout } = await execFileAsync('netstat', ['-ano', '-p', 'tcp'], {
+    const { stdout } = await execFileAsync('netstat', ['-ano'], {
       maxBuffer: MAX_OUTPUT_BYTES,
       windowsHide: true
     })

@@ -8,7 +8,10 @@ const NETSTAT_OUTPUT = [
   '  TCP    0.0.0.0:3000           0.0.0.0:0              LISTENING       4120',
   '  TCP    [::]:5173              [::]:0                 LISTENING       4120',
   '  TCP    127.0.0.1:50234        127.0.0.1:3000         ESTABLISHED     999',
-  '  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING       1004'
+  '  TCP    0.0.0.0:135            0.0.0.0:0              LISTENING       1004',
+  '  TCP    [::1]:4321             [::]:0                 LISTENING       5150',
+  '  UDP    0.0.0.0:5353           *:*                                    4120',
+  '  UDP    [::]:5353              *:*                                    4120'
 ].join('\n')
 
 describe('parseWindowsNetstat', () => {
@@ -16,7 +19,8 @@ describe('parseWindowsNetstat', () => {
     expect(parseWindowsNetstat(NETSTAT_OUTPUT)).toEqual([
       { port: 3000, pid: 4120 },
       { port: 5173, pid: 4120 },
-      { port: 135, pid: 1004 }
+      { port: 135, pid: 1004 },
+      { port: 4321, pid: 5150 }
     ])
   })
 })
