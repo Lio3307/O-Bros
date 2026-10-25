@@ -21,6 +21,7 @@ export interface LaunchOptions {
   settings?: Record<string, unknown>
   environment?: Record<string, string>
   homeFiles?: Record<string, string>
+  userDataFiles?: Record<string, string>
 }
 
 export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp> {
@@ -31,6 +32,9 @@ export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp
   await mkdir(projectFolder)
   await mkdir(userDataFolder)
   await writeFile(join(projectFolder, 'notes.txt'), 'first line\n', 'utf8')
+  for (const [fileName, content] of Object.entries(options.userDataFiles ?? {})) {
+    await writeFile(join(userDataFolder, fileName), content, 'utf8')
+  }
   await writeFile(join(userDataFolder, 'settings.json'), JSON.stringify({ projectRoots: options.withoutProjectFolders === true ? [] : [projectFolder], ...options.settings }), 'utf8')
 
   const environment: Record<string, string | undefined> = { ...process.env }

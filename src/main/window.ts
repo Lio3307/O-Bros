@@ -2,12 +2,15 @@ import { BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
 import { devServerUrl, isRunningFromSource } from './runMode'
 import { writeLog } from './services/logging/logFile'
+import { showWithSavedState } from './windowState'
 
 const TITLE_BAR_HEIGHT = 36
 const CHROME_COLOR = '#0B0B0B'
 const TEXT_COLOR = '#EDEDED'
 const TERMINAL_COLOR = '#000000'
 const WEB_PROTOCOLS = ['https:', 'http:']
+const DEFAULT_SIZE = { width: 1440, height: 900 }
+const MINIMUM_SIZE = { width: 900, height: 560 }
 
 function isWebLink(url: string): boolean {
   try {
@@ -19,10 +22,10 @@ function isWebLink(url: string): boolean {
 
 export function createMainWindow(): BrowserWindow {
   const window = new BrowserWindow({
-    width: 1440,
-    height: 900,
-    minWidth: 900,
-    minHeight: 560,
+    ...DEFAULT_SIZE,
+    show: false,
+    minWidth: MINIMUM_SIZE.width,
+    minHeight: MINIMUM_SIZE.height,
     backgroundColor: TERMINAL_COLOR,
     icon: join(__dirname, '../../resources/logo.png'),
     titleBarStyle: 'hidden',
@@ -36,6 +39,8 @@ export function createMainWindow(): BrowserWindow {
       devTools: isRunningFromSource()
     }
   })
+
+  showWithSavedState(window, MINIMUM_SIZE)
 
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (isWebLink(url)) {
