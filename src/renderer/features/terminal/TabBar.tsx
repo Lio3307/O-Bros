@@ -1,5 +1,6 @@
 import { ChevronDown, Columns2, File, Plus, Rows2, X } from 'lucide-react'
 import { TerminalTabIcon } from './TerminalTabIcon'
+import { TabTeamButton } from './TabTeamButton'
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useAttentionStore } from '../../state/attentionStore'
@@ -95,6 +96,7 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
       ) : (
         <span className="tab-title">{tab.title}</span>
       )}
+      {tab.kind === 'terminal' && <TabTeamButton tab={tab} />}
       {isModified && <span className="tab-modified-dot" title="Unsaved changes" />}
       {needsAttention && !isActive && <span className="tab-attention-dot" title="Finished while you were away" />}
       <button

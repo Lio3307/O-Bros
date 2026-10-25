@@ -10,7 +10,8 @@ import { AgentIcon } from '../ui/AgentIcon'
 import { describeCredit, type CreditBalance } from '../../shared/creditBalance'
 import { AccountsRefreshButton } from '../ui/AccountsRefreshButton'
 import { UsageBar } from '../ui/UsageBar'
-import { listUsageWindows, nearestReset } from '../ui/usageText'
+import { isUsageHigh, listUsageWindows, nearestReset } from '../ui/usageText'
+import { cn } from '../ui/cn'
 import { useNow } from '../ui/useNow'
 import './usagePopover.css'
 import { SegmentedControl } from '../ui/SegmentedControl'
@@ -57,9 +58,9 @@ function ProviderUsageRow({ provider, mode, onOpen }: { provider: ProviderId; mo
         {mode === 'detailed' && (
           <span className="usage-provider-windows">
             {windows.map(({ label, window }) => (
-              <span key={label} className="usage-window">
+              <span key={label} className={cn('usage-window', isUsageHigh(window.percentUsed) && 'usage-high')}>
                 <span className="muted">{label}</span>
-                <UsageBar percentUsed={window.percentUsed} />
+                <UsageBar percentUsed={window.percentUsed} tone={isUsageHigh(window.percentUsed) ? 'danger' : 'normal'} />
                 <span className="usage-window-percent">{window.percentUsed}%</span>
               </span>
             ))}

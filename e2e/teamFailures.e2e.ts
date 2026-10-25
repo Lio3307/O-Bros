@@ -204,3 +204,17 @@ test('refuses unknown options and passes options after -- to the agent', async (
   await expect.poll(() => readProof('fake-agent-args.json'), { timeout: 30_000 }).toBe(JSON.stringify(['--no-daemon', 'two words']))
   await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 30_000 }).toBe('hi')
 })
+
+test('the tab shows its team members in a dropdown and opens one from there', async () => {
+  test.setTimeout(180_000)
+  await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
+  const teamButton = app.window.locator('.tab .tab-team')
+  await expect(teamButton.locator('.tab-team-count')).toHaveText('1', { timeout: 30_000 })
+
+  await teamButton.click()
+  const dropdown = app.window.locator('.team-dropdown')
+  await expect(dropdown).toContainText('1 team member')
+  await dropdown.locator('.session-member-row', { hasText: 'helper' }).click()
+  await expect(dropdown).toHaveCount(0)
+  await expect(app.window.locator('.team-frame:not(.tab-content-hidden)')).toBeVisible()
+})

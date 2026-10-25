@@ -3,7 +3,7 @@ name: wot
 description: wot (work of teams) lets you summon other AI coding agents (Claude, Codex, Gemini, OpenCode and any other agent CLI installed on this computer) as hidden team members inside the O-BROS app, give them tasks, wait for them, read their answers and stop them. Use it when the user asks you to "use codex", "ask claude", "get a second opinion from another agent", "summon an agent", "make a team", "work in parallel with other agents", "wot", or names another agent CLI to help. It only works inside a terminal opened by the O-BROS app.
 license: MIT
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
   publisher: O-BROS
 ---
 
@@ -126,7 +126,50 @@ If the name is not in either list (`is not an agent O-BROS knows`), tell the use
 
 ---
 
-## 6. Step 3: write the task
+## 6. Step 3: summon the member first
+
+An agent needs up to a minute to open. Summon it **before** you write its task, so it opens while you write.
+
+Choose a short name that says the job, using only lowercase letters, numbers and `-`. Examples: `reviewer`, `test-writer`, `docs`, `codex-review`.
+
+Run:
+
+```
+wot spawn <agent> --name <name>
+```
+
+Example:
+
+```
+wot spawn codex --name reviewer
+```
+
+This command returns within a few seconds and the member keeps opening in the background. Do not summon it again and do not stop it because it is still starting. Go straight to step 4 and write its task.
+
+No wot command cancels anything when your shell stops it because of a time limit. If your shell stops a wot command, do not `wot stop` the member: run `wot list` or `wot wait <name>` to see where it is.
+
+Options:
+
+- `--cwd <folder>`: the member works in another folder of the project (relative to your folder). Use it when your folder is the top of a drive such as `E:\`: Codex's Windows sandbox cannot run commands or write files there.
+- `-- <agent options>`: everything after `--` is passed to the agent program itself, for example `wot spawn codex --name docs -- --no-daemon`. wot refuses options it does not know, so never put agent options before `--`.
+- `--task-file <path>`: only if you already wrote the task before summoning. O-BROS then types it in by itself when the agent is ready, and you skip step 4.
+
+Results:
+
+| Result | What you do |
+|---|---|
+| `OK: Summoned team member "<name>"` | Use exactly the name in this line from now on: if your name was taken, O-BROS added a number (for example `reviewer-2`). Tell the user in one sentence that you summoned it (they can watch it under your terminal in Projects). Go to step 4. |
+| A line starting with `NOTE:` | Read it. If it says the member works at the top of a drive and the member later reports shell or file-write failures, stop it and summon it again with `--cwd`. |
+| Exit code 3 (`is not installed`, `is not an agent O-BROS knows`) | Section 5. |
+| `The team is full` | If it says some of them are yours, stop one you do not need (`wot list`, then `wot stop <name>`) and try again. If none are yours, tell the user and do the work yourself or wait; never stop another terminal's members. |
+| `A team member cannot summon more agents` | You are a member. Do your own task only. |
+| `Team members only work inside a project folder` | You were started in the home folder. Tell the user to open a project folder in O-BROS and start you from a terminal in that folder. Stop. |
+| `stopped right after it started` | Run `wot read <name>` to see why (often: not signed in). Tell the user what you saw. Then `wot stop <name>`. |
+| Any other `ERROR:` | Tell the user the error text. Do not retry more than once. |
+
+---
+
+## 7. Step 4: write the task and send it
 
 A team member knows **nothing** about your conversation. It only sees the text you send. Write the task so that a new person could do it without asking anything.
 
@@ -158,59 +201,23 @@ List every file you changed and what you changed.
 If you could not finish, start with "BLOCKED:" and explain why.
 ```
 
-How to send the task text (choose A when the task has more than one line, quotes, or special characters like & | < > % ^ $ `):
-
-**A. Long task (recommended, works in every shell):**
+Send it like this (it works in every shell):
 
 1. Run `wot new-file <member name>`. It prints the path of a new empty file.
 2. Write the whole task into that file with your normal file writing or editing tool.
-3. Use `--task-file <that path>` in step 4. wot deletes the file after reading it.
+3. Run `wot send <name> --file <that path>`. wot deletes the file after reading it. If the path contains spaces, put it in double quotes: `--file "C:\Users\Jane Doe\AppData\Local\Temp\o-bros-wot\reviewer-1712345678901.md"`.
 
-**B. Short one-line task with only letters, numbers, spaces and simple punctuation:**
-
-Use `--task "the task"`.
-
----
-
-## 7. Step 4: summon the member
-
-Choose a short name that says the job, using only lowercase letters, numbers and `-`. Examples: `reviewer`, `test-writer`, `docs`, `codex-review`.
-
-If the path from `wot new-file` contains spaces, put it in double quotes: `--task-file "C:\Users\Jane Doe\AppData\Local\Temp\o-bros-wot\reviewer-1712345678901.md"`.
-
-Run:
-
-```
-wot spawn <agent> --name <name> --task-file <path from wot new-file>
-```
-
-Example:
-
-```
-wot spawn codex --name reviewer --task-file C:\Users\me\AppData\Local\Temp\o-bros-wot\reviewer-1712345678901.md
-```
-
-This command returns within a few seconds. The member keeps starting in the background, and O-BROS types the task in by itself as soon as the agent has opened (usually within a minute). While it starts, `wot wait` says it is still starting. Do not summon it again, do not send the task again, and do not stop it because it is still starting: go to step 5.
-
-No wot command cancels anything when your shell stops it because of a time limit. If your shell stops a wot command, do not `wot stop` the member: run `wot list` or `wot wait <name>` to see where it is.
-
-Options:
-
-- `--cwd <folder>`: the member works in another folder of the project (relative to your folder). Use it when your folder is the top of a drive such as `E:\`: Codex's Windows sandbox cannot run commands or write files there.
-- `-- <agent options>`: everything after `--` is passed to the agent program itself, for example `wot spawn codex --name docs --task-file <path> -- --no-daemon`. wot refuses options it does not know, so never put agent options before `--`.
+Only for a short one-line task with letters, numbers, spaces and simple punctuation you may use `wot send <name> "the task"` instead.
 
 Results:
 
 | Result | What you do |
 |---|---|
-| `OK: Summoned team member "<name>"` | Use exactly the name in this line from now on: if your name was taken, O-BROS added a number (for example `reviewer-2`). Tell the user in one sentence that you summoned it (they can watch it under your terminal in Projects). Go to step 5. |
-| A line starting with `NOTE:` | Read it. If it says the member works at the top of a drive and the member later reports shell or file-write failures, stop it and summon it again with `--cwd`. |
-| Exit code 3 (`is not installed`, `is not an agent O-BROS knows`) | Section 5. |
-| `The team is full` | If it says some of them are yours, stop one you do not need (`wot list`, then `wot stop <name>`) and try again. If none are yours, tell the user and do the work yourself or wait; never stop another terminal's members. |
-| `A team member cannot summon more agents` | You are a member. Do your own task only. |
-| `Team members only work inside a project folder` | You were started in the home folder. Tell the user to open a project folder in O-BROS and start you from a terminal in that folder. Stop. |
-| `stopped right after it started` | Run `wot read <name>` to see why (often: not signed in). Tell the user what you saw. Then `wot stop <name>`. |
-| Any other `ERROR:` | Tell the user the error text. Do not retry more than once. |
+| `OK: "<name>" is still starting. O-BROS types your message in by itself as soon as the agent is ready` | Normal. Do not send it again. Go to step 5. |
+| `OK: Typed your message into "<name>"` | Go to step 5. |
+| `is not running anymore` | It stopped while opening. Run `wot read <name>` to see why, tell the user, then `wot stop <name>`. |
+
+Never wait for a member you summoned without sending its task: until it has a task, `wot wait` reports it as finished right away, because it has nothing to do.
 
 ---
 
@@ -341,7 +348,7 @@ If it fails, or the variables are empty, you are not inside O-BROS. Follow secti
 
 ## 14. Working with several members at once
 
-- Summon them one after another (one `wot spawn` at a time).
+- Summon all of them first (one `wot spawn` after another), then write and send each task. They open while you write.
 - Give each member different files, or make some members read-only (for example "review only, do not edit files").
 - Wait with `wot wait --any`: it returns as soon as any of YOUR members finishes, asks a question or exits, and names it. Handle that member (`wot read`, then answer or stop it), then run `wot wait --any` again for the next one.
 - `NOTHING_NEW:` means every member already finished or is waiting and you have seen it. Read them, send new work, or stop them; do not keep waiting.
@@ -357,15 +364,15 @@ If it fails, or the variables are empty, you are not inside O-BROS. Follow secti
 | `wot status` | Checks that O-BROS is running and tells you if you are the lead or a member. |
 | `wot agents` | Lists agents you can summon and agents that are not installed. |
 | `wot new-file <name>` | Creates an empty temporary file for a long task or message and prints its path. |
-| `wot spawn <agent> --name <name> --task-file <path>` | Summons a member and sends the task from the file. |
-| `wot spawn <agent> --name <name> --task "<text>"` | Summons a member with a short one-line task. |
+| `wot spawn <agent> --name <name>` | Summons a member. Do this first; send its task with `wot send` while it opens. |
+| `wot spawn <agent> --name <name> --task-file <path>` | Summons a member and has O-BROS type the task in when it is ready (only if the task is already written). |
 | `wot spawn ... --cwd <folder>` | The member works in that folder of the project. |
 | `wot spawn ... -- <agent options>` | Passes the options after `--` to the agent program. |
 | `wot list` | Lists your members, their state and their task. |
 | `wot wait <name> [--timeout <seconds>]` | Waits until the member finishes its turn, asks something, or stops. |
 | `wot wait --any [--timeout <seconds>]` | Waits for whichever of your members finishes, asks or stops first, and names it. |
 | `wot read <name> [--lines <number>]` | Prints the member's screen. |
-| `wot send <name> "<text>"` / `wot send <name> --file <path>` | Types a message into the member and presses Enter. |
+| `wot send <name> --file <path>` / `wot send <name> "<text>"` | Types a message into the member and presses Enter. While the member is still starting, O-BROS keeps the message and types it in when the agent is ready. |
 | `wot stop <name>` | Stops the member and closes its terminal. |
 | `wot help` | Shows the help. |
 
@@ -407,9 +414,10 @@ Answer: `OK: ... You are the LEAD agent.`
 ```
 wot agents
 ```
-Answer shows Codex under "CAN summon".
+Answer shows Codex under "CAN summon". Summon it first, so it opens while you write the task:
 
 ```
+wot spawn codex --name reviewer
 wot new-file reviewer
 ```
 Answer: a file path. Write this into the file:
@@ -437,7 +445,7 @@ Reply with a short summary that starts with "DONE:" and list each problem with f
 ```
 
 ```
-wot spawn codex --name reviewer --task-file <the path>
+wot send reviewer --file <the path>
 wot wait reviewer
 ```
 Answer: `STILL_WORKING: ...` then again:
@@ -488,6 +496,7 @@ Before you finish, check every line:
 
 - [ ] I ran `wot status` first and it said `OK`.
 - [ ] I only summoned agents from the "CAN summon" list.
+- [ ] I summoned each member before writing its task, and sent every member its task.
 - [ ] Every task I sent was complete and said which files to touch and not touch.
 - [ ] I waited with `wot wait` and read the answer with `wot read`.
 - [ ] I did not approve any permission the user did not allow.

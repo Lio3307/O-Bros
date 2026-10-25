@@ -1,6 +1,12 @@
 import { formatResetsIn } from '../../shared/time'
 import type { AccountUsage, UsageWindow } from '../../shared/types'
 
+export const HIGH_USAGE_PERCENT = 80
+
+export function isUsageHigh(percentUsed: number | null): boolean {
+  return percentUsed !== null && percentUsed >= HIGH_USAGE_PERCENT
+}
+
 export interface LabeledWindow {
   label: string
   window: UsageWindow

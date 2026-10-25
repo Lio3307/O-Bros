@@ -399,6 +399,15 @@ input[role='switch']:disabled {
   border-radius: var(--radius);
 }
 
+.usage-fill-danger {
+  background: var(--color-danger);
+}
+
+.usage-high,
+.usage-high .status-percent {
+  color: var(--color-danger);
+}
+
 .agent-status {
   display: inline-flex;
   flex: 0 0 auto;

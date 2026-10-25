@@ -121,3 +121,7 @@
   font-weight: 600;
   color: var(--color-white);
 }
+
+.usage-high .usage-window-percent {
+  color: var(--color-danger);
+}

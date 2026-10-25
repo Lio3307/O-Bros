@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { describeCompactWindow, listUsageWindows, mostPressingWindow, nearestReset } from './usageText'
+import { describeCompactWindow, isUsageHigh, listUsageWindows, mostPressingWindow, nearestReset } from './usageText'
 
 const NOW = 1_000_000_000_000
 const HOUR = 3_600_000
@@ -67,5 +67,14 @@ describe('mostPressingWindow', () => {
 
   it('is null when nothing is known', () => {
     expect(mostPressingWindow([{ key: 'a', windows: [] }])).toBeNull()
+  })
+})
+
+describe('isUsageHigh', () => {
+  it('turns red from 80% used', () => {
+    expect(isUsageHigh(79)).toBe(false)
+    expect(isUsageHigh(80)).toBe(true)
+    expect(isUsageHigh(100)).toBe(true)
+    expect(isUsageHigh(null)).toBe(false)
   })
 })

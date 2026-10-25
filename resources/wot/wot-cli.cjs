@@ -55,9 +55,8 @@ Commands:
   wot status                                   Check that O-BROS is running and wot is ready.
   wot agents                                   List the agents you can summon and the ones that are not installed.
   wot new-file <name>                          Create an empty text file for a long task and print its path.
-  wot spawn <agent> --name <name> --task-file <path>
-  wot spawn <agent> --name <name> --task "<short one-line task>"
-                                               Start a hidden team member and give it its task.
+  wot spawn <agent> --name <name>              Start a hidden team member. Do this first, then send its task.
+      [--task-file <path>]                     Or give the task now if it is already written.
       [--cwd <folder>]                         Work in another folder of the project (relative to yours).
       [-- <agent options>]                     Everything after -- goes to the agent, e.g. -- --no-daemon
   wot list                                     List team members and what they are doing.
@@ -65,7 +64,7 @@ Commands:
   wot wait --any [--timeout <seconds>]         Wait for whichever of your members finishes, asks or exits first.
   wot read <name> [--lines <number>]           Print what is on the member's screen.
   wot send <name> --file <path>
-  wot send <name> "<short one-line message>"   Type a message into the member and press Enter.
+  wot send <name> "<short one-line message>"   Type a message into the member and press Enter (kept until it is ready).
   wot stop <name>                              Stop the member and close its terminal.
   wot help                                     Show this help.
 
@@ -287,7 +286,7 @@ function createTaskFile(positional) {
 async function spawnMember(positional, flags, agentArgs) {
   const agent = positional[0]
   if (agent === undefined || agent.trim() === '') {
-    finish(EXIT_CODES.failed, 'ERROR: The agent is missing. Usage: wot spawn <agent> --name <name> --task-file <path>\nRun "wot agents" to see which agents you can use.')
+    finish(EXIT_CODES.failed, 'ERROR: The agent is missing. Usage: wot spawn <agent> --name <name>\nRun "wot agents" to see which agents you can use.')
   }
   const task = textFrom(flags, positional.slice(1), 'task-file', 'task')
   const { member, taskQueued, warnings } = await call('/spawn', { agent, name: flags.name ?? '', task, agentArgs, cwd: flags.cwd ?? '' })
@@ -297,9 +296,11 @@ async function spawnMember(positional, flags, agentArgs) {
     `It works in: ${member.cwd ?? 'the home folder'}`,
     taskQueued
       ? 'It is starting now. O-BROS types its task in as soon as the agent has opened (usually within a minute). You do not need to wait for that or send the task again.'
-      : 'No task was sent. Send one with: wot send ' + member.name + ' --file <path>',
+      : 'It is starting now. Write its task and send it with: wot send ' + member.name + ' --file <path>. O-BROS types it in as soon as the agent is ready.',
     ...(warnings ?? []).map((warning) => `NOTE: ${warning}`),
-    `Next: run  wot wait ${member.name}  and then  wot read ${member.name}`
+    taskQueued
+      ? `Next: run  wot wait ${member.name}  and then  wot read ${member.name}`
+      : `Next: run  wot new-file ${member.name}, write the task into that file, then  wot send ${member.name} --file <path>`
   ]
   finish(EXIT_CODES.ok, lines.join('\n'))
 }
@@ -381,7 +382,10 @@ async function readMember(positional, flags) {
 async function sendToMember(positional, flags) {
   const name = requireName(positional, 'wot send <name> --file <path>')
   const text = textFrom(flags, positional.slice(1), 'file', 'text')
-  const { member } = await call('/send', { member: name, text })
+  const { member, isQueued } = await call('/send', { member: name, text })
+  if (isQueued) {
+    finish(EXIT_CODES.ok, `OK: "${member.name}" is still starting. O-BROS types your message in by itself as soon as the agent is ready (usually within a minute). Do not send it again.\nNext: run  wot wait ${member.name}`)
+  }
   finish(EXIT_CODES.ok, `OK: Typed your message into "${member.name}" and pressed Enter.\nNext: run  wot wait ${member.name}`)
 }
 

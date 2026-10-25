@@ -13,6 +13,8 @@ import { useUsageStore } from '../../state/usageStore'
 import { AccountsRefreshButton } from '../../ui/AccountsRefreshButton'
 import { ProviderMark } from '../../ui/ProviderMark'
 import { UsageBar } from '../../ui/UsageBar'
+import { isUsageHigh } from '../../ui/usageText'
+import { cn } from '../../ui/cn'
 import { useNow } from '../../ui/useNow'
 import './settings.css'
 import './settingsControls.css'
@@ -53,9 +55,9 @@ function UsageCell({ label, window, now }: { label: string; window: UsageWindow 
       {window === null ? (
         <span className="muted">—</span>
       ) : (
-        <span className="usage-cell">
-          <UsageBar percentUsed={window.percentUsed} />
-          <span className="muted">
+        <span className={cn('usage-cell', isUsageHigh(window.percentUsed) && 'usage-high')}>
+          <UsageBar percentUsed={window.percentUsed} tone={isUsageHigh(window.percentUsed) ? 'danger' : 'normal'} />
+          <span className={isUsageHigh(window.percentUsed) ? undefined : 'muted'}>
             {window.percentUsed}% · {formatResetsIn(window.resetsAt, now)}
           </span>
         </span>

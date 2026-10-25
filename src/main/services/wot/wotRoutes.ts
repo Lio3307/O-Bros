@@ -98,7 +98,7 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
 
   '/send': async (body) => {
     const member = findOwnMember(textField(body, 'member', true), teamCallerPaneOf(body))
-    return { member: await sendToMember(member.id, textField(body, 'text', true)) }
+    return sendToMember(member.id, textField(body, 'text', true))
   },
 
   '/read': async (body) => {

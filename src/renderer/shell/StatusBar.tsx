@@ -14,7 +14,8 @@ import { useUsageVisibilityStore } from '../state/usageVisibilityStore'
 import { AccountsRefreshButton } from '../ui/AccountsRefreshButton'
 import { AgentIcon } from '../ui/AgentIcon'
 import { ProviderMark } from '../ui/ProviderMark'
-import { describeCompactWindow, listUsageWindows, mostPressingWindow, type LabeledWindow } from '../ui/usageText'
+import { describeCompactWindow, isUsageHigh, listUsageWindows, mostPressingWindow, type LabeledWindow } from '../ui/usageText'
+import { cn } from '../ui/cn'
 import { useNow } from '../ui/useNow'
 import { UsagePopover } from './UsagePopover'
 
@@ -103,7 +104,7 @@ function UsageSummary({ onClick }: { onClick: () => void }) {
         )}
         {leadProvider !== null && pressing === null && <span>{hasError ? 'unavailable' : '—'}</span>}
         {pressing !== null && compact !== null && (
-          <span className="status-window">
+          <span className={cn('status-window', isUsageHigh(pressing.window.percentUsed) && 'usage-high')}>
             <span className="status-window-label">{pressing.label}</span>
             <span className="status-percent">{compact.percent}</span>
             <span className="status-window-reset">{compact.remaining}</span>

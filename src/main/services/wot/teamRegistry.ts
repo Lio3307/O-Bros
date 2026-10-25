@@ -151,6 +151,12 @@ function publish(): void {
 
 const startingIds = new Set<string>()
 const goneReasons = new Map<string, string>()
+const deliveries = new Map<string, Promise<void>>()
+const queuedSendCounts = new Map<string, number>()
+
+function isDelivering(memberId: string): boolean {
+  return startingIds.has(memberId) || (queuedSendCounts.get(memberId) ?? 0) > 0
+}
 
 function currentStateOf(member: TeamMember): TeamMember['state'] {
   const facts = terminalFactsOf(member.id)
@@ -158,7 +164,7 @@ function currentStateOf(member: TeamMember): TeamMember['state'] {
     return 'starting'
   }
   const state = memberStateOf(facts, Date.now())
-  return startingIds.has(member.id) && state !== 'exited' ? 'starting' : state
+  return isDelivering(member.id) && state !== 'exited' ? 'starting' : state
 }
 
 function isTerminalOpen(paneId: string): boolean {
@@ -304,6 +310,8 @@ function removeMember(memberId: string, reason: string | null = null): void {
   members.delete(memberId)
   unreportedIds.delete(memberId)
   startingIds.delete(memberId)
+  deliveries.delete(memberId)
+  queuedSendCounts.delete(memberId)
   finishedSinceById.delete(memberId)
   killTerminal(memberId)
   keepStatesFresh()
@@ -414,21 +422,61 @@ export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> 
   keepStatesFresh()
   publish()
 
-  void deliverFirstTask(member, request.task)
+  deliveries.set(member.id, deliverFirstTask(member, request.task))
   return { member, taskQueued: request.task.trim() !== '', warnings }
 }
 
-export async function sendToMember(nameOrId: string, text: string): Promise<TeamMember> {
+export interface SendOutcome {
+  member: TeamMember
+  isQueued: boolean
+}
+
+function queueSend(member: TeamMember, text: string): void {
+  queuedSendCounts.set(member.id, (queuedSendCounts.get(member.id) ?? 0) + 1)
+  const previous = deliveries.get(member.id) ?? Promise.resolve()
+  const next = previous
+    .then(async () => {
+      await waitUntil(() => {
+        const facts = terminalFactsOf(member.id)
+        return !members.has(member.id) || facts === undefined || facts.hasExited || isReadyForInput(facts, Date.now())
+      }, READY_TIMEOUT_MS)
+      const facts = terminalFactsOf(member.id)
+      if (members.has(member.id) && facts !== undefined && !facts.hasExited) {
+        await typeAndSubmit(member.id, text)
+      }
+    })
+    .catch(() => undefined)
+    .finally(() => {
+      const count = (queuedSendCounts.get(member.id) ?? 1) - 1
+      if (count <= 0) {
+        queuedSendCounts.delete(member.id)
+      } else {
+        queuedSendCounts.set(member.id, count)
+      }
+    })
+  deliveries.set(member.id, next)
+}
+
+export async function sendToMember(nameOrId: string, text: string): Promise<SendOutcome> {
   const member = findMember(nameOrId)
   assertTextLength(text)
   if (text.trim() === '') {
     throw new WotError('bad-request', 'There is no text to send.')
   }
-  if (terminalFactsOf(member.id)?.hasExited ?? true) {
-    throw new WotError('failed', `"${member.name}" is not running anymore. Stop it with "wot stop ${member.name}".`)
+  const facts = terminalFactsOf(member.id)
+  const notRunning = new WotError('failed', `"${member.name}" is not running anymore. Stop it with "wot stop ${member.name}".`)
+  if (facts?.hasExited === true) {
+    throw notRunning
+  }
+  if (isDelivering(member.id)) {
+    queueSend(member, text)
+    return { member, isQueued: true }
+  }
+  if (facts === undefined) {
+    throw notRunning
   }
   await typeAndSubmit(member.id, text)
-  return member
+  return { member, isQueued: false }
 }
 
 export async function readMemberScreen(nameOrId: string, lines: number | undefined): Promise<string> {
