@@ -7,6 +7,7 @@ import { installDiagnostics } from './diagnostics'
 import './styles/tokens.css'
 import './styles/base.css'
 import './styles/shell.css'
+import './styles/motion.css'
 
 installDiagnostics()
 

@@ -1,0 +1,153 @@
+.row,
+.icon-button,
+.button-outline,
+.button-primary,
+.button-remove,
+.link-button,
+.rail-button,
+.tab,
+.tab-close,
+.tab-new,
+.tab-bar-actions button,
+.pane-actions button,
+.segment,
+.status-usage,
+.popup-menu-item,
+.quick-open-row,
+.field,
+.dropdown,
+.chip,
+.port-stop,
+.server-action,
+.session-member-stop,
+.update-notice-link,
+.toast-action,
+.toast-close {
+  transition:
+    color var(--motion-fast) var(--ease-out),
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
+}
+
+.icon-button:active:not(:disabled),
+.button-outline:active:not(:disabled),
+.button-primary:active:not(:disabled),
+.button-remove:active:not(:disabled),
+.rail-button:active,
+.tab-new:active,
+.tab-bar-actions button:active,
+.pane-actions button:active,
+.segment:active,
+.port-stop:active:not(:disabled),
+.server-action:active:not(:disabled),
+.toast-action:active {
+  transform: scale(0.96);
+  transition-duration: 60ms;
+}
+
+.row:active:not(:disabled) {
+  background-color: var(--color-selected);
+}
+
+.disclosure-chevron {
+  flex-shrink: 0;
+  transition: transform var(--motion-base) var(--ease-out);
+}
+
+.disclosure-chevron-open {
+  transform: rotate(90deg);
+}
+
+.usage-fill {
+  transition:
+    width var(--motion-slow) var(--ease-out),
+    background-color var(--motion-base) var(--ease-out);
+}
+
+.status-dot {
+  transition:
+    background-color var(--motion-base) var(--ease-out),
+    border-color var(--motion-base) var(--ease-out);
+}
+
+.popup-menu {
+  transform-origin: top left;
+  animation: motion-pop var(--motion-base) var(--ease-out);
+}
+
+.modal-backdrop,
+.quick-open-backdrop {
+  animation: motion-fade var(--motion-base) var(--ease-out);
+}
+
+.modal,
+.quick-open {
+  animation: motion-dialog var(--motion-slow) var(--ease-out-expo);
+}
+
+.side-panel > .panel-content,
+.settings-page,
+.activity-monitor,
+.changes-main,
+.folder-overview {
+  animation: motion-rise var(--motion-base) var(--ease-out);
+}
+
+.tab-content:not(.tab-content-hidden) {
+  animation: motion-fade var(--motion-fast) var(--ease-out);
+}
+
+.tab,
+.row-session,
+.session-member,
+.folder-row,
+.files-tree .row,
+.server-row,
+.live-card,
+.notice {
+  animation: motion-rise var(--motion-base) var(--ease-out) backwards;
+}
+
+@keyframes motion-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes motion-rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@keyframes motion-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+
+@keyframes motion-dialog {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+
+  .spinning {
+    animation-duration: 2.4s !important;
+    animation-iteration-count: infinite !important;
+  }
+}

@@ -1,4 +1,4 @@
-import { Bot, ChevronDown, ChevronRight, Folder, FolderOpen, FolderPlus, GitBranch, Terminal } from 'lucide-react'
+import { Bot, Folder, FolderOpen, FolderPlus, GitBranch, Terminal } from 'lucide-react'
 import { showTab } from '../../state/showTab'
 import { closestProject } from '../../../shared/closestProject'
 import { findTerminalPane } from '../../state/focusTerminalPane'
@@ -30,6 +30,7 @@ import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { useNow } from '../../ui/useNow'
 import './projects.css'
 import { Button } from '../../ui/Button'
+import { DisclosureChevron } from '../../ui/DisclosureChevron'
 import { cn } from '../../ui/cn'
 import { Notice } from '../../ui/Notice'
 import { ShowMoreToggle } from './ShowMoreToggle'
@@ -167,7 +168,6 @@ function FolderRow({ folder, sessions, hasFinished, now }: FolderRowProps) {
   const toggleCollapsed = useCollapsedRootsStore((state) => state.toggle)
   const hasSessions = sessions.length > 0
   const isCurrentProject = folder.path === activeProjectPath
-  const Chevron = isCollapsed ? ChevronRight : ChevronDown
 
   return (
     <>
@@ -180,7 +180,7 @@ function FolderRow({ folder, sessions, hasFinished, now }: FolderRowProps) {
             aria-expanded={!isCollapsed}
             onClick={() => toggleCollapsed(folder.path)}
           >
-            <Chevron size={14} />
+            <DisclosureChevron isOpen={!isCollapsed} />
           </button>
         ) : (
           <span className="folder-toggle" />
@@ -270,7 +270,6 @@ function RootBlock({ root }: { root: ProjectRoot }) {
     root.folders.map((folder) => folder.path)
   )
 
-  const Chevron = isCollapsed ? ChevronRight : ChevronDown
 
   return (
     <section className="root-block">
@@ -282,7 +281,7 @@ function RootBlock({ root }: { root: ProjectRoot }) {
           aria-expanded={!isCollapsed}
           onClick={() => toggleCollapsed(root.path)}
         >
-          <Chevron size={14} />
+          <DisclosureChevron isOpen={!isCollapsed} />
         </button>
         <button
           type="button"

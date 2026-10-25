@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronRight, MemoryStick } from 'lucide-react'
+import { MemoryStick } from 'lucide-react'
+import { DisclosureChevron } from '../../ui/DisclosureChevron'
 import { useState } from 'react'
 import { formatBytes, formatPercent } from '../../../shared/format'
 import { terminalsUsage } from '../../../shared/processUsage'
@@ -14,13 +15,12 @@ import './resources.css'
 
 function WorkspaceRows({ group }: { group: WorkspaceGroup }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const Chevron = isCollapsed ? ChevronRight : ChevronDown
 
   return (
     <>
       <button type="button" className="resource-row resource-row-group" onClick={() => setIsCollapsed(!isCollapsed)}>
         <span className="resource-name">
-          <Chevron size={14} />
+          <DisclosureChevron isOpen={!isCollapsed} />
           {group.name} workspace
           {group.isSelectedProject && <span className="muted"> · selected</span>}
         </span>
