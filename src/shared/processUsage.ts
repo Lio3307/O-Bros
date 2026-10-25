@@ -11,6 +11,10 @@ export function sumUsage(items: ProcessUsage[]): ProcessUsage {
   )
 }
 
+export function terminalsUsage(snapshot: ResourceSnapshot): ProcessUsage {
+  return sumUsage(snapshot.terminals)
+}
+
 export function withAppUsage(snapshot: ResourceSnapshot, app: ProcessUsage): ResourceSnapshot {
   return { ...snapshot, app, total: sumUsage([app, ...snapshot.terminals, ...snapshot.languageServers]) }
 }

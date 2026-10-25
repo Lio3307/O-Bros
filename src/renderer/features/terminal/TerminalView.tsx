@@ -82,6 +82,18 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     setSearchAddon(addon)
   }
 
+  function refitToHost(): void {
+    const terminal = terminalRef.current
+    const fitAddon = fitAddonRef.current
+    const host = hostRef.current
+    if (terminal === null || fitAddon === null || host === null) {
+      return
+    }
+    fitAddon.fit()
+    trimTerminalToHost(terminal, host)
+    window.api.pty.resize(paneId, terminal.cols, terminal.rows)
+  }
+
   function closeSearch(): void {
     searchAddonRef.current?.dispose()
     searchAddonRef.current = null
@@ -181,6 +193,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     if (!wantsWebgl && webglAddonRef.current !== null) {
       webglAddonRef.current.dispose()
       webglAddonRef.current = null
+      refitToHost()
     }
     if (!wantsWebgl || webglAddonRef.current !== null) {
       return
@@ -194,6 +207,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       if (addon !== null) {
         terminal.loadAddon(addon)
         webglAddonRef.current = addon
+        refitToHost()
       }
     })
     return () => {
@@ -208,8 +222,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       return
     }
     terminal.options.fontSize = fontSize
-    fitAddon.fit()
-    window.api.pty.resize(paneId, terminal.cols, terminal.rows)
+    refitToHost()
   }, [fontSize, paneId])
 
   useEffect(() => {

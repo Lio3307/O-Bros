@@ -2,6 +2,7 @@ import { CircleAlert, MemoryStick, Terminal, TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { describeCredit, formatDollars, type CreditBalance } from '../../shared/creditBalance'
 import { formatBytes } from '../../shared/format'
+import { terminalsUsage } from '../../shared/processUsage'
 import type { ProviderId } from '../../shared/types'
 import type { KnownUsage } from '../../shared/usageMerge'
 import { ProblemsPopover } from '../features/problems/ProblemsPopover'
@@ -127,11 +128,19 @@ function UsageSummary({ onClick }: { onClick: () => void }) {
 
 function ResourceStatus({ onClick }: { onClick: () => void }) {
   const snapshot = useResourcesStore((state) => state.snapshot)
-  const memoryText = snapshot === null ? '—' : formatBytes(snapshot.total.privateBytes)
+  const memoryText = snapshot === null ? '—' : formatBytes(snapshot.app.privateBytes)
   const terminalCount = snapshot === null ? 0 : snapshot.terminals.length
+  const title =
+    snapshot === null
+      ? 'Memory used by O-BROS. Click for details.'
+      : [
+          `O-BROS: ${formatBytes(snapshot.app.privateBytes)} (like its entry in Task Manager)`,
+          `In your terminals: ${formatBytes(terminalsUsage(snapshot).privateBytes)} (agents and programs you started; Task Manager lists them separately)`,
+          'Click for details.'
+        ].join('\n')
 
   return (
-    <button type="button" className="status-usage status-resources" title="Memory used by O-BROS and its terminals, like Task Manager shows it. Click for details." onClick={onClick}>
+    <button type="button" className="status-usage status-resources" title={title} onClick={onClick}>
       <MemoryStick size={14} />
       <span className="status-percent">{memoryText}</span>
       <span className="status-separator">·</span>

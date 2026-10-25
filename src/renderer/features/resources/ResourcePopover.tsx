@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight, MemoryStick } from 'lucide-react'
 import { useState } from 'react'
 import { formatBytes, formatPercent } from '../../../shared/format'
+import { terminalsUsage } from '../../../shared/processUsage'
 import { lastPathSegment } from '../../../shared/paths'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useResourcesStore } from '../../state/resourcesStore'
@@ -76,17 +77,21 @@ export function ResourcePopover() {
       ) : (
         <>
           <div className="resource-summary">
-            <span>
-              <strong>{formatPercent(snapshot.total.cpuPercent)}</strong> CPU
-            </span>
-            <span className="status-separator">·</span>
-            <span>
-              <strong>{formatBytes(snapshot.total.privateBytes)}</strong> memory
-            </span>
-            <span className="status-separator">·</span>
-            <span title="Working set: also counts the system libraries the processes share, once per process">
-              {formatBytes(snapshot.total.workingSetBytes)} with shared
-            </span>
+            <div
+              className="resource-stat"
+              title={`O-BROS itself, like its own entry in Task Manager. Counting the system libraries it shares with other programs: ${formatBytes(snapshot.app.workingSetBytes)}.`}
+            >
+              <span className="resource-stat-label">O-BROS</span>
+              <span className="resource-stat-value">{formatBytes(snapshot.app.privateBytes)}</span>
+              <span className="resource-stat-detail">{formatPercent(snapshot.app.cpuPercent)} CPU</span>
+            </div>
+            <div className="resource-stat" title="Agents, shells and programs you started in O-BROS terminals. Task Manager lists them as their own apps, for example Claude Code or node.">
+              <span className="resource-stat-label">In your terminals</span>
+              <span className="resource-stat-value">{formatBytes(terminalsUsage(snapshot).privateBytes)}</span>
+              <span className="resource-stat-detail">
+                {snapshot.terminals.length === 1 ? '1 terminal' : `${snapshot.terminals.length} terminals`} · {formatPercent(terminalsUsage(snapshot).cpuPercent)} CPU
+              </span>
+            </div>
           </div>
 
           <div className="resource-row resource-head">
@@ -96,6 +101,11 @@ export function ResourcePopover() {
           </div>
 
           <div className="resource-body">
+            <div className="resource-row resource-row-app">
+              <span className="resource-name">O-BROS itself</span>
+              <span className="resource-number">{formatPercent(snapshot.app.cpuPercent)}</span>
+              <span className="resource-number resource-number-strong">{formatBytes(snapshot.app.privateBytes)}</span>
+            </div>
             {groups.length === 0 && <p className="panel-empty">No terminals are running.</p>}
             {groups.map((group) => (
               <WorkspaceRows key={group.name} group={group} />
@@ -115,19 +125,14 @@ export function ResourcePopover() {
                 <span className="resource-number resource-number-strong">{formatBytes(server.privateBytes)}</span>
               </div>
             ))}
-            <div className="resource-row resource-row-app">
-              <span className="resource-name">o-bros app</span>
-              <span className="resource-number">{formatPercent(snapshot.app.cpuPercent)}</span>
-              <span className="resource-number resource-number-strong">{formatBytes(snapshot.app.privateBytes)}</span>
-            </div>
           </div>
 
           <PortsSection />
 
           <p className="resource-footnote">
-            Memory is what each process uses by itself, like the Memory column in Task Manager. &quot;With shared&quot; also
-            counts the system libraries every process loads, once per process, so it is larger. Terminal rows include the
-            shell and everything it started, and language servers include the helpers they start.
+            Memory is what each program uses by itself, like the Memory column in Task Manager. O-BROS is only the app.
+            Each terminal row adds up its shell and everything started in it, such as an agent; Task Manager shows those
+            as separate apps, so they are not part of the O-BROS number.
           </p>
         </>
       )}

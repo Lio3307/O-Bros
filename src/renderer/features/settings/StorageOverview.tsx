@@ -35,7 +35,7 @@ function FullestDriveTile({ reports }: { reports: DiskReport[] | null }) {
 export function StorageOverview({ reports }: { reports: DiskReport[] | null }) {
   const report = useStorageStore((state) => state.report)
   const clearSafeItems = useStorageStore((state) => state.clearSafeItems)
-  const memoryBytes = useResourcesStore((state) => state.snapshot?.total.privateBytes ?? null)
+  const memoryBytes = useResourcesStore((state) => state.snapshot?.app.privateBytes ?? null)
   const keptBytes = reports === null ? null : reports.reduce((total, disk) => total + keptBytesOf(disk), 0)
   const safeBytes = report === null ? null : report.appCacheBytes + report.leftoverTempBytes + report.teamTaskFileBytes
 
@@ -48,7 +48,7 @@ export function StorageOverview({ reports }: { reports: DiskReport[] | null }) {
           Free it
         </Button>
       </StatTile>
-      <StatTile value={memoryBytes === null ? WAITING : formatBytes(memoryBytes)} label="Memory in use, with terminals and agents" />
+      <StatTile value={memoryBytes === null ? WAITING : formatBytes(memoryBytes)} label="Memory used by O-BROS (agents in its terminals not counted)" />
     </div>
   )
 }
