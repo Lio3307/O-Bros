@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, nativeTheme } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import { join } from 'node:path'
 import { buildApplicationMenu } from './applicationMenu'
 import { registerAccountsIpc } from './ipc/accountsIpc'
@@ -75,7 +75,6 @@ function openMainWindow(): void {
 }
 
 app.whenReady().then(() => {
-  nativeTheme.themeSource = 'dark'
   Menu.setApplicationMenu(buildApplicationMenu())
   registerAllIpc()
   startWotServer()

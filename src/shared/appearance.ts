@@ -9,11 +9,6 @@ export interface Appearance {
   wallpaperBlur: number
 }
 
-export interface WindowBackground {
-  isDesktop: boolean
-  isSeeThrough: boolean
-}
-
 export interface Range {
   min: number
   max: number

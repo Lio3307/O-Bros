@@ -14,6 +14,7 @@ This page lists everything o-bros reads, writes and sends, so you can decide whe
 | Claude conversation files under `~/.claude*/projects` and Codex conversation files under `~/.codex*/sessions` | The History panel and Settings → Storage and memory (titles, sizes and ages; full text only when you open a session) |
 | `package.json` and lock file names in a project | The scripts list |
 | The operating-system process list and open ports | Resource Manager, ports, and the "still running" list when you close the app |
+| Your Windows wallpaper (`%APPDATA%\Microsoft\Windows\Themes\TranscodedWallpaper`, or the file named in the registry) and the wallpaper fit and desktop color under `HKCU\Control Panel` | Only while Settings → Appearance is set to **Desktop wallpaper**, to show it behind O-BROS. It is read again when O-BROS becomes the active window, never copied, saved or uploaded. |
 
 **Agent sign-ins.** For the agents listed in resources/agents/agent-auth.json, o-bros checks whether their API key environment variables (for example GEMINI_API_KEY) are set. It looks only at whether the variable has a value; the value itself is never kept, shown or sent.
 

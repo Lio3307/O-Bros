@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useAppearanceStore, useSurfaceAlpha } from '../state/appearanceStore'
-import { useWindowFocused } from '../ui/useWindowFocused'
+import { DesktopWallpaperLayer } from './DesktopWallpaperLayer'
 import './appBackground.css'
 
 export function AppBackground() {
@@ -8,10 +8,7 @@ export function AppBackground() {
   const wallpaperUrl = useAppearanceStore((state) => state.wallpaperUrl)
   const loadWallpaper = useAppearanceStore((state) => state.loadWallpaper)
   const surfaceAlpha = useSurfaceAlpha()
-  const isDesktop = appearance.background === 'desktop'
   const isSeeThrough = surfaceAlpha < 1
-  const isWindowFocused = useWindowFocused()
-  const shownSurfaceAlpha = isDesktop && !isWindowFocused ? 1 : surfaceAlpha
 
   useEffect(() => {
     void loadWallpaper()
@@ -19,17 +16,18 @@ export function AppBackground() {
 
   useEffect(() => {
     const root = document.documentElement
-    root.style.setProperty('--surface-alpha', String(shownSurfaceAlpha))
+    root.style.setProperty('--surface-alpha', String(surfaceAlpha))
     root.toggleAttribute('data-see-through', isSeeThrough)
-  }, [shownSurfaceAlpha, isSeeThrough])
+  }, [surfaceAlpha, isSeeThrough])
 
   useEffect(() => {
-    void window.api.appearance.setWindowBackground({ isDesktop, isSeeThrough }).catch(() => undefined)
-  }, [isDesktop, isSeeThrough])
+    void window.api.appearance.setTitleBarSeeThrough(isSeeThrough).catch(() => undefined)
+  }, [isSeeThrough])
 
-  if (isDesktop) {
+  if (appearance.background === 'desktop') {
     return (
-      <div className="app-wallpaper app-wallpaper-desktop" aria-hidden="true">
+      <div className="app-wallpaper" aria-hidden="true">
+        <DesktopWallpaperLayer blur={appearance.wallpaperBlur} />
         <div className="app-wallpaper-dim" style={{ opacity: appearance.wallpaperDim }} />
       </div>
     )

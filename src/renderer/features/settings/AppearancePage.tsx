@@ -15,11 +15,35 @@ import { SettingsSection } from '../../ui/SettingsSection'
 import './settings.css'
 import './settingsControls.css'
 
+const IS_WINDOWS = navigator.platform.toLowerCase().startsWith('win')
+
 const BACKGROUND_OPTIONS: { value: BackgroundKind; label: string }[] = [
   { value: 'solid', label: 'Solid' },
-  { value: 'wallpaper', label: 'Wallpaper' },
-  { value: 'desktop', label: 'Desktop (Windows 11)' }
+  { value: 'wallpaper', label: 'Image' },
+  { value: 'desktop', label: 'Desktop wallpaper' }
 ]
+
+function DesktopWallpaperPreview() {
+  const desktopWallpaper = useAppearanceStore((state) => state.desktopWallpaper)
+  if (desktopWallpaper === null) {
+    return <div className="appearance-wallpaper-preview appearance-wallpaper-empty">Reading…</div>
+  }
+  if (desktopWallpaper.imageUrl === null) {
+    return (
+      <div className="appearance-wallpaper-preview appearance-wallpaper-empty" style={{ backgroundColor: desktopWallpaper.color }}>
+        Solid color
+      </div>
+    )
+  }
+  return (
+    <img
+      className="appearance-wallpaper-preview"
+      src={desktopWallpaper.imageUrl}
+      style={{ backgroundColor: desktopWallpaper.color }}
+      alt="Your Windows wallpaper"
+    />
+  )
+}
 
 interface SliderProps {
   label: string
@@ -61,18 +85,23 @@ export function AppearancePage() {
   const removeWallpaper = useAppearanceStore((state) => state.removeWallpaper)
   const isWallpaper = appearance.background === 'wallpaper'
   const isDesktop = appearance.background === 'desktop'
+  const backgroundOptions = BACKGROUND_OPTIONS.filter((option) => option.value !== 'desktop' || IS_WINDOWS || isDesktop)
 
   return (
-    <SettingsPageLayout title="Appearance" description="Show a wallpaper or your desktop behind O-BROS. Text, menus and dialogs stay solid and readable.">
+    <SettingsPageLayout title="Appearance" description="Show a picture behind O-BROS. Text, menus and dialogs stay solid and readable.">
       <SettingsSection
         title="Background"
-        description="Solid is the classic look. Wallpaper shows an image of your choice. Desktop shows what is behind the window, softly blurred (Windows 11)."
+        description={
+          IS_WINDOWS
+            ? 'Solid is the classic look. Image shows a picture you choose. Desktop wallpaper shows your Windows wallpaper, lined up with your screen so the desktop seems to show through.'
+            : 'Solid is the classic look. Image shows a picture you choose behind the panels.'
+        }
       >
-        <SegmentedControl options={BACKGROUND_OPTIONS} value={appearance.background} onChange={(background) => update({ background })} />
+        <SegmentedControl options={backgroundOptions} value={appearance.background} onChange={(background) => update({ background })} />
       </SettingsSection>
 
       {isWallpaper && (
-        <SettingsSection title="Wallpaper" description="The image is copied into O-BROS's own folder, so it stays even if you move the original. Up to 20 MB.">
+        <SettingsSection title="Image" description="The image is copied into O-BROS's own folder, so it stays even if you move the original. Up to 20 MB.">
           <div className="appearance-wallpaper">
             {wallpaperUrl === null ? (
               <div className="appearance-wallpaper-preview appearance-wallpaper-empty">No image yet</div>
@@ -94,14 +123,19 @@ export function AppearancePage() {
         </SettingsSection>
       )}
 
+      {isDesktop && (
+        <SettingsSection
+          title="Desktop wallpaper"
+          description="The wallpaper set in Windows Settings → Personalization → Background, with its Fill, Fit, Stretch, Tile or Center setting. O-BROS follows it when you change it there, and never copies or uploads it."
+        >
+          <DesktopWallpaperPreview />
+        </SettingsSection>
+      )}
+
       {(isDesktop || (isWallpaper && wallpaperUrl !== null)) && (
         <SettingsSection
           title="See-through"
-          description={
-            isDesktop
-              ? 'How solid the panels are over your desktop, and how much to darken it. If text is hard to read over bright windows, raise Dim. Windows shows the desktop only while O-BROS is the active window, so O-BROS turns solid when you switch to another app.'
-              : 'How solid the panels, terminals and editor are over the wallpaper. Lower shows more of it; text always stays fully visible.'
-          }
+          description="How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim."
         >
           <div className="appearance-sliders">
             <Slider
@@ -120,16 +154,14 @@ export function AppearancePage() {
               display={percent(appearance.wallpaperDim)}
               onChange={(wallpaperDim) => update({ wallpaperDim })}
             />
-            {isWallpaper && (
-              <Slider
-                label="Blur"
-                value={appearance.wallpaperBlur}
-                range={WALLPAPER_BLUR_RANGE}
-                step={1}
-                display={`${appearance.wallpaperBlur} px`}
-                onChange={(wallpaperBlur) => update({ wallpaperBlur })}
-              />
-            )}
+            <Slider
+              label="Blur"
+              value={appearance.wallpaperBlur}
+              range={WALLPAPER_BLUR_RANGE}
+              step={1}
+              display={`${appearance.wallpaperBlur} px`}
+              onChange={(wallpaperBlur) => update({ wallpaperBlur })}
+            />
           </div>
         </SettingsSection>
       )}

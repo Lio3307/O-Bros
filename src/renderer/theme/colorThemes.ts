@@ -306,6 +306,8 @@ export function isColorThemeId(value: unknown): value is ColorThemeId {
   return COLOR_THEMES.some((theme) => theme.id === value)
 }
 
+const SCROLLBAR_ALPHA = { resting: 0.1, hovered: 0.2, dragged: 0.28 }
+
 export function terminalThemeOf(theme: ColorTheme, backgroundAlpha = 1): ITheme {
   const ansiColors: Record<string, string> = {}
   ANSI_NAMES.forEach((name, index) => {
@@ -317,6 +319,9 @@ export function terminalThemeOf(theme: ColorTheme, backgroundAlpha = 1): ITheme 
     foreground: theme.foreground,
     cursor: theme.cursor,
     cursorAccent: theme.background,
-    selectionBackground: theme.selection
+    selectionBackground: theme.selection,
+    scrollbarSliderBackground: withAlpha(theme.foreground, SCROLLBAR_ALPHA.resting),
+    scrollbarSliderHoverBackground: withAlpha(theme.foreground, SCROLLBAR_ALPHA.hovered),
+    scrollbarSliderActiveBackground: withAlpha(theme.foreground, SCROLLBAR_ALPHA.dragged)
   }
 }

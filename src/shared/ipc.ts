@@ -1,7 +1,7 @@
 import type { ActivityEntry, LiveAgent } from './activity'
 import type { AgentLogin } from './agentLogins'
 import type { AgentLogo } from './agentLogos'
-import type { WindowBackground } from './appearance'
+import type { DesktopPlacement, DesktopView, DesktopWallpaper } from './desktopWallpaper'
 import type {
   LanguageServerChoices,
   LanguageServerSession,
@@ -239,8 +239,10 @@ export const IpcChannel = {
   appearanceLoadWallpaper: 'appearance:loadWallpaper',
   appearanceChooseWallpaper: 'appearance:chooseWallpaper',
   appearanceRemoveWallpaper: 'appearance:removeWallpaper',
-  appearanceSetWindowBackground: 'appearance:setWindowBackground',
-  appearanceWindowFocusChanged: 'appearance:windowFocusChanged'
+  appearanceSetTitleBarSeeThrough: 'appearance:setTitleBarSeeThrough',
+  appearanceFollowDesktop: 'appearance:followDesktop',
+  appearanceDesktopPlacementChanged: 'appearance:desktopPlacementChanged',
+  appearanceDesktopWallpaperChanged: 'appearance:desktopWallpaperChanged'
 } as const
 
 export interface PtyCreateRequest {
@@ -461,7 +463,9 @@ export interface DesktopApi {
     loadWallpaper(): Promise<string | null>
     chooseWallpaper(): Promise<string | null>
     removeWallpaper(): Promise<void>
-    setWindowBackground(background: WindowBackground): Promise<void>
-    onWindowFocusChanged(listener: (isFocused: boolean) => void): () => void
+    setTitleBarSeeThrough(isSeeThrough: boolean): Promise<void>
+    followDesktop(isFollowing: boolean): Promise<DesktopView | null>
+    onDesktopPlacementChanged(listener: (placement: DesktopPlacement) => void): () => void
+    onDesktopWallpaperChanged(listener: (wallpaper: DesktopWallpaper) => void): () => void
   }
 }

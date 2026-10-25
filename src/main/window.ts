@@ -1,6 +1,5 @@
 import { BrowserWindow, shell } from 'electron'
 import { join } from 'node:path'
-import { IpcChannel } from '../shared/ipc'
 import { devServerUrl, isRunningFromSource } from './runMode'
 import { writeLog } from './services/logging/logFile'
 import { showWithSavedState } from './windowState'
@@ -23,6 +22,9 @@ function isWebLink(url: string): boolean {
 }
 
 export function showTitleBarSeeThrough(window: BrowserWindow, isSeeThrough: boolean): void {
+  if (process.platform !== 'win32') {
+    return
+  }
   window.setTitleBarOverlay({ color: isSeeThrough ? CLEAR_COLOR : CHROME_COLOR, symbolColor: TEXT_COLOR, height: TITLE_BAR_HEIGHT })
 }
 
@@ -59,8 +61,6 @@ export function createMainWindow(): BrowserWindow {
       event.preventDefault()
     }
   })
-  window.on('focus', () => window.webContents.send(IpcChannel.appearanceWindowFocusChanged, true))
-  window.on('blur', () => window.webContents.send(IpcChannel.appearanceWindowFocusChanged, false))
   window.webContents.on('render-process-gone', (_event, details) => {
     writeLog('error', 'The interface process stopped: ' + details.reason)
   })

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { readAppearance, surfaceAlphaOf, type Appearance } from '../../shared/appearance'
+import type { DesktopWallpaper } from '../../shared/desktopWallpaper'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
 import { readStoredJson, writeStoredJson } from './browserStorage'
 import { toast } from './toastStore'
@@ -9,15 +10,18 @@ const APPEARANCE_KEY = 'o-bros.appearance'
 interface AppearanceState {
   appearance: Appearance
   wallpaperUrl: string | null
+  desktopWallpaper: DesktopWallpaper | null
   update: (changes: Partial<Appearance>) => void
   loadWallpaper: () => Promise<void>
   chooseWallpaper: () => Promise<void>
   removeWallpaper: () => Promise<void>
+  showDesktopWallpaper: (desktopWallpaper: DesktopWallpaper) => void
 }
 
 export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
   appearance: readAppearance(readStoredJson(APPEARANCE_KEY)),
   wallpaperUrl: null,
+  desktopWallpaper: null,
 
   update: (changes) => {
     const appearance = readAppearance({ ...get().appearance, ...changes })
@@ -47,7 +51,9 @@ export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
     if (get().appearance.background === 'wallpaper') {
       get().update({ background: 'solid' })
     }
-  }
+  },
+
+  showDesktopWallpaper: (desktopWallpaper) => set({ desktopWallpaper })
 }))
 
 export function useSurfaceAlpha(): number {

@@ -1,13 +1,3 @@
-@property --surface-alpha {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 1;
-}
-
-html[data-see-through] {
-  transition: --surface-alpha var(--motion-slow) var(--ease-out);
-}
-
 .app-wallpaper {
   position: fixed;
   inset: 0;
@@ -18,14 +8,25 @@ html[data-see-through] {
   animation: motion-fade var(--motion-slow) var(--ease-out);
 }
 
-.app-wallpaper-desktop {
-  background: transparent;
-}
-
 .app-wallpaper-image,
-.app-wallpaper-dim {
+.app-wallpaper-dim,
+.app-desktop-image {
   position: absolute;
   inset: 0;
+}
+
+.app-desktop-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.app-desktop-image {
+  transition: filter var(--motion-slow) var(--ease-out);
 }
 
 .app-wallpaper-image {

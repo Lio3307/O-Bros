@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, webUtils, type IpcRendererEvent } from 'electron'
 import { IpcChannel, type DesktopApi, type PaneAgentEvent, type PtyDataEvent, type PtyExitEvent } from '../shared/ipc'
 import type { ActivityEntry } from '../shared/activity'
+import type { DesktopPlacement, DesktopWallpaper } from '../shared/desktopWallpaper'
 import type { TeamMember, UpdateStatus, WotRendererEnvelope } from '../shared/types'
 
 function subscribe<Payload>(channel: string, listener: (payload: Payload) => void): () => void {
@@ -202,8 +203,10 @@ const api: DesktopApi = {
     loadWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceLoadWallpaper),
     chooseWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceChooseWallpaper),
     removeWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceRemoveWallpaper),
-    setWindowBackground: (background) => ipcRenderer.invoke(IpcChannel.appearanceSetWindowBackground, background),
-    onWindowFocusChanged: (listener) => subscribe<boolean>(IpcChannel.appearanceWindowFocusChanged, listener)
+    setTitleBarSeeThrough: (isSeeThrough) => ipcRenderer.invoke(IpcChannel.appearanceSetTitleBarSeeThrough, isSeeThrough),
+    followDesktop: (isFollowing) => ipcRenderer.invoke(IpcChannel.appearanceFollowDesktop, isFollowing),
+    onDesktopPlacementChanged: (listener) => subscribe<DesktopPlacement>(IpcChannel.appearanceDesktopPlacementChanged, listener),
+    onDesktopWallpaperChanged: (listener) => subscribe<DesktopWallpaper>(IpcChannel.appearanceDesktopWallpaperChanged, listener)
   }
 }
 
