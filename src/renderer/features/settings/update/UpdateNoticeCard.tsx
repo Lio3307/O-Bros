@@ -1,5 +1,5 @@
 import { X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { readAnnouncedUpdates, updateNoticeFor, type AnnouncedUpdates } from '../../../../shared/updateNotice'
 import { readStoredJson, writeStoredJson } from '../../../state/browserStorage'
 import { restartToUpdate } from '../../../state/restartToUpdate'
@@ -7,6 +7,7 @@ import { isWorkRunning } from '../../../state/runningWork'
 import { toast } from '../../../state/toastStore'
 import { useUpdateStore } from '../../../state/updateStore'
 import { Button } from '../../../ui/Button'
+import { useLiveRefresh } from '../../../ui/useLiveRefresh'
 import './updateNotice.css'
 
 const DISMISSED_KEY = 'o-bros.announcedUpdates'
@@ -14,25 +15,10 @@ const BUSY_CHECK_MS = 15_000
 
 function useWorkRunning(isWatching: boolean): boolean {
   const [isRunning, setIsRunning] = useState(false)
-  useEffect(() => {
-    if (!isWatching) {
-      return
-    }
-    let isCurrent = true
-    const check = (): void => {
-      void isWorkRunning().then((running) => {
-        if (isCurrent) {
-          setIsRunning(running)
-        }
-      })
-    }
-    check()
-    const timer = setInterval(check, BUSY_CHECK_MS)
-    return () => {
-      isCurrent = false
-      clearInterval(timer)
-    }
-  }, [isWatching])
+  const check = useCallback(async () => {
+    setIsRunning(await isWorkRunning())
+  }, [])
+  useLiveRefresh(check, BUSY_CHECK_MS, { refreshNow: true, isEnabled: isWatching })
   return isRunning
 }
 

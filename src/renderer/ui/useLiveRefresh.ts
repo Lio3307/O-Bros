@@ -2,7 +2,16 @@ import { useEffect, useRef } from 'react'
 
 export const LIVE_REFRESH_MS = 4000
 
-export function useLiveRefresh(refresh: () => Promise<unknown>, everyMs: number | null = LIVE_REFRESH_MS): void {
+interface LiveRefreshOptions {
+  refreshNow?: boolean
+  isEnabled?: boolean
+}
+
+export function useLiveRefresh(
+  refresh: () => Promise<unknown>,
+  everyMs: number | null = LIVE_REFRESH_MS,
+  { refreshNow = false, isEnabled = true }: LiveRefreshOptions = {}
+): void {
   const latestRefresh = useRef(refresh)
 
   useEffect(() => {
@@ -10,6 +19,9 @@ export function useLiveRefresh(refresh: () => Promise<unknown>, everyMs: number 
   }, [refresh])
 
   useEffect(() => {
+    if (!isEnabled) {
+      return
+    }
     let isRunning = false
 
     async function refreshWhenShown(): Promise<void> {
@@ -30,6 +42,9 @@ export function useLiveRefresh(refresh: () => Promise<unknown>, everyMs: number 
       void refreshWhenShown()
     }
 
+    if (refreshNow) {
+      onShown()
+    }
     window.addEventListener('focus', onShown)
     document.addEventListener('visibilitychange', onShown)
     const timer = everyMs === null ? null : setInterval(onShown, everyMs)
@@ -40,5 +55,5 @@ export function useLiveRefresh(refresh: () => Promise<unknown>, everyMs: number 
         clearInterval(timer)
       }
     }
-  }, [everyMs])
+  }, [everyMs, refreshNow, isEnabled])
 }

@@ -18,6 +18,7 @@ import { ProviderMark } from '../ui/ProviderMark'
 import { describeCompactWindow, isUsageHigh, listUsageWindows, mostPressingWindow, type LabeledWindow } from '../ui/usageText'
 import { cn } from '../ui/cn'
 import { useNow } from '../ui/useNow'
+import { useLiveRefresh } from '../ui/useLiveRefresh'
 import { UsagePopover } from './UsagePopover'
 
 type OpenPanel = 'usage' | 'resources' | 'problems' | null
@@ -168,28 +169,8 @@ function useResourcePolling(isPanelOpen: boolean): void {
   const poll = useResourcesStore((state) => state.poll)
   const pollApp = useResourcesStore((state) => state.pollApp)
 
-  useEffect(() => {
-    function pollWhenShown(): void {
-      if (!document.hidden) {
-        void poll()
-      }
-    }
-    function pollAppWhenShown(): void {
-      if (!document.hidden) {
-        void pollApp()
-      }
-    }
-    pollWhenShown()
-    const interval = isPanelOpen ? RESOURCE_POLL_OPEN_MS : RESOURCE_POLL_IDLE_MS
-    const timer = setInterval(pollWhenShown, interval)
-    const appTimer = setInterval(pollAppWhenShown, APP_MEMORY_POLL_MS)
-    document.addEventListener('visibilitychange', pollWhenShown)
-    return () => {
-      clearInterval(timer)
-      clearInterval(appTimer)
-      document.removeEventListener('visibilitychange', pollWhenShown)
-    }
-  }, [poll, pollApp, isPanelOpen])
+  useLiveRefresh(poll, isPanelOpen ? RESOURCE_POLL_OPEN_MS : RESOURCE_POLL_IDLE_MS, { refreshNow: true })
+  useLiveRefresh(pollApp, APP_MEMORY_POLL_MS)
 }
 
 function useCloseOnOutsideClickOrEscape(isOpen: boolean, close: () => void) {

@@ -1,5 +1,5 @@
 import { Square } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   choiceFor,
   type LanguageServerSource,
@@ -15,6 +15,7 @@ import { LoadingText } from '../../ui/LoadingText'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../ui/SettingsSection'
 import { StatusDot, type StatusTone } from '../../ui/StatusDot'
+import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import './settings.css'
 import './settingsControls.css'
 
@@ -114,21 +115,10 @@ function ServerRow({ server }: { server: LanguageServerStatus }) {
 function RunningServers() {
   const [running, setRunning] = useState<RunningLanguageServer[]>([])
 
-  useEffect(() => {
-    let isCurrent = true
-    function read(): void {
-      void window.api.lsp
-        .running()
-        .then((list) => isCurrent && setRunning(list))
-        .catch(() => undefined)
-    }
-    read()
-    const timer = setInterval(read, RUNNING_POLL_MS)
-    return () => {
-      isCurrent = false
-      clearInterval(timer)
-    }
+  const readRunning = useCallback(async () => {
+    setRunning(await window.api.lsp.running())
   }, [])
+  useLiveRefresh(readRunning, RUNNING_POLL_MS, { refreshNow: true })
 
   return (
     <SettingsSection
