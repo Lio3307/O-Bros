@@ -87,6 +87,7 @@ Usage requests identify themselves honestly as `o-bros` and its version number, 
 - Closing the app lists what is still running before it stops anything.
 - The Team feature (wot) listens only on `127.0.0.1`, on a random port, and needs a random key that only terminals opened by O-BROS receive. The key changes every time the app starts. Team members cannot summon more members, and at most six run at once.
 - Every O-BROS terminal passes `git` through a small guard. For a guarded command (commit, push, branches, merges and similar) it reads the list of running programs to see whether an agent started it. Nothing about this leaves your computer.
+- Every O-BROS terminal also passes `gh` and `glab` through a guard. For a command that changes GitHub or GitLab or shows the sign-in token it checks whether an agent started it and, depending on Settings → Integrations, asks you, refuses it or lets it run. To remove agent credit lines it reads the file an agent passes with `--body-file` or `--notes-file` (up to 256 KB). The arguments and that file stay on your computer; O-BROS never reads your token.
 - Agents in O-BROS cannot commit, push or create, delete or rename a branch without you pressing **Allow**. This is a guard, not a sandbox: it covers the `git` command the agent's shell finds, not a git program called by its full path.
 
 ## Things to be aware of

@@ -1,5 +1,7 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
+set "O_BROS_CMD_LINE=!CMDCMDLINE!"
+setlocal DisableDelayedExpansion
 for %%a in (%*) do (
   for %%k in (commit push branch checkout switch worktree merge cherry-pick revert rebase am pull) do (
     if /i "%%~a"=="%%k" goto guard

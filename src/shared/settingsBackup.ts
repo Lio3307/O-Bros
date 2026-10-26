@@ -19,6 +19,7 @@ export const BACKUP_SETTING_KEYS = [
   'terminalGpuRendering',
   'notifyWhenFinished',
   'agentGitPolicy',
+  'agentHostPolicy',
   'agentCommitIdentity',
   'allowAgentCoAuthors',
   'teamPolicy',

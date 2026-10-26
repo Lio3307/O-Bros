@@ -2,7 +2,7 @@
 for argument in "$@"; do
   case "$argument" in
     commit|push|branch|checkout|switch|worktree|merge|cherry-pick|revert|rebase|am|pull)
-      ELECTRON_RUN_AS_NODE=1 exec "$O_BROS_WOT_NODE" "$O_BROS_GIT_GUARD" "$@"
+      O_BROS_CMD_LINE= ELECTRON_RUN_AS_NODE=1 exec "$O_BROS_WOT_NODE" "$O_BROS_GIT_GUARD" "$@"
       ;;
   esac
 done

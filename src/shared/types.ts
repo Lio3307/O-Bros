@@ -562,10 +562,25 @@ export interface AgentGitRequest {
   warnings: string[]
 }
 
+export interface AgentHostAnswer {
+  allowed: boolean
+  reason: string
+  keepCredits: boolean
+}
+
+export interface AgentHostRequest {
+  kind: 'confirmHost'
+  paneId: string
+  action: string
+  command: string
+  cwd: string
+}
+
 export type WotRendererRequest =
   | { kind: 'listLaunchers' }
   | { kind: 'readScreen'; memberId: string; lines: number }
   | AgentGitRequest
+  | AgentHostRequest
 
 export interface WotRendererEnvelope {
   requestId: string

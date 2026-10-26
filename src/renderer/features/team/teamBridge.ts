@@ -8,11 +8,15 @@ import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 import { readTerminalText } from '../terminal/terminalRegistry'
 import { confirmAgentGit } from './confirmAgentGit'
+import { confirmAgentHost } from './confirmAgentHost'
 import { openTeamMember } from './openTeamMember'
 
 async function answerRequest(request: WotRendererRequest): Promise<unknown> {
   if (request.kind === 'confirmGit') {
     return confirmAgentGit(request)
+  }
+  if (request.kind === 'confirmHost') {
+    return confirmAgentHost(request)
   }
   if (request.kind === 'listLaunchers') {
     return useAgentLaunchersStore.getState().launchers

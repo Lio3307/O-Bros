@@ -38,7 +38,18 @@ async function post(route, body) {
   return response.json()
 }
 
+function wasCutByWindows() {
+  const commandLine = process.env.O_BROS_CMD_LINE || ''
+  return commandLine.includes('\n') || commandLine.includes('\r')
+}
+
 async function main() {
+  if (wasCutByWindows()) {
+    stop(
+      'ERROR: Windows cut this git command at its first line break, so O-BROS did not run it. ' +
+        'Put the message in a file and use git commit -F <file>, use one -m for each paragraph, or run it from Git Bash.'
+    )
+  }
   if (!process.env.O_BROS_WOT_URL || !process.env.O_BROS_WOT_TOKEN || !process.env.O_BROS_WOT_PANE) {
     process.exit(runRealGit(gitArguments, {}))
   }

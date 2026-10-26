@@ -324,6 +324,17 @@
 - Result acceptance: Pending user feedback.
 - Learning: Environment variables beat git config, so identity can be set per terminal without touching any config file.
 
+### Guard gh and glab like git
+- Scope and goal: User-requested ("it depends the user, what they want so it will be optional"). The Integrations page invites installing gh and glab, which act on GitHub and GitLab as the user and were not covered by the git guard.
+- Choice and authority: Agent-selected mechanism, user-chosen to be optional. Wrappers in `resources/wot/host-guard` send every gh and glab call to `host-guard.cjs`; main classifies it (`src/shared/hostGuard.ts`), finds the caller, and the renderer applies a separate policy with the git choices (Never allow, Ask me, Allow). Default Ask me, because Never allow would break agents that already open pull requests, and Allow would keep the gap. Credit lines follow the existing co-author switch.
+- Evidence: hostGuard.test.ts, agentGitPolicy.test.ts; e2e/hostGuard.e2e.ts runs a compiled fake gh.exe through the wrappers from an agent and a plain terminal, and checks asking, refusing, credit removal from a body file, the Never allow setting and the line-break refusal.
+- Alternatives and sacrifice: Checking the words in the wrapper like git was rejected; gh commands need the group and verb, so every call costs one start of Electron as Node (about 100 ms). A `.ps1` wrapper would keep multi-line text in PowerShell but fails under the default execution policy, and setting `PSExecutionPolicyPreference` would weaken the user's PowerShell. Running a real `.cmd` gh was rejected because its arguments would pass through cmd.exe.
+- Residual risk/debt: Not a sandbox: gh by full path, curl with a token, or a gh alias the user made earlier get around it. The wrapper is on PATH even when gh is missing, so `where gh` finds it; running it says gh is not installed. In PowerShell and cmd, text with a line break must go through a file. A `--body-file -` (standard input) is not cleaned.
+- Recovery and ownership: src/shared/hostGuard.ts, src/main/services/wot/hostDecision.ts, src/renderer/features/team/confirmAgentHost.ts, resources/wot/host-guard/*, resources/wot/host-guard.cjs.
+- Implementation / validation / outcome: Written / unit and e2e tests / not yet tried with real agents.
+- Result acceptance: Pending user feedback.
+- Learning: A `.cmd` wrapper silently cuts arguments at the first line break; `%CMDCMDLINE%` still has the whole line, so the cut can be detected.
+
 ### Keep agents out of the GitHub history
 - Scope and goal: User-requested. No agent may appear as author, committer, co-author or branch name in what reaches GitHub.
 - Choice and authority: Agent-selected mechanism. The git guard is now on PATH in every O-BROS terminal. The wrappers only hand commit-related commands to the guard (commit, push, branch, checkout, switch, worktree, merge, cherry-pick, revert, rebase, am, pull); everything else goes straight to git. For those, the main process walks the parent processes of the guard and treats the command as an agent's if one of them is a known agent program (agent buttons, the built-in list and the ACP registry; runtimes such as node are ignored, and only the program and script path are looked at, never later arguments). Agent commands get the user's identity and lose --author; single-commit commands lose agent credit lines. Before any push, the commits that would be pushed are scanned (src/shared/agentTraces.ts) and the user is asked if one mentions an agent; the Push button does the same.

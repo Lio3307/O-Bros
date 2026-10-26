@@ -5,6 +5,7 @@ import { toast } from '../../../state/toastStore'
 import { SettingsPageLayout } from '../../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../../ui/SettingsSection'
 import { useLiveRefresh } from '../../../ui/useLiveRefresh'
+import { AgentHostSetting } from './AgentHostSetting'
 import { IntegrationCard } from './IntegrationCard'
 import './integrations.css'
 
@@ -47,6 +48,8 @@ export function IntegrationsPage() {
           ))}
         </div>
       </SettingsSection>
+
+      <AgentHostSetting />
     </SettingsPageLayout>
   )
 }

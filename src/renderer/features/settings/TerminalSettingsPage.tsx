@@ -1,4 +1,3 @@
-import type { AgentGitPolicy } from '../../../shared/agentGitPolicy'
 import { SCROLLBACK_CHOICES, useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import './settings.css'
 import './settingsControls.css'
@@ -6,19 +5,8 @@ import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../ui/SettingsSection'
 import { SegmentedControl } from '../../ui/SegmentedControl'
 import { AgentCommitSetting } from './AgentCommitSetting'
+import { AGENT_POLICY_NOTES, AGENT_POLICY_OPTIONS } from './agentPolicyOptions'
 import { ColorThemeSetting } from './ColorThemeSetting'
-
-const AGENT_GIT_OPTIONS: { value: AgentGitPolicy; label: string }[] = [
-  { value: 'block', label: 'Never allow' },
-  { value: 'ask', label: 'Ask me' },
-  { value: 'allow', label: 'Allow' }
-]
-
-const AGENT_GIT_NOTES: Record<AgentGitPolicy, string> = {
-  block: 'Agents are refused right away and told that you do it yourself. Nothing is asked.',
-  ask: 'O-BROS pauses the agent and asks you. No answer in 100 seconds means no.',
-  allow: 'Agents may do it. Team members are still asked about.'
-}
 
 export function TerminalSettingsPage() {
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
@@ -82,11 +70,12 @@ export function TerminalSettingsPage() {
       >
         <SegmentedControl
           className="settings-segmented"
-          options={AGENT_GIT_OPTIONS}
+          options={AGENT_POLICY_OPTIONS}
           value={agentGitPolicy}
           onChange={setAgentGitPolicy}
         />
-        <p className="muted">{AGENT_GIT_NOTES[agentGitPolicy]}</p>
+        <p className="muted">{AGENT_POLICY_NOTES[agentGitPolicy]}</p>
+        <p className="muted">For gh and glab, see Settings → Integrations.</p>
       </SettingsSection>
 
       <AgentCommitSetting />

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { agentGitVerdict, readAgentGitPolicy, type AgentGitSituation } from './agentGitPolicy'
+import { agentGitVerdict, DEFAULT_AGENT_HOST_POLICY, readAgentGitPolicy, type AgentGitSituation } from './agentGitPolicy'
 
 const AGENT_COMMIT: AgentGitSituation = { fromAgent: true, changesHistory: true, isTeamMember: false, hasWarnings: false }
 
@@ -9,6 +9,11 @@ describe('agent git policy', () => {
     expect(readAgentGitPolicy('nonsense')).toBe('block')
     expect(agentGitVerdict(AGENT_COMMIT, readAgentGitPolicy(null))).toBe('block')
     expect(agentGitVerdict({ ...AGENT_COMMIT, isTeamMember: true }, 'block')).toBe('block')
+  })
+
+  it('asks before agent gh and glab changes by default', () => {
+    expect(readAgentGitPolicy(null, DEFAULT_AGENT_HOST_POLICY)).toBe('ask')
+    expect(readAgentGitPolicy('block', DEFAULT_AGENT_HOST_POLICY)).toBe('block')
   })
 
   it('never touches what the user runs, but still asks about agent traces before a push', () => {

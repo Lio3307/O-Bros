@@ -24,12 +24,12 @@ const BRANCH_LISTING_FLAGS = [
 const CHECKOUT_CREATE_FLAGS = ['-b', '-B', '--orphan']
 const SWITCH_CREATE_FLAGS = ['-c', '-C', '--create', '--force-create', '--orphan']
 
-function optionName(argument: string): string {
+export function optionName(argument: string): string {
   const equalsIndex = argument.indexOf('=')
   return equalsIndex === -1 ? argument : argument.slice(0, equalsIndex)
 }
 
-function hasAnyFlag(argumentsAfter: string[], flags: string[]): boolean {
+export function hasAnyFlag(argumentsAfter: string[], flags: string[]): boolean {
   return argumentsAfter.some((argument) => flags.includes(optionName(argument)))
 }
 

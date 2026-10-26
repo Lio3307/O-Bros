@@ -205,6 +205,16 @@ flowchart TB
 - O-BROS tells an agent's git from yours by walking the process tree from the guard to the program that started it (`agentCaller.ts`). Your own commands are allowed as they are, except a push whose commits still have an agent author or credit line: then you are asked first. The Push button in the Changes panel makes the same check.
 - The decision is split in two: the main process finds out who is asking and what to warn about (`gitDecision.ts`), and the renderer applies your policy and asks the question (`confirmAgentGit.ts`, with the rules in `src/shared/agentGitPolicy.ts`).
 - If O-BROS cannot be reached, the guard refuses rather than letting the command through. Outside O-BROS the guard is not on the `PATH` at all.
+- On Windows, `git.cmd` saves `%CMDCMDLINE%` (with delayed expansion, so nothing in it runs) in `O_BROS_CMD_LINE`. When it holds a line break, Windows has already cut `%*` at that break, so `git-guard.cjs` refuses the command instead of running the shortened one.
+
+### gh and glab
+
+`resources/wot/host-guard` puts `gh` and `glab` (and `.cmd` versions) first on every O-BROS terminal's `PATH`. Unlike the git wrapper, they hand every call to `host-guard.cjs`, which finds the real program further down the `PATH` (on Windows only an `.exe`, so arguments never pass through `cmd.exe` again) and asks `POST /host-check`.
+
+- `src/shared/hostGuard.ts` decides what changes something: the first words after the group (`pr merge`, `repo deploy-key add`), API calls by method and fields, `auth token` and `--show-token`, and `config get token`. `auth status` and `auth git-credential` (git's credential helper) always run.
+- `hostDecision.ts` (main) lets reading commands through at once. For the rest it finds out whether an agent started it, and `confirmAgentHost.ts` (renderer) applies Settings → Integrations → Agents and gh or glab (default Ask me) with the same rules as git (`agentGitPolicy.ts`).
+- Unless the user lets agents add themselves as co-author, credit lines are removed from every argument, and a `--body-file` or `--notes-file` with credit lines becomes `--body` or `--notes` with the cleaned text.
+- When gh or glab is not installed, the wrapper says so and points to Settings → Integrations.
 
 ## How the Changes panel works
 

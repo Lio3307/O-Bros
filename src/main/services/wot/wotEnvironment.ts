@@ -1,7 +1,7 @@
 import { delimiter } from 'node:path'
 import { currentRealGit } from './realGit'
 import { currentWotConnection } from './wotConnection'
-import { GIT_GUARD_PATH, WOT_BIN_FOLDER, WOT_CLI_PATH, WOT_GUARD_FOLDER } from './wotPaths'
+import { GIT_GUARD_PATH, HOST_GUARD_FOLDER, HOST_GUARD_PATH, WOT_BIN_FOLDER, WOT_CLI_PATH, WOT_GUARD_FOLDER } from './wotPaths'
 
 export const WOT_VARIABLES = {
   url: 'O_BROS_WOT_URL',
@@ -10,6 +10,7 @@ export const WOT_VARIABLES = {
   runtime: 'O_BROS_WOT_NODE',
   cli: 'O_BROS_WOT_CLI',
   gitGuard: 'O_BROS_GIT_GUARD',
+  hostGuard: 'O_BROS_HOST_GUARD',
   realGit: 'O_BROS_REAL_GIT'
 }
 
@@ -27,7 +28,7 @@ export function withWotEnvironment(environment: Record<string, string>, paneId: 
     return environment
   }
   const realGit = currentRealGit()
-  const ownFolders = realGit === null ? [WOT_BIN_FOLDER] : [WOT_GUARD_FOLDER, WOT_BIN_FOLDER]
+  const ownFolders = realGit === null ? [HOST_GUARD_FOLDER, WOT_BIN_FOLDER] : [HOST_GUARD_FOLDER, WOT_GUARD_FOLDER, WOT_BIN_FOLDER]
   const pathKey = pathKeyOf(environment)
   const currentPath = environment[pathKey] ?? ''
   return {
@@ -38,6 +39,7 @@ export function withWotEnvironment(environment: Record<string, string>, paneId: 
     [WOT_VARIABLES.token]: connection.token,
     [WOT_VARIABLES.pane]: paneId,
     [WOT_VARIABLES.runtime]: process.execPath,
-    [WOT_VARIABLES.cli]: WOT_CLI_PATH
+    [WOT_VARIABLES.cli]: WOT_CLI_PATH,
+    [WOT_VARIABLES.hostGuard]: HOST_GUARD_PATH
   }
 }

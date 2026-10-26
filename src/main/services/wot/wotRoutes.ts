@@ -1,5 +1,7 @@
 import { isValidCommitIdentity, type CommitIdentity } from '../../../shared/commitIdentity'
 import { decideGit } from './gitDecision'
+import { decideHost } from './hostDecision'
+import { isHostTool } from '../../../shared/hostGuard'
 import { isWotInstalled, listSkillTargets } from './skillInstaller'
 import { skillUpdateNoteForAgents } from '../../../shared/skillUpdates'
 import { removeAgentCredits } from './commitCredits'
@@ -121,6 +123,20 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
       cwd: textField(body, 'cwd', true),
       guardPid: numberField(body, 'pid') ?? null
     }),
+
+  '/host-check': async (body) => {
+    const tool = body.tool
+    if (!isHostTool(tool)) {
+      throw new WotError('bad-request', '"tool" must be gh or glab.')
+    }
+    return decideHost({
+      paneId: callerPaneOf(body),
+      tool,
+      toolArguments: textListField(body, 'args'),
+      cwd: textField(body, 'cwd', true),
+      guardPid: numberField(body, 'pid') ?? null
+    })
+  },
 
   '/after-commit': async (body) => {
     callerPaneOf(body)

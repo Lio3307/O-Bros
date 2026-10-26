@@ -48,7 +48,7 @@ export function AgentCommitSetting() {
       </label>
       <p className="muted">
         When this is off, O-BROS removes &quot;Co-Authored-By&quot; and &quot;Generated with&quot; lines from commits that
-        agents make.
+        agents make, and from the pull requests, issues, comments and releases they write with gh or glab.
       </p>
     </SettingsSection>
   )

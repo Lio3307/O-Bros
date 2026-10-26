@@ -1,0 +1,2 @@
+#!/bin/sh
+O_BROS_CMD_LINE= ELECTRON_RUN_AS_NODE=1 exec "$O_BROS_WOT_NODE" "$O_BROS_HOST_GUARD" glab "$@"
