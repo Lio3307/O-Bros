@@ -96,6 +96,7 @@ export function TeamMemberViews({ isVisible }: { isVisible: boolean }) {
                 startCommand={member.command}
                 startsAgent
                 isVisible={isVisible && isShown}
+                isFocusTarget
               />
             </div>
           </div>

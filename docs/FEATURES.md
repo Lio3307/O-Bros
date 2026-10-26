@@ -8,6 +8,7 @@ A reference for everything o-bros does and where its settings live.
 |---|---|
 | Tabs and splits | Open as many terminals as you like. Split any terminal right or down. |
 | Rename | Double-click a terminal tab or pane title. |
+| Ready to type | Switching to a terminal tab, a session in Projects or a team member, or coming back from another page, puts the cursor in that terminal. In a split it goes to the pane you used last. |
 | Zoom | `Ctrl` `+`, `-`, `0` change the terminal text size. It is remembered. |
 | Search | `Ctrl+F` opens a find bar inside the focused terminal. `Enter` goes to the next match, `Shift+Enter` to the previous one. |
 | Drop a path | Drag a file or folder from the Files panel, or a file from your file manager, onto a terminal to paste its quoted path. |
@@ -66,6 +67,7 @@ On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → 
 
 | Feature | Details |
 |---|---|
+| Agent status | The agent logo on tabs, sessions, split panes and team members shows its state: starting (the logo fades in and out), working (a yellow ring spins), asking you something (a blue ? that wiggles), done and waiting for you (a green check; it glows until you look). An agent counts as asking when a question such as "Do you want to proceed?" or "(y/n)" is on its screen after it goes quiet, and stops counting once you answer with Enter. |
 | Agent icons | Tabs and sessions show the logo of the agent running in them, for any agent: started from a button or typed into a plain terminal. Agent tabs are named after the agent. A grey logo means that agent stopped, or O-BROS was closed and reopened. |
 | Missing folders | A project folder that was moved, deleted or is on a drive that is not connected shows **Folder not found** with **Locate…** and **Remove**. It comes back by itself when the folder is there again. Terminals and Changes explain that the folder is not available. |
 | Paste images | With a screenshot or other image on the clipboard, Ctrl+Shift+V (or Paste in the terminal menu) saves it as a PNG under O-BROS's data folder (`pasted-images`) and pastes its path for the agent to read. Pasted images are removed after 7 days. |

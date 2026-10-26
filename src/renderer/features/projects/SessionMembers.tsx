@@ -3,11 +3,10 @@ import { useState } from 'react'
 import { formatAge } from '../../../shared/time'
 import type { TeamMember } from '../../../shared/types'
 import { useTeamStore } from '../../state/teamStore'
-import { AgentIcon } from '../../ui/AgentIcon'
-import { AGENT_STATE_LABELS, toneOfAgentState } from '../../ui/agentState'
+import { agentStatusOfMember } from '../../../shared/agentStatus'
+import { AgentStatusIcon } from '../../ui/AgentStatusIcon'
+import { AGENT_STATE_LABELS } from '../../ui/agentState'
 import { Button } from '../../ui/Button'
-import { Spinner } from '../../ui/Spinner'
-import { StatusDot } from '../../ui/StatusDot'
 import { openTeamMember } from '../team/openTeamMember'
 import { stopTeamMember } from '../team/stopTeamMember'
 import { firstLineOf } from '../team/teamMemberText'
@@ -15,13 +14,6 @@ import { ShowMoreToggle } from './ShowMoreToggle'
 import './projects.css'
 
 const VISIBLE_MEMBERS = 3
-
-function MemberStateMark({ member }: { member: TeamMember }) {
-  if (member.state === 'working' || member.state === 'starting') {
-    return <Spinner size={12} />
-  }
-  return <StatusDot tone={toneOfAgentState(member.state)} />
-}
 
 interface MemberRowProps {
   member: TeamMember
@@ -47,8 +39,12 @@ function MemberRow({ member, now, onOpened }: MemberRowProps) {
           onOpened?.()
         }}
       >
-        <MemberStateMark member={member} />
-        <AgentIcon command={member.command} size={14} />
+        <AgentStatusIcon
+          command={member.command}
+          status={agentStatusOfMember(member.state)}
+          label={member.agentName}
+          isStopped={member.state === 'exited'}
+        />
         <span className="row-name">{member.name}</span>
         <span className="muted session-member-age">
           {member.state === 'waiting' ? 'asking' : member.state === 'exited' ? 'exited' : formatAge(member.createdAt, now)}

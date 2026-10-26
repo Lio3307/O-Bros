@@ -6,6 +6,7 @@ import { requestClosePane } from '../../state/requestCloseTab'
 import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { useShortcutLabel } from '../../state/shortcutsStore'
 import { EditableTitle } from '../../ui/EditableTitle'
+import { PaneAgentStatus } from './PaneAgentStatus'
 import { TerminalView } from './TerminalView'
 
 interface PaneFrameProps {
@@ -33,11 +34,14 @@ export function PaneFrame({ tab, paneId, isVisible }: PaneFrameProps) {
     <div className={frameClassName} onMouseDown={() => focusPane(tab.id, paneId)}>
       {hasSeveralPanes && (
         <div className="pane-header">
-          <EditableTitle
+          <span className="pane-heading">
+            <PaneAgentStatus pane={pane} />
+            <EditableTitle
             className="pane-title"
             value={pane.title}
-            onCommit={(title) => renamePane(tab.id, paneId, title)}
-          />
+              onCommit={(title) => renamePane(tab.id, paneId, title)}
+            />
+          </span>
           <div className="pane-actions">
             <button type="button" title={`Split right (${splitRightLabel})`} onClick={() => splitPane(tab.id, paneId, 'horizontal')}>
               <Columns2 size={14} />
@@ -58,6 +62,7 @@ export function PaneFrame({ tab, paneId, isVisible }: PaneFrameProps) {
         startCommand={pane.startCommand}
         startsAgent={isAgentCommand(pane.startCommand, launchers, registry)}
         isVisible={isVisible}
+        isFocusTarget={tab.focusedPaneId === paneId}
       />
     </div>
   )

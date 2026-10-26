@@ -11,9 +11,9 @@ export const AGENT_STATE_LABELS: Record<TeamMemberState, string> = {
 
 const TONE_BY_STATE: Record<TeamMemberState, StatusTone> = {
   starting: 'neutral',
-  working: 'info',
+  working: 'warning',
   idle: 'success',
-  waiting: 'danger',
+  waiting: 'info',
   exited: 'neutral'
 }
 

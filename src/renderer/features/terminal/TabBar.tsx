@@ -5,6 +5,7 @@ import { TabTeamButton } from './TabTeamButton'
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type WheelEvent } from 'react'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useAttentionStore } from '../../state/attentionStore'
+import { useAgentStatusStore } from '../../state/agentStatusStore'
 import { copyPath, revealInFileExplorer } from '../files/fileActions'
 import { openTerminal } from '../../state/openTerminal'
 import { requestCloseOtherTabs, requestCloseTab } from '../../state/requestCloseTab'
@@ -62,6 +63,9 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
   const renameTab = useWorkspaceStore((state) => state.renameTab)
   const moveTab = useWorkspaceStore((state) => state.moveTab)
   const needsAttention = useAttentionStore((state) => state.tabIds.includes(tab.id))
+  const showsAgentStatus = useAgentStatusStore(
+    (state) => tab.kind === 'terminal' && Object.keys(tab.panes).some((paneId) => state.statuses[paneId] !== undefined)
+  )
 
   const isModified = tab.kind === 'file' && tab.isModified
 
@@ -99,7 +103,7 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
       )}
       {tab.kind === 'terminal' && <TabTeamButton tab={tab} />}
       {isModified && <span className="tab-modified-dot" title="Unsaved changes" />}
-      {needsAttention && !isActive && <span className="tab-attention-dot" title="Finished while you were away" />}
+      {needsAttention && !isActive && !showsAgentStatus && <span className="tab-attention-dot" title="Finished while you were away" />}
       <button
         type="button"
         className="tab-close"

@@ -23,6 +23,7 @@ import { DRAGGED_PATH_TYPE } from '../files/dragData'
 import { createFileLinkProvider } from './fileLinkProvider'
 import { openFileReference } from './openFileReference'
 import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
+import { noteAgentOutput, noteAgentResize, noteAgentTyping } from './agentStatusTracking'
 import { registerTerminal, unregisterTerminal } from './terminalRegistry'
 import { TerminalSearchBar } from './TerminalSearchBar'
 import { terminalOptions } from './terminalTheme'
@@ -36,9 +37,14 @@ interface TerminalViewProps {
   startCommand: string | null
   startsAgent: boolean
   isVisible: boolean
+  isFocusTarget: boolean
 }
 
 const RIGHT_BUTTON = 2
+
+function isDialogOpen(): boolean {
+  return document.querySelector('[aria-modal="true"]') !== null
+}
 
 interface OpenContextMenu {
   x: number
@@ -56,7 +62,7 @@ function createWebglAddon(WebglAddonClass: typeof WebglAddon): WebglAddon | null
   }
 }
 
-export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, isVisible }: TerminalViewProps) {
+export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, isVisible, isFocusTarget }: TerminalViewProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const terminalRef = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
@@ -94,6 +100,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     }
     fitAddon.fit()
     trimTerminalToHost(terminal, host)
+    noteAgentResize(paneId)
     window.api.pty.resize(paneId, terminal.cols, terminal.rows)
   }
 
@@ -141,6 +148,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     function fitToHost(): void {
       fitAddon.fit()
       trimTerminalToHost(terminal, host as HTMLElement)
+      noteAgentResize(paneId)
       window.api.pty.resize(paneId, terminal.cols, terminal.rows)
     }
 
@@ -149,10 +157,14 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       onOutput: (chunk) => {
         terminal.write(chunk)
         noteTerminalOutput(paneId, chunk)
+        noteAgentOutput(paneId)
       },
       onExit: () => terminal.write('\r\n[process exited]\r\n')
     })
-    const stopListeningToTyping = terminal.onData((data) => window.api.pty.input(paneId, data))
+    const stopListeningToTyping = terminal.onData((data) => {
+      noteAgentTyping(paneId, data)
+      window.api.pty.input(paneId, data)
+    })
     const resizeObserver = new ResizeObserver(fitToHost)
     resizeObserver.observe(host)
     void document.fonts.ready.then(() => {
@@ -237,6 +249,12 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       terminalRef.current.options.scrollback = scrollback
     }
   }, [scrollback])
+
+  useEffect(() => {
+    if (isVisible && isFocusTarget && !isDialogOpen()) {
+      terminalRef.current?.focus()
+    }
+  }, [isVisible, isFocusTarget])
 
   useEffect(() => {
     if (terminalRef.current !== null) {

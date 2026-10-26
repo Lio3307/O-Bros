@@ -13,7 +13,11 @@ test.afterEach(async () => {
 })
 
 function tabIcon() {
-  return app.window.locator('.tab .tab-agent-icon').first()
+  return app.window.locator('.tab .agent-status-icon').first()
+}
+
+function runningTitle(label: string): RegExp {
+  return new RegExp(`^${label} is (starting|working|ready for a task|done, your turn|asking you a question)$`)
 }
 
 test('a launched agent shows its own icon and name, and dims after a restart', async () => {
@@ -29,15 +33,15 @@ test('a launched agent shows its own icon and name, and dims after a restart', a
   await app.window.getByRole('button', { name: 'ShellAgent', exact: true }).click()
 
   await expect(app.window.locator('.tab', { hasText: 'ShellAgent' })).toBeVisible()
-  await expect(tabIcon()).toHaveAttribute('title', 'ShellAgent is running here')
-  await expect(app.window.locator('.row-session .tab-agent-icon')).toHaveCount(1)
+  await expect(tabIcon()).toHaveAttribute('title', runningTitle('ShellAgent'))
+  await expect(app.window.locator('.row-session .agent-status-icon')).toHaveCount(1)
 
   await app.window.waitForTimeout(800)
   await app.window.reload()
   await app.window.waitForSelector('.rail')
 
   await expect(app.window.locator('.tab', { hasText: 'ShellAgent' })).toBeVisible()
-  await expect(tabIcon()).toHaveClass(/tab-agent-icon-stopped/)
+  await expect(tabIcon()).toHaveClass(/agent-status-stopped/)
   await expect(tabIcon()).toHaveAttribute('title', 'ShellAgent is not running here any more')
 })
 
@@ -52,7 +56,7 @@ test('a launched agent turns grey after you quit it and the terminal stays open'
   await app.window.waitForSelector('.rail')
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByRole('button', { name: 'ShellAgent', exact: true }).click()
-  await expect(tabIcon()).toHaveAttribute('title', 'ShellAgent is running here')
+  await expect(tabIcon()).toHaveAttribute('title', runningTitle('ShellAgent'))
 
   await app.window.waitForTimeout(11_000)
   const input = app.window.locator('.workspace .xterm-helper-textarea').first()
@@ -60,7 +64,7 @@ test('a launched agent turns grey after you quit it and the terminal stays open'
   await app.window.keyboard.type('exit')
   await app.window.keyboard.press('Enter')
 
-  await expect(tabIcon()).toHaveClass(/tab-agent-icon-stopped/, { timeout: 15_000 })
+  await expect(tabIcon()).toHaveClass(/agent-status-stopped/, { timeout: 15_000 })
   await expect(app.window.locator('.tab', { hasText: 'ShellAgent' })).toBeVisible()
 })
 
@@ -81,6 +85,6 @@ test('an agent typed into a plain terminal shows its icon while it runs', async 
   await app.window.keyboard.type('node tools/claude-code/cli.js')
   await app.window.keyboard.press('Enter')
 
-  await expect(tabIcon()).toHaveAttribute('title', 'claude is running here', { timeout: 10_000 })
-  await expect(tabIcon()).toHaveClass(/tab-agent-icon-stopped/, { timeout: 40_000 })
+  await expect(tabIcon()).toHaveAttribute('title', runningTitle('claude'), { timeout: 10_000 })
+  await expect(tabIcon()).toHaveClass(/agent-status-stopped/, { timeout: 40_000 })
 })

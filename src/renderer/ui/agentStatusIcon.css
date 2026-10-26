@@ -1,0 +1,199 @@
+.agent-status-icon {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.row > .agent-status-icon {
+  overflow: visible;
+}
+
+.agent-status-logo {
+  display: inline-flex;
+  transition:
+    opacity var(--motion-slow) var(--ease-out),
+    filter var(--motion-slow) var(--ease-out);
+}
+
+.agent-status-stopped .agent-status-logo {
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+
+.agent-status-starting .agent-status-logo {
+  animation: agent-status-breathe 1.4s ease-in-out infinite;
+}
+
+.agent-status-working::before {
+  position: absolute;
+  inset: -3px;
+  content: '';
+  pointer-events: none;
+  background: conic-gradient(
+    from 0turn,
+    transparent 0turn 0.3turn,
+    color-mix(in srgb, var(--color-warning) 30%, transparent) 0.62turn,
+    var(--color-warning) 1turn
+  );
+  border-radius: 50%;
+  mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1.5px));
+  animation:
+    agent-status-spin 0.9s linear infinite,
+    agent-status-appear var(--motion-slow) var(--ease-out);
+}
+
+.agent-status-badge {
+  position: absolute;
+  right: -5px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 10px;
+  height: 10px;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--color-terminal-solid);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-terminal-solid) 70%, transparent);
+  animation: agent-status-pop 420ms var(--ease-out-expo) both;
+}
+
+.agent-status-badge::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.agent-status-asking .agent-status-badge {
+  --agent-status-halo: var(--color-info);
+  background: var(--color-info);
+  animation:
+    agent-status-pop 420ms var(--ease-out-expo) both,
+    agent-status-nudge 2.4s ease-in-out 700ms infinite;
+}
+
+.agent-status-asking .agent-status-badge::after,
+.agent-status-unseen .agent-status-badge::after {
+  animation: agent-status-halo 1.6s var(--ease-out) infinite;
+}
+
+.agent-status-done .agent-status-badge {
+  --agent-status-halo: var(--color-success);
+  background: var(--color-success);
+}
+
+.agent-status-unseen .agent-status-badge::after {
+  animation-duration: 2.4s;
+}
+
+.agent-status-badge svg {
+  width: 8px;
+  height: 8px;
+}
+
+.agent-status-check {
+  fill: none;
+  stroke: var(--color-terminal-solid);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 8;
+  stroke-dashoffset: 8;
+  animation: agent-status-draw 360ms var(--ease-out) 180ms forwards;
+}
+
+@keyframes agent-status-spin {
+  to {
+    rotate: 1turn;
+  }
+}
+
+@keyframes agent-status-appear {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes agent-status-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes agent-status-pop {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes agent-status-nudge {
+  0%,
+  72%,
+  100% {
+    rotate: 0deg;
+  }
+
+  78% {
+    rotate: -16deg;
+  }
+
+  86% {
+    rotate: 12deg;
+  }
+
+  93% {
+    rotate: -5deg;
+  }
+}
+
+@keyframes agent-status-halo {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--agent-status-halo) 60%, transparent);
+  }
+
+  to {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--agent-status-halo) 0%, transparent);
+  }
+}
+
+@keyframes agent-status-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-status-icon *,
+  .agent-status-icon *::after,
+  .agent-status-icon::before {
+    animation: none !important;
+  }
+
+  .agent-status-working::before {
+    background: var(--color-warning);
+  }
+
+  .agent-status-starting .agent-status-logo {
+    opacity: 0.6;
+  }
+
+  .agent-status-check {
+    stroke-dashoffset: 0;
+  }
+}
