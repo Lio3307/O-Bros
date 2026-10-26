@@ -324,6 +324,17 @@
 - Result acceptance: Pending user feedback.
 - Learning: Environment variables beat git config, so identity can be set per terminal without touching any config file.
 
+### git.cmd hands every command to the guard
+- Scope and goal: Bug found while testing the gh guard. From PowerShell or cmd, a git command with an odd number of quotes skipped the git guard: the batch `for %%a in (%*)` loop ran zero times, so `git.cmd` fell through to the real git. Every multi-line `git commit -m` hits this, because Windows cuts the command at the line break inside the quotes, and the commit also lost its later lines.
+- Choice and authority: Agent-selected fix. `git.cmd` no longer parses anything; it saves `%CMDCMDLINE%` with delayed expansion and runs `git-guard.cjs`, which checks the words with real argument parsing (the same list as `guard/git`), runs the rest straight away without asking O-BROS, and refuses a command Windows cut.
+- Evidence: e2e/gitGuard.e2e.ts sends a multi-line commit and a commit with an odd quote from an agent with Never allow; both are refused. Before the fix the multi-line commit was made.
+- Alternatives and sacrifice: Detecting odd quotes or line breaks in batch was rejected as fragile. Every git command in PowerShell and cmd now starts Electron as Node first, about 100 ms. Git Bash, macOS and Linux keep the shell wrapper and stay fast.
+- Residual risk/debt: A carriage return without a line feed is dropped by cmd.exe and cannot be seen afterwards.
+- Recovery and ownership: resources/wot/guard/git.cmd, resources/wot/git-guard.cjs.
+- Implementation / validation / outcome: Written / e2e / fixed.
+- Result acceptance: Pending user feedback.
+- Learning: Never let a batch file decide on security from `%*`; quotes in the arguments change how cmd.exe parses the decision itself.
+
 ### Guard gh and glab like git
 - Scope and goal: User-requested ("it depends the user, what they want so it will be optional"). The Integrations page invites installing gh and glab, which act on GitHub and GitLab as the user and were not covered by the git guard.
 - Choice and authority: Agent-selected mechanism, user-chosen to be optional. Wrappers in `resources/wot/host-guard` send every gh and glab call to `host-guard.cjs`; main classifies it (`src/shared/hostGuard.ts`), finds the caller, and the renderer applies a separate policy with the git choices (Never allow, Ask me, Allow). Default Ask me, because Never allow would break agents that already open pull requests, and Allow would keep the gap. Credit lines follow the existing co-author switch.

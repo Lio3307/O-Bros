@@ -201,7 +201,7 @@ flowchart TB
     style OK stroke:#3fb950
 ```
 
-- `guard/git` (`git.cmd` on Windows) only checks the subcommand. Everything that does not change history goes straight to the real git, so normal commands stay fast.
+- `guard/git` only checks the subcommand. Everything that does not change history goes straight to the real git, so normal commands stay fast. `git.cmd` on Windows hands every command to `git-guard.cjs`, which makes the same check: a batch `for` loop over `%*` runs zero times when the arguments have an odd number of quotes, so it would have let such commands skip the guard. This costs about 100 ms per git command in PowerShell and cmd.
 - O-BROS tells an agent's git from yours by walking the process tree from the guard to the program that started it (`agentCaller.ts`). Your own commands are allowed as they are, except a push whose commits still have an agent author or credit line: then you are asked first. The Push button in the Changes panel makes the same check.
 - The decision is split in two: the main process finds out who is asking and what to warn about (`gitDecision.ts`), and the renderer applies your policy and asks the question (`confirmAgentGit.ts`, with the rules in `src/shared/agentGitPolicy.ts`).
 - If O-BROS cannot be reached, the guard refuses rather than letting the command through. Outside O-BROS the guard is not on the `PATH` at all.

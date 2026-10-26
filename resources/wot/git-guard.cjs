@@ -3,6 +3,7 @@
 const { spawnSync } = require('node:child_process')
 
 const gitArguments = process.argv.slice(2)
+const CHECKED_WORDS = ['commit', 'push', 'branch', 'checkout', 'switch', 'worktree', 'merge', 'cherry-pick', 'revert', 'rebase', 'am', 'pull']
 
 function stop(text) {
   process.stderr.write(text + '\n')
@@ -14,7 +15,10 @@ function runRealGit(finalArguments, extraEnvironment) {
   if (!realGit) {
     stop('ERROR: O-BROS could not find the real git program on this computer.')
   }
-  const result = spawnSync(realGit, finalArguments, { stdio: 'inherit', env: { ...process.env, ...extraEnvironment } })
+  const environment = { ...process.env, ...extraEnvironment }
+  delete environment.ELECTRON_RUN_AS_NODE
+  delete environment.O_BROS_CMD_LINE
+  const result = spawnSync(realGit, finalArguments, { stdio: 'inherit', env: environment })
   if (result.error) {
     stop(`ERROR: Could not run git: ${result.error.message}`)
   }
@@ -50,7 +54,8 @@ async function main() {
         'Put the message in a file and use git commit -F <file>, use one -m for each paragraph, or run it from Git Bash.'
     )
   }
-  if (!process.env.O_BROS_WOT_URL || !process.env.O_BROS_WOT_TOKEN || !process.env.O_BROS_WOT_PANE) {
+  const needsCheck = gitArguments.some((argument) => CHECKED_WORDS.includes(argument))
+  if (!needsCheck || !process.env.O_BROS_WOT_URL || !process.env.O_BROS_WOT_TOKEN || !process.env.O_BROS_WOT_PANE) {
     process.exit(runRealGit(gitArguments, {}))
   }
   let payload

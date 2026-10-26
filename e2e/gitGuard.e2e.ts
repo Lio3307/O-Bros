@@ -130,6 +130,8 @@ test('refuses agent commits, branches and worktrees by default without asking', 
   if (isWindows) {
     await typeInTerminal(savedOutput('git commit --allow-empty -m "first`nsecond"', 'cut-proof.txt'))
     await expect.poll(() => readProof('cut-proof.txt'), { timeout: 30_000 }).toContain('Windows cut this git command')
+    await typeInTerminal(savedOutput(`git ${IDENTITY} commit --allow-empty -m 'odd"quote'`, 'quote-proof.txt'))
+    await expect.poll(() => readProof('quote-proof.txt'), { timeout: 30_000 }).toContain('GIT_BLOCKED')
   }
   await expect(app.window.getByText('Allow it to commit?')).toHaveCount(0)
 
