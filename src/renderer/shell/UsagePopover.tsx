@@ -6,6 +6,7 @@ import type { ProviderId } from '../../shared/types'
 import { selectActiveAccount, useAccountsStore } from '../state/accountsStore'
 import { useLayoutStore, type Section } from '../state/layoutStore'
 import { useUsageStore } from '../state/usageStore'
+import { useUsageVisibilityStore } from '../state/usageVisibilityStore'
 import { ProviderMark } from '../ui/ProviderMark'
 import { AgentIcon } from '../ui/AgentIcon'
 import { AccountsRefreshButton } from '../ui/AccountsRefreshButton'
@@ -148,7 +149,10 @@ const USAGE_MODE_OPTIONS = [
 
 export function UsagePopover({ onNavigate }: UsagePopoverProps) {
   const [mode, setMode] = useState<UsageViewMode>('detailed')
-  const plans = useUsageStore((state) => state.plans)
+  const allPlans = useUsageStore((state) => state.plans)
+  const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
+  const providers = providerOrder.filter((provider) => !hiddenSources.includes(provider))
+  const plans = allPlans.filter((plan) => !hiddenSources.includes(plan.id))
   const openSection = useLayoutStore((state) => state.openSection)
   const selectSettingsPage = useLayoutStore((state) => state.selectSettingsPage)
 
@@ -178,7 +182,7 @@ export function UsagePopover({ onNavigate }: UsagePopoverProps) {
         onChange={setMode}
       />
       <div className="usage-providers">
-        {providerOrder.map((provider) => (
+        {providers.map((provider) => (
           <ProviderUsageRow key={provider} provider={provider} mode={mode} onOpen={goToAccounts} />
         ))}
         {plans.map((plan) => (

@@ -97,6 +97,9 @@ test('shows Grok and ClinePass plan limits from their own sign-ins, and never sh
 
   await app.window.getByText('Show Grok plan usage').click()
   await expect(usageButton).not.toHaveAttribute('title', /Grok:/)
+  await usageButton.click()
+  await expect(popover.getByText('ClinePass', { exact: true })).toBeVisible()
+  await expect(popover.getByText('Grok · SuperGrok')).toHaveCount(0)
 })
 
 test('hides ClinePass for a Cline account without the plan, and says when the Grok sign-in expired', async () => {
@@ -117,6 +120,11 @@ test('hides ClinePass for a Cline account without the plan, and says when the Gr
   await expect(usageButton).not.toHaveAttribute('title', /ClinePass/)
   await usageButton.click()
   await expect(app.window.getByText('The Grok sign-in has expired. Run grok login again, then Rescan.')).toBeVisible()
+  await app.window.keyboard.press('Escape')
+  await app.window.getByTitle('Settings', { exact: true }).click()
+  await app.window.locator('.side-panel').getByRole('button', { name: 'Agents' }).click()
+  await expect(app.window.getByText('This Cline account has no ClinePass plan')).toBeVisible()
+  await expect(app.window.getByText('Show Codex plan usage')).toBeVisible()
   const calls = await app.application.evaluate(() => (globalThis as Record<string, unknown>).planUsageCalls as { url: string }[])
   const calledUrls = calls.map((call) => call.url)
   expect(calledUrls).toContain('https://api.cline.bot/api/v1/users/me/plan/usage-limits')

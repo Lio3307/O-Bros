@@ -7,7 +7,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "types": ["node"]
+    "types": ["node", "electron-vite/node"]
   },
   "include": ["src/main/**/*", "src/preload/**/*", "src/shared/**/*", "electron.vite.config.ts", "e2e/**/*", "playwright.config.ts"]
 }

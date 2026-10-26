@@ -6,10 +6,10 @@ import type { ConversationMoveResult, UniversalHistoryReport } from '../../../sh
 import { loadSettings, saveSettings } from '../../settings'
 import { entryExists } from '../fileSystem'
 import { writeLog } from '../logging/logFile'
-import { listSourceFiles, readSessionSources } from '../sessions/sessionSources'
 import { driveOf } from '../storage/driveSpace'
 import { copyAndCheck, isSameOrInside } from '../storage/folderMove'
-import { measureHistory, pruneHistory, syncHistory, type HistorySource } from './historySync'
+import { measureHistory, pruneHistory } from './historySync'
+import { syncHistoryInWorker } from './historySyncJob'
 
 const FIRST_SAVE_DELAY_MS = 15_000
 const SAVE_EVERY_MS = 60_000
@@ -37,18 +37,6 @@ export async function currentHistoryFolder(): Promise<string> {
   return (await loadSettings()).historyFolder ?? defaultHistoryFolder()
 }
 
-async function historySources(): Promise<HistorySource[]> {
-  const files = await listSourceFiles(await readSessionSources())
-  return files.map((file) => ({
-    agent: file.source.format.provider,
-    filePath: file.filePath,
-    modifiedAt: file.modifiedAt,
-    sizeBytes: file.sizeBytes,
-    readHeader: file.source.format.readHeader,
-    readMessagesFrom: file.source.format.readMessagesFrom
-  }))
-}
-
 function queueSave(waitForQuietMs: number): Promise<unknown> {
   queuedQuietMs = isSaveQueued ? Math.min(queuedQuietMs, waitForQuietMs) : waitForQuietMs
   if (isSaveQueued) {
@@ -61,7 +49,7 @@ function queueSave(waitForQuietMs: number): Promise<unknown> {
     isSaving = true
     try {
       const settings = await loadSettings()
-      await syncHistory(await currentHistoryFolder(), await historySources(), settings.historyKeepDays, Date.now(), quietMs)
+      await syncHistoryInWorker({ folder: await currentHistoryFolder(), keepDays: settings.historyKeepDays, now: Date.now(), waitForQuietMs: quietMs })
       lastSavedAt = Date.now()
     } finally {
       isSaving = false

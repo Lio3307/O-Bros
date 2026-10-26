@@ -9,7 +9,7 @@ interface PlanSource {
   id: PlanUsageId
   name: string
   logoCommand: string
-  signInCommand: string
+  renewHint: string
   findLogin: () => Promise<SavedLogin | null>
   read: (token: string) => Promise<PlanReading | null>
   hidesWithoutWindows: boolean
@@ -31,7 +31,7 @@ const PLAN_SOURCES: PlanSource[] = [
     id: 'grok',
     name: 'Grok',
     logoCommand: 'grok',
-    signInCommand: 'grok login',
+    renewHint: 'Run grok login again',
     findLogin: findGrokLogin,
     read: readGrok,
     hidesWithoutWindows: false
@@ -40,7 +40,7 @@ const PLAN_SOURCES: PlanSource[] = [
     id: 'clinepass',
     name: 'ClinePass',
     logoCommand: 'cline',
-    signInCommand: 'cline auth',
+    renewHint: 'Open cline once so it renews the sign-in',
     findLogin: findClineLogin,
     read: readClinePass,
     hidesWithoutWindows: true
@@ -50,7 +50,7 @@ const PLAN_SOURCES: PlanSource[] = [
 async function readSource(source: PlanSource, login: SavedLogin): Promise<PlanUsage | null> {
   const base = { id: source.id, name: source.name, logoCommand: source.logoCommand, plan: null, windows: [] }
   if (login.expiresAt !== null && login.expiresAt <= Date.now()) {
-    return { ...base, errorMessage: `The ${source.name} sign-in has expired. Run ${source.signInCommand} again, then Rescan.` }
+    return { ...base, errorMessage: `The ${source.name} sign-in has expired. ${source.renewHint}, then Rescan.` }
   }
   try {
     const reading = await source.read(login.token)

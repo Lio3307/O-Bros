@@ -156,6 +156,7 @@ test('links the continued Codex conversation into the same thread by its handoff
   await original.locator('.session-row').click()
   await app.window.locator('.replay-actions').getByRole('button', { name: 'Continue with…' }).click()
   await app.window.locator('.popup-menu-item', { hasText: 'Codex' }).click()
+  await app.window.locator('.tab', { hasText: 'Codex' }).first().waitFor({ timeout: 60_000 })
 
   await app.window.getByTitle('History', { exact: true }).click()
   const continued = app.window.locator('.session-item', { hasText: 'Continued: Fix the login bug' })

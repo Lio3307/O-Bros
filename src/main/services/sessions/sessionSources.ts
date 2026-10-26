@@ -1,7 +1,7 @@
 import { stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
+import { isPathInside } from '../../../shared/paths'
 import type { DetectedAccount, ProviderId } from '../../../shared/types'
-import { isInsideDirectory } from '../../pathGuard'
 import { scanAccounts } from '../accountScanner'
 import { readDirectoryIfExists } from '../fileSystem'
 import { claudeFormat } from './claudeFormat'
@@ -65,7 +65,7 @@ export async function listSourceFiles(sources: SessionSource[]): Promise<SourceF
 
 export function findSourceOf(sources: SessionSource[], filePath: string): SessionSource {
   const source = sources.find(
-    (candidate) => filePath.endsWith(TRANSCRIPT_EXTENSION) && isInsideDirectory(filePath, candidate.directory)
+    (candidate) => filePath.endsWith(TRANSCRIPT_EXTENSION) && isPathInside(resolve(filePath), resolve(candidate.directory))
   )
   if (source === undefined) {
     throw new Error(`Not a known session file: ${filePath}`)
