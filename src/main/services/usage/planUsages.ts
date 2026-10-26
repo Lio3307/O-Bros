@@ -1,3 +1,4 @@
+import { planProviderOf } from '../../../shared/planProviders'
 import { parseClinePassLimits, parseGrokBilling, type PlanReading, type PlanUsage, type PlanUsageId } from '../../../shared/planUsage'
 import { findClineLogin, findGrokLogin, type SavedLogin } from './planLogins'
 import { fetchJson } from './providerRequest'
@@ -7,8 +8,6 @@ const CLINEPASS_LIMITS_URL = 'https://api.cline.bot/api/v1/users/me/plan/usage-l
 
 interface PlanSource {
   id: PlanUsageId
-  name: string
-  logoCommand: string
   renewHint: string
   findLogin: () => Promise<SavedLogin | null>
   read: (token: string) => Promise<PlanReading | null>
@@ -29,8 +28,6 @@ async function readClinePass(token: string): Promise<PlanReading | null> {
 const PLAN_SOURCES: PlanSource[] = [
   {
     id: 'grok',
-    name: 'Grok',
-    logoCommand: 'grok',
     renewHint: 'Run grok login again',
     findLogin: findGrokLogin,
     read: readGrok,
@@ -38,8 +35,6 @@ const PLAN_SOURCES: PlanSource[] = [
   },
   {
     id: 'clinepass',
-    name: 'ClinePass',
-    logoCommand: 'cline',
     renewHint: 'Open cline once so it renews the sign-in',
     findLogin: findClineLogin,
     read: readClinePass,
@@ -48,21 +43,23 @@ const PLAN_SOURCES: PlanSource[] = [
 ]
 
 async function readSource(source: PlanSource, login: SavedLogin): Promise<PlanUsage | null> {
-  const base = { id: source.id, name: source.name, logoCommand: source.logoCommand, plan: null, windows: [] }
+  const provider = planProviderOf(source.id)
+  const name = provider?.name ?? source.id
+  const base = { id: source.id, name, logoCommand: provider?.logoCommand ?? source.id, plan: null, windows: [] }
   if (login.expiresAt !== null && login.expiresAt <= Date.now()) {
-    return { ...base, errorMessage: `The ${source.name} sign-in has expired. ${source.renewHint}, then Rescan.` }
+    return { ...base, errorMessage: `The ${name} sign-in has expired. ${source.renewHint}, then Rescan.` }
   }
   try {
     const reading = await source.read(login.token)
     if (reading === null) {
-      return { ...base, errorMessage: `${source.name} sent an answer O-BROS could not read.` }
+      return { ...base, errorMessage: `${name} sent an answer O-BROS could not read.` }
     }
     if (reading.windows.length === 0 && source.hidesWithoutWindows) {
       return null
     }
     return { ...base, plan: reading.plan, windows: reading.windows, errorMessage: null }
   } catch (error) {
-    return { ...base, errorMessage: error instanceof Error ? error.message : `Could not read the ${source.name} usage.` }
+    return { ...base, errorMessage: error instanceof Error ? error.message : `Could not read the ${name} usage.` }
   }
 }
 

@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { formatResetsIn } from '../../shared/time'
+import { ACCOUNT_PROVIDER_IDS, planProviderName } from '../../shared/planProviders'
 import type { PlanUsage } from '../../shared/planUsage'
 import type { ProviderId } from '../../shared/types'
 import { selectActiveAccount, useAccountsStore } from '../state/accountsStore'
@@ -24,13 +25,6 @@ interface UsagePopoverProps {
 }
 
 const USAGE_TEXT_REFRESH_MS = 30_000
-
-const providerNames: Record<ProviderId, string> = {
-  claude: 'Claude',
-  codex: 'Codex'
-}
-
-const providerOrder: ProviderId[] = ['claude', 'codex']
 
 interface UsageRowProps {
   mark: ReactNode
@@ -106,7 +100,7 @@ function ProviderUsageRow({ provider, mode, onOpen }: { provider: ProviderId; mo
   return (
     <UsageRow
       mark={<ProviderMark provider={provider} size={18} />}
-      name={providerNames[provider]}
+      name={planProviderName(provider)}
       windows={listUsageWindows(usage)}
       errorMessage={usage?.errorMessage ?? null}
       note={staleNote}
@@ -151,7 +145,7 @@ export function UsagePopover({ onNavigate }: UsagePopoverProps) {
   const [mode, setMode] = useState<UsageViewMode>('detailed')
   const allPlans = useUsageStore((state) => state.plans)
   const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
-  const providers = providerOrder.filter((provider) => !hiddenSources.includes(provider))
+  const providers = ACCOUNT_PROVIDER_IDS.filter((provider) => !hiddenSources.includes(provider))
   const plans = allPlans.filter((plan) => !hiddenSources.includes(plan.id))
   const openSection = useLayoutStore((state) => state.openSection)
   const selectSettingsPage = useLayoutStore((state) => state.selectSettingsPage)

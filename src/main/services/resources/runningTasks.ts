@@ -1,6 +1,6 @@
 import type { RunningTask } from '../../../shared/types'
 import { killAllTerminals, listRunningTerminals } from '../ptyManager'
-import { describeBackgroundCommands, listBackgroundProcesses } from './backgroundProcesses'
+import { describeRunningPrograms, listBackgroundProcesses } from './backgroundProcesses'
 import { collectProcessTree, readProcessTable } from './processTable'
 
 export async function readRunningTasks(): Promise<RunningTask[]> {
@@ -14,7 +14,7 @@ export async function readRunningTasks(): Promise<RunningTask[]> {
   for (const { id, pid } of terminals) {
     const background = listBackgroundProcesses(collectProcessTree(table, pid), pid)
     if (background.length > 0) {
-      tasks.push({ paneId: id, commands: describeBackgroundCommands(background) })
+      tasks.push({ paneId: id, ...describeRunningPrograms(background, pid) })
     }
   }
   return tasks

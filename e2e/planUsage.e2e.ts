@@ -123,7 +123,7 @@ test('hides ClinePass for a Cline account without the plan, and says when the Gr
   await app.window.keyboard.press('Escape')
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Agents' }).click()
-  await expect(app.window.getByText('This Cline account has no ClinePass plan')).toBeVisible()
+  await expect(app.window.getByText('This account has no ClinePass plan with limits')).toBeVisible()
   await expect(app.window.getByText('Show Codex plan usage')).toBeVisible()
   const calls = await app.application.evaluate(() => (globalThis as Record<string, unknown>).planUsageCalls as { url: string }[])
   const calledUrls = calls.map((call) => call.url)

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { describeBackgroundCommands, listBackgroundProcesses } from './backgroundProcesses'
+import { describeRunningPrograms, listBackgroundProcesses } from './backgroundProcesses'
 import type { ProcessEntry } from './processTable'
 
-function entry(pid: number, name: string, commandLine = name): ProcessEntry {
-  return { pid, parentPid: 0, workingSetBytes: 0, privateBytes: 0, cpuTimeMs: null, cpuPercent: null, name, commandLine }
+function entry(pid: number, name: string, commandLine = name, parentPid = 0): ProcessEntry {
+  return { pid, parentPid, workingSetBytes: 0, privateBytes: 0, cpuTimeMs: null, cpuPercent: null, name, commandLine }
 }
 
 describe('listBackgroundProcesses', () => {
@@ -17,14 +17,19 @@ describe('listBackgroundProcesses', () => {
   })
 })
 
-describe('describeBackgroundCommands', () => {
-  it('lists each command once', () => {
-    const processes = [entry(1, 'node.exe', 'node a.js'), entry(2, 'node.exe', 'node a.js'), entry(3, 'git.exe')]
-    expect(describeBackgroundCommands(processes)).toEqual(['node a.js', 'git.exe'])
+describe('describeRunningPrograms', () => {
+  it('names what the shell runs and the programs it started, once each', () => {
+    const processes = [
+      entry(20, 'claude.exe', 'C:\\bin\\claude.exe', 10),
+      entry(21, 'cmd.exe', 'cmd /d /s /c "npx @playwright/mcp@latest"', 20),
+      entry(22, 'node.exe', 'node npx-cli.js @playwright/mcp@latest', 21),
+      entry(23, 'Pencil.exe', 'Pencil', 20),
+      entry(24, 'node.exe', 'node', 20)
+    ]
+    expect(describeRunningPrograms(processes, 10)).toEqual({ program: 'claude', helpers: ['@playwright/mcp', 'Pencil'] })
   })
 
-  it('shortens very long command lines', () => {
-    const [command] = describeBackgroundCommands([entry(1, 'node.exe', 'x'.repeat(300))])
-    expect(command.length).toBeLessThan(100)
+  it('has no program name when the shell only runs a bare runtime', () => {
+    expect(describeRunningPrograms([entry(20, 'node.exe', 'node', 10)], 10)).toEqual({ program: null, helpers: [] })
   })
 })

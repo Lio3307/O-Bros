@@ -59,7 +59,8 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **The arrows that show or hide project folders react to every click.** A second click within a third of a second used to be ignored.
 
 ### Changed
-- **Usage in the status bar lists every plan O-BROS can read** (Claude, Codex, Grok and ClinePass), even when you are not signed in yet, with what to run to sign in.
+- **Usage in the status bar shows the plans of the agents on this computer** (installed or signed in), each with its limits and, when needed, what to run to sign in. Plans O-BROS can read but you do not have yet are named underneath. The list, the status bar and the popover all come from one list of plan providers.
+- **The close question says what is still running in plain words**, for example "Claude is still running. It also started @playwright/mcp and Pencil.", instead of full command lines. O-BROS names each program by what it is: the agent, the package npx runs, the script node runs or the npm command, and leaves out wrappers such as cmd, node and npx.
 - **The status bar shows plan limits only.** OpenRouter spending (from a key in OpenCode or `OPENROUTER_API_KEY`) is no longer shown: an API key is paid per use and has no limit like a plan, and O-BROS no longer reads that key.
 - **Find any command** no longer shows how many programs are in your PATH, which looked like a count of agents. It now says it searches every program, not only agents.
 - Team member states use the same colours as the new agent icons: working is yellow (was blue) and asking is blue (was red).

@@ -268,7 +268,8 @@ export interface AddRootResult {
 
 export interface RunningTask {
   paneId: string
-  commands: string[]
+  program: string | null
+  helpers: string[]
 }
 
 export type EntryKind = 'file' | 'folder'

@@ -2,8 +2,8 @@ import { CircleAlert, MemoryStick, Terminal, TriangleAlert } from 'lucide-react'
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import { formatBytes } from '../../shared/format'
 import { terminalsUsage } from '../../shared/processUsage'
+import { ACCOUNT_PROVIDER_IDS, planProviderName } from '../../shared/planProviders'
 import type { PlanUsage } from '../../shared/planUsage'
-import type { ProviderId } from '../../shared/types'
 import type { KnownUsage } from '../../shared/usageMerge'
 import { ProblemsPopover } from '../features/problems/ProblemsPopover'
 import { ResourcePopover } from '../features/resources/ResourcePopover'
@@ -27,10 +27,6 @@ const USAGE_TEXT_REFRESH_MS = 30_000
 const RESOURCE_POLL_IDLE_MS = 60_000
 const RESOURCE_POLL_OPEN_MS = 3_000
 const APP_MEMORY_POLL_MS = 5_000
-
-const PROVIDERS: ProviderId[] = ['claude', 'codex']
-
-const PROVIDER_NAMES: Record<ProviderId, string> = { claude: 'Claude', codex: 'Codex' }
 
 interface UsageSource {
   key: string
@@ -72,7 +68,7 @@ function useUsageSources(): UsageSource[] {
   const usageByAccountId = useUsageStore((state) => state.usageByAccountId)
   const plans = useUsageStore((state) => state.plans)
   const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
-  const providers = PROVIDERS.flatMap((provider): UsageSource[] => {
+  const providers = ACCOUNT_PROVIDER_IDS.flatMap((provider): UsageSource[] => {
     const account = selectActiveAccount(accountsState, provider)
     if (account === null) {
       return []
@@ -81,7 +77,7 @@ function useUsageSources(): UsageSource[] {
     return [
       {
         key: provider,
-        name: PROVIDER_NAMES[provider],
+        name: planProviderName(provider),
         mark: (size) => <ProviderMark provider={provider} size={size} />,
         windows: listUsageWindows(usage),
         errorMessage: usage?.errorMessage ?? null,

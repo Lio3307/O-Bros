@@ -63,14 +63,6 @@
   color: var(--color-strong);
 }
 
-.modal-command {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  font-size: 12px;
-  color: var(--color-muted);
-}
-
 .modal-actions {
   display: flex;
   justify-content: flex-end;
