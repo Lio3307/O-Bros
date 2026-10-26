@@ -21,6 +21,11 @@ export function FileTypeIcon({ path, size = 14 }: { path: string; size?: number 
   return <IconImage url={isLoaded ? fileIconUrl(fileIconName(lastPathSegment(path), hasFileIcon)) : null} size={size} />
 }
 
+export function NamedFileIcon({ name, size = 14 }: { name: string; size?: number }) {
+  const isLoaded = useFileIcons()
+  return <IconImage url={isLoaded ? fileIconUrl(name) : null} size={size} />
+}
+
 export function FolderTypeIcon({ name, isOpen, size = 14 }: { name: string; isOpen: boolean; size?: number }) {
   const isLoaded = useFileIcons()
   return <IconImage url={isLoaded ? fileIconUrl(folderIconName(name, isOpen, hasFileIcon)) : null} size={size} />

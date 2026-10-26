@@ -9,6 +9,7 @@ import { registerAgentsIpc } from './ipc/agentsIpc'
 import { reportHandlerErrors } from './ipc/handlerErrors'
 import { registerAppIpc } from './ipc/appIpc'
 import { registerAppearanceIpc } from './ipc/appearanceIpc'
+import { registerIntegrationsIpc } from './ipc/integrationsIpc'
 import { registerFilesIpc } from './ipc/filesIpc'
 import { registerGitIpc } from './ipc/gitIpc'
 import { registerHistoryIpc } from './ipc/historyIpc'
@@ -59,6 +60,7 @@ function registerAllIpc(): void {
   registerShellIpc()
   registerAppIpc()
   registerAppearanceIpc()
+  registerIntegrationsIpc()
   registerPortsIpc()
   registerActivityIpc()
   registerLanguageServersIpc()

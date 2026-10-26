@@ -74,7 +74,7 @@ export function openTerminalIn(cwd: string): void {
   useLayoutStore.getState().showSection('projects')
 }
 
-export function runInTerminal(cwd: string, command: string, title: string): void {
+export function runInTerminal(cwd: string | null, command: string, title: string): void {
   useWorkspaceStore.getState().openTerminalTab({ cwd, account: null, startCommand: command, title })
   useLayoutStore.getState().showSection('projects')
 }

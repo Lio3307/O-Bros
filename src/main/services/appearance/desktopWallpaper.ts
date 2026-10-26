@@ -1,35 +1,16 @@
 import { app } from 'electron'
-import { execFile } from 'node:child_process'
 import { readFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
-import { promisify } from 'node:util'
-import {
-  colorFromRegistry,
-  DEFAULT_DESKTOP_COLOR,
-  parseRegistryValues,
-  wallpaperFitOf,
-  type DesktopWallpaper
-} from '../../../shared/desktopWallpaper'
+import { colorFromRegistry, DEFAULT_DESKTOP_COLOR, wallpaperFitOf, type DesktopWallpaper } from '../../../shared/desktopWallpaper'
 import { imageTypeOfBytes } from '../../../shared/imageFiles'
-
-const execFileAsync = promisify(execFile)
+import { readRegistryKey } from '../registry'
 
 const DESKTOP_KEY = 'HKCU\\Control Panel\\Desktop'
 const COLORS_KEY = 'HKCU\\Control Panel\\Colors'
-const REGISTRY_TIMEOUT_MS = 5000
 const MAX_WALLPAPER_BYTES = 40 * 1024 * 1024
 const NO_WALLPAPER: DesktopWallpaper = { imageUrl: null, fit: 'fill', color: DEFAULT_DESKTOP_COLOR, version: 'none' }
 
 let lastWallpaper: DesktopWallpaper = NO_WALLPAPER
-
-async function readRegistryKey(key: string): Promise<Record<string, string>> {
-  try {
-    const { stdout } = await execFileAsync('reg', ['query', key], { windowsHide: true, timeout: REGISTRY_TIMEOUT_MS })
-    return parseRegistryValues(stdout)
-  } catch {
-    return {}
-  }
-}
 
 function windowsCopyOfWallpaper(): string {
   return join(app.getPath('appData'), 'Microsoft', 'Windows', 'Themes', 'TranscodedWallpaper')

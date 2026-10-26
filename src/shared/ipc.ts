@@ -4,6 +4,7 @@ import type { AgentLogo } from './agentLogos'
 import type { WindowColors } from './appearance'
 import type { DesktopPlacement, DesktopView, DesktopWallpaper } from './desktopWallpaper'
 import type { WarpThemeFiles } from './themeImport'
+import type { IntegrationsReport } from './integrations'
 import type {
   LanguageServerChoices,
   LanguageServerSession,
@@ -238,6 +239,7 @@ export const IpcChannel = {
   updaterInstall: 'updater:install',
   updaterOpenReleases: 'updater:openReleases',
   updaterStatusChanged: 'updater:statusChanged',
+  integrationsRead: 'integrations:read',
   appearanceLoadWallpaper: 'appearance:loadWallpaper',
   appearanceChooseWallpaper: 'appearance:chooseWallpaper',
   appearanceRemoveWallpaper: 'appearance:removeWallpaper',
@@ -461,6 +463,9 @@ export interface DesktopApi {
     install(): Promise<void>
     openReleases(version?: string): Promise<void>
     onStatusChanged(listener: (status: UpdateStatus) => void): () => void
+  }
+  integrations: {
+    read(): Promise<IntegrationsReport>
   }
   appearance: {
     loadWallpaper(): Promise<string | null>

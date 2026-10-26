@@ -1,4 +1,4 @@
-import { access, readdir } from 'node:fs/promises'
+import { access, lstat, readdir, stat } from 'node:fs/promises'
 import { constants } from 'node:fs'
 import { delimiter, join } from 'node:path'
 
@@ -15,6 +15,17 @@ export function commandNameOf(fileName: string, platform: NodeJS.Platform): stri
   const lowerName = fileName.toLowerCase()
   const extension = WINDOWS_EXTENSIONS.find((candidate) => lowerName.endsWith(candidate))
   return extension === undefined ? null : lowerName.slice(0, lowerName.length - extension.length)
+}
+
+async function isFile(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isFile()
+  } catch {
+    return lstat(path).then(
+      (info) => !info.isDirectory(),
+      () => false
+    )
+  }
 }
 
 async function isRunnable(path: string, platform: NodeJS.Platform): Promise<boolean> {
@@ -44,6 +55,23 @@ async function commandsInFolder(folder: string, platform: NodeJS.Platform): Prom
     })
   )
   return found.filter((name): name is string => name !== null)
+}
+
+export async function findPathCommand(
+  command: string,
+  folders: string[] = pathFolders(process.env.PATH),
+  platform: NodeJS.Platform = process.platform
+): Promise<string | null> {
+  const fileNames = platform === 'win32' ? WINDOWS_EXTENSIONS.filter((extension) => extension !== '.ps1').map((extension) => command + extension) : [command]
+  for (const folder of folders) {
+    for (const fileName of fileNames) {
+      const candidate = join(folder, fileName)
+      if ((await isFile(candidate)) && (await isRunnable(candidate, platform))) {
+        return candidate
+      }
+    }
+  }
+  return null
 }
 
 export async function listPathCommands(

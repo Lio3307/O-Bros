@@ -199,6 +199,9 @@ const api: DesktopApi = {
     openReleases: (version) => ipcRenderer.invoke(IpcChannel.updaterOpenReleases, version),
     onStatusChanged: (listener) => subscribe<UpdateStatus>(IpcChannel.updaterStatusChanged, listener)
   },
+  integrations: {
+    read: () => ipcRenderer.invoke(IpcChannel.integrationsRead)
+  },
   appearance: {
     loadWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceLoadWallpaper),
     chooseWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceChooseWallpaper),

@@ -15,6 +15,10 @@
   background: var(--color-success);
 }
 
+.status-dot-warning {
+  background: var(--color-warning);
+}
+
 .status-dot-danger {
   background: var(--color-danger);
 }

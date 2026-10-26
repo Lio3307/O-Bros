@@ -1,4 +1,5 @@
 import {
+  Blocks,
   Bot,
   ArchiveRestore,
   Code2,
@@ -39,6 +40,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     title: 'Workspace',
     pages: [
       { page: 'folders', label: 'Project folders', Icon: FolderCog },
+      { page: 'integrations', label: 'Integrations', Icon: Blocks },
       { page: 'editor', label: 'Editor', Icon: Code2 },
       { page: 'languageServers', label: 'Language servers', Icon: Braces },
       { page: 'terminal', label: 'Terminal', Icon: SquareTerminal },

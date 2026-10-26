@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { colorFromRegistry, parseRegistryValues, placementOf, wallpaperFitOf } from './desktopWallpaper'
+import { colorFromRegistry, placementOf, wallpaperFitOf } from './desktopWallpaper'
+import { parseRegistryValues } from './registryValues'
 
 const DESKTOP_KEY_OUTPUT = [
   '',

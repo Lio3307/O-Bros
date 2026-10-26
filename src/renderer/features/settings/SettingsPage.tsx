@@ -5,6 +5,7 @@ import { AppearancePage } from './AppearancePage'
 import { AgentsPage } from './AgentsPage'
 import { BackupPage } from './backup/BackupPage'
 import { EditorSettingsPage } from './EditorSettingsPage'
+import { IntegrationsPage } from './integrations/IntegrationsPage'
 import { ProjectFoldersPage } from './ProjectFoldersPage'
 import { ProviderAccountsPage } from './ProviderAccountsPage'
 import { ShortcutsPage } from './ShortcutsPage'
@@ -25,7 +26,8 @@ const pageByName: Record<SettingsPageId, () => ReactElement> = {
   storage: () => <StoragePage />,
   backup: () => <BackupPage />,
   about: () => <AboutPage />,
-  appearance: () => <AppearancePage />
+  appearance: () => <AppearancePage />,
+  integrations: () => <IntegrationsPage />
 }
 
 export function SettingsPage() {
