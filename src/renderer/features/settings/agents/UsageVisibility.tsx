@@ -14,24 +14,20 @@ const PLAN_PROVIDERS: { id: ProviderId; name: string }[] = [
 export function UsageVisibility() {
   const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
   const toggle = useUsageVisibilityStore((state) => state.toggle)
-  const credits = useUsageStore((state) => state.credits)
+  const plans = useUsageStore((state) => state.plans)
   const isProviderPresent = useIsProviderPresent()
   const planProviders = PLAN_PROVIDERS.filter((provider) => isProviderPresent(provider.id))
   const sources = [
     ...planProviders.map((provider) => ({ id: provider.id, label: `${provider.name} plan usage`, icon: <ProviderMark provider={provider.id} /> })),
-    ...credits.map((balance) => ({
-      id: balance.id,
-      label: `${balance.name} credit (key from ${balance.viaTool})`,
-      icon: <AgentIcon command={balance.logoCommand} size={14} />
-    }))
+    ...plans.map((plan) => ({ id: plan.id, label: `${plan.name} plan usage`, icon: <AgentIcon command={plan.logoCommand} size={14} /> }))
   ]
 
   return (
     <SettingsSection
       title="Usage in the status bar"
-      description="Every usage figure O-BROS can read on this computer. Claude and Codex report how much of your plan you have used (5-hour and weekly). OpenRouter reports money spent and credit left, from its key in OpenCode or in OPENROUTER_API_KEY. Other agents and API keys, such as Gemini, Google, NVIDIA or Cloudflare, have no usage service, so there is no figure to show."
+      description="Plan limits from agents you sign in to with an account, read from the sign-in each agent keeps on this computer: Claude and Codex (5-hour and weekly), Grok (SuperGrok or X Premium, after grok login) and ClinePass (5-hour, weekly and monthly, after cline auth). Agents you use with an API key are paid per use, so they have no limit to show."
     >
-      {sources.length === 0 && <p className="muted">Nothing on this computer reports usage.</p>}
+      {sources.length === 0 && <p className="muted">No agent on this computer is signed in to a plan with limits.</p>}
       {sources.map((source) => (
         <label key={source.id} className="toggle-row">
           <input type="checkbox" role="switch" checked={!hiddenSources.includes(source.id)} onChange={() => toggle(source.id)} />

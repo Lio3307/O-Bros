@@ -31,7 +31,7 @@ const api: DesktopApi = {
   },
   usage: {
     get: (account) => ipcRenderer.invoke(IpcChannel.usageGet, account),
-    credits: () => ipcRenderer.invoke(IpcChannel.usageCredits),
+    plans: () => ipcRenderer.invoke(IpcChannel.usagePlans),
     facts: () => ipcRenderer.invoke(IpcChannel.usageFacts)
   },
   projects: {

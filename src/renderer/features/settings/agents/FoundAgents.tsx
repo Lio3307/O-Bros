@@ -10,13 +10,19 @@ import { LoadingText } from '../../../ui/LoadingText'
 export function FoundAgents({ commands, registry, scan }: AgentCatalog) {
   const launchers = useAgentLaunchersStore((state) => state.launchers)
   const addedCommands = launchers.map((launcher) => launcher.command.trim())
+  const installed = buildAgentSuggestions(registry, commands ?? [], [])
   const suggestions = buildAgentSuggestions(registry, commands ?? [], addedCommands)
-  const catalogName = registry.length > 0 ? 'ACP Registry' : 'built-in list (the ACP Registry could not be reached)'
+  const inListCount = installed.length - suggestions.length
+  const catalogName = registry.length > 0 ? 'the ACP Registry and O-BROS’s own list' : 'O-BROS’s own list (the ACP Registry could not be reached)'
+  const summary =
+    commands === null
+      ? 'Looking for agents…'
+      : `${installed.length} agent${installed.length === 1 ? '' : 's'} on this computer, ${inListCount} already in your list. The rest are below.`
 
   return (
     <SettingsSection
       title="Found on this computer"
-      description={`Agents from the ${catalogName} that o-bros found in your PATH and that are not in your list yet.`}
+      description={`${summary} O-BROS checks your PATH for the agents in ${catalogName}. A second name for the same program, such as opencode2 or kilocode, counts once.`}
       actions={
         <Button variant="outline" onClick={scan}>
           <Search size={14} /> Scan again

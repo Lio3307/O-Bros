@@ -107,8 +107,9 @@
 
 .usage-provider-windows {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 6px 16px;
 }
 
 .usage-window {

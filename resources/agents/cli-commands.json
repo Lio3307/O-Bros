@@ -1,5 +1,5 @@
 {
-  "description": "The ACP registry describes ACP adapters. This maps a registry id to the command people type in a terminal when it cannot be derived from the registry entry.",
+  "description": "The ACP registry describes ACP adapters. commandByRegistryId maps a registry id to the command people type in a terminal when it cannot be derived from the registry entry. extraAgents lists agent CLIs that are not in the registry, so O-BROS still finds them.",
   "commandByRegistryId": {
     "claude-acp": "claude",
     "codex-acp": "codex",
@@ -13,6 +13,19 @@
     "grok-build": "grok",
     "amp-acp": "amp",
     "cortex-code": "cortex",
-    "pi-acp": "pi"
-  }
+    "pi-acp": "pi",
+    "antigravity-acp": "agy"
+  },
+  "extraAgents": [
+    { "name": "Freebuff", "command": "freebuff" },
+    { "name": "Codebuff", "command": "codebuff" },
+    { "name": "Crush", "command": "crush" },
+    { "name": "Aider", "command": "aider" },
+    { "name": "Kiro CLI", "command": "kiro-cli" },
+    { "name": "Trae CLI", "command": "traecli" },
+    { "name": "OpenClaw", "command": "openclaw" },
+    { "name": "OpenClaude", "command": "openclaude" },
+    { "name": "Hermes Agent", "command": "hermes" },
+    { "name": "Command Code", "command": "command-code" }
+  ]
 }

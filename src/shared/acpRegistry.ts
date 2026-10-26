@@ -106,6 +106,24 @@ export function parseAcpRegistry(raw: unknown, aliases: CommandAliases = {}): Ac
   return agents
 }
 
+export function parseExtraAgents(raw: unknown): AcpAgent[] {
+  if (!isRecord(raw) || !Array.isArray(raw.extraAgents)) {
+    return []
+  }
+  return raw.extraAgents.flatMap((entry): AcpAgent[] => {
+    if (!isRecord(entry) || typeof entry.name !== 'string' || typeof entry.command !== 'string' || entry.command.trim() === '') {
+      return []
+    }
+    const command = entry.command.trim()
+    return [{ id: command, name: entry.name, description: '', commands: [command], iconUrl: null }]
+  })
+}
+
+export function withExtraAgents(registryAgents: AcpAgent[], extraAgents: AcpAgent[]): AcpAgent[] {
+  const knownCommands = new Set(registryAgents.flatMap((agent) => agent.commands))
+  return [...registryAgents, ...extraAgents.filter((agent) => !agent.commands.some((command) => knownCommands.has(command)))]
+}
+
 export function buildAgentSuggestions(
   registryAgents: AcpAgent[],
   installedCommands: string[],

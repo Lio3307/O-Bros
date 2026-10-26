@@ -14,7 +14,7 @@ import type {
 } from './languageServers'
 import type { CommitIdentity } from './commitIdentity'
 import type { CustomProvider, ProviderTestResult } from './customProviders'
-import type { CreditBalance } from './creditBalance'
+import type { PlanUsage } from './planUsage'
 import type { UsageFacts } from './usageSupport'
 import type { TeamPolicy } from './teamPolicy'
 import type { TeamAgentOption } from './teamAgents'
@@ -101,7 +101,7 @@ export const IpcChannel = {
   accountsScan: 'accounts:scan',
   accountsCreateFolder: 'accounts:createFolder',
   usageGet: 'usage:get',
-  usageCredits: 'usage:credits',
+  usagePlans: 'usage:plans',
   usageFacts: 'usage:facts',
   accountsAgentLogins: 'accounts:agentLogins',
   accountsProviderKeyHints: 'accounts:providerKeyHints',
@@ -296,7 +296,7 @@ export interface DesktopApi {
   }
   usage: {
     get(account: AccountRef): Promise<AccountUsage>
-    credits(): Promise<CreditBalance[]>
+    plans(): Promise<PlanUsage[]>
     facts(): Promise<UsageFacts>
   }
   projects: {

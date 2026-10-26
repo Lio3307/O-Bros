@@ -12,7 +12,8 @@ export interface UsageFacts {
   codexLoginMode: 'chatgpt' | 'api-key' | null
   codexPlan: string | null
   geminiAuthType: string | null
-  openRouterVia: string | null
+  grokHasLogin: boolean
+  clineHasLogin: boolean
 }
 
 const CLAUDE_PAID_PLANS = ['pro', 'max', 'team', 'enterprise']
@@ -76,14 +77,25 @@ function geminiSupport(facts: UsageFacts): UsageSupport {
   }
 }
 
-function openCodeSupport(facts: UsageFacts): UsageSupport {
-  if (facts.openRouterVia !== null) {
-    return {
-      kind: 'shown',
-      label: 'OpenRouter spending shown',
-      detail: `OpenCode uses an OpenRouter key (found in ${facts.openRouterVia}); its spending and credit are shown in the usage popover. Other keys are pay-per-use.`
-    }
+function grokSupport(facts: UsageFacts): UsageSupport {
+  if (!facts.grokHasLogin) {
+    return { kind: 'needs-login', label: 'Sign in to show usage', detail: 'Run grok login and sign in with your xAI account (SuperGrok or X Premium).' }
   }
+  return { kind: 'shown', label: 'Usage shown · Grok', detail: 'How much of your Grok plan you have used this period is shown in the status bar.' }
+}
+
+function clineSupport(facts: UsageFacts): UsageSupport {
+  if (!facts.clineHasLogin) {
+    return { kind: 'needs-login', label: 'Sign in to show usage', detail: 'Run cline auth and sign in with your Cline account. Limits exist only with ClinePass.' }
+  }
+  return {
+    kind: 'shown',
+    label: 'Usage shown with ClinePass',
+    detail: 'With ClinePass, your 5-hour, weekly and monthly limits are shown in the status bar. Without it, Cline is paid per use and has no limit to show.'
+  }
+}
+
+function openCodeSupport(): UsageSupport {
   return {
     kind: 'pay-per-use',
     label: 'Pay-per-use keys · no limit to show',
@@ -103,7 +115,13 @@ export function usageSupportFor(program: string, facts: UsageFacts): UsageSuppor
     return geminiSupport(facts)
   }
   if (lowered === 'opencode') {
-    return openCodeSupport(facts)
+    return openCodeSupport()
+  }
+  if (lowered === 'grok') {
+    return grokSupport(facts)
+  }
+  if (lowered === 'cline') {
+    return clineSupport(facts)
   }
   return { kind: 'not-supported', label: 'Usage not available', detail: NO_USAGE_SERVICE }
 }

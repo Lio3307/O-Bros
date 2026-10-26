@@ -6,7 +6,7 @@ import { readAgentLogins } from '../services/agentLogins'
 import { providerKeyHints, saveProviderKey } from '../services/customProviders/providerKeys'
 import { testCustomProvider } from '../services/customProviders/providerTest'
 import { readUsage } from '../services/usageReader'
-import { readCreditBalances } from '../services/usage/creditBalances'
+import { readPlanUsages } from '../services/usage/planUsages'
 import { readUsageFacts } from '../services/usage/usageFacts'
 
 export function registerAccountsIpc(): void {
@@ -15,7 +15,7 @@ export function registerAccountsIpc(): void {
     createAccountFolder(provider, accountName)
   )
   ipcMain.handle(IpcChannel.usageGet, (_event, account: AccountRef) => readUsage(account))
-  ipcMain.handle(IpcChannel.usageCredits, () => readCreditBalances())
+  ipcMain.handle(IpcChannel.usagePlans, () => readPlanUsages())
   ipcMain.handle(IpcChannel.usageFacts, () => readUsageFacts())
   ipcMain.handle(IpcChannel.accountsAgentLogins, () => readAgentLogins())
   ipcMain.handle(IpcChannel.accountsProviderKeyHints, () => providerKeyHints())

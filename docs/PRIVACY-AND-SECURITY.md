@@ -60,7 +60,8 @@ Language servers are programs you installed (for example typescript-language-ser
 |---|---|---|
 | `api.anthropic.com` | Your saved Claude token, to read your usage | Every few minutes and when you press refresh |
 | `chatgpt.com` | Your saved Codex token, to read your usage | Every few minutes and when you press refresh |
-| `openrouter.ai` | The OpenRouter key saved in OpenCode (or `OPENROUTER_API_KEY`), to read that key's spending and credit | Every few minutes and when you press refresh, only if such a key exists |
+| `cli-chat-proxy.grok.com` | The Grok sign-in saved by `grok login` (`~/.grok/auth.json`), to read how much of your Grok plan you used | Every few minutes and when you press refresh, only if you signed in to Grok |
+| `api.cline.bot` | The Cline sign-in saved by `cline auth` (`~/.cline/data/settings/providers.json`), to read your ClinePass limits | Every few minutes and when you press refresh, only if you signed in to Cline |
 | The URL of a custom provider you added | A request for its model list, with the provider's saved key | Only when you press **Test connection** on that provider |
 | Your git remote | Whatever `git fetch` does | Only when you press fetch |
 | `cdn.agentclientprotocol.com` | A plain request for the public ACP Registry list of agents and their logos. Nothing about you is sent | When you open Settings → Agents, at most once an hour; each logo once, then it is cached |

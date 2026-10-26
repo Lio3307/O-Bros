@@ -6,6 +6,8 @@ import {
   packageCommandName,
   parseAcpRegistry,
   parseCommandAliases,
+  parseExtraAgents,
+  withExtraAgents,
   type AcpAgent
 } from './acpRegistry'
 
@@ -105,5 +107,18 @@ describe('buildAgentSuggestions', () => {
 
   it('skips agents that are already added or not installed', () => {
     expect(buildAgentSuggestions(registry, ['gemini'], ['gemini'])).toEqual([])
+  })
+})
+
+describe('extra agents outside the registry', () => {
+  it('reads the built-in list and adds only agents the registry does not cover', () => {
+    const extras = parseExtraAgents({
+      extraAgents: [{ name: 'Freebuff', command: 'freebuff' }, { name: 'Gemini again', command: 'gemini' }, { name: 'Broken' }, { name: 'Blank', command: ' ' }]
+    })
+    expect(extras.map((entry) => entry.commands)).toEqual([['freebuff'], ['gemini']])
+    const merged = withExtraAgents([agent('gemini', 'Gemini CLI', ['gemini'])], extras)
+    expect(merged.map((entry) => entry.name)).toEqual(['Gemini CLI', 'Freebuff'])
+    expect(buildAgentSuggestions(merged, ['freebuff'], [])).toEqual([{ name: 'Freebuff', command: 'freebuff' }])
+    expect(parseExtraAgents(null)).toEqual([])
   })
 })

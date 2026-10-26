@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import type { UsageFacts } from '../../../shared/usageSupport'
 import { scanAccounts } from '../accountScanner'
 import { readJsonIfExists } from '../fileSystem'
-import { findOpenRouterKeySource } from './creditBalances'
+import { findClineLogin, findGrokLogin } from './planLogins'
 
 const CODEX_PLAN_CLAIM = 'https://api.openai.com/auth'
 
@@ -70,11 +70,12 @@ async function geminiAuthType(): Promise<string | null> {
 }
 
 export async function readUsageFacts(): Promise<UsageFacts> {
-  const [claude, codex, gemini, openRouterVia] = await Promise.all([
+  const [claude, codex, gemini, grokLogin, clineLogin] = await Promise.all([
     claudeFacts(),
     codexFacts(),
     geminiAuthType(),
-    findOpenRouterKeySource()
+    findGrokLogin(),
+    findClineLogin()
   ])
-  return { ...claude, ...codex, geminiAuthType: gemini, openRouterVia }
+  return { ...claude, ...codex, geminiAuthType: gemini, grokHasLogin: grokLogin !== null, clineHasLogin: clineLogin !== null }
 }

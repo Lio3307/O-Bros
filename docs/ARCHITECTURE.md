@@ -247,7 +247,8 @@ O-BROS never signs in for you and never edits an agent's login. It touches secre
 flowchart LR
     C1["~/.claude*/.credentials.json"] --> U1["api.anthropic.com<br/>Claude usage"]
     C2["~/.codex*/auth.json"] --> U2["chatgpt.com<br/>Codex usage"]
-    C3["OpenCode auth.json (openrouter)<br/>or OPENROUTER_API_KEY"] --> U3["openrouter.ai<br/>credit balance"]
+    C3["~/.grok/auth.json"] --> U3["cli-chat-proxy.grok.com<br/>Grok plan usage"]
+    C4["~/.cline/data/settings/providers.json"] --> U4["api.cline.bot<br/>ClinePass limits"]
 ```
 
 **2. Custom providers.** A key you paste in Settings → Provider accounts is the only secret O-BROS keeps.

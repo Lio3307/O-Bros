@@ -1,7 +1,7 @@
 import { app } from 'electron'
 import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { parseAcpRegistry, parseCommandAliases, type AcpAgent, type CommandAliases } from '../../../shared/acpRegistry'
+import { parseAcpRegistry, parseCommandAliases, parseExtraAgents, withExtraAgents, type AcpAgent, type CommandAliases } from '../../../shared/acpRegistry'
 import { writeLog } from '../logging/logFile'
 
 const REGISTRY_URL = 'https://cdn.agentclientprotocol.com/registry/v1/latest/registry.json'
@@ -13,7 +13,7 @@ const ALIASES_PATH = join(AGENTS_DATA_FOLDER, 'cli-commands.json')
 const CACHE_FILE_NAME = 'acp-registry.json'
 
 let memoryCache: { loadedAt: number; agents: AcpAgent[] } | null = null
-let aliasesLoad: Promise<CommandAliases> | null = null
+let commandDataLoad: Promise<unknown> | null = null
 let inFlight: Promise<AcpAgent[]> | null = null
 
 function cacheFilePath(): string {
@@ -28,11 +28,15 @@ async function readJson(filePath: string): Promise<unknown> {
   }
 }
 
-function loadAliases(): Promise<CommandAliases> {
-  if (aliasesLoad === null) {
-    aliasesLoad = readJson(ALIASES_PATH).then(parseCommandAliases)
+function loadCommandData(): Promise<unknown> {
+  if (commandDataLoad === null) {
+    commandDataLoad = readJson(ALIASES_PATH)
   }
-  return aliasesLoad
+  return commandDataLoad
+}
+
+async function loadAliases(): Promise<CommandAliases> {
+  return parseCommandAliases(await loadCommandData())
 }
 
 async function fetchRegistry(): Promise<unknown> {
@@ -69,8 +73,9 @@ export function loadAcpRegistry(): Promise<AcpAgent[]> {
     return Promise.resolve(memoryCache.agents)
   }
   if (inFlight === null) {
-    inFlight = refreshRegistry()
-      .then((agents) => {
+    inFlight = Promise.all([refreshRegistry(), loadCommandData()])
+      .then(([registryAgents, commandData]) => {
+        const agents = withExtraAgents(registryAgents, parseExtraAgents(commandData))
         memoryCache = { loadedAt: Date.now(), agents }
         return agents
       })

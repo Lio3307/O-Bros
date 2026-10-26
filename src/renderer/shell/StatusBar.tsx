@@ -1,8 +1,8 @@
 import { CircleAlert, MemoryStick, Terminal, TriangleAlert } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
-import { describeCredit, formatDollars, type CreditBalance } from '../../shared/creditBalance'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import { formatBytes } from '../../shared/format'
 import { terminalsUsage } from '../../shared/processUsage'
+import type { PlanUsage } from '../../shared/planUsage'
 import type { ProviderId } from '../../shared/types'
 import type { KnownUsage } from '../../shared/usageMerge'
 import { ProblemsPopover } from '../features/problems/ProblemsPopover'
@@ -32,9 +32,12 @@ const PROVIDERS: ProviderId[] = ['claude', 'codex']
 
 const PROVIDER_NAMES: Record<ProviderId, string> = { claude: 'Claude', codex: 'Codex' }
 
-interface TrackedProvider {
-  key: ProviderId
+interface UsageSource {
+  key: string
+  name: string
+  mark: (size: number) => ReactNode
   windows: LabeledWindow[]
+  errorMessage: string | null
   usage: KnownUsage | undefined
 }
 
@@ -45,66 +48,73 @@ function measuredText(usage: KnownUsage | undefined): string {
   return ` (last known, ${new Date(usage.measuredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`
 }
 
-function describeProvider(entry: TrackedProvider): string {
-  if (entry.windows.length === 0) {
-    return `${PROVIDER_NAMES[entry.key]}: ${entry.usage?.errorMessage ? 'unavailable' : 'not read yet'}`
+function describeSource(source: UsageSource): string {
+  if (source.windows.length === 0) {
+    return `${source.name}: ${source.errorMessage ? 'unavailable' : 'not read yet'}`
   }
-  const parts = entry.windows.map(({ label, window }) => `${label} ${window.percentUsed}%`)
-  return `${PROVIDER_NAMES[entry.key]}: ${parts.join(', ')}${measuredText(entry.usage)}`
+  const parts = source.windows.map(({ label, window }) => `${label} ${window.percentUsed}%`)
+  return `${source.name}: ${parts.join(', ')}${measuredText(source.usage)}`
 }
 
-function describeCreditLine(balance: CreditBalance): string {
-  return `${balance.name} (via ${balance.viaTool}): ${describeCredit(balance)}`
+function planSource(plan: PlanUsage): UsageSource {
+  return {
+    key: plan.id,
+    name: plan.name,
+    mark: (size) => <AgentIcon command={plan.logoCommand} size={size} />,
+    windows: plan.windows,
+    errorMessage: plan.errorMessage,
+    usage: undefined
+  }
 }
 
-function useTrackedProviders(): TrackedProvider[] {
+function useUsageSources(): UsageSource[] {
   const accountsState = useAccountsStore()
   const usageByAccountId = useUsageStore((state) => state.usageByAccountId)
+  const plans = useUsageStore((state) => state.plans)
   const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
-  return PROVIDERS.filter((provider) => !hiddenSources.includes(provider)).flatMap((provider) => {
+  const providers = PROVIDERS.flatMap((provider): UsageSource[] => {
     const account = selectActiveAccount(accountsState, provider)
     if (account === null) {
       return []
     }
     const usage = usageByAccountId[account.id]
-    return [{ key: provider, windows: listUsageWindows(usage), usage }]
+    return [
+      {
+        key: provider,
+        name: PROVIDER_NAMES[provider],
+        mark: (size) => <ProviderMark provider={provider} size={size} />,
+        windows: listUsageWindows(usage),
+        errorMessage: usage?.errorMessage ?? null,
+        usage
+      }
+    ]
   })
+  return [...providers, ...plans.map(planSource)].filter((source) => !hiddenSources.includes(source.key))
 }
 
 function UsageSummary({ onClick }: { onClick: () => void }) {
-  const tracked = useTrackedProviders()
-  const allCredits = useUsageStore((state) => state.credits)
-  const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
-  const credits = allCredits.filter((balance) => !hiddenSources.includes(balance.id))
+  const sources = useUsageSources()
   const now = useNow(USAGE_TEXT_REFRESH_MS)
-  if (tracked.length === 0 && credits.length === 0) {
+  if (sources.length === 0) {
     return null
   }
 
-  const pressing = mostPressingWindow(tracked)
-  const leadProvider = pressing?.key ?? tracked[0]?.key ?? null
-  const otherProviders = tracked.map((entry) => entry.key).filter((provider) => provider !== leadProvider)
-  const tooltipLines = [...tracked.map(describeProvider), ...credits.map(describeCreditLine)]
-  const hasError = tracked.some((entry) => entry.windows.length === 0 && entry.usage?.errorMessage)
+  const pressing = mostPressingWindow(sources)
+  const lead = sources.find((source) => source.key === pressing?.key) ?? sources[0]
+  const others = sources.filter((source) => source !== lead)
+  const hasError = sources.some((source) => source.windows.length === 0 && source.errorMessage)
   const compact = pressing === null ? null : describeCompactWindow(pressing.window, now)
-  const leadCredit = leadProvider === null ? credits[0] : null
 
   return (
     <>
       <button
         type="button"
         className="status-usage"
-        title={[...tooltipLines, 'Click for details'].join('\n')}
+        title={[...sources.map(describeSource), 'Click for details'].join('\n')}
         onClick={onClick}
       >
-        {leadProvider !== null && <ProviderMark provider={leadProvider} size={16} />}
-        {leadCredit !== null && leadCredit !== undefined && (
-          <>
-            <AgentIcon command={leadCredit.logoCommand} size={16} />
-            <span className="status-percent">{leadCredit.errorMessage === null ? formatDollars(leadCredit.spentDollars) : 'unavailable'}</span>
-          </>
-        )}
-        {leadProvider !== null && pressing === null && <span>{hasError ? 'unavailable' : '—'}</span>}
+        {lead.mark(16)}
+        {pressing === null && <span>{hasError ? 'unavailable' : '—'}</span>}
         {pressing !== null && compact !== null && (
           <span className={cn('status-window', isUsageHigh(pressing.window.percentUsed) && 'usage-high')}>
             <span className="status-window-label">{pressing.label}</span>
@@ -112,13 +122,11 @@ function UsageSummary({ onClick }: { onClick: () => void }) {
             <span className="status-window-reset">{compact.remaining}</span>
           </span>
         )}
-        {(otherProviders.length > 0 || (leadProvider !== null && credits.length > 0)) && (
+        {others.length > 0 && (
           <span className="status-other-marks">
-            {otherProviders.map((provider) => (
-              <ProviderMark key={provider} provider={provider} size={12} />
+            {others.map((source) => (
+              <Fragment key={source.key}>{source.mark(12)}</Fragment>
             ))}
-            {leadProvider !== null &&
-              credits.map((balance) => <AgentIcon key={balance.id} command={balance.logoCommand} size={12} />)}
           </span>
         )}
       </button>

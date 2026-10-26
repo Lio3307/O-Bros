@@ -17,12 +17,11 @@ export function CommandSearch({ commands }: { commands: string[] | null }) {
       : commands
           .filter((command) => command.includes(lowerQuery) && !addedCommands.includes(command))
           .slice(0, MAX_SEARCH_RESULTS)
-  const foundCount = commands === null ? '' : ` (${commands.length.toLocaleString()} found)`
 
   return (
     <SettingsSection
       title="Find any command"
-      description={`Type part of the name of an agent CLI you have installed. o-bros searches every program in your PATH${foundCount}.`}
+      description="For an agent O-BROS does not know yet: type part of its command name. This searches every program in your PATH, not only agents."
     >
       <input
         className="field field-search"
