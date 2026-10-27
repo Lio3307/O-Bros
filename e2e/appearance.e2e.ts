@@ -53,7 +53,7 @@ test('shows a wallpaper behind see-through panels, keeps menus solid, and goes b
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
   await expect(app.window.getByRole('button', { name: 'Choose image…' })).toHaveCount(0)
-  await app.window.getByRole('button', { name: 'Image', exact: true }).click()
+  await app.window.getByRole('button', { name: 'Your image', exact: true }).click()
   await expect(app.window.getByText('Panels', { exact: true })).toHaveCount(0)
   await app.window.getByRole('button', { name: 'Choose image…' }).click()
 
@@ -154,7 +154,7 @@ test('Desktop wallpaper shows the Windows wallpaper lined up with the screen, fo
 
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
-  await app.window.getByRole('button', { name: 'Desktop wallpaper', exact: true }).click()
+  await app.window.getByRole('button', { name: 'Transparent', exact: true }).click()
 
   await expect(app.window.locator('.app-desktop-screen')).toBeAttached()
   await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
@@ -221,4 +221,14 @@ test('a painted background uses the theme colors behind see-through panels', asy
   await app.window.getByRole('button', { name: 'Solid', exact: true }).click()
   await expect(app.window.locator('.app-wallpaper-image')).toHaveCount(0)
   await expect.poll(() => backgroundAlphaOf('.side-panel')).toBe(1)
+})
+
+test('a saved Transparent choice survives a restart', async () => {
+  app = await launchApp({ separateHome: true })
+  await app.window.evaluate(() => localStorage.setItem('o-bros.appearance', JSON.stringify({ background: 'desktop' })))
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+  await expect(app.window.locator('.app-desktop-screen')).toBeAttached()
+  await app.window.waitForTimeout(1500)
+  expect(await app.window.evaluate(() => JSON.parse(localStorage.getItem('o-bros.appearance') ?? '{}').background)).toBe('desktop')
 })

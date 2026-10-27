@@ -86,13 +86,13 @@ export function AppearancePage() {
 
       <SettingsSection
         title="Background"
-        description="Solid is the classic look. The painted backgrounds use the colors of your theme, so they change when the theme does. Image shows a picture you choose, and Desktop wallpaper shows your desktop picture lined up with your screen so the desktop seems to show through."
+        description="What shows behind the panels. Transparent lets your desktop show through O-BROS."
       >
         <BackgroundPicker />
       </SettingsSection>
 
       {isWallpaper && (
-        <SettingsSection title="Image" description="The image is copied into O-BROS's own folder, so it stays even if you move the original. Up to 20 MB.">
+        <SettingsSection title="Your image" description="The image is copied into O-BROS's own folder, so it stays even if you move the original. Up to 20 MB.">
           <div className="appearance-wallpaper">
             {wallpaperUrl === null ? (
               <div className="appearance-wallpaper-preview appearance-wallpaper-empty">No image yet</div>
@@ -116,8 +116,8 @@ export function AppearancePage() {
 
       {isDesktop && (
         <SettingsSection
-          title="Desktop wallpaper"
-          description={`The wallpaper set in ${DESKTOP_SETTINGS_PLACE}. O-BROS follows it when you change it there, and never copies or uploads it.`}
+          title="Transparent"
+          description={`O-BROS shows your desktop wallpaper behind itself, lined up with your screen, so the window looks see-through. It uses the wallpaper set in ${DESKTOP_SETTINGS_PLACE}, follows it when you change it there, and never copies or uploads it.`}
         >
           <DesktopWallpaperPreview />
         </SettingsSection>

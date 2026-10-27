@@ -685,3 +685,22 @@
 .background-tile-selected .background-tile-label {
   font-weight: 600;
 }
+
+.background-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.background-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.background-group-title {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted);
+}

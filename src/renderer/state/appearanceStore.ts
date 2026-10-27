@@ -37,11 +37,7 @@ export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
   },
 
   loadDesktopSupport: async () => {
-    const canFollowDesktop = await window.api.appearance.canFollowDesktop().catch(() => false)
-    set({ canFollowDesktop })
-    if (!canFollowDesktop && get().appearance.background === 'desktop') {
-      get().update({ background: 'solid' })
-    }
+    set({ canFollowDesktop: await window.api.appearance.canFollowDesktop().catch(() => false) })
   },
 
   chooseWallpaper: async () => {

@@ -8,15 +8,22 @@ import { cn } from '../../ui/cn'
 
 interface BackgroundTileProps {
   label: string
+  hint: string
   isSelected: boolean
   preview: CSSProperties
   placeholder?: ReactNode
   onSelect: () => void
 }
 
-function BackgroundTile({ label, isSelected, preview, placeholder, onSelect }: BackgroundTileProps) {
+function BackgroundTile({ label, hint, isSelected, preview, placeholder, onSelect }: BackgroundTileProps) {
   return (
-    <button type="button" className={cn('background-tile', isSelected && 'background-tile-selected')} aria-pressed={isSelected} onClick={onSelect}>
+    <button
+      type="button"
+      className={cn('background-tile', isSelected && 'background-tile-selected')}
+      title={hint}
+      aria-pressed={isSelected}
+      onClick={onSelect}
+    >
       <span className="background-tile-preview" style={preview} aria-hidden="true">
         {placeholder}
         <span className="background-tile-panel" />
@@ -41,41 +48,52 @@ export function BackgroundPicker() {
   const desktopImage = isChosen('desktop') ? desktopWallpaper?.imageUrl : null
 
   return (
-    <div className="background-picker">
-      <BackgroundTile
-        label="Solid"
-        isSelected={isChosen('solid')}
-        preview={{ backgroundColor: theme.background }}
-        onSelect={() => update({ background: 'solid' })}
-      />
-      {SCENE_IDS.map((scene) => (
-        <BackgroundTile
-          key={scene}
-          label={SCENE_LABELS[scene]}
-          isSelected={isChosen('scene') && appearance.scene === scene}
-          preview={{
-            backgroundColor: theme.background,
-            backgroundImage: sceneImage(scene, theme)
-          }}
-          onSelect={() => update({ background: 'scene', scene })}
-        />
-      ))}
-      <BackgroundTile
-        label="Image"
-        isSelected={isChosen('wallpaper')}
-        preview={imagePreview(wallpaperUrl, theme.background)}
-        placeholder={wallpaperUrl === null && <ImagePlus size={18} className="background-tile-icon" />}
-        onSelect={() => update({ background: 'wallpaper' })}
-      />
-      {(canFollowDesktop === true || isChosen('desktop')) && (
-        <BackgroundTile
-          label="Desktop wallpaper"
-          isSelected={isChosen('desktop')}
-          preview={imagePreview(desktopImage, desktopWallpaper?.color ?? theme.background)}
-          placeholder={(desktopImage === null || desktopImage === undefined) && <Monitor size={18} className="background-tile-icon" />}
-          onSelect={() => update({ background: 'desktop' })}
-        />
-      )}
+    <div className="background-groups">
+      <div className="background-group">
+        <h3 className="background-group-title">Look</h3>
+        <div className="background-picker">
+          <BackgroundTile
+            label="Solid"
+            hint="The theme color, nothing behind it"
+            isSelected={isChosen('solid')}
+            preview={{ backgroundColor: theme.background }}
+            onSelect={() => update({ background: 'solid' })}
+          />
+          {(canFollowDesktop !== false || isChosen('desktop')) && (
+            <BackgroundTile
+              label="Transparent"
+              hint="See your desktop wallpaper through O-BROS"
+              isSelected={isChosen('desktop')}
+              preview={imagePreview(desktopImage, desktopWallpaper?.color ?? theme.background)}
+              placeholder={(desktopImage === null || desktopImage === undefined) && <Monitor size={18} className="background-tile-icon" />}
+              onSelect={() => update({ background: 'desktop' })}
+            />
+          )}
+          <BackgroundTile
+            label="Your image"
+            hint="A picture you choose, behind O-BROS"
+            isSelected={isChosen('wallpaper')}
+            preview={imagePreview(wallpaperUrl, theme.background)}
+            placeholder={wallpaperUrl === null && <ImagePlus size={18} className="background-tile-icon" />}
+            onSelect={() => update({ background: 'wallpaper' })}
+          />
+        </div>
+      </div>
+      <div className="background-group">
+        <h3 className="background-group-title">Painted with your theme colors</h3>
+        <div className="background-picker">
+          {SCENE_IDS.map((scene) => (
+            <BackgroundTile
+              key={scene}
+              label={SCENE_LABELS[scene]}
+              hint="Changes with your theme"
+              isSelected={isChosen('scene') && appearance.scene === scene}
+              preview={{ backgroundColor: theme.background, backgroundImage: sceneImage(scene, theme) }}
+              onSelect={() => update({ background: 'scene', scene })}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
