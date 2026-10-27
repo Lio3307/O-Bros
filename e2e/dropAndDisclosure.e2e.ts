@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import { launchApp, type RunningApp } from './launchApp'
 
 const LIVE_TIMEOUT_MS = 15_000
@@ -92,4 +92,37 @@ test('ctrl-clicked files and folders from the tree drop on a terminal together, 
   const lines = (await readFile(output, 'utf16le')).split('\n').map((line) => line.trim().replace('﻿', '')).filter((line) => line !== '')
   expect(lines).toEqual([join(app.projectFolder, 'my folder'), join(app.projectFolder, 'second.txt')])
   await expect(filesPanel.locator('.row-picked')).toHaveCount(0)
+})
+
+test('folders dropped on Projects become projects, a file is refused and a known project is selected', async () => {
+  app = await launchApp()
+  const newProject = join(dirname(app.projectFolder), 'dropped-app')
+  const strayFile = join(dirname(app.projectFolder), 'readme.md')
+  await mkdir(newProject)
+  await writeFile(strayFile, '# hi', 'utf8')
+  const dropOnProjects = (paths: string[], dropIt: boolean) =>
+    app.window.evaluate(
+      ([dropped, shouldDrop]) => {
+        const data = new DataTransfer()
+        data.setData('application/x-obros-path', JSON.stringify(dropped))
+        const panel = document.querySelector('.projects-drop-zone')!
+        panel.dispatchEvent(new DragEvent('dragover', { dataTransfer: data, bubbles: true, cancelable: true }))
+        if (shouldDrop) {
+          panel.dispatchEvent(new DragEvent('drop', { dataTransfer: data, bubbles: true, cancelable: true }))
+        }
+      },
+      [paths, dropIt] as const
+    )
+
+  await dropOnProjects([newProject], false)
+  await expect(app.window.getByText('Drop folders to add them as projects')).toBeVisible()
+  if (process.env.APPEARANCE_SHOTS !== undefined) {
+    await app.window.screenshot({ path: `${process.env.APPEARANCE_SHOTS}/projects-drop.png` })
+  }
+  await dropOnProjects([newProject, strayFile, app.projectFolder], true)
+  await expect(app.window.getByText('Drop folders to add them as projects')).toHaveCount(0)
+  await expect(app.window.locator('.root-header').getByTitle(newProject, { exact: true })).toBeVisible()
+  await expect(app.window.getByText('"readme.md" is a file. Drop a folder to add it as a project.')).toBeVisible()
+  await expect(app.window.getByText('"sample-project" is already in your sidebar. It is selected now.')).toBeVisible()
+  await expect(app.window.locator('.root-header')).toHaveCount(2)
 })

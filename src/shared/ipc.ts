@@ -109,6 +109,7 @@ export const IpcChannel = {
   accountsTestProvider: 'accounts:testProvider',
   projectsList: 'projects:list',
   projectsAddRoot: 'projects:addRoot',
+  projectsAddDroppedRoot: 'projects:addDroppedRoot',
   projectsRemoveRoot: 'projects:removeRoot',
   projectsRelocateRoot: 'projects:relocateRoot',
   projectsScripts: 'projects:scripts',
@@ -303,6 +304,7 @@ export interface DesktopApi {
   projects: {
     list(): Promise<ProjectRoot[]>
     addRoot(dialogTitle?: string): Promise<AddRootResult>
+    addDroppedRoot(folderPath: string): Promise<AddRootResult>
     removeRoot(rootPath: string): Promise<ProjectRoot[]>
     relocateRoot(oldPath: string): Promise<RelocateRootResult>
     scripts(rootPath: string): Promise<ProjectScripts>

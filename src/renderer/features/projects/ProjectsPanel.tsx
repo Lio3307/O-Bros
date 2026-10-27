@@ -34,6 +34,7 @@ import { DisclosureChevron } from '../../ui/DisclosureChevron'
 import { cn } from '../../ui/cn'
 import { Notice } from '../../ui/Notice'
 import { ShowMoreToggle } from './ShowMoreToggle'
+import { ProjectsDropZone } from './ProjectsDropZone'
 
 const SESSION_AGE_REFRESH_MS = 60_000
 
@@ -353,7 +354,7 @@ export function ProjectsPanel() {
   }
 
   return (
-    <div className="panel-content">
+    <ProjectsDropZone className="panel-content">
       <div className="panel-sticky">
         <PanelHeader title="Projects">
           <Button variant="icon" title="Open a folder" onClick={() => addRoot()}>
@@ -384,10 +385,10 @@ export function ProjectsPanel() {
           </Button>
         </div>
       </div>
-      {roots.length === 0 && <p className="panel-empty">No projects yet. Press the folder button above to open one.</p>}
+      {roots.length === 0 && <p className="panel-empty">No projects yet. Press the folder button above, or drop a folder here.</p>}
       {roots.map((root) => (
         <RootBlock key={root.path} root={root} />
       ))}
-    </div>
+    </ProjectsDropZone>
   )
 }

@@ -9,6 +9,7 @@ interface ProjectsState {
   activeProjectPath: string | null
   load: () => Promise<void>
   addRoot: (dialogTitle?: string) => Promise<string | null>
+  addDroppedRoots: (paths: string[]) => Promise<void>
   removeRoot: (rootPath: string) => Promise<void>
   relocateRoot: (oldPath: string) => Promise<void>
   selectProject: (projectPath: string) => void
@@ -22,6 +23,8 @@ function announceAddResult(result: AddRootResult): void {
     toast.warning('"' + existingName + '" is already in your sidebar. It is selected now.')
   } else if (result.outcome === 'added') {
     toast.success('Added "' + chosenName + '" to your sidebar.')
+  } else if (result.outcome === 'not-a-folder') {
+    toast.warning('"' + chosenName + '" is a file. Drop a folder to add it as a project.')
   }
 }
 
@@ -50,6 +53,19 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => {
       set({ roots: result.roots, activeProjectPath: selectedPath })
       announceAddResult(result)
       return chosenFolder
+    },
+
+    addDroppedRoots: async (paths) => {
+      let lastFolder: string | null = null
+      for (const path of paths) {
+        const result = await window.api.projects.addDroppedRoot(path)
+        lastFolder = folderToWorkIn(result) ?? lastFolder
+        set({ roots: result.roots })
+        announceAddResult(result)
+      }
+      if (lastFolder !== null) {
+        set({ activeProjectPath: lastFolder })
+      }
     },
 
     removeRoot: async (rootPath) => {

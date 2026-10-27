@@ -250,3 +250,33 @@
 .missing-root-notice {
   margin: 4px 0 8px;
 }
+
+.projects-drop-zone {
+  position: relative;
+  min-height: 100%;
+}
+
+.projects-drop-hint {
+  position: absolute;
+  inset: 6px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-strong);
+  text-align: center;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--color-panel-solid) 88%, var(--color-info));
+  border: 1px dashed var(--color-info);
+  border-radius: var(--radius);
+  animation: motion-fade var(--motion-fast) var(--ease-out);
+}
+
+.projects-drop-hint svg {
+  color: var(--color-info);
+}

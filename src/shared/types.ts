@@ -253,7 +253,7 @@ export interface FormatResult {
   errorMessage: string | null
 }
 
-export type AddRootOutcome = 'added' | 'cancelled' | 'already-added'
+export type AddRootOutcome = 'added' | 'cancelled' | 'already-added' | 'not-a-folder'
 
 export interface RelocateRootResult {
   roots: ProjectRoot[]
