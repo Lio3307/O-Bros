@@ -3,18 +3,24 @@ import { DEFAULT_APPEARANCE, readAppearance, surfaceAlphaOf, withAlpha } from '.
 
 describe('readAppearance', () => {
   it('keeps saved values inside the readable limits', () => {
-    expect(readAppearance({ background: 'wallpaper', scene: 'aurora', surfaceOpacity: 0.05, wallpaperDim: 2, wallpaperBlur: -3 })).toEqual({
+    expect(readAppearance({ background: 'wallpaper', color: 'green', surfaceOpacity: 0.05, wallpaperDim: 2, wallpaperBlur: -3 })).toEqual({
       background: 'wallpaper',
-      scene: 'aurora',
+      color: 'green',
       surfaceOpacity: 0.3,
       wallpaperDim: 0.85,
       wallpaperBlur: 0
     })
   })
 
+  it('keeps a color chosen as a background before, and ignores the old default color', () => {
+    expect(readAppearance({ background: 'tint', tint: 'yellow' })).toMatchObject({ background: 'solid', color: 'yellow' })
+    expect(readAppearance({ background: 'desktop', tint: 'blue' })).toMatchObject({ background: 'desktop', color: null })
+    expect(readAppearance({ background: 'desktop', color: 'cyan' })).toMatchObject({ background: 'desktop', color: 'cyan' })
+  })
+
   it('falls back to the defaults for anything broken', () => {
     expect(readAppearance(null)).toEqual(DEFAULT_APPEARANCE)
-    expect(readAppearance({ background: 'neon', scene: 'lava', surfaceOpacity: 'half' })).toEqual(DEFAULT_APPEARANCE)
+    expect(readAppearance({ background: 'neon', color: 'lava', surfaceOpacity: 'half' })).toEqual(DEFAULT_APPEARANCE)
   })
 })
 
@@ -24,7 +30,7 @@ describe('surfaceAlphaOf', () => {
     expect(surfaceAlphaOf(wallpaper, true)).toBe(0.6)
     expect(surfaceAlphaOf(wallpaper, false)).toBe(1)
     expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop' }, false)).toBe(0.6)
-    expect(surfaceAlphaOf({ ...wallpaper, background: 'scene' }, false)).toBe(0.6)
+    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop', color: 'green' }, false)).toBe(0.6)
     expect(surfaceAlphaOf({ ...wallpaper, background: 'solid' }, true)).toBe(1)
   })
 })

@@ -1,10 +1,14 @@
-import { ImagePlus, Monitor } from 'lucide-react'
+import { Ban, Check, ImagePlus, Monitor } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
-import { SCENE_IDS, type Appearance } from '../../../shared/appearance'
+import { flushSync } from 'react-dom'
+import { TINT_IDS, type Appearance } from '../../../shared/appearance'
 import { useAppearanceStore } from '../../state/appearanceStore'
-import { useActiveColorTheme } from '../../state/colorThemeStore'
-import { SCENE_LABELS, sceneImage } from '../../theme/backgroundScenes'
+import { useThemeWithoutTint } from '../../state/colorThemeStore'
+import { TINTS, tintedTheme } from '../../theme/backgroundTints'
+import { appColorsOf } from '../../theme/themeDerivation'
 import { cn } from '../../ui/cn'
+
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
 interface BackgroundTileProps {
   label: string
@@ -27,14 +31,28 @@ function BackgroundTile({ label, hint, isSelected, preview, placeholder, onSelec
       <span className="background-tile-preview" style={preview} aria-hidden="true">
         {placeholder}
         <span className="background-tile-panel" />
+        {isSelected && (
+          <span className="background-tile-check">
+            <Check size={12} strokeWidth={3} />
+          </span>
+        )}
       </span>
       <span className="background-tile-label">{label}</span>
     </button>
   )
 }
 
-function imagePreview(url: string | null | undefined, color: string): CSSProperties {
-  return url === null || url === undefined ? { backgroundColor: color } : { backgroundColor: color, backgroundImage: `url("${url}")` }
+function imagePreview(url: string | null | undefined, color: string, panel: string): CSSProperties {
+  const base = { backgroundColor: color, '--tile-panel': panel } as CSSProperties
+  return url === null || url === undefined ? base : { ...base, backgroundImage: `url("${url}")` }
+}
+
+function withCrossfade(change: () => void): void {
+  if (!('startViewTransition' in document) || window.matchMedia(REDUCED_MOTION_QUERY).matches) {
+    change()
+    return
+  }
+  document.startViewTransition(() => flushSync(change))
 }
 
 export function BackgroundPicker() {
@@ -43,9 +61,11 @@ export function BackgroundPicker() {
   const wallpaperUrl = useAppearanceStore((state) => state.wallpaperUrl)
   const desktopWallpaper = useAppearanceStore((state) => state.desktopWallpaper)
   const canFollowDesktop = useAppearanceStore((state) => state.canFollowDesktop)
-  const theme = useActiveColorTheme()
+  const theme = useThemeWithoutTint()
   const isChosen = (background: Appearance['background']) => appearance.background === background
   const desktopImage = isChosen('desktop') ? desktopWallpaper?.imageUrl : null
+  const basePanel = appColorsOf(theme).panel
+  const choose = (changes: Partial<Appearance>) => withCrossfade(() => update(changes))
 
   return (
     <div className="background-groups">
@@ -56,42 +76,53 @@ export function BackgroundPicker() {
             label="Solid"
             hint="The theme color, nothing behind it"
             isSelected={isChosen('solid')}
-            preview={{ backgroundColor: theme.background }}
-            onSelect={() => update({ background: 'solid' })}
+            preview={imagePreview(null, theme.background, basePanel)}
+            onSelect={() => choose({ background: 'solid' })}
           />
           {(canFollowDesktop !== false || isChosen('desktop')) && (
             <BackgroundTile
               label="Transparent"
               hint="See your desktop wallpaper through O-BROS"
               isSelected={isChosen('desktop')}
-              preview={imagePreview(desktopImage, desktopWallpaper?.color ?? theme.background)}
+              preview={imagePreview(desktopImage, desktopWallpaper?.color ?? theme.background, basePanel)}
               placeholder={(desktopImage === null || desktopImage === undefined) && <Monitor size={18} className="background-tile-icon" />}
-              onSelect={() => update({ background: 'desktop' })}
+              onSelect={() => choose({ background: 'desktop' })}
             />
           )}
           <BackgroundTile
             label="Your image"
             hint="A picture you choose, behind O-BROS"
             isSelected={isChosen('wallpaper')}
-            preview={imagePreview(wallpaperUrl, theme.background)}
+            preview={imagePreview(wallpaperUrl, theme.background, basePanel)}
             placeholder={wallpaperUrl === null && <ImagePlus size={18} className="background-tile-icon" />}
-            onSelect={() => update({ background: 'wallpaper' })}
+            onSelect={() => choose({ background: 'wallpaper' })}
           />
         </div>
       </div>
       <div className="background-group">
-        <h3 className="background-group-title">Painted with your theme colors</h3>
+        <h3 className="background-group-title">Color</h3>
         <div className="background-picker">
-          {SCENE_IDS.map((scene) => (
-            <BackgroundTile
-              key={scene}
-              label={SCENE_LABELS[scene]}
-              hint="Changes with your theme"
-              isSelected={isChosen('scene') && appearance.scene === scene}
-              preview={{ backgroundColor: theme.background, backgroundImage: sceneImage(scene, theme) }}
-              onSelect={() => update({ background: 'scene', scene })}
-            />
-          ))}
+          <BackgroundTile
+            label="None"
+            hint="The theme's own colors"
+            isSelected={appearance.color === null}
+            preview={imagePreview(null, theme.background, basePanel)}
+            placeholder={<Ban size={18} className="background-tile-icon" />}
+            onSelect={() => choose({ color: null })}
+          />
+          {TINT_IDS.map((tint) => {
+            const tinted = tintedTheme(theme, tint)
+            return (
+              <BackgroundTile
+                key={tint}
+                label={TINTS[tint].label}
+                hint={`The whole app in ${theme.label}'s ${TINTS[tint].label.toLowerCase()}, with any look above`}
+                isSelected={appearance.color === tint}
+                preview={{ backgroundColor: tinted.background, '--tile-panel': appColorsOf(tinted).panel } as CSSProperties}
+                onSelect={() => choose({ color: tint })}
+              />
+            )
+          })}
         </div>
       </div>
     </div>

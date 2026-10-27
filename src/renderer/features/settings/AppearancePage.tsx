@@ -77,7 +77,6 @@ export function AppearancePage() {
   const removeWallpaper = useAppearanceStore((state) => state.removeWallpaper)
   const isWallpaper = appearance.background === 'wallpaper'
   const isDesktop = appearance.background === 'desktop'
-  const isScene = appearance.background === 'scene'
   const showsPicture = isDesktop || (isWallpaper && wallpaperUrl !== null)
 
   return (
@@ -86,7 +85,7 @@ export function AppearancePage() {
 
       <SettingsSection
         title="Background"
-        description="What shows behind the panels. Transparent lets your desktop show through O-BROS."
+        description="Look is what shows behind the app. Color tints the whole app in the shades of your theme, and works with every look, so Transparent and Green give green glass over your desktop."
       >
         <BackgroundPicker />
       </SettingsSection>
@@ -123,14 +122,10 @@ export function AppearancePage() {
         </SettingsSection>
       )}
 
-      {(showsPicture || isScene) && (
+      {showsPicture && (
         <SettingsSection
           title="See-through"
-          description={
-            isScene
-              ? 'How solid the panels, terminals and editor are over the colors. Text always stays fully visible.'
-              : 'How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim.'
-          }
+          description="How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim."
         >
           <div className="appearance-sliders">
             <Slider
@@ -141,26 +136,22 @@ export function AppearancePage() {
               display={percent(appearance.surfaceOpacity)}
               onChange={(surfaceOpacity) => update({ surfaceOpacity })}
             />
-            {showsPicture && (
-              <>
-                <Slider
-                  label="Dim"
-                  value={appearance.wallpaperDim}
-                  range={WALLPAPER_DIM_RANGE}
-                  step={0.01}
-                  display={percent(appearance.wallpaperDim)}
-                  onChange={(wallpaperDim) => update({ wallpaperDim })}
-                />
-                <Slider
-                  label="Blur"
-                  value={appearance.wallpaperBlur}
-                  range={WALLPAPER_BLUR_RANGE}
-                  step={1}
-                  display={`${appearance.wallpaperBlur} px`}
-                  onChange={(wallpaperBlur) => update({ wallpaperBlur })}
-                />
-              </>
-            )}
+            <Slider
+              label="Dim"
+              value={appearance.wallpaperDim}
+              range={WALLPAPER_DIM_RANGE}
+              step={0.01}
+              display={percent(appearance.wallpaperDim)}
+              onChange={(wallpaperDim) => update({ wallpaperDim })}
+            />
+            <Slider
+              label="Blur"
+              value={appearance.wallpaperBlur}
+              range={WALLPAPER_BLUR_RANGE}
+              step={1}
+              display={`${appearance.wallpaperBlur} px`}
+              onChange={(wallpaperBlur) => update({ wallpaperBlur })}
+            />
           </div>
         </SettingsSection>
       )}

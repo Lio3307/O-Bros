@@ -1,9 +1,13 @@
+import { useMemo } from 'react'
 import { create } from 'zustand'
+import type { TintId } from '../../shared/appearance'
 import { isHexColor } from '../../shared/hexColor'
 import { isRecord } from '../../shared/isRecord'
 import { ANSI_COLOR_COUNT, type ThemePalette } from '../../shared/themePalette'
 import { COLOR_THEMES, defaultThemeFor, findColorTheme, type ColorTheme, type ColorThemeId } from '../theme/colorThemes'
+import { tintedTheme } from '../theme/backgroundTints'
 import { isDarkTheme, themeFromPalette } from '../theme/themeDerivation'
+import { useAppearanceStore } from './appearanceStore'
 import { readStored, readStoredJson, writeStored, writeStoredJson } from './browserStorage'
 
 export type ThemeMode = 'dark' | 'light' | 'system'
@@ -123,10 +127,23 @@ export const useColorThemeStore = create<ColorThemeState>()((set, get) => ({
 
 window.matchMedia(DARK_SCHEME_QUERY).addEventListener('change', (event) => useColorThemeStore.setState({ systemIsDark: event.matches }))
 
-export function useActiveColorTheme(): ColorTheme {
+function chosenTint(): TintId | null {
+  const { appearance } = useAppearanceStore.getState()
+  return appearance.color
+}
+
+export function useThemeWithoutTint(): ColorTheme {
   return useColorThemeStore(activeThemeOf)
 }
 
+export function useActiveColorTheme(): ColorTheme {
+  const theme = useThemeWithoutTint()
+  const tint = useAppearanceStore((state) => state.appearance.color)
+  return useMemo(() => (tint === null ? theme : tintedTheme(theme, tint)), [theme, tint])
+}
+
 export function activeColorTheme(): ColorTheme {
-  return activeThemeOf(useColorThemeStore.getState())
+  const theme = activeThemeOf(useColorThemeStore.getState())
+  const tint = chosenTint()
+  return tint === null ? theme : tintedTheme(theme, tint)
 }

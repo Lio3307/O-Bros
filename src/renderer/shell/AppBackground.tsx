@@ -1,7 +1,5 @@
 import { useEffect } from 'react'
 import { useAppearanceStore, useSurfaceAlpha } from '../state/appearanceStore'
-import { useActiveColorTheme } from '../state/colorThemeStore'
-import { sceneImage } from '../theme/backgroundScenes'
 import { DesktopWallpaperLayer } from './DesktopWallpaperLayer'
 import './appBackground.css'
 
@@ -10,7 +8,6 @@ export function AppBackground() {
   const wallpaperUrl = useAppearanceStore((state) => state.wallpaperUrl)
   const loadWallpaper = useAppearanceStore((state) => state.loadWallpaper)
   const loadDesktopSupport = useAppearanceStore((state) => state.loadDesktopSupport)
-  const theme = useActiveColorTheme()
   const surfaceAlpha = useSurfaceAlpha()
   const isSeeThrough = surfaceAlpha < 1
 
@@ -30,13 +27,6 @@ export function AppBackground() {
       <div className="app-wallpaper" aria-hidden="true">
         <DesktopWallpaperLayer blur={appearance.wallpaperBlur} />
         <div className="app-wallpaper-dim" style={{ opacity: appearance.wallpaperDim }} />
-      </div>
-    )
-  }
-  if (appearance.background === 'scene') {
-    return (
-      <div className="app-wallpaper" aria-hidden="true">
-        <div className="app-wallpaper-image" style={{ backgroundImage: sceneImage(appearance.scene, theme) }} />
       </div>
     )
   }
