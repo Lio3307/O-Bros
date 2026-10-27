@@ -8,12 +8,10 @@ import { importThemeFiles, importThemesFromWarp } from './themeImportActions'
 import { ThemePicker } from './ThemePicker'
 import './themeSettings.css'
 
-const SYSTEM_NAME = navigator.platform.toLowerCase().startsWith('win') ? 'Windows' : 'system'
-
 const MODE_OPTIONS: { value: ThemeMode; label: string }[] = [
   { value: 'dark', label: 'Dark' },
   { value: 'light', label: 'Light' },
-  { value: 'system', label: `Match ${SYSTEM_NAME}` }
+  { value: 'system', label: 'System' }
 ]
 
 const THEME_FILE_TYPES = '.yaml,.yml,.json'
@@ -61,7 +59,7 @@ export function ThemeSettings() {
       {showsDark && (
         <ThemePicker
           title="Dark theme"
-          description={mode === 'system' ? `Used while ${SYSTEM_NAME} is in dark mode.` : 'Used in dark mode.'}
+          description={mode === 'system' ? 'Used while your system is in dark mode.' : 'Used in dark mode.'}
           isDark
           onSelect={setDarkTheme}
         />
@@ -69,7 +67,7 @@ export function ThemeSettings() {
       {showsLight && (
         <ThemePicker
           title="Light theme"
-          description={mode === 'system' ? `Used while ${SYSTEM_NAME} is in light mode.` : 'Used in light mode.'}
+          description={mode === 'system' ? 'Used while your system is in light mode.' : 'Used in light mode.'}
           isDark={false}
           onSelect={setLightTheme}
         />
