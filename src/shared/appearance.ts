@@ -2,7 +2,7 @@ import { isRecord } from './isRecord'
 
 export type BackgroundKind = 'solid' | 'wallpaper' | 'desktop'
 
-export const TINT_IDS = ['blue', 'purple', 'red', 'yellow', 'green', 'cyan'] as const
+export const TINT_IDS = ['midnight', 'slate', 'aubergine', 'pine', 'mocha', 'graphite'] as const
 
 export type TintId = (typeof TINT_IDS)[number]
 
@@ -42,11 +42,24 @@ function isTintId(value: unknown): value is TintId {
   return TINT_IDS.includes(value as TintId)
 }
 
-function savedColorOf(raw: Record<string, unknown>): TintId | null {
-  if (raw.background === 'tint') {
-    return isTintId(raw.tint) ? raw.tint : null
+const TONE_OF_OLD_COLOR: Record<string, TintId> = {
+  blue: 'midnight',
+  cyan: 'slate',
+  purple: 'aubergine',
+  green: 'pine',
+  yellow: 'mocha',
+  red: 'mocha'
+}
+
+function toneOf(value: unknown): TintId | null {
+  if (isTintId(value)) {
+    return value
   }
-  return isTintId(raw.color) ? raw.color : null
+  return typeof value === 'string' ? (TONE_OF_OLD_COLOR[value] ?? null) : null
+}
+
+function savedColorOf(raw: Record<string, unknown>): TintId | null {
+  return toneOf(raw.background === 'tint' ? raw.tint : raw.color)
 }
 
 export function readAppearance(raw: unknown): Appearance {

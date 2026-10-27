@@ -100,11 +100,11 @@ export function BackgroundPicker() {
         </div>
       </div>
       <div className="background-group">
-        <h3 className="background-group-title">Color</h3>
+        <h3 className="background-group-title">Tone</h3>
         <div className="background-picker">
           <BackgroundTile
             label="None"
-            hint="The theme's own colors"
+            hint="The theme's own surfaces"
             isSelected={appearance.color === null}
             preview={imagePreview(null, theme.background, basePanel)}
             placeholder={<Ban size={18} className="background-tile-icon" />}
@@ -116,7 +116,7 @@ export function BackgroundPicker() {
               <BackgroundTile
                 key={tint}
                 label={TINTS[tint].label}
-                hint={`The whole app in ${theme.label}'s ${TINTS[tint].label.toLowerCase()}, with any look above`}
+                hint={`${TINTS[tint].hint}, for the whole app and any look above`}
                 isSelected={appearance.color === tint}
                 preview={{ backgroundColor: tinted.background, '--tile-panel': appColorsOf(tinted).panel } as CSSProperties}
                 onSelect={() => choose({ color: tint })}

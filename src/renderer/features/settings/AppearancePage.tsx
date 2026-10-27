@@ -85,7 +85,7 @@ export function AppearancePage() {
 
       <SettingsSection
         title="Background"
-        description="Look is what shows behind the app. Color tints the whole app in the shades of your theme, and works with every look, so Transparent and Green give green glass over your desktop."
+        description="Look is what shows behind the app. Tone gives the whole app a quiet color, like Midnight or Mocha, and works with every look, so Transparent and Midnight give dark navy glass over your desktop. Text and code keep the theme colors."
       >
         <BackgroundPicker />
       </SettingsSection>

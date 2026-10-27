@@ -1,27 +1,27 @@
 import type { TintId } from '../../shared/appearance'
-import { normalizeHexColor } from '../../shared/hexColor'
 import type { AppColors, ColorTheme } from './colorThemes'
 import { contrastRatio, mixColors } from './colorMath'
 import { appColorsOf, isDarkTheme } from './themeDerivation'
 
 interface TintInfo {
   label: string
-  ansiIndex: number
+  hint: string
+  color: string
 }
 
 export const TINTS: Record<TintId, TintInfo> = {
-  blue: { label: 'Blue', ansiIndex: 4 },
-  purple: { label: 'Purple', ansiIndex: 5 },
-  red: { label: 'Red', ansiIndex: 1 },
-  yellow: { label: 'Yellow', ansiIndex: 3 },
-  green: { label: 'Green', ansiIndex: 2 },
-  cyan: { label: 'Cyan', ansiIndex: 6 }
+  midnight: { label: 'Midnight', hint: 'Deep navy', color: '#3d5a96' },
+  slate: { label: 'Slate', hint: 'Cool blue gray', color: '#5a6b80' },
+  aubergine: { label: 'Aubergine', hint: 'Muted plum', color: '#6a4a7e' },
+  pine: { label: 'Pine', hint: 'Deep teal green', color: '#3b7066' },
+  mocha: { label: 'Mocha', hint: 'Warm brown', color: '#7d604b' },
+  graphite: { label: 'Graphite', hint: 'Neutral warm gray', color: '#77736d' }
 }
 
 const READABLE_CONTRAST = 4.5
 const TINT_SCALES = [1, 0.75, 0.5, 0.25]
-const DARK_STRENGTH = { base: 0.2, raised: 0.24, accent: 0.32 }
-const LIGHT_STRENGTH = { base: 0.12, raised: 0.16, accent: 0.24 }
+const DARK_STRENGTH = { base: 0.3, raised: 0.34, accent: 0.42 }
+const LIGHT_STRENGTH = { base: 0.1, raised: 0.13, accent: 0.2 }
 const TINTED_SURFACES: { name: keyof AppColors; level: keyof typeof DARK_STRENGTH }[] = [
   { name: 'terminal', level: 'base' },
   { name: 'chrome', level: 'raised' },
@@ -30,10 +30,6 @@ const TINTED_SURFACES: { name: keyof AppColors; level: keyof typeof DARK_STRENGT
   { name: 'selected', level: 'accent' },
   { name: 'border', level: 'accent' }
 ]
-
-export function tintColorOf(theme: ColorTheme, tint: TintId): string {
-  return normalizeHexColor(theme.ansi[TINTS[tint].ansiIndex]) ?? normalizeHexColor(theme.foreground) ?? theme.background
-}
 
 function tintedBy(theme: ColorTheme, color: string, scale: number): ColorTheme {
   const strength = isDarkTheme(theme) ? DARK_STRENGTH : LIGHT_STRENGTH
@@ -50,7 +46,7 @@ function readability(theme: ColorTheme): number {
 }
 
 export function tintedTheme(theme: ColorTheme, tint: TintId): ColorTheme {
-  const color = tintColorOf(theme, tint)
+  const color = TINTS[tint].color
   const wanted = Math.min(READABLE_CONTRAST, readability(theme))
   const tinted = TINT_SCALES.map((scale) => tintedBy(theme, color, scale)).find((candidate) => readability(candidate) >= wanted) ?? theme
   return { ...tinted, id: `${theme.id}+${tint}` }

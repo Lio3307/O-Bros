@@ -201,7 +201,7 @@ test('Desktop wallpaper shows the Windows wallpaper lined up with the screen, fo
   await expect.poll(() => mainWindowListeners('move')).toBe(moveListenersBefore)
 })
 
-test('a color tints the whole app and works with every look, including Transparent', async () => {
+test('a tone colors the whole app and works with every look, including Transparent', async () => {
   app = await launchApp({ separateHome: true })
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByTitle('Plain terminal in the selected folder').click()
@@ -211,8 +211,8 @@ test('a color tints the whole app and works with every look, including Transpare
   const plainPanel = await panelColor()
   const pressed = (name: string) => app.window.getByRole('button', { name, exact: true })
 
-  await pressed('Green').click()
-  await expect(pressed('Green')).toHaveAttribute('aria-pressed', 'true')
+  await pressed('Midnight').click()
+  await expect(pressed('Midnight')).toHaveAttribute('aria-pressed', 'true')
   await expect(pressed('Solid')).toHaveAttribute('aria-pressed', 'true')
   await expect.poll(panelColor).not.toBe(plainPanel)
   const greenPanel = await panelColor()
@@ -220,7 +220,7 @@ test('a color tints the whole app and works with every look, including Transpare
 
   await pressed('Transparent').click()
   await expect(app.window.locator('.app-desktop-screen')).toBeAttached()
-  await expect(pressed('Green')).toHaveAttribute('aria-pressed', 'true')
+  await expect(pressed('Midnight')).toHaveAttribute('aria-pressed', 'true')
   await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
   expect(await panelColor()).toBe(greenPanel)
   if (SHOTS !== undefined) {
