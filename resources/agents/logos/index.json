@@ -1,5 +1,5 @@
 {
-  "description": "Brand logos for agent CLIs, matched by the command people type. style 'color' is shown with its own colours; style 'mono' is a single-colour logo drawn in the interface text colour. Files come from @lobehub/icons-static-svg 1.95.1 (MIT). The logos are trademarks of their owners and are used only to identify each tool. Agents without an entry use the icon from the ACP registry.",
+  "description": "Brand logos for agent CLIs, matched by the command people type. style 'color' is shown with its own colours; style 'mono' is a single-colour logo drawn in the interface text colour. Files come from @lobehub/icons-static-svg 1.95.1 (MIT), except freebuff.svg, traced from the icon on freebuff.com. The logos are trademarks of their owners and are used only to identify each tool. Agents without an entry use the icon from the ACP registry.",
   "source": "https://unpkg.com/@lobehub/icons-static-svg@1.95.1/icons/",
   "logos": {
     "claude": {
@@ -84,6 +84,10 @@
     },
     "openrouter": {
       "file": "openrouter.svg",
+      "style": "mono"
+    },
+    "freebuff": {
+      "file": "freebuff.svg",
       "style": "mono"
     }
   }

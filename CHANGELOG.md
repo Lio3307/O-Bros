@@ -64,6 +64,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Dropping several files on a terminal typed only the first path.** Every dropped path is typed now, each quoted when needed.
 
 ### Changed
+- **Freebuff has its own logo** (the geometric F from freebuff.com) instead of the generic robot, in the agent list, tabs and team views, drawn in the interface text color like the other one-color logos.
 - **Arrows show only where there is something to open.** A project with no folders, terminals or scripts has no arrow, and neither does an empty folder in the file tree.
 - **Usage in the status bar shows the plans of the agents on this computer** (installed or signed in), each with its limits and, when needed, what to run to sign in. Plans O-BROS can read but you do not have yet are named underneath. The list, the status bar and the popover all come from one list of plan providers.
 - **The close question says what is still running in plain words**, for example "Claude is still running. It also started @playwright/mcp and Pencil.", instead of full command lines. O-BROS names each program by what it is: the agent, the package npx runs, the script node runs or the npm command, and leaves out wrappers such as cmd, node and npx.
