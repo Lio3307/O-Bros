@@ -11,6 +11,10 @@ function seeThrough(color: string): string {
   return `color-mix(in srgb, ${color} calc(var(--inner-alpha) * 100%), transparent)`
 }
 
+function gutterBackground(color: string): string {
+  return `color-mix(in srgb, ${color} calc(88% + var(--inner-alpha) * 12%), transparent)`
+}
+
 function editorChrome(theme: ColorTheme): Extension {
   return EditorView.theme(
     {
@@ -19,10 +23,11 @@ function editorChrome(theme: ColorTheme): Extension {
       '.cm-content': { caretColor: theme.cursor, padding: '8px 0' },
       '.cm-cursor': { borderLeftColor: theme.cursor },
       '.cm-gutters': {
-        backgroundColor: 'transparent',
+        backgroundColor: gutterBackground(theme.background),
+        backdropFilter: 'blur(12px)',
         color: theme.code.comment,
         border: 'none',
-        paddingRight: '8px'
+        paddingRight: '4px'
       },
       '.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--color-strong) 4%, transparent)' },
       '.cm-activeLineGutter': { backgroundColor: 'transparent', color: theme.foreground, fontWeight: '700' },

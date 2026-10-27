@@ -3,7 +3,6 @@ import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { lastPathSegment } from '../../../shared/paths'
 import { EditorState } from '@codemirror/state'
 import { EditorView, keymap } from '@codemirror/view'
-import { basicSetup } from 'codemirror'
 import { useEffect, useRef, useState } from 'react'
 import { isLanguageEnabled, useEditorSettingsStore } from '../../state/editorSettingsStore'
 import { activeColorTheme, useActiveColorTheme } from '../../state/colorThemeStore'
@@ -20,6 +19,7 @@ import { colorThemeCompartment, colorThemeExtension, editorLayoutTheme } from '.
 import { editorMotionTheme } from './editorMotion'
 import { formatDocument } from './formatDocument'
 import { openDroppedFiles } from './openDroppedFiles'
+import { editorSetup } from './editorSetup'
 import { connectVimFileActions, vimCompartment, vimExtension } from './vimMode'
 import { findLanguageForFile, type LanguageDefinition } from './languageRegistry'
 import { lintExtensionFor, lintNow } from './lintExtension'
@@ -132,7 +132,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
     doc: content,
     extensions: [
       vimCompartment.of(vimExtension(useEditorSettingsStore.getState().vimMode)),
-      basicSetup,
+      editorSetup,
       editorLayoutTheme,
       editorMotionTheme,
       colorThemeCompartment.of(currentColorThemeExtension()),
