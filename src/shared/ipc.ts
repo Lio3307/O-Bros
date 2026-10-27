@@ -246,6 +246,7 @@ export const IpcChannel = {
   appearanceSetWindowColors: 'appearance:setWindowColors',
   appearanceReadWarpThemes: 'appearance:readWarpThemes',
   appearanceFollowDesktop: 'appearance:followDesktop',
+  appearanceCanFollowDesktop: 'appearance:canFollowDesktop',
   appearanceDesktopPlacementChanged: 'appearance:desktopPlacementChanged',
   appearanceDesktopWallpaperChanged: 'appearance:desktopWallpaperChanged'
 } as const
@@ -474,6 +475,7 @@ export interface DesktopApi {
     setWindowColors(colors: WindowColors): Promise<void>
     readWarpThemes(): Promise<WarpThemeFiles>
     followDesktop(isFollowing: boolean): Promise<DesktopView | null>
+    canFollowDesktop(): Promise<boolean>
     onDesktopPlacementChanged(listener: (placement: DesktopPlacement) => void): () => void
     onDesktopWallpaperChanged(listener: (wallpaper: DesktopWallpaper) => void): () => void
   }

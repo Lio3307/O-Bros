@@ -11,8 +11,10 @@ interface AppearanceState {
   appearance: Appearance
   wallpaperUrl: string | null
   desktopWallpaper: DesktopWallpaper | null
+  canFollowDesktop: boolean | null
   update: (changes: Partial<Appearance>) => void
   loadWallpaper: () => Promise<void>
+  loadDesktopSupport: () => Promise<void>
   chooseWallpaper: () => Promise<void>
   removeWallpaper: () => Promise<void>
   showDesktopWallpaper: (desktopWallpaper: DesktopWallpaper) => void
@@ -22,6 +24,7 @@ export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
   appearance: readAppearance(readStoredJson(APPEARANCE_KEY)),
   wallpaperUrl: null,
   desktopWallpaper: null,
+  canFollowDesktop: null,
 
   update: (changes) => {
     const appearance = readAppearance({ ...get().appearance, ...changes })
@@ -31,6 +34,14 @@ export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
 
   loadWallpaper: async () => {
     set({ wallpaperUrl: await window.api.appearance.loadWallpaper().catch(() => null) })
+  },
+
+  loadDesktopSupport: async () => {
+    const canFollowDesktop = await window.api.appearance.canFollowDesktop().catch(() => false)
+    set({ canFollowDesktop })
+    if (!canFollowDesktop && get().appearance.background === 'desktop') {
+      get().update({ background: 'solid' })
+    }
   },
 
   chooseWallpaper: async () => {

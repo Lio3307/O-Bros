@@ -1,9 +1,14 @@
 import { isRecord } from './isRecord'
 
-export type BackgroundKind = 'solid' | 'wallpaper' | 'desktop'
+export type BackgroundKind = 'solid' | 'scene' | 'wallpaper' | 'desktop'
+
+export const SCENE_IDS = ['glow', 'aurora', 'horizon', 'ember', 'tide'] as const
+
+export type SceneId = (typeof SCENE_IDS)[number]
 
 export interface Appearance {
   background: BackgroundKind
+  scene: SceneId
   surfaceOpacity: number
   wallpaperDim: number
   wallpaperBlur: number
@@ -24,9 +29,9 @@ export const SURFACE_OPACITY_RANGE: Range = { min: 0.3, max: 1 }
 export const WALLPAPER_DIM_RANGE: Range = { min: 0, max: 0.85 }
 export const WALLPAPER_BLUR_RANGE: Range = { min: 0, max: 24 }
 
-export const DEFAULT_APPEARANCE: Appearance = { background: 'solid', surfaceOpacity: 0.72, wallpaperDim: 0.45, wallpaperBlur: 0 }
+export const DEFAULT_APPEARANCE: Appearance = { background: 'solid', scene: 'glow', surfaceOpacity: 0.72, wallpaperDim: 0.45, wallpaperBlur: 0 }
 
-const BACKGROUND_KINDS: BackgroundKind[] = ['solid', 'wallpaper', 'desktop']
+const BACKGROUND_KINDS: BackgroundKind[] = ['solid', 'scene', 'wallpaper', 'desktop']
 const HEX_COLOR_LENGTH = 7
 
 export function clampTo(value: unknown, range: Range, fallback: number): number {
@@ -39,6 +44,7 @@ export function readAppearance(raw: unknown): Appearance {
   }
   return {
     background: BACKGROUND_KINDS.includes(raw.background as BackgroundKind) ? (raw.background as BackgroundKind) : DEFAULT_APPEARANCE.background,
+    scene: SCENE_IDS.includes(raw.scene as SceneId) ? (raw.scene as SceneId) : DEFAULT_APPEARANCE.scene,
     surfaceOpacity: clampTo(raw.surfaceOpacity, SURFACE_OPACITY_RANGE, DEFAULT_APPEARANCE.surfaceOpacity),
     wallpaperDim: clampTo(raw.wallpaperDim, WALLPAPER_DIM_RANGE, DEFAULT_APPEARANCE.wallpaperDim),
     wallpaperBlur: clampTo(raw.wallpaperBlur, WALLPAPER_BLUR_RANGE, DEFAULT_APPEARANCE.wallpaperBlur)
@@ -46,7 +52,8 @@ export function readAppearance(raw: unknown): Appearance {
 }
 
 export function surfaceAlphaOf(appearance: Appearance, hasWallpaper: boolean): number {
-  const showsSomethingBehind = appearance.background === 'desktop' || (appearance.background === 'wallpaper' && hasWallpaper)
+  const showsSomethingBehind =
+    appearance.background === 'desktop' || appearance.background === 'scene' || (appearance.background === 'wallpaper' && hasWallpaper)
   return showsSomethingBehind ? appearance.surfaceOpacity : 1
 }
 

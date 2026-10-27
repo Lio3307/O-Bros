@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
+import { canFollowDesktop } from '../services/appearance/desktopWallpaper'
 import { startFollowingDesktop, stopFollowingDesktop } from '../services/appearance/desktopFollower'
 import { chooseWallpaper, loadWallpaper, removeWallpaper } from '../services/appearance/wallpaper'
 import { paintWindow } from '../window'
@@ -18,6 +19,7 @@ export function registerAppearanceIpc(): void {
     }
   })
   ipcMain.handle(IpcChannel.appearanceReadWarpThemes, () => readWarpThemes())
+  ipcMain.handle(IpcChannel.appearanceCanFollowDesktop, () => canFollowDesktop())
   ipcMain.handle(IpcChannel.appearanceFollowDesktop, (event, isFollowing: unknown) => {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window === null) {

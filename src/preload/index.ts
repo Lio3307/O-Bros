@@ -209,6 +209,7 @@ const api: DesktopApi = {
     setWindowColors: (colors) => ipcRenderer.invoke(IpcChannel.appearanceSetWindowColors, colors),
     readWarpThemes: () => ipcRenderer.invoke(IpcChannel.appearanceReadWarpThemes),
     followDesktop: (isFollowing) => ipcRenderer.invoke(IpcChannel.appearanceFollowDesktop, isFollowing),
+    canFollowDesktop: () => ipcRenderer.invoke(IpcChannel.appearanceCanFollowDesktop),
     onDesktopPlacementChanged: (listener) => subscribe<DesktopPlacement>(IpcChannel.appearanceDesktopPlacementChanged, listener),
     onDesktopWallpaperChanged: (listener) => subscribe<DesktopWallpaper>(IpcChannel.appearanceDesktopWallpaperChanged, listener)
   }

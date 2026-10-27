@@ -1,28 +1,19 @@
 import { ImagePlus, Trash2 } from 'lucide-react'
 import type { ChangeEvent } from 'react'
-import {
-  SURFACE_OPACITY_RANGE,
-  WALLPAPER_BLUR_RANGE,
-  WALLPAPER_DIM_RANGE,
-  type BackgroundKind,
-  type Range
-} from '../../../shared/appearance'
+import { SURFACE_OPACITY_RANGE, WALLPAPER_BLUR_RANGE, WALLPAPER_DIM_RANGE, type Range } from '../../../shared/appearance'
 import { useAppearanceStore } from '../../state/appearanceStore'
 import { Button } from '../../ui/Button'
-import { SegmentedControl } from '../../ui/SegmentedControl'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../ui/SettingsSection'
+import { BackgroundPicker } from './BackgroundPicker'
 import { ThemeSettings } from './theme/ThemeSettings'
 import './settings.css'
 import './settingsControls.css'
 
 const IS_WINDOWS = navigator.platform.toLowerCase().startsWith('win')
-
-const BACKGROUND_OPTIONS: { value: BackgroundKind; label: string }[] = [
-  { value: 'solid', label: 'Solid' },
-  { value: 'wallpaper', label: 'Image' },
-  { value: 'desktop', label: 'Desktop wallpaper' }
-]
+const DESKTOP_SETTINGS_PLACE = IS_WINDOWS
+  ? 'Windows Settings → Personalization → Background, with its Fill, Fit, Stretch, Tile or Center setting'
+  : 'your desktop settings (GNOME or KDE Plasma), with how the picture is fitted'
 
 function DesktopWallpaperPreview() {
   const desktopWallpaper = useAppearanceStore((state) => state.desktopWallpaper)
@@ -41,7 +32,7 @@ function DesktopWallpaperPreview() {
       className="appearance-wallpaper-preview"
       src={desktopWallpaper.imageUrl}
       style={{ backgroundColor: desktopWallpaper.color }}
-      alt="Your Windows wallpaper"
+      alt="Your desktop wallpaper"
     />
   )
 }
@@ -86,7 +77,8 @@ export function AppearancePage() {
   const removeWallpaper = useAppearanceStore((state) => state.removeWallpaper)
   const isWallpaper = appearance.background === 'wallpaper'
   const isDesktop = appearance.background === 'desktop'
-  const backgroundOptions = BACKGROUND_OPTIONS.filter((option) => option.value !== 'desktop' || IS_WINDOWS || isDesktop)
+  const isScene = appearance.background === 'scene'
+  const showsPicture = isDesktop || (isWallpaper && wallpaperUrl !== null)
 
   return (
     <SettingsPageLayout title="Appearance" description="The colors of O-BROS, and a picture behind it. Text, menus and dialogs always stay readable.">
@@ -94,13 +86,9 @@ export function AppearancePage() {
 
       <SettingsSection
         title="Background"
-        description={
-          IS_WINDOWS
-            ? 'Solid is the classic look. Image shows a picture you choose. Desktop wallpaper shows your Windows wallpaper, lined up with your screen so the desktop seems to show through.'
-            : 'Solid is the classic look. Image shows a picture you choose behind the panels.'
-        }
+        description="Solid is the classic look. The painted backgrounds use the colors of your theme, so they change when the theme does. Image shows a picture you choose, and Desktop wallpaper shows your desktop picture lined up with your screen so the desktop seems to show through."
       >
-        <SegmentedControl options={backgroundOptions} value={appearance.background} onChange={(background) => update({ background })} />
+        <BackgroundPicker />
       </SettingsSection>
 
       {isWallpaper && (
@@ -129,16 +117,20 @@ export function AppearancePage() {
       {isDesktop && (
         <SettingsSection
           title="Desktop wallpaper"
-          description="The wallpaper set in Windows Settings → Personalization → Background, with its Fill, Fit, Stretch, Tile or Center setting. O-BROS follows it when you change it there, and never copies or uploads it."
+          description={`The wallpaper set in ${DESKTOP_SETTINGS_PLACE}. O-BROS follows it when you change it there, and never copies or uploads it.`}
         >
           <DesktopWallpaperPreview />
         </SettingsSection>
       )}
 
-      {(isDesktop || (isWallpaper && wallpaperUrl !== null)) && (
+      {(showsPicture || isScene) && (
         <SettingsSection
           title="See-through"
-          description="How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim."
+          description={
+            isScene
+              ? 'How solid the panels, terminals and editor are over the colors. Text always stays fully visible.'
+              : 'How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim.'
+          }
         >
           <div className="appearance-sliders">
             <Slider
@@ -149,22 +141,26 @@ export function AppearancePage() {
               display={percent(appearance.surfaceOpacity)}
               onChange={(surfaceOpacity) => update({ surfaceOpacity })}
             />
-            <Slider
-              label="Dim"
-              value={appearance.wallpaperDim}
-              range={WALLPAPER_DIM_RANGE}
-              step={0.01}
-              display={percent(appearance.wallpaperDim)}
-              onChange={(wallpaperDim) => update({ wallpaperDim })}
-            />
-            <Slider
-              label="Blur"
-              value={appearance.wallpaperBlur}
-              range={WALLPAPER_BLUR_RANGE}
-              step={1}
-              display={`${appearance.wallpaperBlur} px`}
-              onChange={(wallpaperBlur) => update({ wallpaperBlur })}
-            />
+            {showsPicture && (
+              <>
+                <Slider
+                  label="Dim"
+                  value={appearance.wallpaperDim}
+                  range={WALLPAPER_DIM_RANGE}
+                  step={0.01}
+                  display={percent(appearance.wallpaperDim)}
+                  onChange={(wallpaperDim) => update({ wallpaperDim })}
+                />
+                <Slider
+                  label="Blur"
+                  value={appearance.wallpaperBlur}
+                  range={WALLPAPER_BLUR_RANGE}
+                  step={1}
+                  display={`${appearance.wallpaperBlur} px`}
+                  onChange={(wallpaperBlur) => update({ wallpaperBlur })}
+                />
+              </>
+            )}
           </div>
         </SettingsSection>
       )}

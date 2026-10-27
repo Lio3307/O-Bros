@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { colorFromRegistry, DEFAULT_DESKTOP_COLOR, wallpaperFitOf, type DesktopWallpaper } from '../../../shared/desktopWallpaper'
 import { imageTypeOfBytes } from '../../../shared/imageFiles'
 import { readRegistryKey } from '../registry'
+import { readLinuxWallpaper, type WallpaperSetting } from './linuxWallpaper'
 
 const DESKTOP_KEY = 'HKCU\\Control Panel\\Desktop'
 const COLORS_KEY = 'HKCU\\Control Panel\\Colors'
@@ -30,7 +31,7 @@ async function readImageUrl(filePath: string): Promise<string | null> {
   return content === null || type === null ? null : `data:${type};base64,${content.toString('base64')}`
 }
 
-async function wallpaperFrom(candidates: string[], fit: DesktopWallpaper['fit'], color: string): Promise<DesktopWallpaper> {
+async function wallpaperFrom({ candidates, fit, color }: WallpaperSetting): Promise<DesktopWallpaper> {
   for (const candidate of candidates) {
     const imageVersion = await imageVersionOf(candidate)
     if (imageVersion === null) {
@@ -48,15 +49,32 @@ async function wallpaperFrom(candidates: string[], fit: DesktopWallpaper['fit'],
   return { imageUrl: null, fit, color, version: `color|${color}` }
 }
 
-export async function readDesktopWallpaper(): Promise<DesktopWallpaper> {
-  if (process.platform !== 'win32') {
-    return NO_WALLPAPER
-  }
+async function readWindowsWallpaper(): Promise<WallpaperSetting> {
   const [desktop, colors] = await Promise.all([readRegistryKey(DESKTOP_KEY), readRegistryKey(COLORS_KEY)])
-  const color = colorFromRegistry(colors.background)
-  const fit = wallpaperFitOf(desktop.wallpaperstyle, desktop.tilewallpaper)
   const chosenPath = desktop.wallpaper ?? ''
-  const candidates = chosenPath === '' ? [] : [windowsCopyOfWallpaper(), chosenPath]
-  lastWallpaper = await wallpaperFrom(candidates, fit, color)
+  return {
+    candidates: chosenPath === '' ? [] : [windowsCopyOfWallpaper(), chosenPath],
+    fit: wallpaperFitOf(desktop.wallpaperstyle, desktop.tilewallpaper),
+    color: colorFromRegistry(colors.background)
+  }
+}
+
+async function readWallpaperSetting(): Promise<WallpaperSetting | null> {
+  if (process.platform === 'win32') {
+    return readWindowsWallpaper()
+  }
+  return process.platform === 'linux' ? readLinuxWallpaper() : null
+}
+
+export async function canFollowDesktop(): Promise<boolean> {
+  if (process.platform === 'win32') {
+    return true
+  }
+  return process.platform === 'linux' && (await readLinuxWallpaper()) !== null
+}
+
+export async function readDesktopWallpaper(): Promise<DesktopWallpaper> {
+  const setting = await readWallpaperSetting()
+  lastWallpaper = setting === null ? NO_WALLPAPER : await wallpaperFrom(setting)
   return lastWallpaper
 }

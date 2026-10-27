@@ -200,3 +200,25 @@ test('Desktop wallpaper shows the Windows wallpaper lined up with the screen, fo
   await expect.poll(() => app.window.evaluate(() => document.documentElement.hasAttribute('data-see-through'))).toBe(false)
   await expect.poll(() => mainWindowListeners('move')).toBe(moveListenersBefore)
 })
+
+test('a painted background uses the theme colors behind see-through panels', async () => {
+  app = await launchApp({ separateHome: true })
+  await app.window.getByTitle('Settings', { exact: true }).click()
+  await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
+  await expect(app.window.getByRole('button', { name: 'Solid', exact: true })).toHaveAttribute('aria-pressed', 'true')
+
+  await app.window.getByRole('button', { name: 'Aurora', exact: true }).click()
+  await expect(app.window.getByRole('button', { name: 'Aurora', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(app.window.locator('.app-wallpaper-image')).toHaveAttribute('style', /radial-gradient/)
+  await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
+  await expect(app.window.getByText('Panels', { exact: true })).toBeVisible()
+  await expect(app.window.getByText('Dim', { exact: true })).toHaveCount(0)
+  if (SHOTS !== undefined) {
+    await app.window.waitForTimeout(600)
+    await app.window.screenshot({ path: `${SHOTS}/appearance-scene.png` })
+  }
+
+  await app.window.getByRole('button', { name: 'Solid', exact: true }).click()
+  await expect(app.window.locator('.app-wallpaper-image')).toHaveCount(0)
+  await expect.poll(() => backgroundAlphaOf('.side-panel')).toBe(1)
+})
