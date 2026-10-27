@@ -3,6 +3,7 @@ import { languages as CATALOG_LANGUAGES } from '@codemirror/language-data'
 import type { Extension } from '@codemirror/state'
 import { fileExtension, lastPathSegment } from '../../../shared/paths'
 import { interpreterOf, looksLikeMarkup } from './languageFromContent'
+import { packageFileKindOf, type PackageFileKind } from './packageFiles'
 
 export const LANGUAGE_IDS = [
   'javascript',
@@ -34,6 +35,7 @@ export interface LanguageDefinition {
   extensions: string[]
   matchesFileName?: (fileName: string) => boolean
   serverLanguageId?: string
+  isGenerated?: boolean
   canLint: boolean
   canFormat: boolean
   load: () => Promise<Extension>
@@ -215,9 +217,21 @@ function languageFromFirstLine(firstLine: string): LanguageDefinition | null {
   return looksLikeMarkup(firstLine) ? { ...findLanguageById('html'), canFormat: false } : null
 }
 
+function packageFileLanguage(kind: PackageFileKind): LanguageDefinition | null {
+  if (kind.builtIn !== undefined) {
+    return { ...findLanguageById(kind.builtIn), isGenerated: true, canLint: false, canFormat: false }
+  }
+  const listed = kind.catalogName === undefined ? null : LanguageDescription.matchLanguageName(CATALOG_LANGUAGES, kind.catalogName, false)
+  return listed === null ? null : { ...catalogLanguage(listed), isGenerated: true }
+}
+
 export function findLanguageForFile(filePath: string, firstLine = ''): LanguageDefinition | null {
   const extension = fileExtension(filePath)
   const fileName = lastPathSegment(filePath)
+  const packageFile = packageFileKindOf(fileName)
+  if (packageFile !== null) {
+    return packageFileLanguage(packageFile)
+  }
   const matches = (language: LanguageDefinition): boolean =>
     language.extensions.includes(extension) || (language.matchesFileName?.(fileName.toLowerCase()) ?? false)
   const builtIn = LANGUAGES.find(matches)

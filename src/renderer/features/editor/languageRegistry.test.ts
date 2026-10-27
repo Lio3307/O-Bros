@@ -16,6 +16,19 @@ describe('findLanguageForFile', () => {
     expect(findLanguageForFile('C:/app/server.LOG')?.id).toBe('text')
   })
 
+  it('colors package and lock files by their exact name and never formats them', () => {
+    const bunLock = findLanguageForFile('C:/app/bun.lock')
+    expect(bunLock?.id).toBe('json')
+    expect(bunLock?.canFormat).toBe(false)
+    expect(bunLock?.isGenerated).toBe(true)
+    expect(findLanguageForFile('C:/app/yarn.lock')?.id).toBe('yaml')
+    expect(findLanguageForFile('/home/me/app/Cargo.lock')?.label).toBe('TOML')
+    expect(findLanguageForFile('C:/app/uv.lock')?.label).toBe('TOML')
+    expect(findLanguageForFile('C:/app/.npmrc')?.id).toBe('env')
+    expect(findLanguageForFile('C:/app/package.json')?.canFormat).toBe(true)
+    expect(findLanguageForFile('C:/app/package.json')?.isGenerated).toBeUndefined()
+  })
+
   it('keeps code languages unchanged', () => {
     expect(findLanguageForFile('C:/app/main.ts')?.id).toBe('typescript')
     expect(findLanguageForFile('C:/app/environment.json')?.id).toBe('json')

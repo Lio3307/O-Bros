@@ -254,7 +254,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
       if (language !== null && language.canLint) {
         lintNow(view)
       }
-      if (language !== null) {
+      if (language !== null && language.isGenerated !== true) {
         void connectLanguageServer(view, language)
       }
     }
