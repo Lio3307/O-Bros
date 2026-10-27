@@ -16,6 +16,7 @@ export interface EditorSettings {
   formatOnSave: boolean
   autoSaveEnabled: boolean
   autoSaveDelayMs: number
+  vimMode: boolean
 }
 
 export function defaultEditorSettings(): EditorSettings {
@@ -24,7 +25,8 @@ export function defaultEditorSettings(): EditorSettings {
     lintMode: 'on-save',
     formatOnSave: false,
     autoSaveEnabled: false,
-    autoSaveDelayMs: AUTO_SAVE_DEFAULT_DELAY_MS
+    autoSaveDelayMs: AUTO_SAVE_DEFAULT_DELAY_MS,
+    vimMode: false
   }
 }
 
@@ -56,6 +58,7 @@ export function normalizeEditorSettings(raw: unknown): EditorSettings {
     formatOnSave: typeof raw.formatOnSave === 'boolean' ? raw.formatOnSave : defaults.formatOnSave,
     autoSaveEnabled: typeof raw.autoSaveEnabled === 'boolean' ? raw.autoSaveEnabled : defaults.autoSaveEnabled,
     autoSaveDelayMs:
-      typeof raw.autoSaveDelayMs === 'number' ? clampAutoSaveDelay(raw.autoSaveDelayMs) : defaults.autoSaveDelayMs
+      typeof raw.autoSaveDelayMs === 'number' ? clampAutoSaveDelay(raw.autoSaveDelayMs) : defaults.autoSaveDelayMs,
+    vimMode: typeof raw.vimMode === 'boolean' ? raw.vimMode : defaults.vimMode
   }
 }

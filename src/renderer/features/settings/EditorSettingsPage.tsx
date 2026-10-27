@@ -60,6 +60,16 @@ export function EditorSettingsPage() {
       <AutoSaveSetting />
 
       <SettingsSection
+        title="Vim mode"
+        description="Edit files the Vim way: normal, insert and visual modes, motions and text objects, counts, registers, marks, macros, search and : commands. :w saves, :q closes the tab, :wq and :x do both, and :q! closes without saving. The current mode shows at the bottom of the editor."
+      >
+        <label className="toggle-row">
+          <input type="checkbox" role="switch" checked={settings.vimMode} onChange={(event) => settings.setVimMode(event.target.checked)} />
+          <span>Use Vim keys in the editor</span>
+        </label>
+      </SettingsSection>
+
+      <SettingsSection
         title="Linter (oxlint)"
         description="Checks JavaScript and TypeScript. Uses a .oxlintrc.json in your project folder when there is one."
       >

@@ -17,6 +17,7 @@ interface EditorSettingsState extends EditorSettings {
   setFormatOnSave: (isEnabled: boolean) => void
   setAutoSaveEnabled: (isEnabled: boolean) => void
   setAutoSaveDelay: (delayMs: number) => void
+  setVimMode: (isEnabled: boolean) => void
 }
 
 function loadSavedSettings(): EditorSettings {
@@ -25,8 +26,8 @@ function loadSavedSettings(): EditorSettings {
 }
 
 function pickSettings(state: EditorSettings): EditorSettings {
-  const { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs } = state
-  return { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs }
+  const { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs, vimMode } = state
+  return { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs, vimMode }
 }
 
 export function isLanguageEnabled(settings: EditorSettings, id: LanguageId): boolean {
@@ -53,6 +54,8 @@ export const useEditorSettingsStore = create<EditorSettingsState>()((set, get) =
 
     setAutoSaveEnabled: (autoSaveEnabled) => change({ autoSaveEnabled }),
 
-    setAutoSaveDelay: (delayMs) => change({ autoSaveDelayMs: clampAutoSaveDelay(delayMs) })
+    setAutoSaveDelay: (delayMs) => change({ autoSaveDelayMs: clampAutoSaveDelay(delayMs) }),
+
+    setVimMode: (vimMode) => change({ vimMode })
   }
 })

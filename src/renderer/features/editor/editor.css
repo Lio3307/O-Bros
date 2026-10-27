@@ -20,3 +20,24 @@
   padding: 24px;
   color: var(--color-muted);
 }
+
+.cm-editor .cm-panels-bottom {
+  background: var(--color-chrome-solid);
+  border-top: 1px solid var(--color-border);
+}
+
+.cm-editor .cm-vim-panel {
+  padding: 3px 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted);
+  letter-spacing: 0.04em;
+}
+
+.cm-editor .cm-vim-panel input {
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  outline: none;
+}

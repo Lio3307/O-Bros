@@ -2,6 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { clampAutoSaveDelay, defaultEditorSettings, normalizeEditorSettings } from './editorSettings'
 
 describe('normalizeEditorSettings', () => {
+  it('keeps Vim mode off unless it was turned on', () => {
+    expect(defaultEditorSettings().vimMode).toBe(false)
+    expect(normalizeEditorSettings({ vimMode: true }).vimMode).toBe(true)
+    expect(normalizeEditorSettings({ vimMode: 'yes' }).vimMode).toBe(false)
+  })
+
   it('returns defaults for missing or broken data', () => {
     expect(normalizeEditorSettings(null)).toEqual(defaultEditorSettings())
     expect(normalizeEditorSettings('text')).toEqual(defaultEditorSettings())

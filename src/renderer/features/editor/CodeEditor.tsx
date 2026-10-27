@@ -20,6 +20,7 @@ import { colorThemeCompartment, colorThemeExtension, editorLayoutTheme } from '.
 import { editorMotionTheme } from './editorMotion'
 import { formatDocument } from './formatDocument'
 import { openDroppedFiles } from './openDroppedFiles'
+import { connectVimFileActions, vimCompartment, vimExtension } from './vimMode'
 import { findLanguageForFile, type LanguageDefinition } from './languageRegistry'
 import { lintExtensionFor, lintNow } from './lintExtension'
 import {
@@ -130,6 +131,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
   return EditorState.create({
     doc: content,
     extensions: [
+      vimCompartment.of(vimExtension(useEditorSettingsStore.getState().vimMode)),
       basicSetup,
       editorLayoutTheme,
       editorMotionTheme,
@@ -168,6 +170,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [diskText, setDiskText] = useState<string | null>(null)
   const colorTheme = useActiveColorTheme()
+  const isVimMode = useEditorSettingsStore((state) => state.vimMode)
 
   function reloadFromDisk(): void {
     if (viewRef.current !== null && diskText !== null) {
@@ -180,6 +183,10 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   useEffect(() => {
     viewRef.current?.dispatch({ effects: colorThemeCompartment.reconfigure(currentColorThemeExtension()) })
   }, [colorTheme])
+
+  useEffect(() => {
+    viewRef.current?.dispatch({ effects: vimCompartment.reconfigure(vimExtension(isVimMode)) })
+  }, [isVimMode])
 
   useEffect(() => {
     if (viewRef.current !== null) {
@@ -227,13 +234,23 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
         return
       }
       view = new EditorView({ state, parent: hostRef.current })
-      view.dispatch({ effects: colorThemeCompartment.reconfigure(currentColorThemeExtension()) })
+      view.dispatch({
+        effects: [
+          colorThemeCompartment.reconfigure(currentColorThemeExtension()),
+          vimCompartment.reconfigure(vimExtension(useEditorSettingsStore.getState().vimMode))
+        ]
+      })
       viewRef.current = view
       const mountedView = view
       stopFollowingDisk = followDiskChanges(filePath, () => void checkDisk(mountedView))
       void checkDisk(mountedView)
       revealPendingTarget(view, filePath)
       const language = enabledLanguageFor(filePath, view.state.doc.line(1).text)
+      connectVimFileActions(mountedView, {
+        save: () => saveFile(mountedView, tabId, filePath, language, false),
+        close: () => useWorkspaceStore.getState().closeTab(tabId),
+        hasUnsavedChanges: () => isFileModified(tabId)
+      })
       if (language !== null && language.canLint) {
         lintNow(view)
       }
