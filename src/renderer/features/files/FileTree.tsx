@@ -6,7 +6,9 @@ import { useFileTreeStore } from '../../state/fileTreeStore'
 import { DisclosureChevron } from '../../ui/DisclosureChevron'
 import { FileTypeIcon, FolderTypeIcon } from '../../ui/FileTypeIcon'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
-import { DRAGGED_PATH_TYPE } from './dragData'
+import { setDraggedPaths } from './dragData'
+import { cn } from '../../ui/cn'
+import { draggedPathsFor, pathsBetween } from './pickRange'
 import { buildEntryMenuItems } from './fileTreeMenu'
 import { isSameData } from '../../../shared/sameData'
 
@@ -28,6 +30,21 @@ interface OpenMenu {
 const INDENT_PER_LEVEL_PX = 16
 const BASE_INDENT_PX = 8
 const FILE_ICON_ALIGNMENT_PX = 18
+const DRAG_LABEL_OFFSET_PX = 12
+
+function shownTreePaths(row: Element): string[] {
+  const tree = row.closest('.files-tree')
+  return tree === null ? [] : Array.from(tree.querySelectorAll<HTMLElement>('[data-path]'), (element) => element.dataset.path ?? '')
+}
+
+function showCountWhileDragging(event: DragEvent, count: number): void {
+  const label = document.createElement('div')
+  label.className = 'drag-count'
+  label.textContent = `${count} items`
+  document.body.appendChild(label)
+  event.dataTransfer.setDragImage(label, DRAG_LABEL_OFFSET_PX, DRAG_LABEL_OFFSET_PX)
+  requestAnimationFrame(() => label.remove())
+}
 
 function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -35,6 +52,7 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
   const collapseRequest = useFileTreeStore((state) => state.collapseRequest)
   const openDialog = useFileDialogStore((state) => state.open)
   const closeMenu = useCallback(() => setOpenMenu(null), [])
+  const isPicked = useFileTreeStore((state) => state.pickedPaths.includes(entry.path))
   const indent = BASE_INDENT_PX + depth * INDENT_PER_LEVEL_PX
 
   useEffect(() => {
@@ -50,8 +68,26 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
   }
 
   function startDrag(event: DragEvent): void {
-    event.dataTransfer.setData(DRAGGED_PATH_TYPE, entry.path)
-    event.dataTransfer.effectAllowed = 'copy'
+    const paths = draggedPathsFor(useFileTreeStore.getState().pickedPaths, entry.path)
+    setDraggedPaths(event.dataTransfer, paths)
+    if (paths.length > 1) {
+      showCountWhileDragging(event, paths.length)
+    }
+  }
+
+  function clickRow(event: MouseEvent<HTMLButtonElement>, open: () => void): void {
+    const store = useFileTreeStore.getState()
+    if (event.ctrlKey || event.metaKey) {
+      store.togglePicked(entry.path)
+      return
+    }
+    if (event.shiftKey) {
+      const anchor = store.pickAnchor ?? selectedPath ?? entry.path
+      store.setPicked(pathsBetween(shownTreePaths(event.currentTarget), anchor, entry.path))
+      return
+    }
+    store.clearPicked()
+    open()
   }
 
   function handleKeyDown(event: KeyboardEvent): void {
@@ -59,6 +95,8 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
       openDialog({ kind: 'rename', path: entry.path, name: entry.name })
     } else if (event.key === 'Delete') {
       openDialog({ kind: 'delete', path: entry.path, name: entry.name })
+    } else if (event.key === 'Escape') {
+      useFileTreeStore.getState().clearPicked()
     }
   }
 
@@ -70,9 +108,11 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
         <button
           type="button"
           title={entry.name}
-          className={entry.path === selectedPath ? 'row row-selected' : 'row'}
+          className={cn('row', entry.path === selectedPath && 'row-selected', isPicked && 'row-picked')}
+          data-path={entry.path}
+          aria-pressed={isPicked || undefined}
           style={{ paddingLeft: indent + FILE_ICON_ALIGNMENT_PX }}
-          onClick={() => onOpenFile(entry.path)}
+          onClick={(event) => clickRow(event, () => onOpenFile(entry.path))}
           draggable
           onDragStart={startDrag}
           onContextMenu={showMenu}
@@ -93,9 +133,11 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
       <button
         type="button"
         title={entry.hasChildren ? entry.name : `${entry.name} (empty)`}
-        className="row"
+        className={cn('row', isPicked && 'row-picked')}
+        data-path={entry.path}
+        aria-pressed={isPicked || undefined}
         style={{ paddingLeft: entry.hasChildren ? indent : indent + FILE_ICON_ALIGNMENT_PX }}
-        onClick={() => setIsExpanded(!isOpen && entry.hasChildren)}
+        onClick={(event) => clickRow(event, () => setIsExpanded(!isOpen && entry.hasChildren))}
         draggable
         onDragStart={startDrag}
         onContextMenu={showMenu}

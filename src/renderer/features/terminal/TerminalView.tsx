@@ -19,7 +19,9 @@ import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
 import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { terminalContrastOf, terminalThemeOf } from '../../theme/colorThemes'
-import { DRAGGED_PATH_TYPE, droppedPaths } from '../files/dragData'
+import { acceptsDroppedPaths, droppedPaths } from '../files/dragData'
+import { useFileTreeStore } from '../../state/fileTreeStore'
+import { cn } from '../../ui/cn'
 import { createFileLinkProvider } from './fileLinkProvider'
 import { openFileReference } from './openFileReference'
 import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
@@ -69,6 +71,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
   const webglAddonRef = useRef<WebglAddon | null>(null)
   const searchAddonRef = useRef<SearchAddon | null>(null)
   const [searchAddon, setSearchAddon] = useState<SearchAddon | null>(null)
+  const [isDropTarget, setIsDropTarget] = useState(false)
   const fontSize = useTerminalFontStore((state) => state.fontSize)
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
   const useGpuRendering = useTerminalSettingsStore((state) => state.useGpuRendering)
@@ -263,20 +266,33 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     }
   }, [colorTheme, surfaceAlpha])
 
-  function acceptsDrop(event: DragEvent): boolean {
-    const types = Array.from(event.dataTransfer.types)
-    return types.includes(DRAGGED_PATH_TYPE) || types.includes('Files')
+  function showDropTarget(event: DragEvent): void {
+    if (!acceptsDroppedPaths(event.dataTransfer)) {
+      return
+    }
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'copy'
+    setIsDropTarget(true)
   }
 
-  function pasteDroppedPath(event: DragEvent): void {
-    if (!acceptsDrop(event)) {
+  function hideDropTarget(event: DragEvent): void {
+    if (!(event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget))) {
+      setIsDropTarget(false)
+    }
+  }
+
+  function pasteDroppedPaths(event: DragEvent): void {
+    setIsDropTarget(false)
+    if (!acceptsDroppedPaths(event.dataTransfer)) {
       return
     }
     event.preventDefault()
     const paths = droppedPaths(event.dataTransfer)
-    if (paths.length > 0) {
-      window.api.pty.input(paneId, `${paths.map(quotePathForShell).join(' ')} `)
-      terminalRef.current?.focus()
+    const terminal = terminalRef.current
+    if (paths.length > 0 && terminal !== null) {
+      terminal.paste(`${paths.map(quotePathForShell).join(' ')} `)
+      terminal.focus()
+      useFileTreeStore.getState().clearPicked()
     }
   }
 
@@ -313,11 +329,12 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
   return (
     <>
       <div
-        className="terminal-host"
+        className={cn('terminal-host', isDropTarget && 'terminal-host-drop')}
         style={{ backgroundColor: withAlpha(colorTheme.background, innerAlphaOf(surfaceAlpha)) }}
         ref={hostRef}
-        onDragOver={(event) => acceptsDrop(event) && event.preventDefault()}
-        onDrop={pasteDroppedPath}
+        onDragOver={showDropTarget}
+        onDragLeave={hideDropTarget}
+        onDrop={pasteDroppedPaths}
         onMouseDownCapture={keepRightButtonFromTerminal}
         onMouseUpCapture={keepRightButtonFromTerminal}
         onContextMenuCapture={openContextMenu}

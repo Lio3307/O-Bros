@@ -70,3 +70,21 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.row-picked,
+.row-picked:hover {
+  color: var(--color-strong);
+  background: color-mix(in srgb, var(--color-info) 22%, transparent);
+}
+
+.drag-count {
+  position: fixed;
+  top: -100px;
+  left: -100px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--color-info);
+  border-radius: var(--radius);
+}

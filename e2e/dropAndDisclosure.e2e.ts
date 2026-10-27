@@ -48,11 +48,48 @@ test('a file dropped on the editor opens in its own tab instead of being pasted 
 
   await editor.evaluate((element, path) => {
     const data = new DataTransfer()
-    data.setData('application/x-obros-path', path)
+    data.setData('application/x-obros-path', JSON.stringify([path]))
     element.dispatchEvent(new DragEvent('drop', { dataTransfer: data, bubbles: true, cancelable: true }))
   }, otherFile)
 
   await expect(app.window.locator('.tab-active')).toContainText('other.txt')
   await expect(editor).toContainText('text of the other file')
   expect(await readFile(join(app.projectFolder, 'notes.txt'), 'utf8')).toBe('first line\n')
+})
+
+test('ctrl-clicked files and folders from the tree drop on a terminal together, quoted when needed', async () => {
+  app = await launchApp()
+  await mkdir(join(app.projectFolder, 'my folder'))
+  await writeFile(join(app.projectFolder, 'my folder', 'inside.txt'), 'x', 'utf8')
+  await writeFile(join(app.projectFolder, 'second.txt'), 'x', 'utf8')
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  await app.window.waitForTimeout(2500)
+  await app.window.getByTitle('Toggle files panel').click()
+  const filesPanel = app.window.locator('.files-panel')
+  const folderRow = filesPanel.locator('.row', { hasText: 'my folder' })
+  const fileRow = filesPanel.locator('.row', { hasText: 'second.txt' })
+  await expect(fileRow).toBeVisible({ timeout: LIVE_TIMEOUT_MS })
+  await folderRow.click({ modifiers: ['Control'] })
+  await fileRow.click({ modifiers: ['Control'] })
+  await expect(filesPanel.locator('.row-picked')).toHaveCount(2)
+
+  await app.window.locator('.xterm-helper-textarea').first().focus()
+  await app.window.keyboard.type('Write-Output ')
+  await app.window.evaluate(() => {
+    const data = new DataTransfer()
+    const row = Array.from(document.querySelectorAll('.files-panel .row')).find((element) => element.textContent?.includes('second.txt'))!
+    row.dispatchEvent(new DragEvent('dragstart', { dataTransfer: data, bubbles: true }))
+    const host = document.querySelector('.terminal-host')!
+    host.dispatchEvent(new DragEvent('dragover', { dataTransfer: data, bubbles: true, cancelable: true }))
+    host.dispatchEvent(new DragEvent('drop', { dataTransfer: data, bubbles: true, cancelable: true }))
+  })
+  await app.window.keyboard.type('> dropped.txt')
+  await app.window.keyboard.press('Enter')
+
+  const output = join(app.projectFolder, 'dropped.txt')
+  await expect.poll(() => readFile(output, 'utf16le').catch(() => ''), { timeout: 20_000 }).toContain('second.txt')
+  const lines = (await readFile(output, 'utf16le')).split('\n').map((line) => line.trim().replace('﻿', '')).filter((line) => line !== '')
+  expect(lines).toEqual([join(app.projectFolder, 'my folder'), join(app.projectFolder, 'second.txt')])
+  await expect(filesPanel.locator('.row-picked')).toHaveCount(0)
 })
