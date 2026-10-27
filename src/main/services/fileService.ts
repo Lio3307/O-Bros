@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { imageTypeOf } from '../../shared/imageFiles'
 import type { DirectoryEntry, ImageFile, SearchHit, SearchRequest } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
+import { hasEntries } from './fileSystem'
 
 const MAX_EDITABLE_BYTES = 2 * 1024 * 1024
 const MAX_IMAGE_BYTES = 32 * 1024 * 1024
@@ -20,13 +21,14 @@ function foldersFirstThenByName(first: DirectoryEntry, second: DirectoryEntry): 
 export async function listDirectory(directoryPath: string): Promise<DirectoryEntry[]> {
   await assertInsideProjectRoots(directoryPath)
   const entries = await readdir(directoryPath, { withFileTypes: true })
-  return entries
-    .map((entry) => ({
-      name: entry.name,
-      path: join(directoryPath, entry.name),
-      isDirectory: entry.isDirectory()
-    }))
-    .sort(foldersFirstThenByName)
+  const listed = await Promise.all(
+    entries.map(async (entry) => {
+      const path = join(directoryPath, entry.name)
+      const isDirectory = entry.isDirectory()
+      return { name: entry.name, path, isDirectory, hasChildren: isDirectory && (await hasEntries(path)) }
+    })
+  )
+  return listed.sort(foldersFirstThenByName)
 }
 
 export async function readTextFile(filePath: string): Promise<string> {

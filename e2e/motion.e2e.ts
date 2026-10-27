@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test'
+import { mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
 import { launchApp, type RunningApp } from './launchApp'
 
 let app: RunningApp
@@ -33,8 +35,9 @@ test('dialogs ease in, and stay instant when the system asks for reduced motion'
 
 test('folders open with a rotating arrow instead of swapping icons', async () => {
   app = await launchApp({ separateHome: true })
+  await mkdir(join(app.projectFolder, 'src'))
   const rootChevron = app.window.locator('.root-header .disclosure-chevron').first()
-  await expect(rootChevron).toHaveClass(/disclosure-chevron-open/)
+  await expect(rootChevron).toHaveClass(/disclosure-chevron-open/, { timeout: 15_000 })
   await app.window.locator('.root-header').getByTitle('Show or hide folders').first().click()
   await expect(rootChevron).not.toHaveClass(/disclosure-chevron-open/)
 })

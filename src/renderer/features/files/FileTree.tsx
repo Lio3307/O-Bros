@@ -45,7 +45,7 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
 
   function showMenu(event: MouseEvent): void {
     event.preventDefault()
-    const items = buildEntryMenuItems({ path: entry.path, isDirectory: entry.isDirectory, isExpanded })
+    const items = buildEntryMenuItems({ path: entry.path, isDirectory: entry.isDirectory, isExpanded: isExpanded && entry.hasChildren })
     setOpenMenu({ x: event.clientX, y: event.clientY, items })
   }
 
@@ -86,25 +86,27 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
     )
   }
 
+  const isOpen = isExpanded && entry.hasChildren
+
   return (
     <>
       <button
         type="button"
-        title={entry.name}
+        title={entry.hasChildren ? entry.name : `${entry.name} (empty)`}
         className="row"
-        style={{ paddingLeft: indent }}
-        onClick={() => setIsExpanded(!isExpanded)}
+        style={{ paddingLeft: entry.hasChildren ? indent : indent + FILE_ICON_ALIGNMENT_PX }}
+        onClick={() => setIsExpanded(!isOpen && entry.hasChildren)}
         draggable
         onDragStart={startDrag}
         onContextMenu={showMenu}
         onKeyDown={handleKeyDown}
       >
-        <DisclosureChevron isOpen={isExpanded} />
-        <FolderTypeIcon name={entry.name} isOpen={isExpanded} />
+        {entry.hasChildren && <DisclosureChevron isOpen={isOpen} />}
+        <FolderTypeIcon name={entry.name} isOpen={isOpen} />
         <span>{entry.name}</span>
       </button>
       {menu}
-      {isExpanded && (
+      {isOpen && (
         <FileTree directoryPath={entry.path} depth={depth + 1} selectedPath={selectedPath} onOpenFile={onOpenFile} />
       )}
     </>

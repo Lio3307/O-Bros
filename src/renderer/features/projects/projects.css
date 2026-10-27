@@ -221,6 +221,12 @@
   padding-left: 2px;
 }
 
+.root-toggle-space {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+
 .folder-toggle {
   flex-shrink: 0;
   width: 20px;

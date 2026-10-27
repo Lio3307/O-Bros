@@ -19,7 +19,7 @@ import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
 import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { terminalContrastOf, terminalThemeOf } from '../../theme/colorThemes'
-import { DRAGGED_PATH_TYPE } from '../files/dragData'
+import { DRAGGED_PATH_TYPE, droppedPaths } from '../files/dragData'
 import { createFileLinkProvider } from './fileLinkProvider'
 import { openFileReference } from './openFileReference'
 import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
@@ -273,11 +273,9 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       return
     }
     event.preventDefault()
-    const draggedPath = event.dataTransfer.getData(DRAGGED_PATH_TYPE)
-    const droppedFile = event.dataTransfer.files[0]
-    const path = draggedPath !== '' ? draggedPath : droppedFile === undefined ? '' : window.api.files.pathOf(droppedFile)
-    if (path !== '') {
-      window.api.pty.input(paneId, `${quotePathForShell(path)} `)
+    const paths = droppedPaths(event.dataTransfer)
+    if (paths.length > 0) {
+      window.api.pty.input(paneId, `${paths.map(quotePathForShell).join(' ')} `)
       terminalRef.current?.focus()
     }
   }

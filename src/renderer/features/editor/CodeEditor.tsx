@@ -19,6 +19,7 @@ import { getSavedEditorState, saveEditorState } from './editorSessions'
 import { colorThemeCompartment, colorThemeExtension, editorLayoutTheme } from './editorTheme'
 import { editorMotionTheme } from './editorMotion'
 import { formatDocument } from './formatDocument'
+import { openDroppedFiles } from './openDroppedFiles'
 import { findLanguageForFile, type LanguageDefinition } from './languageRegistry'
 import { lintExtensionFor, lintNow } from './lintExtension'
 import {
@@ -134,6 +135,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
       editorMotionTheme,
       colorThemeCompartment.of(currentColorThemeExtension()),
       fileShortcuts,
+      openDroppedFiles,
       reportModification,
       autoSave,
       languageServerCompartment.of([]),

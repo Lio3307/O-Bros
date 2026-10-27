@@ -1,5 +1,5 @@
 import type { Dirent } from 'node:fs'
-import { access, lstat, readdir, readFile, stat } from 'node:fs/promises'
+import { access, lstat, opendir, readdir, readFile, stat } from 'node:fs/promises'
 
 export const IS_PATH_CASE_INSENSITIVE = process.platform === 'win32' || process.platform === 'darwin'
 
@@ -59,6 +59,20 @@ export async function entryExists(path: string): Promise<boolean> {
     return true
   } catch {
     return false
+  }
+}
+
+export async function hasEntries(directoryPath: string): Promise<boolean> {
+  const directory = await opendir(directoryPath, { bufferSize: 1 }).catch(() => null)
+  if (directory === null) {
+    return true
+  }
+  try {
+    return (await directory.read()) !== null
+  } catch {
+    return true
+  } finally {
+    await directory.close().catch(() => undefined)
   }
 }
 

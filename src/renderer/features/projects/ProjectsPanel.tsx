@@ -8,7 +8,7 @@ import { useCallback, useState } from 'react'
 import { isPrimaryBranch } from '../../../shared/gitSync'
 import { isPathInside } from '../../../shared/paths'
 import { formatAge } from '../../../shared/time'
-import type { ProjectRoot } from '../../../shared/types'
+import type { ProjectRoot, TeamMember } from '../../../shared/types'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useCollapsedRootsStore } from '../../state/collapsedRootsStore'
 import { useAttentionStore } from '../../state/attentionStore'
@@ -23,7 +23,7 @@ import { useProjectsStore } from '../../state/projectsStore'
 import { toast } from '../../state/toastStore'
 import { isTerminalTab, useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { PanelHeader } from '../../ui/PanelHeader'
-import { ScriptsList } from './ScriptsList'
+import { ScriptsList, useProjectScripts } from './ScriptsList'
 import { TerminalTabIcon } from '../terminal/TerminalTabIcon'
 import { placeSessions } from './sessionPlacement'
 import { useLiveRefresh } from '../../ui/useLiveRefresh'
@@ -77,16 +77,19 @@ function SessionRow({ session, now }: { session: TerminalTab; now: number }) {
   )
 }
 
-function LeadClosedMembers({ rootPath, now }: { rootPath: string; now: number }) {
+function useLeadClosedMembers(rootPath: string): TeamMember[] {
   const members = useTeamStore((state) => state.members)
   const roots = useProjectsStore((state) => state.roots)
   useWorkspaceStore((state) => state.tabs)
-  const orphans = members.filter(
+  return members.filter(
     (member) =>
       findTerminalPane(member.summonedByPaneId) === null &&
       member.cwd !== null &&
       closestProject(member.cwd, roots)?.path === rootPath
   )
+}
+
+function LeadClosedMembers({ orphans, now }: { orphans: TeamMember[]; now: number }) {
   if (orphans.length === 0) {
     return null
   }
@@ -272,20 +275,27 @@ function RootBlock({ root }: { root: ProjectRoot }) {
     root.folders.map((folder) => folder.path),
     nestedRootPaths
   )
+  const orphans = useLeadClosedMembers(root.path)
+  const scripts = useProjectScripts(root)
+  const hasContent = placement.atRoot.length > 0 || orphans.length > 0 || root.folders.length > 0 || (scripts?.scripts.length ?? 0) > 0
 
 
   return (
     <section className="root-block">
       <div className={cn('root-header', root.isMissing && 'root-header-missing')}>
-        <button
-          type="button"
-          className="icon-button"
-          title="Show or hide folders"
-          aria-expanded={!isCollapsed}
-          onClick={() => toggleCollapsed(root.path)}
-        >
-          <DisclosureChevron isOpen={!isCollapsed} />
-        </button>
+        {hasContent ? (
+          <button
+            type="button"
+            className="icon-button"
+            title="Show or hide folders"
+            aria-expanded={!isCollapsed}
+            onClick={() => toggleCollapsed(root.path)}
+          >
+            <DisclosureChevron isOpen={!isCollapsed} />
+          </button>
+        ) : (
+          <span className="root-toggle-space" />
+        )}
         <button
           type="button"
           className={cn('root-name', root.path === activeProjectPath && 'root-name-current')}
@@ -301,9 +311,9 @@ function RootBlock({ root }: { root: ProjectRoot }) {
       {!isCollapsed && (
         <>
           <RootSessions sessions={placement.atRoot} now={now} />
-          <LeadClosedMembers rootPath={root.path} now={now} />
+          <LeadClosedMembers orphans={orphans} now={now} />
           <FolderList root={root} sessionsByFolder={placement.byFolderPath} now={now} />
-          <ScriptsList root={root} />
+          <ScriptsList rootPath={root.path} project={scripts} />
         </>
       )}
     </section>

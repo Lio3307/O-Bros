@@ -123,6 +123,7 @@ export interface DirectoryEntry {
   name: string
   path: string
   isDirectory: boolean
+  hasChildren: boolean
 }
 
 export type SearchMode = 'names' | 'contents'

@@ -5,7 +5,7 @@ import type { ProjectRoot, ProjectScripts } from '../../../shared/types'
 import { runInTerminal } from '../../state/openTerminal'
 import { useProjectsStore } from '../../state/projectsStore'
 
-export function ScriptsList({ root }: { root: ProjectRoot }) {
+export function useProjectScripts(root: ProjectRoot): ProjectScripts | null {
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const [project, setProject] = useState<ProjectScripts | null>(null)
   const isActive = activeProjectPath === root.path
@@ -25,6 +25,10 @@ export function ScriptsList({ root }: { root: ProjectRoot }) {
     }
   }, [isActive, root.path])
 
+  return project
+}
+
+export function ScriptsList({ rootPath, project }: { rootPath: string; project: ProjectScripts | null }) {
   if (project === null || project.scripts.length === 0) {
     return null
   }
@@ -41,7 +45,7 @@ export function ScriptsList({ root }: { root: ProjectRoot }) {
           className="row row-session"
           title={script.command}
           disabled={!isSafeScriptName(script.name)}
-          onClick={() => runInTerminal(root.path, buildRunCommand(manager, script.name), script.name)}
+          onClick={() => runInTerminal(rootPath, buildRunCommand(manager, script.name), script.name)}
         >
           <Play size={14} />
           <span className="row-name">{script.name}</span>
