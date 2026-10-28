@@ -4,7 +4,7 @@ import type { TintId } from '../../shared/appearance'
 import { isHexColor } from '../../shared/hexColor'
 import { isRecord } from '../../shared/isRecord'
 import { ANSI_COLOR_COUNT, type ThemePalette } from '../../shared/themePalette'
-import { COLOR_THEMES, defaultThemeFor, findColorTheme, type ColorTheme, type ColorThemeId } from '../theme/colorThemes'
+import { defaultThemeFor, findColorTheme, type ColorTheme, type ColorThemeId } from '../theme/colorThemes'
 import { tintedTheme } from '../theme/backgroundTints'
 import { isDarkTheme, themeFromPalette } from '../theme/themeDerivation'
 import { useAppearanceStore } from './appearanceStore'
@@ -62,10 +62,6 @@ function loadMode(): ThemeMode {
 
 function systemIsDark(): boolean {
   return window.matchMedia(DARK_SCHEME_QUERY).matches
-}
-
-export function allColorThemes(state: Pick<ColorThemeState, 'importedThemes'>): ColorTheme[] {
-  return [...COLOR_THEMES, ...state.importedThemes]
 }
 
 function themeById(state: Pick<ColorThemeState, 'importedThemes'>, themeId: ColorThemeId): ColorTheme | undefined {

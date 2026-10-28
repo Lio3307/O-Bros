@@ -742,7 +742,7 @@
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 320ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-timing-function: var(--ease-out);
 }
 
 @media (prefers-reduced-motion: reduce) {

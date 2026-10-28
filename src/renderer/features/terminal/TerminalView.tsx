@@ -1,12 +1,7 @@
 import { FitAddon } from '@xterm/addon-fit'
-import type { SearchAddon } from '@xterm/addon-search'
-import type { WebglAddon } from '@xterm/addon-webgl'
 import { Terminal } from '@xterm/xterm'
-import { useCallback, useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type MouseEvent as ReactMouseEvent } from 'react'
-import { useShortcutLabel } from '../../state/shortcutsStore'
-import { isTerminalTab, useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
-import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
-import { terminalMenuItems } from './terminalContextMenu'
+import { useEffect, useRef, useState, type ClipboardEvent } from 'react'
+import { PopupMenu } from '../../ui/PopupMenu'
 import { pasteClipboardImage } from './pasteClipboardImage'
 import type { AccountRef } from '../../../shared/types'
 import { useAgentCommitStore } from '../../state/agentCommitStore'
@@ -19,12 +14,12 @@ import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
 import { friendlyErrorMessage } from '../../../shared/friendlyError'
 import { terminalContrastOf, terminalThemeOf } from '../../theme/colorThemes'
-import { acceptsDroppedPaths, droppedPaths } from '../files/dragData'
 import { useFileTreeStore } from '../../state/fileTreeStore'
 import { cn } from '../../ui/cn'
 import { LoadingText } from '../../ui/LoadingText'
 import { agentLabelOf } from '../../../shared/agentLaunchers'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
+import { useFileDropTarget } from '../files/useFileDropTarget'
 import { createFileLinkProvider } from './fileLinkProvider'
 import { openFileReference } from './openFileReference'
 import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
@@ -34,6 +29,9 @@ import { TerminalSearchBar } from './TerminalSearchBar'
 import { terminalOptions } from './terminalTheme'
 import { routePaneOutput } from './ptyOutputRouter'
 import { trimTerminalToHost } from './terminalFit'
+import { useGpuRenderer } from './useGpuRenderer'
+import { useTerminalContextMenu } from './useTerminalContextMenu'
+import { useTerminalSearch } from './useTerminalSearch'
 
 interface TerminalViewProps {
   paneId: string
@@ -45,80 +43,57 @@ interface TerminalViewProps {
   isFocusTarget: boolean
 }
 
-const RIGHT_BUTTON = 2
 const STARTING_HINT_LIMIT_MS = 10_000
 
 function isDialogOpen(): boolean {
   return document.querySelector('[aria-modal="true"]') !== null
 }
 
-interface OpenContextMenu {
-  x: number
-  y: number
-  items: PopupMenuItem[]
+function isFindShortcut(event: KeyboardEvent): boolean {
+  return event.type === 'keydown' && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f'
 }
 
-function createWebglAddon(WebglAddonClass: typeof WebglAddon): WebglAddon | null {
-  try {
-    const addon = new WebglAddonClass()
-    addon.onContextLoss(() => addon.dispose())
-    return addon
-  } catch {
-    return null
-  }
+function fitToHost(paneId: string, terminal: Terminal, fitAddon: FitAddon, host: HTMLElement): void {
+  fitAddon.fit()
+  trimTerminalToHost(terminal, host)
+  noteAgentResize(paneId)
+  window.api.pty.resize(paneId, terminal.cols, terminal.rows)
+}
+
+function createTerminal(): Terminal {
+  const { appearance, wallpaperUrl } = useAppearanceStore.getState()
+  return new Terminal({
+    ...terminalOptions,
+    fontSize: useTerminalFontStore.getState().fontSize,
+    minimumContrastRatio: terminalContrastOf(activeColorTheme()),
+    theme: terminalThemeOf(activeColorTheme(), innerAlphaOf(surfaceAlphaOf(appearance, wallpaperUrl !== null))),
+    scrollback: useTerminalSettingsStore.getState().scrollback
+  })
 }
 
 export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, isVisible, isFocusTarget }: TerminalViewProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const terminalRef = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
-  const webglAddonRef = useRef<WebglAddon | null>(null)
-  const searchAddonRef = useRef<SearchAddon | null>(null)
-  const [searchAddon, setSearchAddon] = useState<SearchAddon | null>(null)
-  const [isDropTarget, setIsDropTarget] = useState(false)
   const [isStarting, setIsStarting] = useState(true)
   const launchers = useAgentLaunchersStore((state) => state.launchers)
-  const startingLabel = startsAgent && startCommand !== null ? `Starting ${agentLabelOf(startCommand, launchers)}…` : 'Starting the terminal…'
   const fontSize = useTerminalFontStore((state) => state.fontSize)
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
   const useGpuRendering = useTerminalSettingsStore((state) => state.useGpuRendering)
   const colorTheme = useActiveColorTheme()
   const surfaceAlpha = useSurfaceAlpha()
-  const splitRightHint = useShortcutLabel('splitRight')
-  const splitDownHint = useShortcutLabel('splitDown')
-  const [contextMenu, setContextMenu] = useState<OpenContextMenu | null>(null)
-  const closeContextMenu = useCallback(() => setContextMenu(null), [])
-
-  async function openSearch(): Promise<void> {
-    const terminal = terminalRef.current
-    if (terminal === null || searchAddonRef.current !== null) {
-      return
-    }
-    const { SearchAddon: SearchAddonClass } = await import('@xterm/addon-search')
-    const addon = new SearchAddonClass()
-    terminal.loadAddon(addon)
-    searchAddonRef.current = addon
-    setSearchAddon(addon)
-  }
+  const { searchAddon, openSearch, closeSearch, forgetSearch } = useTerminalSearch(terminalRef)
+  const { contextMenu, closeContextMenu, menuHandlers } = useTerminalContextMenu(terminalRef, paneId)
+  const { isDropTarget, dropHandlers } = useFileDropTarget(pastePaths)
+  const startingLabel = startsAgent && startCommand !== null ? `Starting ${agentLabelOf(startCommand, launchers)}…` : 'Starting the terminal…'
 
   function refitToHost(): void {
     const terminal = terminalRef.current
     const fitAddon = fitAddonRef.current
     const host = hostRef.current
-    if (terminal === null || fitAddon === null || host === null) {
-      return
+    if (terminal !== null && fitAddon !== null && host !== null) {
+      fitToHost(paneId, terminal, fitAddon, host)
     }
-    fitAddon.fit()
-    trimTerminalToHost(terminal, host)
-    noteAgentResize(paneId)
-    window.api.pty.resize(paneId, terminal.cols, terminal.rows)
-  }
-
-  function closeSearch(): void {
-    searchAddonRef.current?.dispose()
-    searchAddonRef.current = null
-    setSearchAddon(null)
-    terminalRef.current?.focus()
   }
 
   useEffect(() => {
@@ -126,43 +101,23 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     if (host === null) {
       return
     }
-
-    const terminal = new Terminal({
-      ...terminalOptions,
-      fontSize: useTerminalFontStore.getState().fontSize,
-      minimumContrastRatio: terminalContrastOf(activeColorTheme()),
-      theme: terminalThemeOf(
-        activeColorTheme(),
-        innerAlphaOf(surfaceAlphaOf(useAppearanceStore.getState().appearance, useAppearanceStore.getState().wallpaperUrl !== null))
-      ),
-      scrollback: useTerminalSettingsStore.getState().scrollback
-    })
+    const terminal = createTerminal()
     const fitAddon = new FitAddon()
     terminal.loadAddon(fitAddon)
     terminal.open(host)
     terminalRef.current = terminal
     fitAddonRef.current = fitAddon
     registerTerminal(paneId, terminal)
-    terminal.registerLinkProvider(
-      createFileLinkProvider(terminal, (reference) => void openFileReference(reference, cwd))
-    )
-
+    terminal.registerLinkProvider(createFileLinkProvider(terminal, (reference) => void openFileReference(reference, cwd)))
     terminal.attachCustomKeyEventHandler((event) => {
-      const isFindShortcut = event.type === 'keydown' && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f'
-      if (isFindShortcut) {
+      if (isFindShortcut(event)) {
         void openSearch()
+        return false
       }
-      return !isFindShortcut
+      return true
     })
 
-    function fitToHost(): void {
-      fitAddon.fit()
-      trimTerminalToHost(terminal, host as HTMLElement)
-      noteAgentResize(paneId)
-      window.api.pty.resize(paneId, terminal.cols, terminal.rows)
-    }
-
-
+    const fit = () => fitToHost(paneId, terminal, fitAddon, host)
     const startingHintTimer = setTimeout(() => setIsStarting(false), STARTING_HINT_LIMIT_MS)
     const stopRoutingOutput = routePaneOutput(paneId, {
       onOutput: (chunk) => {
@@ -178,11 +133,11 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       noteAgentTyping(paneId, data)
       window.api.pty.input(paneId, data)
     })
-    const resizeObserver = new ResizeObserver(fitToHost)
+    const resizeObserver = new ResizeObserver(fit)
     resizeObserver.observe(host)
     void document.fonts.ready.then(() => {
       if (terminalRef.current === terminal) {
-        fitToHost()
+        fit()
       }
     })
 
@@ -196,7 +151,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
         commitIdentity: useAgentCommitStore.getState().identity,
         provider: startsAgent ? providerForCommand(startCommand) : null
       })
-      .then(fitToHost, (error: unknown) => {
+      .then(fit, (error: unknown) => {
         setIsStarting(false)
         terminal.writeln(friendlyErrorMessage(error, 'The terminal could not start.'))
         terminal.writeln(cwd ?? '')
@@ -213,50 +168,17 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       terminal.dispose()
       terminalRef.current = null
       fitAddonRef.current = null
-      webglAddonRef.current = null
-      searchAddonRef.current = null
+      forgetSearch()
     }
   }, [paneId])
 
-  useEffect(() => {
-    const terminal = terminalRef.current
-    if (terminal === null) {
-      return
-    }
-    const wantsWebgl = isVisible && useGpuRendering
-    if (!wantsWebgl && webglAddonRef.current !== null) {
-      webglAddonRef.current.dispose()
-      webglAddonRef.current = null
-      refitToHost()
-    }
-    if (!wantsWebgl || webglAddonRef.current !== null) {
-      return
-    }
-    let isStillWanted = true
-    void import('@xterm/addon-webgl').then(({ WebglAddon: WebglAddonClass }) => {
-      if (!isStillWanted || terminalRef.current !== terminal || webglAddonRef.current !== null) {
-        return
-      }
-      const addon = createWebglAddon(WebglAddonClass)
-      if (addon !== null) {
-        terminal.loadAddon(addon)
-        webglAddonRef.current = addon
-        refitToHost()
-      }
-    })
-    return () => {
-      isStillWanted = false
-    }
-  }, [isVisible, useGpuRendering, paneId])
+  useGpuRenderer(terminalRef, paneId, isVisible && useGpuRendering, refitToHost)
 
   useEffect(() => {
-    const terminal = terminalRef.current
-    const fitAddon = fitAddonRef.current
-    if (terminal === null || fitAddon === null) {
-      return
+    if (terminalRef.current !== null) {
+      terminalRef.current.options.fontSize = fontSize
+      refitToHost()
     }
-    terminal.options.fontSize = fontSize
-    refitToHost()
   }, [fontSize, paneId])
 
   useEffect(() => {
@@ -278,34 +200,14 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     }
   }, [colorTheme, surfaceAlpha])
 
-  function showDropTarget(event: DragEvent): void {
-    if (!acceptsDroppedPaths(event.dataTransfer)) {
-      return
-    }
-    event.preventDefault()
-    event.dataTransfer.dropEffect = 'copy'
-    setIsDropTarget(true)
-  }
-
-  function hideDropTarget(event: DragEvent): void {
-    if (!(event.relatedTarget instanceof Node && event.currentTarget.contains(event.relatedTarget))) {
-      setIsDropTarget(false)
-    }
-  }
-
-  function pasteDroppedPaths(event: DragEvent): void {
-    setIsDropTarget(false)
-    if (!acceptsDroppedPaths(event.dataTransfer)) {
-      return
-    }
-    event.preventDefault()
-    const paths = droppedPaths(event.dataTransfer)
+  function pastePaths(paths: string[]): void {
     const terminal = terminalRef.current
-    if (paths.length > 0 && terminal !== null) {
-      terminal.paste(`${paths.map(quotePathForShell).join(' ')} `)
-      terminal.focus()
-      useFileTreeStore.getState().clearPicked()
+    if (terminal === null) {
+      return
     }
+    terminal.paste(`${paths.map(quotePathForShell).join(' ')} `)
+    terminal.focus()
+    useFileTreeStore.getState().clearPicked()
   }
 
   function pasteImageWhenNoText(event: ClipboardEvent): void {
@@ -318,38 +220,14 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     void pasteClipboardImage(terminal)
   }
 
-  function keepRightButtonFromTerminal(event: ReactMouseEvent): void {
-    if (event.button === RIGHT_BUTTON) {
-      event.stopPropagation()
-    }
-  }
-
-  function openContextMenu(event: ReactMouseEvent): void {
-    event.preventDefault()
-    event.stopPropagation()
-    const terminal = terminalRef.current
-    const tab = useWorkspaceStore.getState().tabs.find((candidate): candidate is TerminalTab => isTerminalTab(candidate) && paneId in candidate.panes)
-    if (terminal === null || tab === undefined) {
-      return
-    }
-    useWorkspaceStore.getState().focusPane(tab.id, paneId)
-    const position = { x: event.clientX, y: event.clientY }
-    const show = (items: PopupMenuItem[]): void => setContextMenu({ ...position, items })
-    show(terminalMenuItems({ terminal, tab, paneId, splitRightHint, splitDownHint, reopen: show }))
-  }
-
   return (
     <>
       <div
         className={cn('terminal-host', isDropTarget && 'terminal-host-drop')}
         style={{ backgroundColor: withAlpha(colorTheme.background, innerAlphaOf(surfaceAlpha)) }}
         ref={hostRef}
-        onDragOver={showDropTarget}
-        onDragLeave={hideDropTarget}
-        onDrop={pasteDroppedPaths}
-        onMouseDownCapture={keepRightButtonFromTerminal}
-        onMouseUpCapture={keepRightButtonFromTerminal}
-        onContextMenuCapture={openContextMenu}
+        {...dropHandlers}
+        {...menuHandlers}
         onPasteCapture={pasteImageWhenNoText}
       />
       {isStarting && (

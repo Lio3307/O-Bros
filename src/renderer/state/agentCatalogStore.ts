@@ -16,11 +16,6 @@ export function programKeyOf(command: string): string {
   return programOf(command).toLowerCase()
 }
 
-export function registryAgentFor(command: string, registry: AcpAgent[]): AcpAgent | null {
-  const program = programKeyOf(command)
-  return registry.find((agent) => agent.commands.includes(program)) ?? null
-}
-
 export const useAgentCatalogStore = create<AgentCatalogState>()((set) => ({
   registry: [],
   logoByProgram: {},

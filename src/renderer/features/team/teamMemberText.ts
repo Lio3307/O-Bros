@@ -8,11 +8,6 @@ export interface TeamLead {
   isOpen: boolean
 }
 
-export interface TeamGroup {
-  lead: TeamLead
-  members: TeamMember[]
-}
-
 export function leadOf(member: TeamMember): TeamLead {
   const pane = findTerminalPane(member.summonedByPaneId)
   return {
@@ -21,23 +16,6 @@ export function leadOf(member: TeamMember): TeamLead {
     command: pane?.startCommand ?? null,
     isOpen: pane !== null
   }
-}
-
-export function summonerTitleOf(member: TeamMember): string {
-  return leadOf(member).title
-}
-
-export function groupByLead(members: TeamMember[]): TeamGroup[] {
-  const groups: TeamGroup[] = []
-  for (const member of members) {
-    const group = groups.find((candidate) => candidate.lead.paneId === member.summonedByPaneId)
-    if (group === undefined) {
-      groups.push({ lead: leadOf(member), members: [member] })
-    } else {
-      group.members.push(member)
-    }
-  }
-  return groups
 }
 
 export function firstLineOf(text: string): string {

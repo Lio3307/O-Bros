@@ -35,7 +35,7 @@
 
 .tab-team-chevron {
   opacity: 0.7;
-  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform var(--motion-base) var(--ease-out);
 }
 
 .tab-team-open .tab-team-chevron {
@@ -54,7 +54,7 @@
   background: var(--color-popover);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  animation: team-dropdown-in 140ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: team-dropdown-in var(--motion-fast) var(--ease-out);
 }
 
 .team-dropdown-lead {

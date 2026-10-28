@@ -417,7 +417,7 @@ input[role='switch']:disabled {
 }
 
 .refresh-pop {
-  animation: pop 0.25s ease-out;
+  animation: pop var(--motion-slow) var(--ease-out);
 }
 
 @keyframes pop {

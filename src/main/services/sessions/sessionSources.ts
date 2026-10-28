@@ -41,10 +41,6 @@ async function listTranscriptFiles(directoryPath: string, remainingDepth: number
   return nested.flat()
 }
 
-export function formatOf(provider: ProviderId): TranscriptFormat {
-  return formatByProvider[provider]
-}
-
 export async function readSessionSources(): Promise<SessionSource[]> {
   const accounts = await scanAccounts()
   return accounts.map((account) => {
