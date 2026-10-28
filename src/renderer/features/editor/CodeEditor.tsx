@@ -199,9 +199,9 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   }, [isVimMode])
 
   useEffect(() => {
-    const cursor = cursorExtension({ cursorShape, cursorColor, cursorBlinks, cursorGlides })
+    const cursor = cursorExtension({ cursorShape, cursorColor, cursorBlinks, cursorGlides, vimMode: isVimMode })
     viewRef.current?.dispatch({ effects: cursorCompartment.reconfigure(cursor) })
-  }, [cursorShape, cursorColor, cursorBlinks, cursorGlides])
+  }, [cursorShape, cursorColor, cursorBlinks, cursorGlides, isVimMode])
 
   useEffect(() => {
     if (viewRef.current !== null) {

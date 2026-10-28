@@ -42,3 +42,15 @@
   border: none;
   outline: none;
 }
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes caret-blink2 {
+  50% {
+    opacity: 0;
+  }
+}
