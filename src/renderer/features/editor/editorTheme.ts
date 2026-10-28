@@ -108,6 +108,8 @@ export const editorLayoutTheme = EditorView.theme(
     '.cm-completionMatchedText': { textDecoration: 'none', fontWeight: '700', color: 'var(--color-strong)' },
     '.cm-completionDetail': { color: 'var(--color-muted)', marginLeft: '12px', fontStyle: 'normal' },
     '.cm-completionInfo': { padding: '6px 10px', color: 'var(--color-muted)' },
+    '.cm-completionIcon-folder:after': { content: "'dir'", fontSize: '50%', verticalAlign: 'middle' },
+    '.cm-completionIcon-file:after': { content: "'file'", fontSize: '50%', verticalAlign: 'middle' },
     '.cm-snippetField': { backgroundColor: 'var(--color-selected)', outline: '1px solid var(--color-faint)' }
   }
 )

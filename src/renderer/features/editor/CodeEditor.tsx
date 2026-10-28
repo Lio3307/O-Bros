@@ -21,6 +21,7 @@ import { editorMotionTheme } from './editorMotion'
 import { formatDocument } from './formatDocument'
 import { openDroppedFiles } from './openDroppedFiles'
 import { editorSetup } from './editorSetup'
+import { smartCompletion } from './smartCompletion'
 import { connectVimFileActions, vimCompartment, vimExtension } from './vimMode'
 import { findLanguageForFile, type LanguageDefinition } from './languageRegistry'
 import { lintExtensionFor, lintNow } from './lintExtension'
@@ -142,6 +143,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
       reportModification,
       autoSave,
       languageServerCompartment.of([]),
+      smartCompletion(filePath),
       ...languageExtensions
     ]
   })

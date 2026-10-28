@@ -7,6 +7,10 @@ export function getSavedEditorState(filePath: string): EditorState | undefined {
   return savedStates.get(filePath)
 }
 
+export function savedEditorStates(): [string, EditorState][] {
+  return [...savedStates.entries()]
+}
+
 export function saveEditorState(filePath: string, state: EditorState): void {
   savedStates.set(filePath, state)
 }
