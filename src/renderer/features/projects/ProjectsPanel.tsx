@@ -34,6 +34,7 @@ import { DisclosureChevron } from '../../ui/DisclosureChevron'
 import { cn } from '../../ui/cn'
 import { Notice } from '../../ui/Notice'
 import { ShowMoreToggle } from './ShowMoreToggle'
+import { LoadingText } from '../../ui/LoadingText'
 import { ProjectsDropZone } from './ProjectsDropZone'
 
 const SESSION_AGE_REFRESH_MS = 60_000
@@ -323,6 +324,7 @@ function RootBlock({ root }: { root: ProjectRoot }) {
 
 export function ProjectsPanel() {
   const roots = useProjectsStore((state) => state.roots)
+  const hasLoadedProjects = useProjectsStore((state) => state.hasLoaded)
   const loadProjects = useProjectsStore((state) => state.load)
   const addRoot = useProjectsStore((state) => state.addRoot)
   const savedLaunchers = useAgentLaunchersStore((state) => state.launchers)
@@ -385,7 +387,12 @@ export function ProjectsPanel() {
           </Button>
         </div>
       </div>
-      {roots.length === 0 && <p className="panel-empty">No projects yet. Press the folder button above, or drop a folder here.</p>}
+      {!hasLoadedProjects && (
+        <p className="panel-empty">
+          <LoadingText text="Loading projects…" isDelayed />
+        </p>
+      )}
+      {hasLoadedProjects && roots.length === 0 && <p className="panel-empty">No projects yet. Press the folder button above, or drop a folder here.</p>}
       {roots.map((root) => (
         <RootBlock key={root.path} root={root} />
       ))}

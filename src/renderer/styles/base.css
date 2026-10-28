@@ -510,3 +510,22 @@ input[role='switch']:disabled {
   margin: 0 0 4px;
   text-align: center;
 }
+
+.loading-text-delayed {
+  animation: motion-fade var(--motion-base) var(--ease-out) 150ms both;
+}
+
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-text-delayed {
+    animation: none;
+  }
+}

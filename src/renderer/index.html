@@ -7,9 +7,82 @@
       content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self' data:; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'"
     />
     <title>O-BROS</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #000000;
+      }
+
+      .startup {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        height: 100vh;
+        font: 600 15px/1 system-ui, 'Segoe UI', sans-serif;
+        letter-spacing: 0.08em;
+        color: #ededed;
+        animation: startup-in 240ms ease-out 120ms both;
+      }
+
+      .startup-note {
+        font-size: 12px;
+        font-weight: 400;
+        letter-spacing: 0;
+        color: #8c8c8c;
+      }
+
+      .startup-track {
+        position: relative;
+        width: 140px;
+        height: 2px;
+        overflow: hidden;
+        background: #1f1f1f;
+      }
+
+      .startup-track::after {
+        position: absolute;
+        inset: 0;
+        width: 40%;
+        content: '';
+        background: #58a6ff;
+        animation: startup-slide 1.1s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      }
+
+      @keyframes startup-in {
+        from {
+          opacity: 0;
+        }
+      }
+
+      @keyframes startup-slide {
+        from {
+          transform: translateX(-100%);
+        }
+        to {
+          transform: translateX(250%);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .startup,
+        .startup-track::after {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="startup" role="status">
+        <span>O-BROS</span>
+        <div class="startup-track"></div>
+        <span class="startup-note">Starting…</span>
+      </div>
+    </div>
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>

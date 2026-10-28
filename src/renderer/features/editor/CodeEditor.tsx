@@ -11,6 +11,7 @@ import { toast } from '../../state/toastStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 import { Button } from '../../ui/Button'
 import { Notice } from '../../ui/Notice'
+import { LoadingText } from '../../ui/LoadingText'
 import { autoSaveExtension } from './autoSaveExtension'
 import { followDiskChanges, isFromDisk, showDiskText } from './diskSync'
 import { selectAllOccurrences } from './selectAllOccurrences'
@@ -168,6 +169,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   const viewRef = useRef<EditorView | null>(null)
   const target = useEditorNavigationStore((state) => state.target)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isOpening, setIsOpening] = useState(true)
   const [diskText, setDiskText] = useState<string | null>(null)
   const colorTheme = useActiveColorTheme()
   const isVimMode = useEditorSettingsStore((state) => state.vimMode)
@@ -241,6 +243,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
         ]
       })
       viewRef.current = view
+      setIsOpening(false)
       const mountedView = view
       stopFollowingDisk = followDiskChanges(filePath, () => void checkDisk(mountedView))
       void checkDisk(mountedView)
@@ -260,6 +263,7 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
     }
 
     setErrorMessage(null)
+    setIsOpening(true)
     mountEditor().catch((error: unknown) => setErrorMessage(friendlyErrorMessage(error, 'Could not open this file.')))
 
     return () => {
@@ -300,6 +304,11 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
         </Notice>
       )}
       <div className="editor-host" ref={hostRef} />
+      {isOpening && errorMessage === null && (
+        <div className="loading-overlay">
+          <LoadingText text={`Opening ${lastPathSegment(filePath)}…`} isDelayed />
+        </div>
+      )}
     </div>
   )
 }

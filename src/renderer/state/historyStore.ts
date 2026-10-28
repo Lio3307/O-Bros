@@ -6,6 +6,7 @@ import { toast } from './toastStore'
 
 interface HistoryState {
   sessions: SessionSummary[]
+  hasLoaded: boolean
   threads: ThreadSummary[]
   selectedFilePath: string | null
   deletePermanently: boolean
@@ -24,7 +25,10 @@ let latestSearchId = 0
 
 export const useHistoryStore = create<HistoryState>()((set, get) => {
   async function reload(): Promise<void> {
-    const [sessions, threads] = await Promise.all([window.api.history.list(), window.api.history.threads().catch(() => [])])
+    const [sessions, threads] = await Promise.all([
+      window.api.history.list().finally(() => set({ hasLoaded: true })),
+      window.api.history.threads().catch(() => [])
+    ])
     const selectedStillListed = sessions.some((session) => session.filePath === get().selectedFilePath)
     set({
       sessions,
@@ -35,6 +39,7 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
 
   return {
     sessions: [],
+    hasLoaded: false,
     threads: [],
     selectedFilePath: null,
     deletePermanently: false,

@@ -68,6 +68,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Dropping several files on a terminal typed only the first path.** Every dropped path is typed now, each quoted when needed.
 
 ### Changed
+- **No more blank screens while something loads.** The window shows O-BROS with a moving bar while the app starts, instead of an empty dark window. A new terminal says "Starting the terminal…" or "Starting Claude…" (the agent you opened) until the first output, a file shows "Opening notes.txt…" while it is read, and Projects and History show a spinner while they load instead of briefly saying there are no projects or no conversations. Hints appear only when loading takes a moment, so quick loads do not flicker.
 - **Freebuff has its own logo** (the geometric F from freebuff.com) instead of the generic robot, in the agent list, tabs and team views, drawn in the interface text color like the other one-color logos.
 - **Arrows show only where there is something to open.** A project with no folders, terminals or scripts has no arrow, and neither does an empty folder in the file tree.
 - **Usage in the status bar shows the plans of the agents on this computer** (installed or signed in), each with its limits and, when needed, what to run to sign in. Plans O-BROS can read but you do not have yet are named underneath. The list, the status bar and the popover all come from one list of plan providers.

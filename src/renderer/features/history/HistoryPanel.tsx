@@ -169,6 +169,7 @@ export function HistoryPanel() {
   const selectedFilePath = useHistoryStore((state) => state.selectedFilePath)
   const load = useHistoryStore((state) => state.load)
   const searchHits = useHistoryStore((state) => state.searchHits)
+  const hasLoaded = useHistoryStore((state) => state.hasLoaded)
   const [isTeamOnly, setIsTeamOnly] = useState(false)
 
   useEffect(() => {
@@ -195,7 +196,12 @@ export function HistoryPanel() {
           onTeamOnlyChange={setIsTeamOnly}
         />
       )}
-      {searchHits === null && visibleSessions.length === 0 && <p className="panel-empty">{emptyText}</p>}
+      {!hasLoaded && (
+        <p className="panel-empty">
+          <LoadingText text="Reading your conversations…" isDelayed />
+        </p>
+      )}
+      {hasLoaded && searchHits === null && visibleSessions.length === 0 && <p className="panel-empty">{emptyText}</p>}
       {searchHits === null &&
         dayGroupOrder.map((group) =>
           groups[group].length === 0 ? null : (

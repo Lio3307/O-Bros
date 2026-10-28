@@ -22,6 +22,9 @@ import { terminalContrastOf, terminalThemeOf } from '../../theme/colorThemes'
 import { acceptsDroppedPaths, droppedPaths } from '../files/dragData'
 import { useFileTreeStore } from '../../state/fileTreeStore'
 import { cn } from '../../ui/cn'
+import { LoadingText } from '../../ui/LoadingText'
+import { agentLabelOf } from '../../../shared/agentLaunchers'
+import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
 import { createFileLinkProvider } from './fileLinkProvider'
 import { openFileReference } from './openFileReference'
 import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
@@ -43,6 +46,7 @@ interface TerminalViewProps {
 }
 
 const RIGHT_BUTTON = 2
+const STARTING_HINT_LIMIT_MS = 10_000
 
 function isDialogOpen(): boolean {
   return document.querySelector('[aria-modal="true"]') !== null
@@ -72,6 +76,9 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
   const searchAddonRef = useRef<SearchAddon | null>(null)
   const [searchAddon, setSearchAddon] = useState<SearchAddon | null>(null)
   const [isDropTarget, setIsDropTarget] = useState(false)
+  const [isStarting, setIsStarting] = useState(true)
+  const launchers = useAgentLaunchersStore((state) => state.launchers)
+  const startingLabel = startsAgent && startCommand !== null ? `Starting ${agentLabelOf(startCommand, launchers)}…` : 'Starting the terminal…'
   const fontSize = useTerminalFontStore((state) => state.fontSize)
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
   const useGpuRendering = useTerminalSettingsStore((state) => state.useGpuRendering)
@@ -156,8 +163,10 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     }
 
 
+    const startingHintTimer = setTimeout(() => setIsStarting(false), STARTING_HINT_LIMIT_MS)
     const stopRoutingOutput = routePaneOutput(paneId, {
       onOutput: (chunk) => {
+        setIsStarting(false)
         terminal.write(chunk)
         noteTerminalOutput(paneId, chunk)
         noteAgentOutput(paneId)
@@ -165,6 +174,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       onExit: () => terminal.write('\r\n[process exited]\r\n')
     })
     const stopListeningToTyping = terminal.onData((data) => {
+      setIsStarting(false)
       noteAgentTyping(paneId, data)
       window.api.pty.input(paneId, data)
     })
@@ -187,12 +197,14 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
         provider: startsAgent ? providerForCommand(startCommand) : null
       })
       .then(fitToHost, (error: unknown) => {
+        setIsStarting(false)
         terminal.writeln(friendlyErrorMessage(error, 'The terminal could not start.'))
         terminal.writeln(cwd ?? '')
       })
 
     return () => {
       resizeObserver.disconnect()
+      clearTimeout(startingHintTimer)
       stopRoutingOutput()
       stopListeningToTyping.dispose()
       forgetTerminalActivity(paneId)
@@ -340,6 +352,11 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
         onContextMenuCapture={openContextMenu}
         onPasteCapture={pasteImageWhenNoText}
       />
+      {isStarting && (
+        <div className="loading-overlay">
+          <LoadingText text={startingLabel} isDelayed />
+        </div>
+      )}
       {contextMenu !== null && <PopupMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} onClose={closeContextMenu} />}
       {searchAddon !== null && <TerminalSearchBar searchAddon={searchAddon} onClose={closeSearch} />}
     </>

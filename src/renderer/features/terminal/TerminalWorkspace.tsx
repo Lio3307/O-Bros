@@ -10,6 +10,7 @@ import { TabBar } from './TabBar'
 import './terminal.css'
 import { Button } from '../../ui/Button'
 import { lazyComponent } from '../../ui/lazyComponent'
+import { LoadingText } from '../../ui/LoadingText'
 import { imageTypeOf } from '../../../shared/imageFiles'
 
 function FirstRunState() {
@@ -76,7 +77,13 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
           })}
         {!isMemberShown && activeFileTab?.kind === 'file' && (
           <div className="tab-content">
-            <Suspense fallback={null}>
+            <Suspense
+              fallback={
+                <div className="loading-overlay">
+                  <LoadingText text="Opening the editor…" isDelayed />
+                </div>
+              }
+            >
               {imageTypeOf(activeFileTab.path) === null ? (
                 <CodeEditor tabId={activeFileTab.id} filePath={activeFileTab.path} />
               ) : (

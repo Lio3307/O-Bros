@@ -7,6 +7,7 @@ import { isSameData } from '../../shared/sameData'
 interface ProjectsState {
   roots: ProjectRoot[]
   activeProjectPath: string | null
+  hasLoaded: boolean
   load: () => Promise<void>
   addRoot: (dialogTitle?: string) => Promise<string | null>
   addDroppedRoots: (paths: string[]) => Promise<void>
@@ -39,9 +40,10 @@ export const useProjectsStore = create<ProjectsState>()((set, get) => {
   return {
     roots: [],
     activeProjectPath: null,
+    hasLoaded: false,
 
     load: async () => {
-      const found = await window.api.projects.list()
+      const found = await window.api.projects.list().finally(() => set({ hasLoaded: true }))
       const roots = isSameData(found, get().roots) ? get().roots : found
       set({ roots, activeProjectPath: get().activeProjectPath ?? roots[0]?.path ?? null })
     },
