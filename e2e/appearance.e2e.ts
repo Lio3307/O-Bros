@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
-import { execFileSync } from 'node:child_process'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { writeFile } from 'node:fs/promises'
+import { release } from 'node:os'
 import { dirname, join } from 'node:path'
 import { launchApp, type RunningApp } from './launchApp'
 
@@ -89,116 +89,55 @@ test('shows a wallpaper behind see-through panels, keeps menus solid, and goes b
 })
 
 
-function windowsWallpaperIsSet(): boolean {
-  const output = execFileSync('reg', ['query', 'HKCU\\Control Panel\\Desktop', '/v', 'WallPaper'], { encoding: 'utf8', windowsHide: true })
-  const line = output.split('\n').find((candidate) => candidate.includes('REG_SZ'))
-  return line !== undefined && line.slice(line.indexOf('REG_SZ') + 'REG_SZ'.length).trim() !== ''
+function canSeeThrough(): boolean {
+  return process.platform === 'darwin' || (process.platform === 'win32' && Number(release().split('.')[2]) >= 22621)
 }
 
-async function paintWallpaper(type: 'jpeg' | 'png'): Promise<Buffer> {
-  const opened = app.application.waitForEvent('window')
-  await app.application.evaluate(async ({ BrowserWindow }, svg) => {
-    const painter = new BrowserWindow({ width: 800, height: 450, show: false, title: 'wallpaper painter' })
-    await painter.loadURL('data:text/html,' + encodeURIComponent(`<body style="margin:0;overflow:hidden">${svg}</body>`))
-  }, WALLPAPER_SVG.replace('width="1600" height="900"', 'width="800" height="450"'))
-  const painterPage = await opened
-  const image = await painterPage.screenshot({ type })
-  await painterPage.close()
-  return image
-}
-
-function screenPlacement() {
-  return app.application.evaluate(({ BrowserWindow, screen }) => {
-    const window = BrowserWindow.getAllWindows().find((candidate) => candidate.getTitle().startsWith('O-BROS'))!
-    const content = window.getContentBounds()
-    const display = screen.getDisplayMatching(content).bounds
-    return { width: `${display.width}px`, transform: `translate(${display.x - content.x}px, ${display.y - content.y}px)` }
-  })
-}
-
-function shownPlacement() {
-  return app.window.evaluate(() => {
-    const layer = document.querySelector<HTMLElement>('.app-desktop-screen')
-    return layer === null ? null : { width: layer.style.width, transform: layer.style.transform }
-  })
-}
-
-function mainWindowListeners(eventName: string) {
-  return app.application.evaluate(({ BrowserWindow }, name) => {
-    const window = BrowserWindow.getAllWindows().find((candidate) => candidate.getTitle().startsWith('O-BROS'))!
-    return window.listenerCount(name as 'move')
-  }, eventName)
-}
-
-test('Desktop wallpaper shows the Windows wallpaper lined up with the screen, follows window moves and wallpaper changes, and Solid turns it off', async () => {
-  test.skip(process.platform !== 'win32', 'the desktop wallpaper is read from Windows')
-  app = await launchApp({ separateHome: true })
-  const hasWindowsWallpaper = windowsWallpaperIsSet()
-  const themesFolder = join(dirname(app.projectFolder), 'app-data', 'Microsoft', 'Windows', 'Themes')
-  await mkdir(themesFolder, { recursive: true })
-  await writeFile(join(themesFolder, 'TranscodedWallpaper'), await paintWallpaper('jpeg'))
-  await app.application.evaluate(({ app: electronApp, BrowserWindow }, appDataFolder) => {
-    const originalGetPath = electronApp.getPath.bind(electronApp)
-    electronApp.getPath = (name) => (name === 'appData' ? appDataFolder : originalGetPath(name))
+function recordWindowCalls() {
+  return app.application.evaluate(({ BrowserWindow }) => {
     const window = BrowserWindow.getAllWindows()[0]
-    const overlayColors: string[] = []
-    Object.assign(globalThis, { overlayColors })
-    const setOverlay = window.setTitleBarOverlay.bind(window)
-    window.setTitleBarOverlay = (options) => {
-      overlayColors.push(options.color ?? '')
-      setOverlay(options)
+    const calls: Record<string, unknown> = {}
+    Object.assign(globalThis, { windowCalls: calls })
+    const record = <T extends unknown[]>(name: string, original: (...args: T) => void) => (...args: T) => {
+      calls[name] = args[0]
+      original(...args)
     }
-  }, join(dirname(app.projectFolder), 'app-data'))
-  const lastOverlayColor = () => app.application.evaluate(() => ((globalThis as Record<string, unknown>).overlayColors as string[]).at(-1) ?? null)
-  const moveListenersBefore = await mainWindowListeners('move')
+    window.setBackgroundMaterial = record('material', window.setBackgroundMaterial.bind(window))
+    window.setVibrancy = record('vibrancy', window.setVibrancy.bind(window))
+    window.setBackgroundColor = record('color', window.setBackgroundColor.bind(window))
+    window.setTitleBarOverlay = record('overlay', window.setTitleBarOverlay.bind(window))
+  })
+}
+
+function lastWindowCall(name: string) {
+  return app.application.evaluate((_electron, key) => ((globalThis as Record<string, unknown>).windowCalls as Record<string, unknown>)[key] ?? null, name)
+}
+
+function seeThroughEffect() {
+  return process.platform === 'darwin' ? lastWindowCall('vibrancy') : lastWindowCall('material')
+}
+
+test('Transparent lets the system show what is behind the window, and Solid turns it off', async () => {
+  test.skip(!canSeeThrough(), 'this system has no see-through windows')
+  app = await launchApp({ separateHome: true })
+  await recordWindowCalls()
 
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
   await app.window.getByRole('button', { name: 'Transparent', exact: true }).click()
 
-  await expect(app.window.locator('.app-desktop-screen')).toBeAttached()
+  await expect(app.window.locator('.app-wallpaper-clear')).toBeAttached()
+  await expect.poll(seeThroughEffect).toBe(process.platform === 'darwin' ? 'under-window' : 'acrylic')
+  await expect.poll(() => lastWindowCall('color')).toBe('#00000000')
   await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
-  await expect.poll(lastOverlayColor).toBe('#00000000')
-  await expect(app.window.getByRole('button', { name: 'Choose image…' })).toHaveCount(0)
-  await expect(app.window.getByText('Blur', { exact: true })).toBeVisible()
-  await expect.poll(shownPlacement).toEqual(await screenPlacement())
-  expect(await mainWindowListeners('move')).toBe(moveListenersBefore + 1)
-
-  if (hasWindowsWallpaper) {
-    await expect(app.window.locator('.appearance-wallpaper-preview')).toHaveAttribute('src', /^data:image\/jpeg;base64,/)
-    await expect(app.window.locator('.app-desktop-image')).toHaveAttribute('style', /data:image\/jpeg;base64,/)
-  } else {
-    await expect(app.window.locator('.appearance-wallpaper-preview')).toHaveText('Solid color')
-  }
-
-  await app.application.evaluate(({ BrowserWindow }) => {
-    const window = BrowserWindow.getAllWindows().find((candidate) => candidate.getTitle().startsWith('O-BROS'))!
-    window.unmaximize()
-    const bounds = window.getBounds()
-    window.setBounds({ x: bounds.x + 40, y: bounds.y + 30, width: bounds.width - 80, height: bounds.height - 60 })
-  })
-  await expect.poll(shownPlacement).toEqual(await screenPlacement())
-
-  if (hasWindowsWallpaper) {
-    await writeFile(join(themesFolder, 'TranscodedWallpaper'), await paintWallpaper('png'))
-    await app.application.evaluate(({ BrowserWindow }) => {
-      BrowserWindow.getAllWindows().find((candidate) => candidate.getTitle().startsWith('O-BROS'))!.emit('focus')
-    })
-    await expect(app.window.locator('.appearance-wallpaper-preview')).toHaveAttribute('src', /^data:image\/png;base64,/)
-  }
-
-  if (SHOTS !== undefined) {
-    await app.window.getByTitle('Projects', { exact: true }).click()
-    await app.window.waitForTimeout(600)
-    await app.window.screenshot({ path: `${SHOTS}/appearance-desktop.png` })
-    await app.window.getByTitle('Settings', { exact: true }).click()
-  }
+  await expect(app.window.getByText('Dim', { exact: true })).toBeVisible()
+  await expect(app.window.getByText('Blur', { exact: true })).toHaveCount(0)
 
   await app.window.getByRole('button', { name: 'Solid', exact: true }).click()
-  await expect(app.window.locator('.app-desktop-screen')).toHaveCount(0)
-  await expect.poll(lastOverlayColor).toBe('#0b0b0b')
+  await expect(app.window.locator('.app-wallpaper-clear')).toHaveCount(0)
+  await expect.poll(seeThroughEffect).toBe(process.platform === 'darwin' ? null : 'none')
+  await expect.poll(() => lastWindowCall('color')).not.toBe('#00000000')
   await expect.poll(() => app.window.evaluate(() => document.documentElement.hasAttribute('data-see-through'))).toBe(false)
-  await expect.poll(() => mainWindowListeners('move')).toBe(moveListenersBefore)
 })
 
 test('a tone colors the whole app and works with every look, including Transparent', async () => {
@@ -219,7 +158,7 @@ test('a tone colors the whole app and works with every look, including Transpare
   expect(await backgroundAlphaOf('.side-panel')).toBe(1)
 
   await pressed('Transparent').click()
-  await expect(app.window.locator('.app-desktop-screen')).toBeAttached()
+  await expect(app.window.locator('.app-wallpaper-clear')).toBeAttached()
   await expect(pressed('Midnight')).toHaveAttribute('aria-pressed', 'true')
   await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
   expect(await panelColor()).toBe(greenPanel)
@@ -243,7 +182,6 @@ test('a saved Transparent choice survives a restart', async () => {
   await app.window.evaluate(() => localStorage.setItem('o-bros.appearance', JSON.stringify({ background: 'desktop' })))
   await app.window.reload()
   await app.window.waitForSelector('.rail')
-  await expect(app.window.locator('.app-desktop-screen')).toBeAttached()
-  await app.window.waitForTimeout(1500)
+  await expect(app.window.locator('.app-wallpaper-clear')).toBeAttached()
   expect(await app.window.evaluate(() => JSON.parse(localStorage.getItem('o-bros.appearance') ?? '{}').background)).toBe('desktop')
 })

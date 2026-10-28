@@ -7,8 +7,8 @@ function mixed(color: string, percent: number): string {
 }
 
 export function indentGuides(theme: ColorTheme): Extension {
-  const guide = mixed(theme.code.comment, 28)
-  const currentBlock = mixed(theme.code.functionName, 75)
+  const guide = mixed(theme.foreground, 20)
+  const currentBlock = mixed(theme.code.functionName, 90)
   return indentationMarkers({
     highlightActiveBlock: true,
     markerType: 'fullScope',

@@ -2,7 +2,6 @@ import type { ActivityEntry, LiveAgent } from './activity'
 import type { AgentLogin } from './agentLogins'
 import type { AgentLogo } from './agentLogos'
 import type { WindowColors } from './appearance'
-import type { DesktopPlacement, DesktopView, DesktopWallpaper } from './desktopWallpaper'
 import type { WarpThemeFiles } from './themeImport'
 import type { IntegrationsReport } from './integrations'
 import type {
@@ -246,10 +245,7 @@ export const IpcChannel = {
   appearanceRemoveWallpaper: 'appearance:removeWallpaper',
   appearanceSetWindowColors: 'appearance:setWindowColors',
   appearanceReadWarpThemes: 'appearance:readWarpThemes',
-  appearanceFollowDesktop: 'appearance:followDesktop',
-  appearanceCanFollowDesktop: 'appearance:canFollowDesktop',
-  appearanceDesktopPlacementChanged: 'appearance:desktopPlacementChanged',
-  appearanceDesktopWallpaperChanged: 'appearance:desktopWallpaperChanged'
+  appearanceCanSeeThrough: 'appearance:canSeeThrough'
 } as const
 
 export interface PtyCreateRequest {
@@ -476,9 +472,6 @@ export interface DesktopApi {
     removeWallpaper(): Promise<void>
     setWindowColors(colors: WindowColors): Promise<void>
     readWarpThemes(): Promise<WarpThemeFiles>
-    followDesktop(isFollowing: boolean): Promise<DesktopView | null>
-    canFollowDesktop(): Promise<boolean>
-    onDesktopPlacementChanged(listener: (placement: DesktopPlacement) => void): () => void
-    onDesktopWallpaperChanged(listener: (wallpaper: DesktopWallpaper) => void): () => void
+    canSeeThrough(): Promise<boolean>
   }
 }

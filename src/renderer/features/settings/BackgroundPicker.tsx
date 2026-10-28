@@ -59,11 +59,10 @@ export function BackgroundPicker() {
   const appearance = useAppearanceStore((state) => state.appearance)
   const update = useAppearanceStore((state) => state.update)
   const wallpaperUrl = useAppearanceStore((state) => state.wallpaperUrl)
-  const desktopWallpaper = useAppearanceStore((state) => state.desktopWallpaper)
-  const canFollowDesktop = useAppearanceStore((state) => state.canFollowDesktop)
+  const canSeeThrough = useAppearanceStore((state) => state.canSeeThrough)
   const theme = useThemeWithoutTint()
-  const isChosen = (background: Appearance['background']) => appearance.background === background
-  const desktopImage = isChosen('desktop') ? desktopWallpaper?.imageUrl : null
+  const look = appearance.background === 'desktop' && canSeeThrough === false ? 'solid' : appearance.background
+  const isChosen = (background: Appearance['background']) => look === background
   const basePanel = appColorsOf(theme).panel
   const choose = (changes: Partial<Appearance>) => withCrossfade(() => update(changes))
 
@@ -79,13 +78,13 @@ export function BackgroundPicker() {
             preview={imagePreview(null, theme.background, basePanel)}
             onSelect={() => choose({ background: 'solid' })}
           />
-          {(canFollowDesktop !== false || isChosen('desktop')) && (
+          {canSeeThrough === true && (
             <BackgroundTile
               label="Transparent"
-              hint="See your desktop wallpaper through O-BROS"
+              hint="See the windows and desktop behind O-BROS, softly blurred"
               isSelected={isChosen('desktop')}
-              preview={imagePreview(desktopImage, desktopWallpaper?.color ?? theme.background, basePanel)}
-              placeholder={(desktopImage === null || desktopImage === undefined) && <Monitor size={18} className="background-tile-icon" />}
+              preview={imagePreview(null, theme.background, basePanel)}
+              placeholder={<Monitor size={18} className="background-tile-icon" />}
               onSelect={() => choose({ background: 'desktop' })}
             />
           )}

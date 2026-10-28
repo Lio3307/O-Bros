@@ -7,8 +7,8 @@ import type { AccountRef } from '../../../shared/types'
 import { useAgentCommitStore } from '../../state/agentCommitStore'
 import { providerForCommand } from '../../state/customProvidersStore'
 import { activeColorTheme, useActiveColorTheme } from '../../state/colorThemeStore'
-import { useAppearanceStore, useSurfaceAlpha } from '../../state/appearanceStore'
-import { innerAlphaOf, surfaceAlphaOf, withAlpha } from '../../../shared/appearance'
+import { currentSurfaceAlpha, useSurfaceAlpha } from '../../state/appearanceStore'
+import { innerAlphaOf, withAlpha } from '../../../shared/appearance'
 import { useTerminalFontStore } from '../../state/terminalFontStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { quotePathForShell } from '../../../shared/shellQuote'
@@ -61,12 +61,11 @@ function fitToHost(paneId: string, terminal: Terminal, fitAddon: FitAddon, host:
 }
 
 function createTerminal(): Terminal {
-  const { appearance, wallpaperUrl } = useAppearanceStore.getState()
   return new Terminal({
     ...terminalOptions,
     fontSize: useTerminalFontStore.getState().fontSize,
     minimumContrastRatio: terminalContrastOf(activeColorTheme()),
-    theme: terminalThemeOf(activeColorTheme(), innerAlphaOf(surfaceAlphaOf(appearance, wallpaperUrl !== null))),
+    theme: terminalThemeOf(activeColorTheme(), innerAlphaOf(currentSurfaceAlpha())),
     scrollback: useTerminalSettingsStore.getState().scrollback
   })
 }

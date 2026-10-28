@@ -28,11 +28,14 @@ describe('readAppearance', () => {
 describe('surfaceAlphaOf', () => {
   it('only makes surfaces see-through when something is behind them', () => {
     const wallpaper = { ...DEFAULT_APPEARANCE, background: 'wallpaper' as const, surfaceOpacity: 0.6 }
-    expect(surfaceAlphaOf(wallpaper, true)).toBe(0.6)
-    expect(surfaceAlphaOf(wallpaper, false)).toBe(1)
-    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop' }, false)).toBe(0.6)
-    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop', color: 'pine' }, false)).toBe(0.6)
-    expect(surfaceAlphaOf({ ...wallpaper, background: 'solid' }, true)).toBe(1)
+    const everything = { hasWallpaper: true, canSeeThrough: true }
+    const nothing = { hasWallpaper: false, canSeeThrough: false }
+    expect(surfaceAlphaOf(wallpaper, everything)).toBe(0.6)
+    expect(surfaceAlphaOf(wallpaper, nothing)).toBe(1)
+    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop' }, { hasWallpaper: false, canSeeThrough: true })).toBe(0.6)
+    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop', color: 'pine' }, { hasWallpaper: false, canSeeThrough: true })).toBe(0.6)
+    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop' }, { hasWallpaper: true, canSeeThrough: false })).toBe(1)
+    expect(surfaceAlphaOf({ ...wallpaper, background: 'solid' }, everything)).toBe(1)
   })
 })
 

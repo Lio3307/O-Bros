@@ -1,6 +1,5 @@
 import { create } from 'zustand'
-import { readAppearance, surfaceAlphaOf, type Appearance } from '../../shared/appearance'
-import type { DesktopWallpaper } from '../../shared/desktopWallpaper'
+import { readAppearance, showsDesktop, surfaceAlphaOf, type Appearance, type WhatIsBehind } from '../../shared/appearance'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
 import { readStoredJson, writeStoredJson } from './browserStorage'
 import { toast } from './toastStore'
@@ -10,21 +9,18 @@ const APPEARANCE_KEY = 'o-bros.appearance'
 interface AppearanceState {
   appearance: Appearance
   wallpaperUrl: string | null
-  desktopWallpaper: DesktopWallpaper | null
-  canFollowDesktop: boolean | null
+  canSeeThrough: boolean | null
   update: (changes: Partial<Appearance>) => void
   loadWallpaper: () => Promise<void>
-  loadDesktopSupport: () => Promise<void>
+  loadSeeThroughSupport: () => Promise<void>
   chooseWallpaper: () => Promise<void>
   removeWallpaper: () => Promise<void>
-  showDesktopWallpaper: (desktopWallpaper: DesktopWallpaper) => void
 }
 
 export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
   appearance: readAppearance(readStoredJson(APPEARANCE_KEY)),
   wallpaperUrl: null,
-  desktopWallpaper: null,
-  canFollowDesktop: null,
+  canSeeThrough: null,
 
   update: (changes) => {
     const appearance = readAppearance({ ...get().appearance, ...changes })
@@ -36,8 +32,8 @@ export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
     set({ wallpaperUrl: await window.api.appearance.loadWallpaper().catch(() => null) })
   },
 
-  loadDesktopSupport: async () => {
-    set({ canFollowDesktop: await window.api.appearance.canFollowDesktop().catch(() => false) })
+  loadSeeThroughSupport: async () => {
+    set({ canSeeThrough: await window.api.appearance.canSeeThrough().catch(() => false) })
   },
 
   chooseWallpaper: async () => {
@@ -58,11 +54,22 @@ export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
     if (get().appearance.background === 'wallpaper') {
       get().update({ background: 'solid' })
     }
-  },
-
-  showDesktopWallpaper: (desktopWallpaper) => set({ desktopWallpaper })
+  }
 }))
 
+export function whatIsBehindOf(state: Pick<AppearanceState, 'wallpaperUrl' | 'canSeeThrough'>): WhatIsBehind {
+  return { hasWallpaper: state.wallpaperUrl !== null, canSeeThrough: state.canSeeThrough === true }
+}
+
+export function currentSurfaceAlpha(): number {
+  const state = useAppearanceStore.getState()
+  return surfaceAlphaOf(state.appearance, whatIsBehindOf(state))
+}
+
 export function useSurfaceAlpha(): number {
-  return useAppearanceStore((state) => surfaceAlphaOf(state.appearance, state.wallpaperUrl !== null))
+  return useAppearanceStore((state) => surfaceAlphaOf(state.appearance, whatIsBehindOf(state)))
+}
+
+export function useShowsDesktop(): boolean {
+  return useAppearanceStore((state) => showsDesktop(state.appearance, whatIsBehindOf(state)))
 }

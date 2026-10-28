@@ -1,7 +1,7 @@
 import { ImagePlus, Trash2 } from 'lucide-react'
 import type { ChangeEvent } from 'react'
 import { SURFACE_OPACITY_RANGE, WALLPAPER_BLUR_RANGE, WALLPAPER_DIM_RANGE, type Range } from '../../../shared/appearance'
-import { useAppearanceStore } from '../../state/appearanceStore'
+import { useAppearanceStore, useShowsDesktop } from '../../state/appearanceStore'
 import { Button } from '../../ui/Button'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../ui/SettingsSection'
@@ -9,33 +9,6 @@ import { BackgroundPicker } from './BackgroundPicker'
 import { ThemeSettings } from './theme/ThemeSettings'
 import './settings.css'
 import './settingsControls.css'
-
-const IS_WINDOWS = navigator.platform.toLowerCase().startsWith('win')
-const DESKTOP_SETTINGS_PLACE = IS_WINDOWS
-  ? 'Windows Settings → Personalization → Background, with its Fill, Fit, Stretch, Tile or Center setting'
-  : 'your desktop settings (GNOME or KDE Plasma), with how the picture is fitted'
-
-function DesktopWallpaperPreview() {
-  const desktopWallpaper = useAppearanceStore((state) => state.desktopWallpaper)
-  if (desktopWallpaper === null) {
-    return <div className="appearance-wallpaper-preview appearance-wallpaper-empty">Reading…</div>
-  }
-  if (desktopWallpaper.imageUrl === null) {
-    return (
-      <div className="appearance-wallpaper-preview appearance-wallpaper-empty" style={{ backgroundColor: desktopWallpaper.color }}>
-        Solid color
-      </div>
-    )
-  }
-  return (
-    <img
-      className="appearance-wallpaper-preview"
-      src={desktopWallpaper.imageUrl}
-      style={{ backgroundColor: desktopWallpaper.color }}
-      alt="Your desktop wallpaper"
-    />
-  )
-}
 
 interface SliderProps {
   label: string
@@ -76,7 +49,7 @@ export function AppearancePage() {
   const chooseWallpaper = useAppearanceStore((state) => state.chooseWallpaper)
   const removeWallpaper = useAppearanceStore((state) => state.removeWallpaper)
   const isWallpaper = appearance.background === 'wallpaper'
-  const isDesktop = appearance.background === 'desktop'
+  const isDesktop = useShowsDesktop()
   const showsPicture = isDesktop || (isWallpaper && wallpaperUrl !== null)
 
   return (
@@ -85,7 +58,7 @@ export function AppearancePage() {
 
       <SettingsSection
         title="Background"
-        description="Look is what shows behind the app. Tone gives the whole app a quiet color, like Midnight or Mocha, and works with every look, so Transparent and Midnight give dark navy glass over your desktop. Text and code keep the theme colors."
+        description="Look is what shows behind the app. Tone gives the whole app a quiet color, like Midnight or Mocha, and works with every look, so Transparent and Midnight give dark navy glass over what is behind the window. Text and code keep the theme colors."
       >
         <BackgroundPicker />
       </SettingsSection>
@@ -113,19 +86,14 @@ export function AppearancePage() {
         </SettingsSection>
       )}
 
-      {isDesktop && (
-        <SettingsSection
-          title="Transparent"
-          description={`O-BROS shows your desktop wallpaper behind itself, lined up with your screen, so the window looks see-through. It uses the wallpaper set in ${DESKTOP_SETTINGS_PLACE}, follows it when you change it there, and never copies or uploads it.`}
-        >
-          <DesktopWallpaperPreview />
-        </SettingsSection>
-      )}
-
       {showsPicture && (
         <SettingsSection
           title="See-through"
-          description="How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim."
+          description={
+            isDesktop
+              ? 'The window shows what is behind it, softly blurred by your system. Set how solid the panels are and how much to darken what shows through. Text always stays fully visible; over bright windows, raise Dim.'
+              : 'How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim.'
+          }
         >
           <div className="appearance-sliders">
             <Slider
@@ -144,14 +112,16 @@ export function AppearancePage() {
               display={percent(appearance.wallpaperDim)}
               onChange={(wallpaperDim) => update({ wallpaperDim })}
             />
-            <Slider
-              label="Blur"
-              value={appearance.wallpaperBlur}
-              range={WALLPAPER_BLUR_RANGE}
-              step={1}
-              display={`${appearance.wallpaperBlur} px`}
-              onChange={(wallpaperBlur) => update({ wallpaperBlur })}
-            />
+            {!isDesktop && (
+              <Slider
+                label="Blur"
+                value={appearance.wallpaperBlur}
+                range={WALLPAPER_BLUR_RANGE}
+                step={1}
+                display={`${appearance.wallpaperBlur} px`}
+                onChange={(wallpaperBlur) => update({ wallpaperBlur })}
+              />
+            )}
           </div>
         </SettingsSection>
       )}

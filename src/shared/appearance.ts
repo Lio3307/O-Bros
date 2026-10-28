@@ -18,6 +18,12 @@ export interface WindowColors {
   window: string
   titleBar: string
   symbols: string
+  showsDesktop: boolean
+}
+
+export interface WhatIsBehind {
+  hasWallpaper: boolean
+  canSeeThrough: boolean
 }
 
 export interface Range {
@@ -75,8 +81,12 @@ export function readAppearance(raw: unknown): Appearance {
   }
 }
 
-export function surfaceAlphaOf(appearance: Appearance, hasWallpaper: boolean): number {
-  const showsSomethingBehind = appearance.background === 'desktop' || (appearance.background === 'wallpaper' && hasWallpaper)
+export function showsDesktop(appearance: Appearance, behind: WhatIsBehind): boolean {
+  return appearance.background === 'desktop' && behind.canSeeThrough
+}
+
+export function surfaceAlphaOf(appearance: Appearance, behind: WhatIsBehind): number {
+  const showsSomethingBehind = showsDesktop(appearance, behind) || (appearance.background === 'wallpaper' && behind.hasWallpaper)
   return showsSomethingBehind ? appearance.surfaceOpacity : 1
 }
 

@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { devServerUrl, isRunningFromSource } from './runMode'
 import { writeLog } from './services/logging/logFile'
 import { showWithSavedState } from './windowState'
+import { showWhatIsBehind } from './services/appearance/seeThrough'
 
 const TITLE_BAR_HEIGHT = 36
 const CHROME_COLOR = '#0B0B0B'
@@ -22,6 +23,7 @@ function isWebLink(url: string): boolean {
 }
 
 export function paintWindow(window: BrowserWindow, colors: WindowColors): void {
+  showWhatIsBehind(window, colors.showsDesktop)
   window.setBackgroundColor(colors.window)
   if (process.platform === 'win32') {
     window.setTitleBarOverlay({ color: colors.titleBar, symbolColor: colors.symbols, height: TITLE_BAR_HEIGHT })
