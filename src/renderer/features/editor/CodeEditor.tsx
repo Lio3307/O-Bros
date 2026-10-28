@@ -23,6 +23,7 @@ import { openDroppedFiles } from './openDroppedFiles'
 import { editorSetup } from './editorSetup'
 import { smartCompletion } from './smartCompletion'
 import { connectVimFileActions, vimCompartment, vimExtension } from './vimMode'
+import { cursorCompartment, cursorExtension } from './editorCursor'
 import { findLanguageForFile, type LanguageDefinition } from './languageRegistry'
 import { lintExtensionFor, lintNow } from './lintExtension'
 import {
@@ -134,6 +135,7 @@ async function buildEditorState(tabId: string, filePath: string): Promise<Editor
     doc: content,
     extensions: [
       vimCompartment.of(vimExtension(useEditorSettingsStore.getState().vimMode)),
+      cursorCompartment.of(cursorExtension(useEditorSettingsStore.getState())),
       editorSetup,
       editorLayoutTheme,
       editorMotionTheme,
@@ -175,6 +177,10 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   const [diskText, setDiskText] = useState<string | null>(null)
   const colorTheme = useActiveColorTheme()
   const isVimMode = useEditorSettingsStore((state) => state.vimMode)
+  const cursorShape = useEditorSettingsStore((state) => state.cursorShape)
+  const cursorColor = useEditorSettingsStore((state) => state.cursorColor)
+  const cursorBlinks = useEditorSettingsStore((state) => state.cursorBlinks)
+  const cursorGlides = useEditorSettingsStore((state) => state.cursorGlides)
 
   function reloadFromDisk(): void {
     if (viewRef.current !== null && diskText !== null) {
@@ -191,6 +197,11 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
   useEffect(() => {
     viewRef.current?.dispatch({ effects: vimCompartment.reconfigure(vimExtension(isVimMode)) })
   }, [isVimMode])
+
+  useEffect(() => {
+    const cursor = cursorExtension({ cursorShape, cursorColor, cursorBlinks, cursorGlides })
+    viewRef.current?.dispatch({ effects: cursorCompartment.reconfigure(cursor) })
+  }, [cursorShape, cursorColor, cursorBlinks, cursorGlides])
 
   useEffect(() => {
     if (viewRef.current !== null) {
@@ -241,7 +252,8 @@ export function CodeEditor({ tabId, filePath }: CodeEditorProps) {
       view.dispatch({
         effects: [
           colorThemeCompartment.reconfigure(currentColorThemeExtension()),
-          vimCompartment.reconfigure(vimExtension(useEditorSettingsStore.getState().vimMode))
+          vimCompartment.reconfigure(vimExtension(useEditorSettingsStore.getState().vimMode)),
+          cursorCompartment.reconfigure(cursorExtension(useEditorSettingsStore.getState()))
         ]
       })
       viewRef.current = view

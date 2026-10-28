@@ -3,6 +3,7 @@ import {
   clampAutoSaveDelay,
   defaultEditorSettings,
   normalizeEditorSettings,
+  type CursorShape,
   type EditorSettings,
   type LintMode
 } from '../features/editor/editorSettings'
@@ -18,6 +19,10 @@ interface EditorSettingsState extends EditorSettings {
   setAutoSaveEnabled: (isEnabled: boolean) => void
   setAutoSaveDelay: (delayMs: number) => void
   setVimMode: (isEnabled: boolean) => void
+  setCursorShape: (shape: CursorShape) => void
+  setCursorColor: (color: string | null) => void
+  setCursorBlinks: (isEnabled: boolean) => void
+  setCursorGlides: (isEnabled: boolean) => void
 }
 
 function loadSavedSettings(): EditorSettings {
@@ -26,8 +31,8 @@ function loadSavedSettings(): EditorSettings {
 }
 
 function pickSettings(state: EditorSettings): EditorSettings {
-  const { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs, vimMode } = state
-  return { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs, vimMode }
+  const { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs, vimMode, cursorShape, cursorColor, cursorBlinks, cursorGlides } = state
+  return { disabledLanguages, lintMode, formatOnSave, autoSaveEnabled, autoSaveDelayMs, vimMode, cursorShape, cursorColor, cursorBlinks, cursorGlides }
 }
 
 export function isLanguageEnabled(settings: EditorSettings, id: LanguageId): boolean {
@@ -56,6 +61,14 @@ export const useEditorSettingsStore = create<EditorSettingsState>()((set, get) =
 
     setAutoSaveDelay: (delayMs) => change({ autoSaveDelayMs: clampAutoSaveDelay(delayMs) }),
 
-    setVimMode: (vimMode) => change({ vimMode })
+    setVimMode: (vimMode) => change({ vimMode }),
+
+    setCursorShape: (cursorShape) => change({ cursorShape }),
+
+    setCursorColor: (cursorColor) => change({ cursorColor }),
+
+    setCursorBlinks: (cursorBlinks) => change({ cursorBlinks }),
+
+    setCursorGlides: (cursorGlides) => change({ cursorGlides })
   }
 })

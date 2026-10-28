@@ -1,14 +1,6 @@
 import { EditorView } from '@codemirror/view'
 
-const CARET_GLIDE = '70ms var(--ease-out)'
-
 export const editorMotionTheme = EditorView.theme({
-  '.cm-cursor, .cm-dropCursor': {
-    transition: `left ${CARET_GLIDE}, top ${CARET_GLIDE}, height ${CARET_GLIDE}`
-  },
-  '&.cm-focused > .cm-scroller > .cm-cursorLayer': {
-    animationTimingFunction: 'ease-in-out'
-  },
   '.cm-activeLine, .cm-activeLineGutter': {
     transition: 'background-color var(--motion-fast) var(--ease-out), color var(--motion-fast) var(--ease-out)'
   },

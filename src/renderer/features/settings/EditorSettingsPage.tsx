@@ -3,6 +3,7 @@ import { LINT_MODES, type LintMode } from '../editor/editorSettings'
 import { LANGUAGES, OTHER_LANGUAGE_NAMES, type LanguageId } from '../editor/languageRegistry'
 import { AutoSaveSetting } from './AutoSaveSetting'
 import { ColorThemeSetting } from './ColorThemeSetting'
+import { TextCursorSetting } from './TextCursorSetting'
 import './settings.css'
 import './settingsControls.css'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
@@ -56,6 +57,8 @@ export function EditorSettingsPage() {
       }
     >
       <ColorThemeSetting />
+
+      <TextCursorSetting />
 
       <AutoSaveSetting />
 

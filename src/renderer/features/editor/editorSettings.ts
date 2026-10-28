@@ -1,9 +1,14 @@
 import { LANGUAGE_IDS, type LanguageId } from './languageRegistry'
 import { isRecord } from '../../../shared/isRecord'
+import { normalizeHexColor } from '../../../shared/hexColor'
 
 export type LintMode = 'off' | 'on-save' | 'as-you-type'
 
 export const LINT_MODES: LintMode[] = ['off', 'on-save', 'as-you-type']
+
+export type CursorShape = 'line' | 'block' | 'underline'
+
+export const CURSOR_SHAPES: CursorShape[] = ['line', 'block', 'underline']
 
 export const AUTO_SAVE_MIN_DELAY_MS = 100
 export const AUTO_SAVE_MAX_DELAY_MS = 60_000
@@ -17,6 +22,10 @@ export interface EditorSettings {
   autoSaveEnabled: boolean
   autoSaveDelayMs: number
   vimMode: boolean
+  cursorShape: CursorShape
+  cursorColor: string | null
+  cursorBlinks: boolean
+  cursorGlides: boolean
 }
 
 export function defaultEditorSettings(): EditorSettings {
@@ -26,7 +35,11 @@ export function defaultEditorSettings(): EditorSettings {
     formatOnSave: false,
     autoSaveEnabled: false,
     autoSaveDelayMs: AUTO_SAVE_DEFAULT_DELAY_MS,
-    vimMode: false
+    vimMode: false,
+    cursorShape: 'line',
+    cursorColor: null,
+    cursorBlinks: true,
+    cursorGlides: false
   }
 }
 
@@ -39,6 +52,10 @@ export function clampAutoSaveDelay(delayMs: number): number {
     return AUTO_SAVE_DEFAULT_DELAY_MS
   }
   return Math.min(Math.max(Math.round(delayMs), AUTO_SAVE_MIN_DELAY_MS), AUTO_SAVE_MAX_DELAY_MS)
+}
+
+function isCursorShape(value: unknown): value is CursorShape {
+  return CURSOR_SHAPES.includes(value as CursorShape)
 }
 
 function isLintMode(value: unknown): value is LintMode {
@@ -59,6 +76,10 @@ export function normalizeEditorSettings(raw: unknown): EditorSettings {
     autoSaveEnabled: typeof raw.autoSaveEnabled === 'boolean' ? raw.autoSaveEnabled : defaults.autoSaveEnabled,
     autoSaveDelayMs:
       typeof raw.autoSaveDelayMs === 'number' ? clampAutoSaveDelay(raw.autoSaveDelayMs) : defaults.autoSaveDelayMs,
-    vimMode: typeof raw.vimMode === 'boolean' ? raw.vimMode : defaults.vimMode
+    vimMode: typeof raw.vimMode === 'boolean' ? raw.vimMode : defaults.vimMode,
+    cursorShape: isCursorShape(raw.cursorShape) ? raw.cursorShape : defaults.cursorShape,
+    cursorColor: normalizeHexColor(raw.cursorColor),
+    cursorBlinks: typeof raw.cursorBlinks === 'boolean' ? raw.cursorBlinks : defaults.cursorBlinks,
+    cursorGlides: typeof raw.cursorGlides === 'boolean' ? raw.cursorGlides : defaults.cursorGlides
   }
 }

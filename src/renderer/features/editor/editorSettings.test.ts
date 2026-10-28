@@ -8,6 +8,17 @@ describe('normalizeEditorSettings', () => {
     expect(normalizeEditorSettings({ vimMode: 'yes' }).vimMode).toBe(false)
   })
 
+  it('starts with a blinking line cursor in the theme color that does not glide, and keeps valid cursor choices', () => {
+    expect(defaultEditorSettings()).toMatchObject({ cursorShape: 'line', cursorColor: null, cursorBlinks: true, cursorGlides: false })
+    expect(normalizeEditorSettings({ cursorShape: 'block', cursorColor: '#FF8800', cursorBlinks: false, cursorGlides: true })).toMatchObject({
+      cursorShape: 'block',
+      cursorColor: '#ff8800',
+      cursorBlinks: false,
+      cursorGlides: true
+    })
+    expect(normalizeEditorSettings({ cursorShape: 'star', cursorColor: 'red' })).toMatchObject({ cursorShape: 'line', cursorColor: null })
+  })
+
   it('returns defaults for missing or broken data', () => {
     expect(normalizeEditorSettings(null)).toEqual(defaultEditorSettings())
     expect(normalizeEditorSettings('text')).toEqual(defaultEditorSettings())

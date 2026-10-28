@@ -18,10 +18,10 @@ function gutterBackground(color: string): string {
 function editorChrome(theme: ColorTheme): Extension {
   return EditorView.theme(
     {
-      '&': { height: '100%', backgroundColor: seeThrough(theme.background), color: theme.foreground },
+      '&': { height: '100%', backgroundColor: seeThrough(theme.background), color: theme.foreground, '--caret-color': theme.cursor },
       '.cm-scroller': { fontFamily: 'var(--font-mono)', fontSize: '13px', lineHeight: '22px' },
       '.cm-content': { caretColor: theme.cursor, padding: '8px 0' },
-      '.cm-cursor': { borderLeftColor: theme.cursor },
+      '.cm-cursor': { borderLeftColor: 'var(--caret-color)' },
       '.cm-gutters': {
         backgroundColor: gutterBackground(theme.background),
         backdropFilter: 'blur(12px)',
