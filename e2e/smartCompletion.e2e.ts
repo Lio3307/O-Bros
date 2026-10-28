@@ -69,3 +69,34 @@ test('suggests names from other open files and real paths inside strings', async
   await app.window.keyboard.press('ControlOrMeta+S')
   await expect(app.window.locator('.tab-modified-dot')).toHaveCount(0)
 })
+
+test('standard objects such as console and Math complete inside script blocks that no language server covers', async () => {
+  app = await launchApp()
+  await writeFile(join(app.projectFolder, 'App.svelte'), '<script>\n  let user = 1\n  \n</script>\n', 'utf8')
+  await writeFile(join(app.projectFolder, 'page.html'), '<script>\n  let user = 1\n  \n</script>\n', 'utf8')
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  const list = app.window.locator('.cm-tooltip-autocomplete')
+
+  for (const [name, typed, expected] of [
+    ['App.svelte', 'console.', 'log'],
+    ['page.html', 'Math.', 'floor']
+  ]) {
+    await openFile(name)
+    await app.window.locator('.cm-line').nth(2).click()
+    await app.window.keyboard.press('End')
+    await app.window.keyboard.type(typed, { delay: 40 })
+    await expect(list.getByRole('option', { name: expected, exact: true })).toBeVisible()
+    await app.window.keyboard.press('Escape')
+    await app.window.keyboard.press('Control+Space')
+    await expect(list.getByRole('option', { name: expected, exact: true })).toBeVisible()
+    await expect(list.locator('li', { hasText: 'let' })).toHaveCount(0)
+    if (SHOTS !== undefined && name === 'App.svelte') {
+      await app.window.screenshot({ path: `${SHOTS}/completion-console.png` })
+    }
+    await app.window.keyboard.type(expected.slice(0, 2), { delay: 40 })
+    await acceptSuggestion()
+    await expect(app.window.locator('.cm-content')).toContainText(typed + expected)
+    await app.window.keyboard.press('ControlOrMeta+S')
+    await expect(app.window.locator('.tab-modified-dot')).toHaveCount(0)
+  }
+})

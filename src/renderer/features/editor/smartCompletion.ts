@@ -5,6 +5,7 @@ import { EditorState, type Extension, type Text } from '@codemirror/state'
 import { lastPathSegment, parentPath, resolvePath } from '../../../shared/paths'
 import { pathQueryOf, wordBefore, wordsIn } from './completionText'
 import { savedEditorStates } from './editorSessions'
+import { completeJavascriptGlobals } from './javascriptGlobals'
 
 const MAX_SCANNED_CHARACTERS = 400_000
 const WORD_BOOST = -20
@@ -57,7 +58,8 @@ function openFileWords(filePath: string, ownSources: CompletionSource[]): Comple
   return (context) => {
     const line = context.state.doc.lineAt(context.pos)
     const typed = wordBefore(line.text.slice(0, context.pos - line.from))
-    if ((typed === '' && !context.explicit) || isTypingPath(context)) {
+    const isAfterDot = line.text[context.pos - line.from - typed.length - 1] === '.'
+    if ((typed === '' && !context.explicit) || isAfterDot || isTypingPath(context)) {
       return null
     }
     const seen = new Set<string>()
@@ -73,6 +75,10 @@ function openFileWords(filePath: string, ownSources: CompletionSource[]): Comple
 
 function hasLanguageServer(context: CompletionContext): boolean {
   return context.view !== undefined && LSPPlugin.get(context.view) !== null
+}
+
+function javascriptGlobals(): CompletionSource {
+  return (context) => (hasLanguageServer(context) ? null : completeJavascriptGlobals(context))
 }
 
 function filePaths(filePath: string): CompletionSource {
@@ -104,6 +110,6 @@ function filePaths(filePath: string): CompletionSource {
 
 export function smartCompletion(filePath: string): Extension {
   const ownSources: CompletionSource[] = []
-  ownSources.push(openFileWords(filePath, ownSources), filePaths(filePath))
+  ownSources.push(openFileWords(filePath, ownSources), filePaths(filePath), javascriptGlobals())
   return EditorState.languageData.of(() => ownSources.map((source) => ({ autocomplete: source })))
 }
