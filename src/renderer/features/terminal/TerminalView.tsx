@@ -23,7 +23,8 @@ import { useFileDropTarget } from '../files/useFileDropTarget'
 import { createFileLinkProvider } from './fileLinkProvider'
 import { openFileReference } from './openFileReference'
 import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
-import { noteAgentOutput, noteAgentResize, noteAgentTyping } from './agentStatusTracking'
+import { noteAgentOutput, noteAgentTyping } from './agentStatusTracking'
+import { forgetPtySize, sendPtySize } from './ptySizeSender'
 import { registerTerminal, unregisterTerminal } from './terminalRegistry'
 import { TerminalSearchBar } from './TerminalSearchBar'
 import { terminalOptions } from './terminalTheme'
@@ -56,8 +57,7 @@ function isFindShortcut(event: KeyboardEvent): boolean {
 function fitToHost(paneId: string, terminal: Terminal, fitAddon: FitAddon, host: HTMLElement): void {
   fitAddon.fit()
   trimTerminalToHost(terminal, host)
-  noteAgentResize(paneId)
-  window.api.pty.resize(paneId, terminal.cols, terminal.rows)
+  sendPtySize(paneId, terminal.cols, terminal.rows)
 }
 
 function createTerminal(): Terminal {
@@ -151,11 +151,17 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
         commitIdentity: useAgentCommitStore.getState().identity,
         provider: startsAgent ? providerForCommand(startCommand) : null
       })
-      .then(fit, (error: unknown) => {
-        setIsStarting(false)
-        terminal.writeln(friendlyErrorMessage(error, 'The terminal could not start.'))
-        terminal.writeln(cwd ?? '')
-      })
+      .then(
+        () => {
+          forgetPtySize(paneId)
+          fit()
+        },
+        (error: unknown) => {
+          setIsStarting(false)
+          terminal.writeln(friendlyErrorMessage(error, 'The terminal could not start.'))
+          terminal.writeln(cwd ?? '')
+        }
+      )
 
     return () => {
       resizeObserver.disconnect()
@@ -163,6 +169,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       stopRoutingOutput()
       stopListeningToTyping.dispose()
       forgetTerminalActivity(paneId)
+      forgetPtySize(paneId)
       unregisterTerminal(paneId)
       window.api.pty.kill(paneId)
       terminal.dispose()
