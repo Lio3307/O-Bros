@@ -27,7 +27,8 @@ function editorChrome(theme: ColorTheme): Extension {
         backdropFilter: 'blur(12px)',
         color: theme.code.comment,
         border: 'none',
-        paddingRight: '4px'
+        borderRight: '1px solid color-mix(in srgb, var(--color-strong) 8%, transparent)',
+        marginRight: '4px'
       },
       '.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--color-strong) 4%, transparent)' },
       '.cm-activeLineGutter': { backgroundColor: 'transparent', color: theme.foreground, fontWeight: '700' },

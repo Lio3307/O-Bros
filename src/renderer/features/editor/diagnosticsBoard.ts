@@ -1,4 +1,5 @@
 import { lintGutter, setDiagnostics, type Diagnostic } from '@codemirror/lint'
+import { Prec } from '@codemirror/state'
 import type { EditorView } from '@codemirror/view'
 import { useProblemsStore } from '../../state/problemsStore'
 import { toProblemItems } from './problemItems'
@@ -6,7 +7,7 @@ import { toProblemItems } from './problemItems'
 const toolDiagnostics = new WeakMap<EditorView, Diagnostic[]>()
 const serverDiagnostics = new WeakMap<EditorView, Diagnostic[]>()
 
-export const sharedLintGutter = lintGutter()
+export const sharedLintGutter = Prec.high(lintGutter())
 
 function withinDocument(view: EditorView, diagnostics: Diagnostic[]): Diagnostic[] {
   const length = view.state.doc.length
