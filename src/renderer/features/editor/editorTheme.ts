@@ -4,6 +4,7 @@ import { EditorView } from '@codemirror/view'
 import { tags } from '@lezer/highlight'
 import type { ColorTheme } from '../../theme/colorThemes'
 import { isDarkTheme } from '../../theme/themeDerivation'
+import { indentGuides } from './indentGuides'
 
 export const colorThemeCompartment = new Compartment()
 
@@ -85,7 +86,7 @@ function codeHighlighting(theme: ColorTheme): Extension {
 }
 
 export function colorThemeExtension(theme: ColorTheme): Extension {
-  return [editorChrome(theme), codeHighlighting(theme)]
+  return [editorChrome(theme), codeHighlighting(theme), indentGuides(theme)]
 }
 
 export const editorLayoutTheme = EditorView.theme(

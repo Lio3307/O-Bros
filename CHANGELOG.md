@@ -237,6 +237,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ### Added
 
+- **Indent guides in the editor.** Thin lines show each indent level, like in Neovim, so you can see which lines belong together. The block your cursor is in is highlighted in the theme's color, and the lines continue through blank lines.
 Git
 - **History** list in the Changes panel with the latest commits of the current branch: message, short hash, author, age, branches and tags. Open a commit to see its files, and select a file to read the diff of that commit.
 - **Graph** view in the main area (press Graph under History, or use the Changes / Graph tabs). It draws branches and merges as colored lanes, with the message, branch and tag labels, author, hash and age. A **Branch** dropdown picks All branches or one branch, and the list is read from the repository.
