@@ -2,8 +2,8 @@ import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { accountFolderSuffix } from '../../../shared/accountFolderName'
 import { friendlyErrorMessage } from '../../../shared/friendlyError'
-import { formatAge, formatResetsIn } from '../../../shared/time'
-import type { DetectedAccount, ProviderId, UsageWindow } from '../../../shared/types'
+import { formatAge } from '../../../shared/time'
+import type { DetectedAccount, ProviderId } from '../../../shared/types'
 import { selectActiveAccount, useAccountsStore } from '../../state/accountsStore'
 import { useIsProviderPresent } from '../../state/presentProviders'
 import { openAccountSignInTerminal } from '../../state/openTerminal'
@@ -12,9 +12,7 @@ import { toast } from '../../state/toastStore'
 import { useUsageStore } from '../../state/usageStore'
 import { AccountsRefreshButton } from '../../ui/AccountsRefreshButton'
 import { ProviderMark } from '../../ui/ProviderMark'
-import { UsageBar } from '../../ui/UsageBar'
-import { isUsageHigh } from '../../ui/usageText'
-import { cn } from '../../ui/cn'
+import { UsageCell } from '../../ui/UsageCell'
 import { useNow } from '../../ui/useNow'
 import './settings.css'
 import './settingsControls.css'
@@ -22,6 +20,7 @@ import { Button } from '../../ui/Button'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { OtherAgentLogins } from './OtherAgentLogins'
 import { CustomProviders } from './providers/CustomProviders'
+import { PlanProviderBlocks } from './providers/PlanProviderBlocks'
 
 const USAGE_TEXT_REFRESH_MS = 30_000
 const SYSTEM_DEFAULT_TITLE = 'System default'
@@ -47,24 +46,6 @@ const providerSections: ProviderSection[] = [
     signInCommand: 'codex login'
   }
 ]
-
-function UsageCell({ label, window, now }: { label: string; window: UsageWindow | null; now: number }) {
-  return (
-    <div className="account-usage">
-      <span className="account-usage-label">{label}</span>
-      {window === null ? (
-        <span className="muted">—</span>
-      ) : (
-        <span className={cn('usage-cell', isUsageHigh(window.percentUsed) && 'usage-high')}>
-          <UsageBar percentUsed={window.percentUsed} tone={isUsageHigh(window.percentUsed) ? 'danger' : 'normal'} />
-          <span className={isUsageHigh(window.percentUsed) ? undefined : 'muted'}>
-            {window.percentUsed}% · {formatResetsIn(window.resetsAt, now)}
-          </span>
-        </span>
-      )}
-    </div>
-  )
-}
 
 function accountSubtitle(account: DetectedAccount): string {
   if (!account.isSystemDefault) {
@@ -233,6 +214,7 @@ export function ProviderAccountsPage() {
       {sections.map((section) => (
         <ProviderBlock key={section.provider} section={section} />
       ))}
+      <PlanProviderBlocks />
       <OtherAgentLogins />
       <CustomProviders />
     </SettingsPageLayout>

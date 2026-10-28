@@ -1,5 +1,5 @@
 import { Activity } from 'lucide-react'
-import { countByHour, summarizeToday, timeByAgent } from '../../../../shared/activityStats'
+import { activityByHour, summarizeToday, timeByAgent } from '../../../../shared/activityStats'
 import { StatusDot } from '../../../ui/StatusDot'
 import { LoadingText } from '../../../ui/LoadingText'
 import { useNow } from '../../../ui/useNow'
@@ -58,7 +58,7 @@ export function ActivityMonitor() {
       </section>
 
       <div className="monitor-columns">
-        <HourlyChart counts={countByHour(entries, now)} currentHour={new Date(now).getHours()} />
+        <HourlyChart hours={activityByHour(entries, now)} currentHour={new Date(now).getHours()} />
         <AgentTimeBars agents={timeByAgent(entries, liveAgents, now)} />
       </div>
 

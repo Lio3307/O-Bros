@@ -11,6 +11,12 @@ export interface DaySummary {
   teamJoined: number
 }
 
+export interface HourActivity {
+  sessions: number
+  gitActions: number
+  teamMembers: number
+}
+
 export interface AgentTime {
   agentCommand: string
   timeMs: number
@@ -56,13 +62,58 @@ export function summarizeToday(entries: ActivityEntry[], live: LiveAgent[], now:
   }
 }
 
-export function countByHour(entries: ActivityEntry[], now: number): number[] {
-  const counts = Array.from({ length: HOURS_PER_DAY }, () => 0)
+function emptyHour(): HourActivity {
+  return { sessions: 0, gitActions: 0, teamMembers: 0 }
+}
+
+function addToHour(hour: HourActivity, entry: ActivityEntry): void {
+  if (isSessionStart(entry)) {
+    hour.sessions += 1
+  } else if (entry.kind === 'git') {
+    hour.gitActions += 1
+  } else if (isTeamJoin(entry)) {
+    hour.teamMembers += 1
+  }
+}
+
+export function activityByHour(entries: ActivityEntry[], now: number): HourActivity[] {
+  const hours = Array.from({ length: HOURS_PER_DAY }, emptyHour)
   const dayStart = startOfDay(now)
   for (const entry of entriesOfToday(entries, now)) {
-    counts[Math.min(Math.floor((entry.at - dayStart) / HOUR_MS), HOURS_PER_DAY - 1)] += 1
+    addToHour(hours[Math.min(Math.floor((entry.at - dayStart) / HOUR_MS), HOURS_PER_DAY - 1)], entry)
   }
-  return counts
+  return hours
+}
+
+export function totalOfHour(hour: HourActivity): number {
+  return hour.sessions + hour.gitActions + hour.teamMembers
+}
+
+export function sumOfHours(hours: HourActivity[]): HourActivity {
+  return hours.reduce(
+    (sum, hour) => ({
+      sessions: sum.sessions + hour.sessions,
+      gitActions: sum.gitActions + hour.gitActions,
+      teamMembers: sum.teamMembers + hour.teamMembers
+    }),
+    emptyHour()
+  )
+}
+
+function counted(count: number, one: string, many: string): string | null {
+  if (count === 0) {
+    return null
+  }
+  return count === 1 ? `1 ${one}` : `${count} ${many}`
+}
+
+export function describeActivity(hour: HourActivity): string {
+  const parts = [
+    counted(hour.sessions, 'agent session started', 'agent sessions started'),
+    counted(hour.gitActions, 'git action', 'git actions'),
+    counted(hour.teamMembers, 'team member summoned', 'team members summoned')
+  ].filter((part): part is string => part !== null)
+  return parts.length === 0 ? 'nothing happened' : parts.join(', ')
 }
 
 export function timeByAgent(entries: ActivityEntry[], live: LiveAgent[], now: number): AgentTime[] {

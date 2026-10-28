@@ -130,6 +130,13 @@
   gap: 12px;
 }
 
+.hour-readout {
+  min-height: 18px;
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--color-text);
+}
+
 .hour-bars {
   display: flex;
   align-items: flex-end;
@@ -144,33 +151,57 @@
   align-items: flex-end;
   height: 100%;
   cursor: default;
+  border-radius: var(--radius);
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+
+.hour-slot-hovered {
+  background: var(--color-hover);
 }
 
 .hour-bar {
+  display: flex;
+  flex-direction: column-reverse;
   width: 100%;
-  min-height: 2px;
-  background: var(--color-muted);
+  min-height: 3px;
+  overflow: hidden;
   border-radius: var(--radius) var(--radius) 0 0;
+  transition:
+    height var(--motion-slow) var(--ease-out),
+    filter var(--motion-fast) var(--ease-out);
+}
+
+.hour-slot-hovered .hour-bar {
+  filter: brightness(1.25);
+}
+
+.hour-part {
+  flex-basis: 0;
+  min-height: 2px;
+}
+
+.hour-part-session {
+  background: var(--color-info);
+}
+
+.hour-part-git {
+  background: var(--color-warning);
+}
+
+.hour-part-team {
+  background: var(--color-success);
 }
 
 .hour-bar-empty {
-  height: 2px;
-  background: var(--color-border);
-  border-radius: 0;
-}
-
-.hour-bar-now {
-  background: var(--color-strong);
-}
-
-.hour-bar-hovered {
-  background: var(--color-text);
-  outline: 1px solid var(--color-strong);
+  height: 1px;
+  min-height: 1px;
+  background: transparent;
 }
 
 .hour-axis {
   position: relative;
   height: 14px;
+  margin-top: 4px;
   font-size: 11px;
   color: var(--color-faint);
 }
@@ -178,6 +209,35 @@
 .hour-axis span {
   position: absolute;
   top: 0;
+}
+
+.hour-axis .hour-axis-now {
+  font-weight: 600;
+  color: var(--color-muted);
+  transform: translateX(-50%);
+}
+
+.hour-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 12px 0 0;
+  padding: 0;
+  font-size: 11px;
+  color: var(--color-muted);
+  list-style: none;
+}
+
+.hour-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hour-legend-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius);
 }
 
 .agent-bars {
@@ -308,4 +368,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.hour-tooltip-title {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--color-strong);
+}
+
+.hour-tooltip-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
