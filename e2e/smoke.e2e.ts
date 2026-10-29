@@ -105,3 +105,22 @@ test('hides and shows the terminals of a folder', async () => {
   await app.window.getByTitle('Show its terminals').click()
   await expect(folderSessions).toHaveCount(1)
 })
+
+test('sessions stay in the sidebar when another folder is selected, and clicking one opens its folder', async () => {
+  await mkdir(join(app.projectFolder, 'web'))
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+  await selectSampleProject()
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  const rootSession = app.window.locator('.root-block .row-session').first()
+  await expect(rootSession).toBeVisible({ timeout: 15_000 })
+
+  await app.window.getByTitle(join(app.projectFolder, 'web'), { exact: true }).click()
+  await expect(app.window.locator('.tab')).toHaveCount(0)
+  await expect(rootSession).toBeVisible()
+
+  await rootSession.click()
+  await expect(app.window.getByTitle(app.projectFolder, { exact: true })).toHaveAttribute('aria-current', 'true')
+  await expect(app.window.locator('.tab')).toHaveCount(1)
+  await expect(rootSession).toHaveClass(/row-selected/)
+})

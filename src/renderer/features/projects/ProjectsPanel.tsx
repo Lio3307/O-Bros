@@ -9,7 +9,6 @@ import { isPrimaryBranch } from '../../../shared/gitSync'
 import { isPathInside } from '../../../shared/paths'
 import { formatAge } from '../../../shared/time'
 import type { ProjectRoot, TeamMember } from '../../../shared/types'
-import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { useCollapsedRootsStore } from '../../state/collapsedRootsStore'
 import { useAttentionStore } from '../../state/attentionStore'
 import { agentStatusOf, programOf, shortAgentName, shownLaunchers, type AgentLauncher } from '../../../shared/agentLaunchers'
@@ -24,6 +23,7 @@ import { toast } from '../../state/toastStore'
 import { isTerminalTab, useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { PanelHeader } from '../../ui/PanelHeader'
 import { ScriptsList, useProjectScripts } from './ScriptsList'
+import { belongsToProject } from '../terminal/projectTabs'
 import { TerminalTabIcon } from '../terminal/TerminalTabIcon'
 import { placeSessions } from './sessionPlacement'
 import { useLiveRefresh } from '../../ui/useLiveRefresh'
@@ -49,8 +49,10 @@ function BranchLabel({ branch }: { branch: string }) {
   )
 }
 
-function SessionRow({ session, now }: { session: TerminalTab; now: number }) {
+function SessionRow({ session, folderPath, now }: { session: TerminalTab; folderPath: string; now: number }) {
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
+  const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
+  const selectProject = useProjectsStore((state) => state.selectProject)
   const isShowingMember = useTeamStore((state) => state.shownMemberId !== null)
   const members = useTeamStore((state) => state.members)
   const sessionMembers = membersOfTab(members, Object.keys(session.panes))
@@ -61,7 +63,12 @@ function SessionRow({ session, now }: { session: TerminalTab; now: number }) {
       type="button"
       className={isSelected ? 'row row-session row-selected' : 'row row-session'}
       title={sessionMembers.length === 0 ? undefined : `${session.title} · lead of ${sessionMembers.length} team member${sessionMembers.length === 1 ? '' : 's'}`}
-      onClick={() => showTab(session.id)}
+      onClick={() => {
+        if (!belongsToProject(session, activeProjectPath)) {
+          selectProject(folderPath)
+        }
+        showTab(session.id)
+      }}
     >
       <TerminalTabIcon tab={session} />
       <span className="row-name">{session.title}</span>
@@ -108,7 +115,7 @@ function LeadClosedMembers({ orphans, now }: { orphans: TeamMember[]; now: numbe
 
 const VISIBLE_NESTED_SESSIONS = 3
 
-function FolderSessions({ sessions, now }: { sessions: TerminalTab[]; now: number }) {
+function FolderSessions({ sessions, folderPath, now }: { sessions: TerminalTab[]; folderPath: string; now: number }) {
   const [isExpanded, setIsExpanded] = useState(false)
   if (sessions.length === 0) {
     return null
@@ -119,14 +126,14 @@ function FolderSessions({ sessions, now }: { sessions: TerminalTab[]; now: numbe
   return (
     <div className="folder-sessions">
       {shown.map((session) => (
-        <SessionRow key={session.id} session={session} now={now} />
+        <SessionRow key={session.id} session={session} folderPath={folderPath} now={now} />
       ))}
       <ShowMoreToggle hiddenCount={hiddenCount} canShowFewer={isExpanded && sessions.length > VISIBLE_NESTED_SESSIONS} onChange={setIsExpanded} />
     </div>
   )
 }
 
-function RootSessions({ sessions, now }: { sessions: TerminalTab[]; now: number }) {
+function RootSessions({ sessions, rootPath, now }: { sessions: TerminalTab[]; rootPath: string; now: number }) {
   if (sessions.length === 0) {
     return null
   }
@@ -134,7 +141,7 @@ function RootSessions({ sessions, now }: { sessions: TerminalTab[]; now: number 
     <div className="root-section">
       <h3 className="section-label">Open sessions</h3>
       {sessions.map((session) => (
-        <SessionRow key={session.id} session={session} now={now} />
+        <SessionRow key={session.id} session={session} folderPath={rootPath} now={now} />
       ))}
     </div>
   )
@@ -209,7 +216,7 @@ function FolderRow({ folder, sessions, hasFinished, now }: FolderRowProps) {
           {hasFinished && <span className="tab-attention-dot" title="A terminal here finished while you were away" />}
         </button>
       </div>
-      {!isCollapsed && <FolderSessions sessions={sessions} now={now} />}
+      {!isCollapsed && <FolderSessions sessions={sessions} folderPath={folder.path} now={now} />}
     </>
   )
 }
@@ -267,12 +274,12 @@ function RootBlock({ root }: { root: ProjectRoot }) {
   const toggleCollapsed = useCollapsedRootsStore((state) => state.toggle)
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const selectProject = useProjectsStore((state) => state.selectProject)
-  const projectTabs = useActiveProjectTabs()
+  const tabs = useWorkspaceStore((state) => state.tabs)
   const now = useNow(SESSION_AGE_REFRESH_MS)
   const allRoots = useProjectsStore((state) => state.roots)
   const nestedRootPaths = allRoots.filter((other) => other.path !== root.path && isPathInside(other.path, root.path)).map((other) => other.path)
   const placement = placeSessions(
-    projectTabs.filter(isTerminalTab),
+    tabs.filter(isTerminalTab),
     root.path,
     root.folders.map((folder) => folder.path),
     nestedRootPaths
@@ -312,7 +319,7 @@ function RootBlock({ root }: { root: ProjectRoot }) {
       {root.isMissing && <MissingRootNotice root={root} />}
       {!isCollapsed && (
         <>
-          <RootSessions sessions={placement.atRoot} now={now} />
+          <RootSessions sessions={placement.atRoot} rootPath={root.path} now={now} />
           <LeadClosedMembers orphans={orphans} now={now} />
           <FolderList root={root} sessionsByFolder={placement.byFolderPath} now={now} />
           <ScriptsList rootPath={root.path} project={scripts} />

@@ -49,7 +49,7 @@ On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → 
 - Drag tabs to reorder them.
 - The arrow next to the split buttons lists every tab.
 - Closing a file with unsaved changes asks first.
-- **Tabs follow the selected project.** The tab bar and Open sessions show only the terminals and files inside the selected folder. Terminals of other folders keep running in the background and come back when you select that folder again. A terminal without a folder shows everywhere.
+- **Tabs follow the selected project.** The tab bar shows only the terminals and files inside the selected folder. Terminals of other folders keep running in the background and come back when you select that folder again. Projects keeps listing every open session under its folder; clicking one opens its folder. A terminal without a folder shows everywhere.
 - A dot next to a folder in the Projects panel means a terminal there finished while you were in another folder.
 - **Close other tabs** only closes the tabs of the selected project.
 - Your tabs, splits and active tab come back when you reopen the app. Restored terminals are plain shells in the same folder; they do not re-run `claude` or `codex`.
@@ -178,7 +178,7 @@ The Activity page is one full-width monitor (no side list):
 ## Projects panel
 
 - **Agent buttons** at the top start a command-line agent in the selected folder. At most two are shown, plus the plain terminal button. None are shown at first, because every computer has different agents. Open Settings → Agents (or press the Agents button), add the CLIs you use, and tick **Show** on up to two.
-- Open sessions of the selected folder, with how long ago each started.
+- Open sessions under their folder, with how long ago each started. They stay listed when another folder is selected.
 - Folders in each project with their git branch. Feature branches are shown in white. New folders and branch switches made in a terminal show up within a few seconds.
 - **Scripts:** the selected project's `package.json` scripts. Press one to run it in a new terminal. The package manager (npm, pnpm, yarn or bun) is chosen from the lock file.
 
