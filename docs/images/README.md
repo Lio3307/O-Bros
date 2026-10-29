@@ -6,7 +6,8 @@ The images in this folder are shown on the main README. Add your own with these 
 |---|---|
 | `workspace.png` | Projects with a lead agent and its wot team members nested under it |
 | `team.png` | A team member opened in the main area, asking a question |
-| `editor.png` | A TypeScript file in the editor with a lint underline and the Problems count in the status bar |
+| `editor.png` | A TypeScript file in the editor with nested blocks (indent guides), a type error underline and the Problems count in the status bar |
+| `appearance.png` | The editor over Your image (Settings → Appearance) with the Midnight tone |
 | `changes.png` | The Changes panel with staged and unstaged files and a side-by-side diff |
 | `history.png` | History with a conversation continued in another agent (thread chip and Continue with…) |
 | `storage.png` | Settings → Storage and memory, the universal history section |

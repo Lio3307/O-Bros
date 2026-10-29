@@ -26,7 +26,11 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 
 | Editor with linting | Provider accounts |
 |---|---|
-| ![The code editor](docs/images/editor.png) | ![Provider accounts settings](docs/images/settings.png) |
+| ![The code editor with indent guides and a type error](docs/images/editor.png) | ![Provider accounts settings](docs/images/settings.png) |
+
+**Your picture and tone:** your own image behind the app, with the Midnight tone
+
+![The editor over a picture with the Midnight tone](docs/images/appearance.png)
 
 ## What you get
 
