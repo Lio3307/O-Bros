@@ -5,6 +5,7 @@ const GROK_TOKEN = 'fake-grok-token-123'
 const CLINE_TOKEN = 'fake-cline-token-456'
 const HOUR_MS = 60 * 60 * 1000
 const FAKE_FREEBUFF: Record<string, string> = process.platform === 'win32' ? { 'freebuff.cmd': '@echo off\r\n' } : { freebuff: '#!/bin/sh\n' }
+const FAKE_CODEX: Record<string, string> = process.platform === 'win32' ? { 'codex.cmd': '@echo off\r\n' } : { codex: '#!/bin/sh\n' }
 
 let app: RunningApp
 
@@ -106,6 +107,7 @@ test('hides ClinePass for a Cline account without the plan, and says when the Gr
   test.setTimeout(60_000)
   app = await launchApp({
     separateHome: true,
+    binFiles: FAKE_CODEX,
     homeFiles: {
       '.grok/auth.json': JSON.stringify({ 'https://auth.x.ai::client': { key: GROK_TOKEN, expires_at: '2020-01-01T00:00:00Z' } }),
       '.cline/data/settings/providers.json': JSON.stringify({ providers: { cline: { settings: { auth: { accessToken: CLINE_TOKEN } } } } })

@@ -30,8 +30,8 @@ async function rightClickTerminal(): Promise<void> {
   await app.window.mouse.click(box.x + 200, box.y + 100, { button: 'right' })
 }
 
-function terminalText(): Promise<string> {
-  return app.window.locator('.xterm-rows').last().innerText()
+async function terminalText(): Promise<string> {
+  return (await app.window.locator('.xterm-rows').last().innerText()).split('\n').join('')
 }
 
 async function copyScreenshot(): Promise<void> {
@@ -49,7 +49,7 @@ async function pastedImages(): Promise<string[]> {
 
 async function pastedPathIsShown(): Promise<boolean> {
   const [image] = await pastedImages()
-  const shown = (await terminalText()).split('\n').join('')
+  const shown = await terminalText()
   return image !== undefined && shown.includes(image.slice(image.lastIndexOf('image-')))
 }
 
