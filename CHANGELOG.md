@@ -43,6 +43,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Svelte and Astro files have colors.** Their markup, their `<script>` (also `lang="ts"`) and their `<style>` (also `lang="scss"`, `"less"` and `"postcss"`) are colored with the HTML, TypeScript and CSS support O-BROS already has. Template expressions such as `{#if}` stay plain.
 
 ### Fixed
+- **Publishing a branch in a repository with no remote** showed the error while a git command was still running in the background, which could keep the folder locked on Windows for a moment. The checks now run one after another.
 - **`console.` showed no suggestions inside script blocks**, for example in a Svelte, Vue, Astro or HTML file, and Ctrl+Space did nothing or offered unrelated words. Wherever no language server covers JavaScript, standard objects such as `console`, `Math`, `JSON`, `Object`, `Promise` and `document` now list their real methods and properties, and words from other files are no longer offered right after a dot.
 - **Indent guide colors** now come from the theme's text color, so the lines keep the same contrast on dark, light and Transparent backgrounds.
 - **In the editor, code looked far from its line numbers.** An empty column for error markers sat between the numbers and the code, with nothing marking where the code begins. Error markers now sit left of the line numbers, like in most editors, and a thin line separates the line numbers from the code.

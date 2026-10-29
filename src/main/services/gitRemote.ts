@@ -47,6 +47,7 @@ export async function pushCurrentBranch(repoPath: string): Promise<void> {
     await runRemoteGit(repoPath, ['push'])
     return
   }
-  const [branch, remote] = await Promise.all([currentBranchName(repoPath), remoteToPublishTo(repoPath)])
+  const remote = await remoteToPublishTo(repoPath)
+  const branch = await currentBranchName(repoPath)
   await runRemoteGit(repoPath, ['push', '--set-upstream', remote, branch])
 }
