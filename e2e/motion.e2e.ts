@@ -118,7 +118,12 @@ test('smooth movement glides the cursor and the current line when moving, stays 
   await app.window.keyboard.press('ArrowDown')
   await expect.poll(lineTop).toBeGreaterThan(before)
 
+  await app.window.keyboard.press('ControlOrMeta+End')
+  await expect(app.window.locator('.cm-caretTrail').first()).toBeAttached()
+  await expect(app.window.locator('.cm-caretTrail')).toHaveCount(0)
+
   await app.window.keyboard.type('x')
+  expect(await app.window.locator('.cm-caretTrail').count()).toBe(0)
   expect(await caret.evaluate((element) => getComputedStyle(element).transitionDuration)).toBe('0s')
   await app.window.keyboard.press('ArrowDown')
   await expect.poll(() => caret.evaluate((element) => getComputedStyle(element).transitionDuration)).not.toBe('0s')

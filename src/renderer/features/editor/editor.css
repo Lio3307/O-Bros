@@ -54,3 +54,18 @@
     opacity: 0;
   }
 }
+
+@keyframes caret-trail-fade {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-editor .cm-caretTrail {
+    display: none;
+  }
+}

@@ -60,7 +60,7 @@ export function TextCursorSetting() {
       </label>
       <label className="toggle-row">
         <input type="checkbox" role="switch" checked={settings.cursorGlides} onChange={(event) => settings.setCursorGlides(event.target.checked)} />
-        <span>Smooth movement: the cursor and the current line glide when you move, while typing stays instant</span>
+        <span>Smooth movement: the cursor glides and leaves a short fading trail when you move, while typing stays instant</span>
       </label>
     </SettingsSection>
   )

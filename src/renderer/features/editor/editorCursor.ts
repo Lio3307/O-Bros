@@ -1,6 +1,7 @@
 import { Compartment, Prec, type Extension } from '@codemirror/state'
 import { drawSelection, EditorView } from '@codemirror/view'
 import type { CursorShape, EditorSettings } from './editorSettings'
+import { caretTrail } from './caretTrail'
 import { smoothCaret } from './smoothCaret'
 
 export type CursorSettings = Pick<EditorSettings, 'cursorShape' | 'cursorColor' | 'cursorBlinks' | 'cursorGlides' | 'vimMode'>
@@ -25,6 +26,7 @@ export function cursorExtension(settings: CursorSettings): Extension {
   return [
     Prec.highest(EditorView.theme(rules)),
     settings.cursorBlinks ? [] : drawSelection({ cursorBlinkRate: 0 }),
-    glides ? Prec.highest(smoothCaret(shape, settings.cursorBlinks)) : []
+    glides ? Prec.highest(smoothCaret(shape, settings.cursorBlinks)) : [],
+    settings.cursorGlides ? caretTrail(settings.cursorShape !== 'line' || settings.vimMode) : []
   ]
 }
