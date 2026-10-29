@@ -26,8 +26,15 @@ test('the close question names what is still running instead of raw command line
 
   await app.application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].close())
   const dialog = app.window.getByRole('dialog')
-  await expect(dialog).toContainText('Close o-bros?', { timeout: 30_000 })
-  await expect(dialog).toContainText('fake-agent is still running. It also started helper-server.')
+  await expect(dialog).toContainText('Close O-BROS?', { timeout: 30_000 })
+  const row = dialog.locator('.close-task')
+  await expect(row.locator('.modal-item-title')).toHaveText('fake-agent')
+  await expect(row.locator('.close-task-folder')).toHaveText('sample-project')
+  await expect(row.locator('.close-task-detail')).toHaveText('Also running helper-server.')
+  await expect(dialog).not.toContainText(' / ')
+  if (process.env.APPEARANCE_SHOTS !== undefined) {
+    await app.window.screenshot({ path: `${process.env.APPEARANCE_SHOTS}/close-dialog.png` })
+  }
   const text = (await dialog.textContent()) ?? ''
   expect(text).not.toContain('node.exe')
   expect(text).not.toContain(':\\')

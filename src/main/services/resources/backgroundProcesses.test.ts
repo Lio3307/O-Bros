@@ -3,7 +3,7 @@ import { describeRunningPrograms, listBackgroundProcesses } from './backgroundPr
 import type { ProcessEntry } from './processTable'
 
 function entry(pid: number, name: string, commandLine = name, parentPid = 0): ProcessEntry {
-  return { pid, parentPid, workingSetBytes: 0, privateBytes: 0, cpuTimeMs: null, cpuPercent: null, name, commandLine }
+  return { pid, parentPid, workingSetBytes: 0, privateBytes: 0, cpuTimeMs: null, cpuPercent: null, startedAt: null, name, commandLine }
 }
 
 describe('listBackgroundProcesses', () => {

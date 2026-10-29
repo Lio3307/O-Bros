@@ -5,7 +5,7 @@ import { agentAncestorOf, agentProgramOf, isAgentProcess } from './agentCaller'
 const PROGRAMS = ['claude', 'codex', 'gemini']
 
 function entry(pid: number, parentPid: number, name: string, commandLine: string): ProcessEntry {
-  return { pid, parentPid, name, commandLine, workingSetBytes: 0, privateBytes: 0, cpuTimeMs: null, cpuPercent: null }
+  return { pid, parentPid, name, commandLine, workingSetBytes: 0, privateBytes: 0, cpuTimeMs: null, cpuPercent: null, startedAt: null }
 }
 
 describe('isAgentProcess', () => {
@@ -44,5 +44,10 @@ describe('agentAncestorOf', () => {
 
   it('finds nothing when the user typed git in the shell', () => {
     expect(agentAncestorOf(table, 50, 10, PROGRAMS)).toBeNull()
+  })
+
+  it('does not climb to a newer process that got the number of a parent that ended', () => {
+    const reused = [{ ...entry(20, 1, 'claude.exe', 'claude.exe'), startedAt: 500 }, { ...entry(40, 20, 'electron.exe', 'electron.exe git-guard.cjs commit'), startedAt: 100 }]
+    expect(agentAncestorOf(reused, 40, null, PROGRAMS)).toBeNull()
   })
 })

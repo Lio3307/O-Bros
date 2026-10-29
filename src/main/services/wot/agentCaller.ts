@@ -1,4 +1,4 @@
-import { readProcessTable, type ProcessEntry } from '../resources/processTable'
+import { readProcessTable, startedBefore, type ProcessEntry } from '../resources/processTable'
 import { terminalPidOf } from '../ptyManager'
 import { terminalFactsOf } from '../terminalFacts'
 import type { AgentCatalog } from './agentCatalog'
@@ -73,7 +73,8 @@ export function agentAncestorOf(
     if (current.pid !== startPid && isAgentProcess(current, programs)) {
       return current
     }
-    current = current.parentPid === current.pid ? undefined : byPid.get(current.parentPid)
+    const parent = current.parentPid === current.pid ? undefined : byPid.get(current.parentPid)
+    current = parent === undefined || startedBefore(current, parent) ? undefined : parent
     steps += 1
   }
   return null

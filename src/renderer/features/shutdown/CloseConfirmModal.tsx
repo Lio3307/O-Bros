@@ -1,38 +1,41 @@
+import { Folder } from 'lucide-react'
 import { agentLabelOf, isAgentCommand } from '../../../shared/agentLaunchers'
+import { lastPathSegment } from '../../../shared/paths'
 import { readableList } from '../../../shared/readableList'
 import type { RunningTask } from '../../../shared/types'
 import { useAgentCatalogStore } from '../../state/agentCatalogStore'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
-import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
+import { isTerminalTab, useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { useCloseRequestStore } from '../../state/closeRequestStore'
 import { Button } from '../../ui/Button'
 import { Modal } from '../../ui/Modal'
-
-function useTerminalNames(): (paneId: string) => string {
-  const tabs = useWorkspaceStore((state) => state.tabs)
-
-  return (paneId) => {
-    for (const tab of tabs.filter(isTerminalTab)) {
-      const pane = tab.panes[paneId]
-      if (pane !== undefined) {
-        return pane.title === tab.title ? tab.title : `${tab.title} / ${pane.title}`
-      }
-    }
-    return 'Terminal'
-  }
-}
+import { TerminalTabIcon } from '../terminal/TerminalTabIcon'
+import './closeConfirmModal.css'
 
 const MAX_HELPERS_SHOWN = 3
 
-function useTaskSummary(): (task: RunningTask) => string {
+function TaskRow({ task }: { task: RunningTask }) {
+  const tabs = useWorkspaceStore((state) => state.tabs)
   const launchers = useAgentLaunchersStore((state) => state.launchers)
   const registry = useAgentCatalogStore((state) => state.registry)
+  const tab = tabs.filter(isTerminalTab).find((candidate: TerminalTab) => task.paneId in candidate.panes)
+  const cwd = tab?.panes[task.paneId].cwd ?? tab?.cwd ?? null
+  const folder = cwd === null ? 'Home' : lastPathSegment(cwd)
+  const program = task.program === null ? 'A program' : isAgentCommand(task.program, launchers, registry) ? agentLabelOf(task.program, launchers) : task.program
 
-  return (task) => {
-    const program = task.program === null ? null : isAgentCommand(task.program, launchers, registry) ? agentLabelOf(task.program, launchers) : task.program
-    const helpers = task.helpers.length === 0 ? '' : ` It also started ${readableList(task.helpers, MAX_HELPERS_SHOWN)}.`
-    return program === null ? `A program is still running.${helpers}` : `${program} is still running.${helpers}`
-  }
+  return (
+    <li className="modal-item close-task">
+      <span className="close-task-head">
+        {tab !== undefined && <TerminalTabIcon tab={tab} />}
+        <span className="modal-item-title">{program}</span>
+        <span className="close-task-folder" title={cwd ?? undefined}>
+          <Folder size={12} />
+          {folder}
+        </span>
+      </span>
+      {task.helpers.length > 0 && <span className="muted close-task-detail">Also running {readableList(task.helpers, MAX_HELPERS_SHOWN)}.</span>}
+    </li>
+  )
 }
 
 export function CloseConfirmModal() {
@@ -40,8 +43,6 @@ export function CloseConfirmModal() {
   const isStopping = useCloseRequestStore((state) => state.isStopping)
   const cancel = useCloseRequestStore((state) => state.cancel)
   const confirm = useCloseRequestStore((state) => state.confirm)
-  const terminalName = useTerminalNames()
-  const taskSummary = useTaskSummary()
 
   if (pending === null) {
     return null
@@ -52,7 +53,7 @@ export function CloseConfirmModal() {
 
   return (
     <Modal
-      title="Close o-bros?"
+      title="Close O-BROS?"
       titleId="close-modal-title"
       onEscape={isStopping ? undefined : cancel}
       actions={
@@ -77,10 +78,7 @@ export function CloseConfirmModal() {
           <h3 className="section-label modal-label">Still running</h3>
           <ul className="modal-list">
             {pending.tasks.map((task) => (
-              <li key={task.paneId} className="modal-item">
-                <span className="modal-item-title">{terminalName(task.paneId)}</span>
-                <span className="muted">{taskSummary(task)}</span>
-              </li>
+              <TaskRow key={task.paneId} task={task} />
             ))}
           </ul>
         </div>

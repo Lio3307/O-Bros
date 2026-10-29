@@ -18,6 +18,7 @@ export interface ProcessEntry {
   privateBytes: number
   cpuTimeMs: number | null
   cpuPercent: number | null
+  startedAt: number | null
   name: string
   commandLine: string
 }
@@ -31,10 +32,11 @@ interface WindowsProcessRow {
   PrivatePageCount: number | null
   KernelModeTime: number | null
   UserModeTime: number | null
+  Started: number | null
 }
 
 const WINDOWS_QUERY =
-  'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CommandLine,WorkingSetSize,PrivatePageCount,KernelModeTime,UserModeTime | ConvertTo-Json -Compress'
+  'Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name,CommandLine,WorkingSetSize,PrivatePageCount,KernelModeTime,UserModeTime,@{n="Started";e={if ($_.CreationDate) { [long][math]::Floor($_.CreationDate.ToFileTimeUtc() / 10000) }}} | ConvertTo-Json -Compress'
 
 export function withoutControlCharacters(text: string): string {
   let cleaned = ''
@@ -56,6 +58,7 @@ async function readWindowsProcessTable(): Promise<ProcessEntry[]> {
     privateBytes: row.PrivatePageCount ?? 0,
     cpuTimeMs: ((row.KernelModeTime ?? 0) + (row.UserModeTime ?? 0)) / HUNDRED_NANOSECONDS_PER_MILLISECOND,
     cpuPercent: null,
+    startedAt: row.Started ?? null,
     name: row.Name ?? '',
     commandLine: row.CommandLine ?? row.Name ?? ''
   }))
@@ -80,6 +83,7 @@ async function readUnixProcessTable(): Promise<ProcessEntry[]> {
         privateBytes: bytes,
         cpuTimeMs: null,
         cpuPercent: Number(cpuPercent),
+        startedAt: null,
         name: commandParts[0] ?? '',
         commandLine: commandParts.join(' ')
       }
@@ -96,6 +100,10 @@ export function readProcessTable(): Promise<ProcessEntry[]> {
     })
   }
   return tableInFlight
+}
+
+export function startedBefore(child: ProcessEntry, parent: ProcessEntry): boolean {
+  return child.startedAt !== null && parent.startedAt !== null && child.startedAt < parent.startedAt
 }
 
 export function collectProcessTree(table: ProcessEntry[], rootPid: number): ProcessEntry[] {
@@ -116,7 +124,7 @@ export function collectProcessTree(table: ProcessEntry[], rootPid: number): Proc
   while (pending.length > 0) {
     const current = pending.pop() as ProcessEntry
     tree.push(current)
-    pending.push(...(childrenByParent.get(current.pid) ?? []).filter((child) => child.pid !== current.pid))
+    pending.push(...(childrenByParent.get(current.pid) ?? []).filter((child) => child.pid !== current.pid && !startedBefore(child, current)))
   }
   return tree
 }
