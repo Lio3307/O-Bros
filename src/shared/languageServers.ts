@@ -7,6 +7,7 @@ export interface LanguageServerDefinition {
   args: string[]
   projectLocal: boolean
   install: string
+  initializationOptions: Record<string, unknown> | null
 }
 
 export type LanguageServerSource = 'project' | 'path' | 'custom'
@@ -34,6 +35,7 @@ export interface LanguageServerSession {
   serverId: string
   serverTitle: string
   rootUri: string
+  initializationOptions: Record<string, unknown> | null
 }
 
 export interface RunningLanguageServer {
@@ -80,7 +82,8 @@ export function parseLanguageServers(raw: unknown): LanguageServerDefinition[] {
         command: entry.command,
         args: entry.args,
         projectLocal: entry.projectLocal === true,
-        install: typeof entry.install === 'string' ? entry.install : ''
+        install: typeof entry.install === 'string' ? entry.install : '',
+        initializationOptions: isRecord(entry.initializationOptions) ? entry.initializationOptions : null
       }
     ]
   })

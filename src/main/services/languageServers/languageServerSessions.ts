@@ -144,7 +144,7 @@ export async function startLanguageServer(
     return running.info
   }
   const session: Session = {
-    info: { sessionId: randomUUID(), serverId: server.id, serverTitle: server.title, rootUri: pathToFileURL(workspaceRoot).href },
+    info: { sessionId: randomUUID(), serverId: server.id, serverTitle: server.title, rootUri: pathToFileURL(workspaceRoot).href, initializationOptions: server.initializationOptions },
     key,
     rootPath: workspaceRoot,
     child: startProcess(server, workspaceRoot),

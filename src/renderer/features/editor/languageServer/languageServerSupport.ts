@@ -49,6 +49,7 @@ function clientFor(session: LanguageServerSession): LSPClient {
   }
   const client = new LSPClient({
     rootUri: session.rootUri,
+    initializationOptions: session.initializationOptions ?? undefined,
     timeout: REQUEST_TIMEOUT_MS,
     sanitizeHTML: sanitizeHtml,
     workspace: (owner) => new ObrosWorkspace(owner),

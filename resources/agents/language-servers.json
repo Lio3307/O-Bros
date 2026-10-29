@@ -8,7 +8,8 @@
       "command": "typescript-language-server",
       "args": ["--stdio"],
       "projectLocal": true,
-      "install": "npm install -g typescript-language-server typescript"
+      "install": "npm install -g typescript-language-server typescript",
+      "initializationOptions": { "tsserver": { "useSyntaxServer": "never" } }
     },
     {
       "id": "vtsls",

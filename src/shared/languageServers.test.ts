@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { lspLanguageIdOf, parseLanguageServers, pickServerFor, splitCommandLine, type LanguageServerStatus } from './languageServers'
 
 function status(id: string, languages: string[], source: LanguageServerStatus['source']): LanguageServerStatus {
-  return { id, title: id, languages, command: id, args: [], projectLocal: false, install: '', source, resolvedPath: source === null ? null : id }
+  return { id, title: id, languages, command: id, args: [], projectLocal: false, install: '', initializationOptions: null, source, resolvedPath: source === null ? null : id }
 }
 
 describe('language servers', () => {
@@ -15,7 +15,7 @@ describe('language servers', () => {
       ]
     })
     expect(servers.map((server) => server.id)).toEqual(['ts'])
-    expect(servers[0]).toMatchObject({ projectLocal: true, install: '' })
+    expect(servers[0]).toMatchObject({ projectLocal: true, install: '', initializationOptions: null })
   })
 
   it('gives React and C files their own language id', () => {
