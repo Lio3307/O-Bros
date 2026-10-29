@@ -6,6 +6,7 @@ const terminalTab: TerminalTab = {
   kind: 'terminal',
   id: 'tab-1',
   title: 'api',
+  isTitleFromAgent: false,
   cwd: 'E:/work/api',
   createdAt: 1,
   layout: {
@@ -43,6 +44,16 @@ describe('session snapshot', () => {
     expect(restoredTerminal?.kind === 'terminal' && restoredTerminal.panes['pane-1'].isAgentRunning).toBe(false)
     expect(restoredTerminal?.kind === 'terminal' && restoredTerminal.layout).toEqual(terminalTab.layout)
     expect(restored?.tabs[1]).toEqual({ ...fileTab, isModified: false })
+  })
+
+  it('treats a tab named after its agent by an older version as named by the agent, but keeps other names', () => {
+    const savedBefore = (title: string) => {
+      const { isTitleFromAgent: _left, ...tab } = { ...terminalTab, title }
+      const restored = parseSession(JSON.stringify({ tabs: [tab], activeTabId: 'tab-1' }))?.tabs[0]
+      return restored?.kind === 'terminal' && restored.isTitleFromAgent
+    }
+    expect(savedBefore('Claude')).toBe(true)
+    expect(savedBefore('review')).toBe(false)
   })
 
   it('returns null for missing or broken data', () => {

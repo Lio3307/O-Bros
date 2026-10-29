@@ -20,7 +20,7 @@ function terminalTab(id: string, cwd: string | null, paneIds: string[]): Termina
       }),
       { kind: 'pane' as const, paneId: paneIds[0] } as TerminalTab['layout']
     )
-  return { kind: 'terminal', id, title: id, cwd, createdAt: 0, layout, panes, focusedPaneId: paneIds[0] }
+  return { kind: 'terminal', id, title: id, isTitleFromAgent: false, cwd, createdAt: 0, layout, panes, focusedPaneId: paneIds[0] }
 }
 
 const roots: ProjectRoot[] = [{ name: 'PersonalRepo', path: 'E:\\PersonalRepo', branch: null, folders: [], isMissing: false }]

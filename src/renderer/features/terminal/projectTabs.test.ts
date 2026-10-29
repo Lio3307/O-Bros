@@ -10,6 +10,7 @@ function terminalTab(id: string, cwd: string | null): TerminalTab {
     kind: 'terminal',
     id,
     title: id,
+    isTitleFromAgent: false,
     cwd,
     createdAt: 0,
     layout: { kind: 'pane', paneId: `${id}-pane` },

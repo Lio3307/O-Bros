@@ -2,6 +2,7 @@ import type { AccountRef } from '../../../shared/types'
 import type { FileTab, TerminalPaneInfo, TerminalTab, WorkspaceTab } from '../../state/workspaceStore'
 import { clampSplitRatio, listPaneIds, type PaneLayout } from './paneTree'
 import { isRecord } from '../../../shared/isRecord'
+import { programOf } from '../../../shared/agentLaunchers'
 
 export interface SessionSnapshot {
   tabs: WorkspaceTab[]
@@ -52,6 +53,10 @@ function toPane(value: unknown): TerminalPaneInfo | null {
   return { id: value.id, title: value.title, cwd: value.cwd, account: toAccount(value.account), startCommand: null, agentCommand, isAgentRunning: false }
 }
 
+function isAgentProgramName(title: string, panes: TerminalPaneInfo[]): boolean {
+  return panes.some((pane) => pane.agentCommand !== null && programOf(pane.agentCommand).toLowerCase() === title.toLowerCase())
+}
+
 function toTerminalTab(value: JsonRecord): TerminalTab | null {
   const layout = toLayout(value.layout)
   if (layout === null || !isRecord(value.panes) || typeof value.focusedPaneId !== 'string') {
@@ -66,10 +71,12 @@ function toTerminalTab(value: JsonRecord): TerminalTab | null {
     panes[paneId] = pane
   }
   const focusedPaneId = value.focusedPaneId in panes ? value.focusedPaneId : listPaneIds(layout)[0]
+  const title = value.title as string
   return {
     kind: 'terminal',
     id: value.id as string,
-    title: value.title as string,
+    title,
+    isTitleFromAgent: typeof value.isTitleFromAgent === 'boolean' ? value.isTitleFromAgent : isAgentProgramName(title, Object.values(panes)),
     cwd: isNullableString(value.cwd) ? value.cwd : null,
     createdAt: typeof value.createdAt === 'number' ? value.createdAt : Date.now(),
     layout,

@@ -121,4 +121,18 @@ describe('setPaneAgent', () => {
     expect(tab.panes[paneId].agentCommand).toBe('gemini')
     expect(tab.panes[paneId].isAgentRunning).toBe(false)
   })
+
+  it('renames the tab again when another agent starts where an agent named it, but not after the user renamed it', () => {
+    const tabId = openTab()
+    const [paneId] = listPaneIds(terminalTabOf(tabId).layout)
+    useWorkspaceStore.getState().setPaneAgent(paneId, { command: 'claude', label: 'Claude' })
+    useWorkspaceStore.getState().setPaneAgent(paneId, null)
+    useWorkspaceStore.getState().setPaneAgent(paneId, { command: 'codex', label: 'Codex' })
+    expect(terminalTabOf(tabId).title).toBe('Codex')
+
+    useWorkspaceStore.getState().renameTab(tabId, 'review')
+    useWorkspaceStore.getState().setPaneAgent(paneId, null)
+    useWorkspaceStore.getState().setPaneAgent(paneId, { command: 'gemini', label: 'Gemini' })
+    expect(terminalTabOf(tabId).title).toBe('review')
+  })
 })

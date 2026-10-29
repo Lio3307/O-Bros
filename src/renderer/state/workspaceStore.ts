@@ -36,6 +36,7 @@ export interface TerminalTab {
   kind: 'terminal'
   id: string
   title: string
+  isTitleFromAgent: boolean
   cwd: string | null
   createdAt: number
   layout: PaneLayout
@@ -100,6 +101,7 @@ function buildTerminalTab(options: NewTerminalOptions, existingTerminalCount: nu
     kind: 'terminal',
     id: newId(),
     title,
+    isTitleFromAgent: false,
     cwd: options.cwd,
     createdAt: Date.now(),
     layout: { kind: 'pane', paneId },
@@ -222,7 +224,7 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
   restoreTabs: (tabs, activeTabId) => set({ tabs, activeTabId }),
 
   renameTab: (tabId, title) => {
-    set({ tabs: get().tabs.map((tab) => (tab.id === tabId ? { ...tab, title } : tab)) })
+    set({ tabs: get().tabs.map((tab) => (tab.id !== tabId ? tab : isTerminalTab(tab) ? { ...tab, title, isTitleFromAgent: false } : { ...tab, title })) })
   },
 
   splitPane: (tabId, paneId, direction) => {
@@ -297,11 +299,12 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
     if (pane.isAgentRunning === isRunning && pane.agentCommand === agentCommand) {
       return
     }
-    const title = agent !== null && hasDefaultTitle(tab) ? agent.label : tab.title
+    const takesAgentName = agent !== null && (hasDefaultTitle(tab) || tab.isTitleFromAgent)
     set({
       tabs: mapTerminalTab(get().tabs, tab.id, (current) => ({
         ...current,
-        title,
+        title: takesAgentName ? agent.label : current.title,
+        isTitleFromAgent: takesAgentName || current.isTitleFromAgent,
         panes: { ...current.panes, [paneId]: { ...current.panes[paneId], agentCommand, isAgentRunning: isRunning } }
       }))
     })
