@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
-import { closeWindowAndStopTasks } from '../closeGuard'
+import { closeWindowAndStopTasks, listenForCloseAnswers } from '../closeGuard'
 import { isHardwareAccelerationOnThisRun } from '../hardwareAcceleration'
 import { loadSettings, saveSettings } from '../settings'
 import { logDirectory, writeLog } from '../services/logging/logFile'
@@ -8,6 +8,7 @@ import { LOG_LEVELS, type LogLevel } from '../services/logging/logLine'
 import { readRunningTasks } from '../services/resources/runningTasks'
 
 export function registerAppIpc(): void {
+  listenForCloseAnswers()
   ipcMain.handle(IpcChannel.appListRunningTasks, () => readRunningTasks())
   ipcMain.on(IpcChannel.appLog, (_event, level: LogLevel, message: string) => {
     if (LOG_LEVELS.includes(level) && typeof message === 'string') {

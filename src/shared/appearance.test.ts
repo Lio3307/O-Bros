@@ -14,9 +14,13 @@ describe('readAppearance', () => {
 
   it('keeps a color chosen as a background before, and ignores the old default color', () => {
     expect(readAppearance({ background: 'tint', tint: 'yellow' })).toMatchObject({ background: 'solid', color: 'mocha' })
-    expect(readAppearance({ background: 'desktop', tint: 'blue' })).toMatchObject({ background: 'desktop', color: null })
-    expect(readAppearance({ background: 'desktop', color: 'cyan' })).toMatchObject({ background: 'desktop', color: 'slate' })
-    expect(readAppearance({ background: 'desktop', color: 'aubergine' })).toMatchObject({ background: 'desktop', color: 'aubergine' })
+    expect(readAppearance({ background: 'wallpaper', tint: 'blue' })).toMatchObject({ background: 'wallpaper', color: null })
+    expect(readAppearance({ background: 'solid', color: 'cyan' })).toMatchObject({ background: 'solid', color: 'slate' })
+    expect(readAppearance({ background: 'wallpaper', color: 'aubergine' })).toMatchObject({ background: 'wallpaper', color: 'aubergine' })
+  })
+
+  it('turns the removed Transparent look into Solid and keeps its tone', () => {
+    expect(readAppearance({ background: 'desktop', color: 'pine' })).toMatchObject({ background: 'solid', color: 'pine' })
   })
 
   it('falls back to the defaults for anything broken', () => {
@@ -28,14 +32,10 @@ describe('readAppearance', () => {
 describe('surfaceAlphaOf', () => {
   it('only makes surfaces see-through when something is behind them', () => {
     const wallpaper = { ...DEFAULT_APPEARANCE, background: 'wallpaper' as const, surfaceOpacity: 0.6 }
-    const everything = { hasWallpaper: true, canSeeThrough: true }
-    const nothing = { hasWallpaper: false, canSeeThrough: false }
-    expect(surfaceAlphaOf(wallpaper, everything)).toBe(0.6)
-    expect(surfaceAlphaOf(wallpaper, nothing)).toBe(1)
-    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop' }, { hasWallpaper: false, canSeeThrough: true })).toBe(0.6)
-    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop', color: 'pine' }, { hasWallpaper: false, canSeeThrough: true })).toBe(0.6)
-    expect(surfaceAlphaOf({ ...wallpaper, background: 'desktop' }, { hasWallpaper: true, canSeeThrough: false })).toBe(1)
-    expect(surfaceAlphaOf({ ...wallpaper, background: 'solid' }, everything)).toBe(1)
+    expect(surfaceAlphaOf(wallpaper, true)).toBe(0.6)
+    expect(surfaceAlphaOf({ ...wallpaper, color: 'pine' }, true)).toBe(0.6)
+    expect(surfaceAlphaOf(wallpaper, false)).toBe(1)
+    expect(surfaceAlphaOf({ ...wallpaper, background: 'solid' }, true)).toBe(1)
   })
 })
 

@@ -34,3 +34,17 @@ test('the close question names what is still running instead of raw command line
   await dialog.getByRole('button', { name: 'Cancel' }).click()
   await expect(dialog).toHaveCount(0)
 })
+
+test('the window still closes when the app inside does not answer', async () => {
+  app = await launchApp()
+  await app.application.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.loadURL('about:blank'))
+  const closed = app.application.evaluate(
+    ({ BrowserWindow }) =>
+      new Promise<boolean>((resolve) => {
+        const window = BrowserWindow.getAllWindows()[0]
+        window.once('closed', () => resolve(true))
+        window.close()
+      })
+  )
+  expect(await closed).toBe(true)
+})

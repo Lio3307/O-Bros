@@ -43,7 +43,7 @@ function childEnvironment() {
 }
 
 function runRealTool(realTool, finalArguments) {
-  const result = spawnSync(realTool, finalArguments, { stdio: 'inherit', env: childEnvironment() })
+  const result = spawnSync(realTool, finalArguments, { stdio: 'inherit', env: childEnvironment(), windowsHide: !process.stdout.isTTY })
   if (result.error) {
     stop(`ERROR: Could not run ${tool}: ${result.error.message}`)
   }

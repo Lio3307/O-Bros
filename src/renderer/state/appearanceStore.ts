@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { readAppearance, showsDesktop, surfaceAlphaOf, type Appearance, type WhatIsBehind } from '../../shared/appearance'
+import { readAppearance, surfaceAlphaOf, type Appearance } from '../../shared/appearance'
 import { friendlyErrorMessage } from '../../shared/friendlyError'
 import { readStoredJson, writeStoredJson } from './browserStorage'
 import { toast } from './toastStore'
@@ -9,10 +9,8 @@ const APPEARANCE_KEY = 'o-bros.appearance'
 interface AppearanceState {
   appearance: Appearance
   wallpaperUrl: string | null
-  canSeeThrough: boolean | null
   update: (changes: Partial<Appearance>) => void
   loadWallpaper: () => Promise<void>
-  loadSeeThroughSupport: () => Promise<void>
   chooseWallpaper: () => Promise<void>
   removeWallpaper: () => Promise<void>
 }
@@ -20,7 +18,6 @@ interface AppearanceState {
 export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
   appearance: readAppearance(readStoredJson(APPEARANCE_KEY)),
   wallpaperUrl: null,
-  canSeeThrough: null,
 
   update: (changes) => {
     const appearance = readAppearance({ ...get().appearance, ...changes })
@@ -30,10 +27,6 @@ export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
 
   loadWallpaper: async () => {
     set({ wallpaperUrl: await window.api.appearance.loadWallpaper().catch(() => null) })
-  },
-
-  loadSeeThroughSupport: async () => {
-    set({ canSeeThrough: await window.api.appearance.canSeeThrough().catch(() => false) })
   },
 
   chooseWallpaper: async () => {
@@ -57,19 +50,11 @@ export const useAppearanceStore = create<AppearanceState>()((set, get) => ({
   }
 }))
 
-export function whatIsBehindOf(state: Pick<AppearanceState, 'wallpaperUrl' | 'canSeeThrough'>): WhatIsBehind {
-  return { hasWallpaper: state.wallpaperUrl !== null, canSeeThrough: state.canSeeThrough === true }
-}
-
 export function currentSurfaceAlpha(): number {
   const state = useAppearanceStore.getState()
-  return surfaceAlphaOf(state.appearance, whatIsBehindOf(state))
+  return surfaceAlphaOf(state.appearance, state.wallpaperUrl !== null)
 }
 
 export function useSurfaceAlpha(): number {
-  return useAppearanceStore((state) => surfaceAlphaOf(state.appearance, whatIsBehindOf(state)))
-}
-
-export function useShowsDesktop(): boolean {
-  return useAppearanceStore((state) => showsDesktop(state.appearance, whatIsBehindOf(state)))
+  return useAppearanceStore((state) => surfaceAlphaOf(state.appearance, state.wallpaperUrl !== null))
 }

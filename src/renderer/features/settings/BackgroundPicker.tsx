@@ -1,4 +1,4 @@
-import { Ban, Check, ImagePlus, Monitor } from 'lucide-react'
+import { Ban, Check, ImagePlus } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 import { flushSync } from 'react-dom'
 import { TINT_IDS, type Appearance } from '../../../shared/appearance'
@@ -59,10 +59,8 @@ export function BackgroundPicker() {
   const appearance = useAppearanceStore((state) => state.appearance)
   const update = useAppearanceStore((state) => state.update)
   const wallpaperUrl = useAppearanceStore((state) => state.wallpaperUrl)
-  const canSeeThrough = useAppearanceStore((state) => state.canSeeThrough)
   const theme = useThemeWithoutTint()
-  const look = appearance.background === 'desktop' && canSeeThrough === false ? 'solid' : appearance.background
-  const isChosen = (background: Appearance['background']) => look === background
+  const isChosen = (background: Appearance['background']) => appearance.background === background
   const basePanel = appColorsOf(theme).panel
   const choose = (changes: Partial<Appearance>) => withCrossfade(() => update(changes))
 
@@ -78,16 +76,6 @@ export function BackgroundPicker() {
             preview={imagePreview(null, theme.background, basePanel)}
             onSelect={() => choose({ background: 'solid' })}
           />
-          {canSeeThrough === true && (
-            <BackgroundTile
-              label="Transparent"
-              hint="See the windows and desktop behind O-BROS, softly blurred"
-              isSelected={isChosen('desktop')}
-              preview={imagePreview(null, theme.background, basePanel)}
-              placeholder={<Monitor size={18} className="background-tile-icon" />}
-              onSelect={() => choose({ background: 'desktop' })}
-            />
-          )}
           <BackgroundTile
             label="Your image"
             hint="A picture you choose, behind O-BROS"

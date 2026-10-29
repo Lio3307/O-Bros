@@ -215,6 +215,7 @@ export const IpcChannel = {
   appSetHardwareAcceleration: 'app:setHardwareAcceleration',
   appRestart: 'app:restart',
   appCloseRequested: 'app:closeRequested',
+  appCloseHeard: 'app:closeHeard',
   appLog: 'app:log',
   appOpenLogFolder: 'app:openLogFolder',
   appHandlerError: 'app:handlerError',
@@ -244,8 +245,7 @@ export const IpcChannel = {
   appearanceChooseWallpaper: 'appearance:chooseWallpaper',
   appearanceRemoveWallpaper: 'appearance:removeWallpaper',
   appearanceSetWindowColors: 'appearance:setWindowColors',
-  appearanceReadWarpThemes: 'appearance:readWarpThemes',
-  appearanceCanSeeThrough: 'appearance:canSeeThrough'
+  appearanceReadWarpThemes: 'appearance:readWarpThemes'
 } as const
 
 export interface PtyCreateRequest {
@@ -472,6 +472,5 @@ export interface DesktopApi {
     removeWallpaper(): Promise<void>
     setWindowColors(colors: WindowColors): Promise<void>
     readWarpThemes(): Promise<WarpThemeFiles>
-    canSeeThrough(): Promise<boolean>
   }
 }

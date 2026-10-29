@@ -168,7 +168,11 @@ const api: DesktopApi = {
     hardwareAcceleration: () => ipcRenderer.invoke(IpcChannel.appHardwareAcceleration),
     setHardwareAcceleration: (isEnabled) => ipcRenderer.invoke(IpcChannel.appSetHardwareAcceleration, isEnabled),
     restart: () => ipcRenderer.invoke(IpcChannel.appRestart),
-    onCloseRequested: (listener) => subscribe<undefined>(IpcChannel.appCloseRequested, () => listener()),
+    onCloseRequested: (listener) =>
+      subscribe<undefined>(IpcChannel.appCloseRequested, () => {
+        ipcRenderer.send(IpcChannel.appCloseHeard)
+        listener()
+      }),
     log: (level, message) => ipcRenderer.send(IpcChannel.appLog, level, message),
     openLogFolder: () => ipcRenderer.invoke(IpcChannel.appOpenLogFolder),
     onHandlerError: (listener) => subscribe<string>(IpcChannel.appHandlerError, listener)
@@ -207,8 +211,7 @@ const api: DesktopApi = {
     chooseWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceChooseWallpaper),
     removeWallpaper: () => ipcRenderer.invoke(IpcChannel.appearanceRemoveWallpaper),
     setWindowColors: (colors) => ipcRenderer.invoke(IpcChannel.appearanceSetWindowColors, colors),
-    readWarpThemes: () => ipcRenderer.invoke(IpcChannel.appearanceReadWarpThemes),
-    canSeeThrough: () => ipcRenderer.invoke(IpcChannel.appearanceCanSeeThrough)
+    readWarpThemes: () => ipcRenderer.invoke(IpcChannel.appearanceReadWarpThemes)
   }
 }
 

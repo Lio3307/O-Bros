@@ -1,6 +1,5 @@
 import { expect, test } from '@playwright/test'
 import { writeFile } from 'node:fs/promises'
-import { release } from 'node:os'
 import { dirname, join } from 'node:path'
 import { launchApp, type RunningApp } from './launchApp'
 
@@ -88,60 +87,13 @@ test('shows a wallpaper behind see-through panels, keeps menus solid, and goes b
   await expect(app.window.getByRole('button', { name: 'Choose image…' })).toHaveCount(0)
 })
 
-
-function canSeeThrough(): boolean {
-  return process.platform === 'darwin' || (process.platform === 'win32' && Number(release().split('.')[2]) >= 22621)
-}
-
-function recordWindowCalls() {
-  return app.application.evaluate(({ BrowserWindow }) => {
-    const window = BrowserWindow.getAllWindows()[0]
-    const calls: Record<string, unknown> = {}
-    Object.assign(globalThis, { windowCalls: calls })
-    const record = <T extends unknown[]>(name: string, original: (...args: T) => void) => (...args: T) => {
-      calls[name] = args[0]
-      original(...args)
-    }
-    window.setBackgroundMaterial = record('material', window.setBackgroundMaterial.bind(window))
-    window.setVibrancy = record('vibrancy', window.setVibrancy.bind(window))
-    window.setBackgroundColor = record('color', window.setBackgroundColor.bind(window))
-    window.setTitleBarOverlay = record('overlay', window.setTitleBarOverlay.bind(window))
-  })
-}
-
-function lastWindowCall(name: string) {
-  return app.application.evaluate((_electron, key) => ((globalThis as Record<string, unknown>).windowCalls as Record<string, unknown>)[key] ?? null, name)
-}
-
-function seeThroughEffect() {
-  return process.platform === 'darwin' ? lastWindowCall('vibrancy') : lastWindowCall('material')
-}
-
-test('Transparent lets the system show what is behind the window, and Solid turns it off', async () => {
-  test.skip(!canSeeThrough(), 'this system has no see-through windows')
+test('a tone colors the whole app and works with every look, including your image', async () => {
   app = await launchApp({ separateHome: true })
-  await recordWindowCalls()
-
-  await app.window.getByTitle('Settings', { exact: true }).click()
-  await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
-  await app.window.getByRole('button', { name: 'Transparent', exact: true }).click()
-
-  await expect(app.window.locator('.app-wallpaper-clear')).toBeAttached()
-  await expect.poll(seeThroughEffect).toBe(process.platform === 'darwin' ? 'under-window' : 'acrylic')
-  await expect.poll(() => lastWindowCall('color')).toBe('#00000000')
-  await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
-  await expect(app.window.getByText('Dim', { exact: true })).toBeVisible()
-  await expect(app.window.getByText('Blur', { exact: true })).toHaveCount(0)
-
-  await app.window.getByRole('button', { name: 'Solid', exact: true }).click()
-  await expect(app.window.locator('.app-wallpaper-clear')).toHaveCount(0)
-  await expect.poll(seeThroughEffect).toBe(process.platform === 'darwin' ? null : 'none')
-  await expect.poll(() => lastWindowCall('color')).not.toBe('#00000000')
-  await expect.poll(() => app.window.evaluate(() => document.documentElement.hasAttribute('data-see-through'))).toBe(false)
-})
-
-test('a tone colors the whole app and works with every look, including Transparent', async () => {
-  app = await launchApp({ separateHome: true })
+  const wallpaperPath = join(dirname(app.projectFolder), 'sunset.svg')
+  await writeFile(wallpaperPath, WALLPAPER_SVG, 'utf8')
+  await app.application.evaluate(({ dialog }, chosen) => {
+    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [chosen] })
+  }, wallpaperPath)
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByTitle('Plain terminal in the selected folder').click()
   await app.window.getByTitle('Settings', { exact: true }).click()
@@ -154,34 +106,34 @@ test('a tone colors the whole app and works with every look, including Transpare
   await expect(pressed('Midnight')).toHaveAttribute('aria-pressed', 'true')
   await expect(pressed('Solid')).toHaveAttribute('aria-pressed', 'true')
   await expect.poll(panelColor).not.toBe(plainPanel)
-  const greenPanel = await panelColor()
+  const tonedPanel = await panelColor()
   expect(await backgroundAlphaOf('.side-panel')).toBe(1)
 
-  await pressed('Transparent').click()
-  await expect(app.window.locator('.app-wallpaper-clear')).toBeAttached()
+  await pressed('Your image').click()
+  await app.window.getByRole('button', { name: 'Choose image…' }).click()
+  await expect(app.window.locator('.app-wallpaper-image')).toBeVisible()
   await expect(pressed('Midnight')).toHaveAttribute('aria-pressed', 'true')
   await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
-  expect(await panelColor()).toBe(greenPanel)
+  expect(await panelColor()).toBe(tonedPanel)
   if (SHOTS !== undefined) {
     await app.window.waitForTimeout(600)
     await app.window.screenshot({ path: `${SHOTS}/appearance-tint.png` })
-    await app.window.getByTitle('Projects', { exact: true }).click()
-    await app.window.waitForTimeout(600)
-    await app.window.screenshot({ path: `${SHOTS}/appearance-tint-terminal.png` })
-    await app.window.getByTitle('Settings', { exact: true }).click()
   }
 
   await pressed('None').click()
   await expect.poll(panelColor).toBe(plainPanel)
-  await expect(pressed('Transparent')).toHaveAttribute('aria-pressed', 'true')
-  await pressed('Solid').click()
+  await expect(pressed('Your image')).toHaveAttribute('aria-pressed', 'true')
 })
 
-test('a saved Transparent choice survives a restart', async () => {
+test('a Transparent look saved by an older version opens as Solid and keeps its tone', async () => {
   app = await launchApp({ separateHome: true })
-  await app.window.evaluate(() => localStorage.setItem('o-bros.appearance', JSON.stringify({ background: 'desktop' })))
+  await app.window.evaluate(() => localStorage.setItem('o-bros.appearance', JSON.stringify({ background: 'desktop', color: 'pine' })))
   await app.window.reload()
   await app.window.waitForSelector('.rail')
-  await expect(app.window.locator('.app-wallpaper-clear')).toBeAttached()
-  expect(await app.window.evaluate(() => JSON.parse(localStorage.getItem('o-bros.appearance') ?? '{}').background)).toBe('desktop')
+  await app.window.getByTitle('Settings', { exact: true }).click()
+  await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
+  await expect(app.window.getByRole('button', { name: 'Solid', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(app.window.getByRole('button', { name: 'Pine', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(app.window.getByRole('button', { name: 'Transparent', exact: true })).toHaveCount(0)
+  expect(await backgroundAlphaOf('.side-panel')).toBe(1)
 })

@@ -1,8 +1,26 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { IpcChannel } from '../shared/ipc'
 import { stopAllRunningTasks } from './services/resources/runningTasks'
 
+const ANSWER_WAIT_MS = 3000
+
 const windowsReadyToClose = new WeakSet<BrowserWindow>()
+const unansweredCloses = new WeakMap<BrowserWindow, NodeJS.Timeout>()
+
+function closeIfUnanswered(window: BrowserWindow): void {
+  if (unansweredCloses.has(window)) {
+    return
+  }
+  unansweredCloses.set(
+    window,
+    setTimeout(() => {
+      unansweredCloses.delete(window)
+      if (!window.isDestroyed()) {
+        void closeWindowAndStopTasks(window)
+      }
+    }, ANSWER_WAIT_MS)
+  )
+}
 
 export function guardWindowClose(window: BrowserWindow): void {
   window.on('close', (event) => {
@@ -11,7 +29,18 @@ export function guardWindowClose(window: BrowserWindow): void {
       return
     }
     event.preventDefault()
+    closeIfUnanswered(window)
     window.webContents.send(IpcChannel.appCloseRequested)
+  })
+}
+
+export function listenForCloseAnswers(): void {
+  ipcMain.on(IpcChannel.appCloseHeard, (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (window !== null) {
+      clearTimeout(unansweredCloses.get(window))
+      unansweredCloses.delete(window)
+    }
   })
 }
 

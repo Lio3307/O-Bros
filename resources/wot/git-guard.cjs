@@ -18,7 +18,7 @@ function runRealGit(finalArguments, extraEnvironment) {
   const environment = { ...process.env, ...extraEnvironment }
   delete environment.ELECTRON_RUN_AS_NODE
   delete environment.O_BROS_CMD_LINE
-  const result = spawnSync(realGit, finalArguments, { stdio: 'inherit', env: environment })
+  const result = spawnSync(realGit, finalArguments, { stdio: 'inherit', env: environment, windowsHide: !process.stdout.isTTY })
   if (result.error) {
     stop(`ERROR: Could not run git: ${result.error.message}`)
   }

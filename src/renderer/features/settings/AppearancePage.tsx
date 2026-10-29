@@ -1,7 +1,7 @@
 import { ImagePlus, Trash2 } from 'lucide-react'
 import type { ChangeEvent } from 'react'
 import { SURFACE_OPACITY_RANGE, WALLPAPER_BLUR_RANGE, WALLPAPER_DIM_RANGE, type Range } from '../../../shared/appearance'
-import { useAppearanceStore, useShowsDesktop } from '../../state/appearanceStore'
+import { useAppearanceStore } from '../../state/appearanceStore'
 import { Button } from '../../ui/Button'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../ui/SettingsSection'
@@ -49,8 +49,7 @@ export function AppearancePage() {
   const chooseWallpaper = useAppearanceStore((state) => state.chooseWallpaper)
   const removeWallpaper = useAppearanceStore((state) => state.removeWallpaper)
   const isWallpaper = appearance.background === 'wallpaper'
-  const isDesktop = useShowsDesktop()
-  const showsPicture = isDesktop || (isWallpaper && wallpaperUrl !== null)
+  const showsPicture = isWallpaper && wallpaperUrl !== null
 
   return (
     <SettingsPageLayout title="Appearance" description="The colors of O-BROS, and a picture behind it. Text, menus and dialogs always stay readable.">
@@ -58,7 +57,7 @@ export function AppearancePage() {
 
       <SettingsSection
         title="Background"
-        description="Look is what shows behind the app. Tone gives the whole app a quiet color, like Midnight or Mocha, and works with every look, so Transparent and Midnight give dark navy glass over what is behind the window. Text and code keep the theme colors."
+        description="Look is what shows behind the app. Tone gives the whole app a quiet color, like Midnight or Mocha, and works with every look, so a picture and Midnight give dark navy glass over your picture. Text and code keep the theme colors."
       >
         <BackgroundPicker />
       </SettingsSection>
@@ -89,11 +88,7 @@ export function AppearancePage() {
       {showsPicture && (
         <SettingsSection
           title="See-through"
-          description={
-            isDesktop
-              ? 'The window shows what is behind it, softly blurred by your system. Set how solid the panels are and how much to darken what shows through. Text always stays fully visible; over bright windows, raise Dim.'
-              : 'How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim.'
-          }
+          description="How solid the panels, terminals and editor are over the picture, and how much to darken and soften it. Text always stays fully visible; on a bright picture, raise Dim."
         >
           <div className="appearance-sliders">
             <Slider
@@ -112,16 +107,14 @@ export function AppearancePage() {
               display={percent(appearance.wallpaperDim)}
               onChange={(wallpaperDim) => update({ wallpaperDim })}
             />
-            {!isDesktop && (
-              <Slider
-                label="Blur"
-                value={appearance.wallpaperBlur}
-                range={WALLPAPER_BLUR_RANGE}
-                step={1}
-                display={`${appearance.wallpaperBlur} px`}
-                onChange={(wallpaperBlur) => update({ wallpaperBlur })}
-              />
-            )}
+            <Slider
+              label="Blur"
+              value={appearance.wallpaperBlur}
+              range={WALLPAPER_BLUR_RANGE}
+              step={1}
+              display={`${appearance.wallpaperBlur} px`}
+              onChange={(wallpaperBlur) => update({ wallpaperBlur })}
+            />
           </div>
         </SettingsSection>
       )}

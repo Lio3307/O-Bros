@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo } from 'react'
 import { isHexColor } from '../../shared/hexColor'
-import { useShowsDesktop, useSurfaceAlpha } from '../state/appearanceStore'
+import { useSurfaceAlpha } from '../state/appearanceStore'
 import { useActiveColorTheme } from '../state/colorThemeStore'
 import type { AppColors } from '../theme/colorThemes'
 import { appColorsOf, isDarkTheme } from '../theme/themeDerivation'
@@ -46,7 +46,6 @@ function themeStyleElement(): HTMLStyleElement {
 export function AppTheme() {
   const theme = useActiveColorTheme()
   const isSeeThrough = useSurfaceAlpha() < 1
-  const isDesktopShown = useShowsDesktop()
   const colors = useMemo(() => appColorsOf(theme), [theme])
   const isDark = isDarkTheme(theme)
 
@@ -58,13 +57,12 @@ export function AppTheme() {
   useEffect(() => {
     void window.api.appearance
       .setWindowColors({
-        window: isDesktopShown ? CLEAR_COLOR : colors.terminal,
+        window: colors.terminal,
         titleBar: isSeeThrough ? CLEAR_COLOR : colors.chrome,
-        symbols: colors.text,
-        showsDesktop: isDesktopShown
+        symbols: colors.text
       })
       .catch(() => undefined)
-  }, [colors, isSeeThrough, isDesktopShown])
+  }, [colors, isSeeThrough])
 
   return null
 }

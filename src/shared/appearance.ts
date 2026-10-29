@@ -1,6 +1,6 @@
 import { isRecord } from './isRecord'
 
-export type BackgroundKind = 'solid' | 'wallpaper' | 'desktop'
+export type BackgroundKind = 'solid' | 'wallpaper'
 
 export const TINT_IDS = ['midnight', 'slate', 'aubergine', 'pine', 'mocha', 'graphite'] as const
 
@@ -18,12 +18,6 @@ export interface WindowColors {
   window: string
   titleBar: string
   symbols: string
-  showsDesktop: boolean
-}
-
-export interface WhatIsBehind {
-  hasWallpaper: boolean
-  canSeeThrough: boolean
 }
 
 export interface Range {
@@ -37,7 +31,7 @@ export const WALLPAPER_BLUR_RANGE: Range = { min: 0, max: 24 }
 
 export const DEFAULT_APPEARANCE: Appearance = { background: 'solid', color: null, surfaceOpacity: 0.72, wallpaperDim: 0.45, wallpaperBlur: 0 }
 
-const BACKGROUND_KINDS: BackgroundKind[] = ['solid', 'wallpaper', 'desktop']
+const BACKGROUND_KINDS: BackgroundKind[] = ['solid', 'wallpaper']
 const HEX_COLOR_LENGTH = 7
 
 export function clampTo(value: unknown, range: Range, fallback: number): number {
@@ -81,13 +75,8 @@ export function readAppearance(raw: unknown): Appearance {
   }
 }
 
-export function showsDesktop(appearance: Appearance, behind: WhatIsBehind): boolean {
-  return appearance.background === 'desktop' && behind.canSeeThrough
-}
-
-export function surfaceAlphaOf(appearance: Appearance, behind: WhatIsBehind): number {
-  const showsSomethingBehind = showsDesktop(appearance, behind) || (appearance.background === 'wallpaper' && behind.hasWallpaper)
-  return showsSomethingBehind ? appearance.surfaceOpacity : 1
+export function surfaceAlphaOf(appearance: Appearance, hasWallpaper: boolean): number {
+  return appearance.background === 'wallpaper' && hasWallpaper ? appearance.surfaceOpacity : 1
 }
 
 export function innerAlphaOf(surfaceAlpha: number): number {
