@@ -62,7 +62,7 @@ export const editorLayoutTheme = EditorView.theme(
     },
     '.cm-diagnostic': { padding: '6px 10px', marginLeft: '0', borderLeft: 'none', lineHeight: '1.5' },
     '.cm-diagnosticSource': { marginTop: '4px', fontSize: '11px', color: 'var(--color-muted)', opacity: '1' },
-    '.cm-tooltip-lint': { maxWidth: '560px' },
+    '.cm-tooltip-lint': { maxWidth: '560px', maxHeight: 'min(320px, 40vh)', overflowY: 'auto' },
     '.cm-tooltip-autocomplete > ul': { fontFamily: 'var(--font-mono)', fontSize: '12px', maxHeight: '240px' },
     '.cm-tooltip-autocomplete > ul > li': { padding: '3px 10px', lineHeight: '20px' },
     '.cm-tooltip-autocomplete > ul > li[aria-selected]': {
