@@ -217,6 +217,34 @@ function languageFromFirstLine(firstLine: string): LanguageDefinition | null {
   return looksLikeMarkup(firstLine) ? { ...findLanguageById('html'), canFormat: false } : null
 }
 
+function isDotConfigFile(fileName: string): boolean {
+  return fileName.startsWith('.') && !fileName.slice(1).includes('.')
+}
+
+const CARRIAGE_RETURN = '\r'
+const TAB = '\t'
+const FIRST_PRINTABLE_CODE = 32
+
+function looksLikeText(firstLine: string): boolean {
+  const line = firstLine.endsWith(CARRIAGE_RETURN) ? firstLine.slice(0, -1) : firstLine
+  return line.trim() !== '' && ![...line].some((character) => character.charCodeAt(0) < FIRST_PRINTABLE_CODE && character !== TAB)
+}
+
+function looksLikeJson(firstLine: string): boolean {
+  const start = firstLine.trimStart()
+  return start.startsWith('{') || start.startsWith('[')
+}
+
+function languageFromShape(fileName: string, firstLine: string): LanguageDefinition | null {
+  if (isDotConfigFile(fileName)) {
+    return findLanguageById('env')
+  }
+  if (!looksLikeText(firstLine)) {
+    return null
+  }
+  return looksLikeJson(firstLine) ? { ...findLanguageById('json'), canFormat: false } : findLanguageById('text')
+}
+
 function packageFileLanguage(kind: PackageFileKind): LanguageDefinition | null {
   if (kind.builtIn !== undefined) {
     return { ...findLanguageById(kind.builtIn), isGenerated: true, canLint: false, canFormat: false }
@@ -239,7 +267,7 @@ export function findLanguageForFile(filePath: string, firstLine = ''): LanguageD
     return builtIn
   }
   const listed = LanguageDescription.matchFilename(CATALOG_LANGUAGES, fileName)
-  return listed === null ? languageFromFirstLine(firstLine) : catalogLanguage(listed)
+  return listed === null ? (languageFromFirstLine(firstLine) ?? languageFromShape(fileName, firstLine)) : catalogLanguage(listed)
 }
 
 export function findLanguageById(id: LanguageId): LanguageDefinition {

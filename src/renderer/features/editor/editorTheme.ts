@@ -1,9 +1,9 @@
 import { Compartment, type Extension } from '@codemirror/state'
-import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+import { syntaxHighlighting } from '@codemirror/language'
 import { EditorView } from '@codemirror/view'
-import { tags } from '@lezer/highlight'
 import type { ColorTheme } from '../../theme/colorThemes'
 import { isDarkTheme } from '../../theme/themeDerivation'
+import { codeHighlightStyle } from './codeHighlightStyle'
 import { indentGuides } from './indentGuides'
 
 export const colorThemeCompartment = new Compartment()
@@ -44,45 +44,7 @@ function editorChrome(theme: ColorTheme): Extension {
 }
 
 function codeHighlighting(theme: ColorTheme): Extension {
-  const colors = theme.code
-  return syntaxHighlighting(
-    HighlightStyle.define([
-      {
-        tag: [
-          tags.keyword,
-          tags.controlKeyword,
-          tags.definitionKeyword,
-          tags.moduleKeyword,
-          tags.operatorKeyword,
-          tags.modifier
-        ],
-        color: colors.keyword
-      },
-      { tag: [tags.string, tags.special(tags.string), tags.regexp], color: colors.string },
-      { tag: [tags.number, tags.bool, tags.null, tags.atom], color: colors.number },
-      { tag: [tags.comment, tags.lineComment, tags.blockComment], color: colors.comment, fontStyle: 'italic' },
-      {
-        tag: [
-          tags.function(tags.variableName),
-          tags.function(tags.propertyName),
-          tags.definition(tags.function(tags.variableName))
-        ],
-        color: colors.functionName
-      },
-      { tag: [tags.typeName, tags.className, tags.namespace], color: colors.typeName },
-      { tag: [tags.propertyName, tags.definition(tags.propertyName)], color: colors.property },
-      { tag: [tags.special(tags.variableName), tags.processingInstruction], color: colors.variable },
-      { tag: [tags.operator], color: colors.punctuation },
-      { tag: [tags.tagName], color: colors.htmlTag },
-      { tag: [tags.attributeName], color: colors.attribute },
-      { tag: [tags.attributeValue], color: colors.string },
-      { tag: [tags.angleBracket, tags.punctuation, tags.bracket, tags.separator], color: colors.punctuation },
-      { tag: [tags.heading], color: colors.functionName, fontWeight: '700' },
-      { tag: [tags.link, tags.url], color: colors.link, textDecoration: 'underline' },
-      { tag: [tags.strong], fontWeight: '700' },
-      { tag: [tags.emphasis], fontStyle: 'italic' }
-    ])
-  )
+  return syntaxHighlighting(codeHighlightStyle(theme))
 }
 
 export function colorThemeExtension(theme: ColorTheme): Extension {

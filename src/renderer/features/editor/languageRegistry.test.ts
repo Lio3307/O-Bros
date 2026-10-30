@@ -59,10 +59,20 @@ describe('findLanguageForFile', () => {
     expect(findLanguageForFile('C:/app/bin/release', '#!/bin/bash')?.label).toBe('Shell')
     expect(findLanguageForFile('C:/app/Widget.riot', '<widget>')?.id).toBe('html')
     expect(findLanguageForFile('C:/app/bin/release', '#!/usr/bin/env python3')?.canLint).toBe(false)
-    expect(findLanguageForFile('C:/app/notes', 'just words')).toBeNull()
   })
 
-  it('returns null for unknown files', () => {
+  it('colors any other text file by its shape instead of leaving it uncolored', () => {
+    expect(findLanguageForFile('C:/app/.gitignore', 'node_modules')?.id).toBe('env')
+    expect(findLanguageForFile('C:/app/.gitattributes', '* text=auto')?.id).toBe('env')
+    expect(findLanguageForFile('C:/app/tsconfig.tsbuildinfo', '{"root":["./src/main.ts"]}')?.id).toBe('json')
+    expect(findLanguageForFile('C:/app/tsconfig.tsbuildinfo', '{"root":[]}')?.canFormat).toBe(false)
+    expect(findLanguageForFile('C:/app/LICENSE', 'MIT License\r')?.id).toBe('text')
+    expect(findLanguageForFile('C:/app/run.cmd', '@echo off')?.id).toBe('text')
+    expect(findLanguageForFile('C:/app/notes', 'just words')?.id).toBe('text')
+  })
+
+  it('returns null for unknown files that are not text', () => {
     expect(findLanguageForFile('C:/app/image.png')).toBeNull()
+    expect(findLanguageForFile('C:/app/tool.bin', 'MZ' + String.fromCharCode(0, 3))).toBeNull()
   })
 })
