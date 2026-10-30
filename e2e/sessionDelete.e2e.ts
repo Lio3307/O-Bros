@@ -82,3 +82,58 @@ test('keeps deleting when one session is in use, and says which could not be del
     holder.kill()
   }
 })
+
+test('History selects several conversations or all of them, says how many, and deletes them after asking', async () => {
+  await app.window.getByTitle('Settings').click()
+  await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
+  await app.window.getByRole('switch', { name: 'Delete permanently' }).check()
+  await app.window.getByTitle('History', { exact: true }).click()
+  const rows = app.window.locator('.session-row')
+  await expect(rows).toHaveCount(3, { timeout: 20_000 })
+
+  await app.window.getByRole('button', { name: 'Select', exact: true }).click()
+  const bar = app.window.locator('.history-select-bar')
+  await expect(bar).toContainText('Nothing selected')
+  await expect(bar.getByRole('button', { name: 'Delete 0' })).toBeDisabled()
+  await rows.filter({ hasText: 'task 0' }).click()
+  await rows.filter({ hasText: 'task 1' }).click()
+  await expect(bar).toContainText('2 selected')
+  await expect(rows.filter({ hasText: 'task 0' })).toHaveAttribute('aria-pressed', 'true')
+
+  await bar.getByRole('button', { name: 'Delete 2' }).click()
+  const dialog = app.window.getByRole('dialog')
+  await expect(dialog).toContainText('Delete 2 sessions?')
+  await dialog.getByRole('button', { name: 'Delete permanently', exact: true }).click()
+  await expect.poll(countSessionFiles, { timeout: 20_000 }).toBe(1)
+  await expect(rows).toHaveCount(1, { timeout: 20_000 })
+  await expect(bar).toHaveCount(0)
+
+  await app.window.getByRole('button', { name: 'Select', exact: true }).click()
+  await bar.getByText('Select all (1)').click()
+  await expect(bar).toContainText('1 selected')
+  await app.window.keyboard.press('Escape')
+  await expect(bar).toHaveCount(0)
+  await expect(rows.first()).not.toHaveAttribute('aria-pressed', 'true')
+})
+
+test('History deletes everything shown with Select all, and says all in the question', async () => {
+  await app.window.getByTitle('Settings').click()
+  await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
+  await app.window.getByRole('switch', { name: 'Delete permanently' }).check()
+  await app.window.getByTitle('History', { exact: true }).click()
+  await expect(app.window.locator('.session-row')).toHaveCount(3, { timeout: 20_000 })
+
+  await app.window.getByRole('button', { name: 'Select', exact: true }).click()
+  const bar = app.window.locator('.history-select-bar')
+  await bar.getByText('Select all (3)').click()
+  await bar.getByRole('button', { name: 'Delete all 3' }).click()
+  const dialog = app.window.getByRole('dialog')
+  await expect(dialog).toContainText('Delete all 3 sessions?')
+  await dialog.getByRole('button', { name: 'Cancel' }).click()
+  expect(await countSessionFiles()).toBe(3)
+
+  await bar.getByRole('button', { name: 'Delete all 3' }).click()
+  await dialog.getByRole('button', { name: 'Delete permanently', exact: true }).click()
+  await expect.poll(countSessionFiles, { timeout: 20_000 }).toBe(0)
+  await expect(app.window.locator('.session-row')).toHaveCount(0, { timeout: 20_000 })
+})

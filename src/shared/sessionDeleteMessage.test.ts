@@ -17,4 +17,9 @@ describe('describeSessionDelete', () => {
     expect(message.message).toContain('cannot be undone')
     expect(message.confirmLabel).toBe('Delete permanently')
   })
+
+  it('says all when every shown session is selected', () => {
+    expect(describeSessionDelete(12, 4096, false, true).title).toBe('Delete all 12 sessions?')
+    expect(describeSessionDelete(1, 4096, false, true).title).toBe('Delete 1 session?')
+  })
 })

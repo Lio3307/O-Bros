@@ -6,7 +6,7 @@ export interface SessionDeleteMessage {
   confirmLabel: string
 }
 
-export function describeSessionDelete(sessionCount: number, totalBytes: number, permanently: boolean): SessionDeleteMessage {
+export function describeSessionDelete(sessionCount: number, totalBytes: number, permanently: boolean, isEverything = false): SessionDeleteMessage {
   const isSingle = sessionCount === 1
   const noun = isSingle ? 'session' : 'sessions'
   const pronoun = isSingle ? 'it' : 'them'
@@ -15,7 +15,7 @@ export function describeSessionDelete(sessionCount: number, totalBytes: number, 
     : `This frees about ${formatBytes(totalBytes)} once the Recycle Bin or Trash is emptied. Until then you can restore ${pronoun} from there.`
 
   return {
-    title: `Delete ${sessionCount} ${noun}?`,
+    title: isEverything && !isSingle ? `Delete all ${sessionCount} ${noun}?` : `Delete ${sessionCount} ${noun}?`,
     message: `You will not be able to resume ${pronoun} or read ${pronoun} in History. ${spaceSentence} Your project files and logins are not touched.`,
     confirmLabel: permanently ? 'Delete permanently' : 'Move to Recycle Bin'
   }
