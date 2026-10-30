@@ -12,27 +12,38 @@ export function PortsSection() {
 
   return (
     <div className="ports-section">
-      <h3 className="section-label">Listening ports</h3>
-      {ports === null && <p className="panel-empty"><LoadingText text="Looking for open ports…" /></p>}
-      {ports !== null && ports.length === 0 && <p className="panel-empty">Nothing is listening on a port.</p>}
+      <h3 className="section-label">Local servers</h3>
+      {ports === null && (
+        <p className="panel-empty">
+          <LoadingText text="Looking for open ports…" />
+        </p>
+      )}
+      {ports !== null && ports.length === 0 && <p className="panel-empty">No server started in a terminal is listening on a port.</p>}
       {ports?.map((entry) => (
-        <div key={`${entry.pid}-${entry.port}`} className="resource-row resource-row-terminal">
+        <div key={`${entry.pid}-${entry.port}`} className="resource-row resource-row-item port-row">
           <span className="resource-name">
             <span className="port-number">:{entry.port}</span>
-            <span className="muted port-owner">
-              {entry.processName} · {terminalTitleOf(entry.paneId)}
+            <span className="port-owner">
+              {entry.processName} <span className="muted">· {terminalTitleOf(entry.paneId)}</span>
             </span>
           </span>
           <Button
             variant="plain"
-            className="port-stop hover-positive"
+            className="port-action hover-positive"
             title={`Open http://localhost:${entry.port} in your browser`}
+            aria-label={`Open port ${entry.port} in your browser`}
             onClick={() => open(entry)}
           >
-            <ExternalLink size={12} /> Open
+            <ExternalLink size={13} />
           </Button>
-          <Button variant="plain" className="port-stop hover-danger" title="Stop this server" onClick={() => stop(entry)}>
-            <Square size={12} /> Stop
+          <Button
+            variant="plain"
+            className="port-action hover-danger"
+            title="Stop this server"
+            aria-label={`Stop the server on port ${entry.port}`}
+            onClick={() => stop(entry)}
+          >
+            <Square size={13} />
           </Button>
         </div>
       ))}

@@ -17,7 +17,7 @@
 .field,
 .dropdown,
 .chip,
-.port-stop,
+.port-action,
 .server-action,
 .session-member-stop,
 .update-notice-link,
@@ -40,7 +40,7 @@
 .tab-bar-actions button:active,
 .pane-actions button:active,
 .segment:active,
-.port-stop:active:not(:disabled),
+.port-action:active:not(:disabled),
 .server-action:active:not(:disabled),
 .toast-action:active {
   transform: scale(0.96);

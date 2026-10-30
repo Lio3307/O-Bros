@@ -6,6 +6,7 @@ import { listPaneIds } from '../terminal/paneTree'
 
 export interface TerminalRow {
   paneId: string
+  tab: TerminalTab
   title: string
   cpuPercent: number
   memoryBytes: number
@@ -33,6 +34,10 @@ function groupIdentityFor(cwd: string | null, roots: ProjectRoot[]): GroupIdenti
   }
   const project = closestProject(cwd, roots)
   return project === null ? { name: lastPathSegment(cwd), path: cwd } : project
+}
+
+function rowTitleOf(tab: TerminalTab, paneId: string): string {
+  return listPaneIds(tab.layout).length > 1 ? `${tab.title} · ${tab.panes[paneId].title}` : tab.title
 }
 
 function isSelected(groupPath: string | null, selectedProjectPath: string | null): boolean {
@@ -68,7 +73,8 @@ export function groupTerminalsByWorkspace(
       }
       group.terminals.push({
         paneId,
-        title: tab.panes[paneId].title,
+        tab,
+        title: rowTitleOf(tab, paneId),
         cpuPercent: resource.cpuPercent,
         memoryBytes: resource.privateBytes
       })

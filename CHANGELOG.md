@@ -11,6 +11,9 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **wot skill 1.11.0:** a lead that sees a list of old sessions, or the wrong folder, on a member's screen now stops the member and tells you, instead of picking an entry from the list. It no longer suggests passing `--no-daemon` itself.
 - **"Finished" notifications came again and again.** After an agent finished, switching to another tab or app made Claude or Codex redraw its screen, and O-BROS counted that as new work, so it notified again. Agent notifications now come once per turn: one when the agent finishes or asks, and the next only after you send it something new. Tab switches, resizes and redraws never notify. Plain terminals keep the old "output went quiet" notice.
 
+### Changed
+- **A clearer Resource Manager** (the memory number in the status bar). Each terminal now shows what runs in it, with the agent's own icon and its tab name (for example Claude Code or Codex) instead of the folder name twice, and a bar shows which one uses the most memory. Click a terminal to open it. Folders show a folder icon without the word "workspace", the whole list scrolls as one so every row is visible, the repeated "O-BROS itself" row is gone, local servers have their own section with compact Open and Stop buttons, and the long explanation moved to the ⓘ next to Memory.
+
 ## [0.1.8] - 2026-10-29
 
 ### Added

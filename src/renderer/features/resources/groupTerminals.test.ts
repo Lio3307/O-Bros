@@ -39,6 +39,14 @@ describe('groupTerminalsByWorkspace', () => {
     expect(groups[0].memoryBytes).toBe(150 * MB)
     expect(groups[0].cpuPercent).toBe(8)
     expect(groups[0].terminals.map((row) => row.paneId)).toEqual(['1', '2'])
+    expect(groups[0].terminals.map((row) => row.title)).toEqual(['a · Terminal 1', 'a · Terminal 2'])
+  })
+
+  it('names a terminal after its tab, so an agent shows as its own name instead of the folder', () => {
+    const tab = { ...terminalTab('Codex', 'E:\\PersonalRepo\\o-bros', ['1']), title: 'Codex' }
+    const groups = groupTerminalsByWorkspace([tab], roots, [resource('1', 60, 1)])
+    expect(groups[0].terminals[0].title).toBe('Codex')
+    expect(groups[0].terminals[0].tab.id).toBe('Codex')
   })
 
   it('separates folders of the same root and marks the selected project', () => {
