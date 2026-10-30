@@ -1,7 +1,9 @@
-import { Search, X } from 'lucide-react'
+import { GitBranch, Search, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
 import { lastPathSegment } from '../../../shared/paths'
 import { useFileTreeStore } from '../../state/fileTreeStore'
+import { useGitMarksStore } from '../../state/gitMarksStore'
+import type { GitStatus } from '../../../shared/types'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 import { FileTypeIcon } from '../../ui/FileTypeIcon'
@@ -21,6 +23,31 @@ interface OpenMenu {
   items: PopupMenuItem[]
 }
 
+function changeCountText(status: GitStatus): string {
+  const count = new Set(status.changes.map((change) => change.path)).size
+  return count === 0 ? 'no changes' : count === 1 ? '1 change' : `${count} changes`
+}
+
+function GitSummary({ status }: { status: GitStatus | null | undefined }) {
+  if (status === undefined) {
+    return null
+  }
+  if (status === null) {
+    return (
+      <span className="files-git files-git-none" title="This folder is not inside a git repository, so changes are not tracked.">
+        No git
+      </span>
+    )
+  }
+  return (
+    <span className="files-git" title={`Git repository at ${status.root}. Colored names show what changed since the last commit.`}>
+      <GitBranch size={12} />
+      <span className="files-git-branch">{status.branch === '' ? 'no branch' : status.branch}</span>
+      <span className="files-git-count">· {changeCountText(status)}</span>
+    </span>
+  )
+}
+
 export function FilesPanel() {
   const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const openFileTab = useWorkspaceStore((state) => state.openFileTab)
@@ -34,8 +61,23 @@ export function FilesPanel() {
   const [openMenu, setOpenMenu] = useState<OpenMenu | null>(null)
   const closeMenu = useCallback(() => setOpenMenu(null), [])
   const refreshTree = useFileTreeStore((state) => state.refresh)
+  const gitStatus = useGitMarksStore((state) => (state.projectPath === activeProjectPath ? state.status : undefined))
+  const loadGitMarks = useGitMarksStore((state) => state.load)
 
-  useLiveRefresh(useCallback(async () => refreshTree(), [refreshTree]))
+  useEffect(() => {
+    if (activeProjectPath !== null) {
+      void loadGitMarks(activeProjectPath)
+    }
+  }, [activeProjectPath, loadGitMarks])
+
+  useLiveRefresh(
+    useCallback(async () => {
+      refreshTree()
+      if (activeProjectPath !== null) {
+        await loadGitMarks(activeProjectPath)
+      }
+    }, [refreshTree, loadGitMarks, activeProjectPath])
+  )
 
   const selectedPath = activeTab?.kind === 'file' ? activeTab.path : null
   const isSearching = query.trim().length > 0
@@ -88,6 +130,7 @@ export function FilesPanel() {
     <aside className="files-panel">
       <header className="files-header">
         <span className="panel-title">{lastPathSegment(activeProjectPath)}</span>
+        <GitSummary status={gitStatus} />
       </header>
       <label className="find-field">
         <Search size={14} />

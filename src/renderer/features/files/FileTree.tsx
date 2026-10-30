@@ -11,6 +11,11 @@ import { cn } from '../../ui/cn'
 import { draggedPathsFor, pathsBetween } from './pickRange'
 import { buildEntryMenuItems } from './fileTreeMenu'
 import { isSameData } from '../../../shared/sameData'
+import type { DeletedEntry } from '../../../shared/gitMarks'
+import { gitMarkKey, useGitMarksStore } from '../../state/gitMarksStore'
+import { GitFolderDot, GitLetter, gitKindClass } from './GitMark'
+
+const NO_DELETED: DeletedEntry[] = []
 
 interface FileTreeProps {
   directoryPath: string
@@ -53,6 +58,7 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
   const openDialog = useFileDialogStore((state) => state.open)
   const closeMenu = useCallback(() => setOpenMenu(null), [])
   const isPicked = useFileTreeStore((state) => state.pickedPaths.includes(entry.path))
+  const gitKind = useGitMarksStore((state) => (entry.isDirectory ? state.marks?.folderKinds : state.marks?.fileKinds)?.get(gitMarkKey(entry.path)))
   const indent = BASE_INDENT_PX + depth * INDENT_PER_LEVEL_PX
 
   useEffect(() => {
@@ -119,7 +125,8 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
           onKeyDown={handleKeyDown}
         >
           <FileTypeIcon path={entry.path} />
-          <span>{entry.name}</span>
+          <span className={cn('tree-name', gitKindClass(gitKind))}>{entry.name}</span>
+          {gitKind !== undefined && <GitLetter kind={gitKind} />}
         </button>
         {menu}
       </>
@@ -145,7 +152,8 @@ function TreeEntry({ entry, depth, selectedPath, onOpenFile }: TreeEntryProps) {
       >
         {entry.hasChildren && <DisclosureChevron isOpen={isOpen} />}
         <FolderTypeIcon name={entry.name} isOpen={isOpen} />
-        <span>{entry.name}</span>
+        <span className={cn('tree-name tree-folder', gitKindClass(gitKind))}>{entry.name}</span>
+        {gitKind !== undefined && <GitFolderDot kind={gitKind} />}
       </button>
       {menu}
       {isOpen && (
@@ -159,6 +167,8 @@ export function FileTree({ directoryPath, depth, selectedPath, onOpenFile }: Fil
   const [entries, setEntries] = useState<DirectoryEntry[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const refreshToken = useFileTreeStore((state) => state.refreshToken)
+  const deleted = useGitMarksStore((state) => state.marks?.deletedByFolder.get(gitMarkKey(directoryPath)) ?? NO_DELETED)
+  const indent = BASE_INDENT_PX + depth * INDENT_PER_LEVEL_PX + FILE_ICON_ALIGNMENT_PX
 
   useEffect(() => {
     setErrorMessage(null)
@@ -177,6 +187,20 @@ export function FileTree({ directoryPath, depth, selectedPath, onOpenFile }: Fil
       {entries.map((entry) => (
         <TreeEntry key={entry.path} entry={entry} depth={depth} selectedPath={selectedPath} onOpenFile={onOpenFile} />
       ))}
+      {deleted
+        .filter((gone) => !entries.some((entry) => gitMarkKey(entry.path) === gitMarkKey(gone.path)))
+        .map((gone) => (
+          <div
+            key={gone.path}
+            className="row row-deleted"
+            title={`${gone.name} was deleted. Git still has it until you commit; restore it from the Changes panel.`}
+            style={{ paddingLeft: indent }}
+          >
+            <FileTypeIcon path={gone.path} />
+            <span className="tree-name git-deleted">{gone.name}</span>
+            <GitLetter kind="deleted" />
+          </div>
+        ))}
     </>
   )
 }

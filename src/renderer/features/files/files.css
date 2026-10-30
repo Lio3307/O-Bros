@@ -88,3 +88,124 @@
   background: var(--color-info);
   border-radius: var(--radius);
 }
+
+.files-header {
+  gap: 8px;
+  min-width: 0;
+}
+
+.files-header .panel-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-git {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 5px;
+  max-width: 60%;
+  margin-left: auto;
+  padding: 1px 7px;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.files-git-branch {
+  overflow: hidden;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-git-count {
+  flex-shrink: 0;
+}
+
+.files-git-none {
+  color: var(--color-faint);
+  border-style: dashed;
+}
+
+.tree-name {
+  flex: 1;
+}
+
+.tree-name.git-modified {
+  color: var(--color-warning);
+}
+
+.tree-name.git-added,
+.tree-name.git-untracked {
+  color: var(--color-success);
+}
+
+.tree-name.git-deleted,
+.tree-name.git-conflicted {
+  color: var(--color-danger);
+}
+
+.tree-name.git-renamed {
+  color: var(--color-info);
+}
+
+.tree-name.git-deleted:not(.tree-folder) {
+  text-decoration: line-through;
+}
+
+.git-letter {
+  flex-shrink: 0;
+  width: 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.git-letter.git-modified,
+.git-dot.git-modified {
+  color: var(--color-warning);
+}
+
+.git-letter.git-added,
+.git-letter.git-untracked,
+.git-dot.git-added,
+.git-dot.git-untracked {
+  color: var(--color-success);
+}
+
+.git-letter.git-deleted,
+.git-letter.git-conflicted,
+.git-dot.git-deleted,
+.git-dot.git-conflicted {
+  color: var(--color-danger);
+}
+
+.git-letter.git-renamed,
+.git-dot.git-renamed {
+  color: var(--color-info);
+}
+
+.git-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  margin-right: 4px;
+  background-color: currentColor;
+  border-radius: 50%;
+}
+
+.row-deleted {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.row-deleted:hover {
+  background: transparent;
+}

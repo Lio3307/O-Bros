@@ -4,6 +4,9 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Added
+- **The Files panel shows git changes.** Next to the folder name it says whether the folder is in a git repository, with its branch and how many files changed (or "No git"). In the tree, changed files are yellow with M, new files green with U (A once staged), deleted files stay listed in red, crossed out, with D until you commit, renamed files are blue with R, and conflicts red with !. Folders that hold changes get a dot in the strongest color. It updates by itself as you and your agents work.
+
 ### Fixed
 - **The problem list flickered when you hovered a warning or error icon** on a line with many problems, such as a minified file. The list grew taller than the window, covered the icon it belonged to, closed and opened again. It now stays below the icon, is at most 320 pixels tall (less on a small window) and scrolls.
 - **Code colors now cover every language, not a fixed list.** The editor colored about 30 exact kinds of code, so in many of the ~150 languages it knows, things like built-ins (print, console), constants, macros, labels, annotations, escapes, errors and added or removed lines in diff files stayed plain white. Colors now go by family (keywords, strings, comments, names, types, functions, punctuation and so on), so every kind of token in every language gets a color from your theme, and new languages are covered too. A test loads every language in the catalog and fails if any kind of token is left without a color. Files the editor does not know are now colored by their shape: dotfiles such as .gitignore as config, content that starts with { or [ as JSON, and any other text with plain-text colors, instead of no colors at all.

@@ -1,5 +1,5 @@
 import { readFile, stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import type { GitDiffRequest, GitFileChange, GitStatus } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
 import { readGitOperation } from './gitConflicts'
@@ -30,7 +30,8 @@ export async function readGitStatus(repoPath: string): Promise<GitStatus | null>
     return null
   }
 
-  const [statusOutput, lineCounts, lastFetchedAt, operation] = await Promise.all([
+  const [rootOutput, statusOutput, lineCounts, lastFetchedAt, operation] = await Promise.all([
+    runGit(repoPath, ['rev-parse', '--show-toplevel']),
     runGit(repoPath, ['status', '--porcelain=v2', '--branch', '--untracked-files=all']),
     readLineCounts(repoPath),
     readLastFetchedAt(repoPath),
@@ -44,6 +45,7 @@ export async function readGitStatus(repoPath: string): Promise<GitStatus | null>
   })
 
   return {
+    root: resolve(rootOutput.trim()),
     branch: parsed.branch,
     headHash: parsed.headHash,
     upstream: parsed.upstream,
