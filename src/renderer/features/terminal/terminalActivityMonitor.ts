@@ -1,9 +1,7 @@
-import { useAttentionStore } from '../../state/attentionStore'
-import { useLayoutStore } from '../../state/layoutStore'
-import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
-import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { classifyActivity, recordOutput, type TerminalActivity } from './terminalActivity'
 import { appendToTail, looksLikeStillWorking, looksLikeWaitingForInput } from '../../../shared/waitingPrompt'
+import { isAgentPane } from './agentStatusTracking'
+import { announceForPane } from './paneNotification'
 import { readTerminalText } from './terminalRegistry'
 
 const CHECK_INTERVAL_MS = 1000
@@ -18,44 +16,6 @@ interface WatchedTerminal {
 const activities = new Map<string, WatchedTerminal>()
 let checkTimer: ReturnType<typeof setInterval> | null = null
 
-function findTabOfPane(paneId: string): TerminalTab | null {
-  for (const tab of useWorkspaceStore.getState().tabs) {
-    if (tab.kind === 'terminal' && paneId in tab.panes) {
-      return tab
-    }
-  }
-  return null
-}
-
-function isUserWatching(tab: TerminalTab): boolean {
-  const isTabShown = useWorkspaceStore.getState().activeTabId === tab.id && useLayoutStore.getState().section === 'projects'
-  return isTabShown && document.hasFocus()
-}
-
-function showSystemNotification(tab: TerminalTab, title: string, body: string): void {
-  try {
-    const notification = new Notification(title, { body })
-    notification.onclick = () => {
-      window.focus()
-      useWorkspaceStore.getState().activateTab(tab.id)
-      useLayoutStore.getState().showSection('projects')
-    }
-  } catch {
-    return
-  }
-}
-
-function announce(paneId: string, happened: string, detail: string): void {
-  const tab = findTabOfPane(paneId)
-  if (tab === null || isUserWatching(tab)) {
-    return
-  }
-  useAttentionStore.getState().mark(tab.id)
-  if (useTerminalSettingsStore.getState().notifyWhenFinished) {
-    showSystemNotification(tab, `${tab.panes[paneId].title} ${happened}`, detail)
-  }
-}
-
 function isStillWorkingOnScreen(paneId: string): boolean {
   const screen = readTerminalText(paneId, SCREEN_LINES)
   return screen !== null && looksLikeStillWorking(screen)
@@ -64,10 +24,14 @@ function isStillWorkingOnScreen(paneId: string): boolean {
 function checkActivities(): void {
   const now = Date.now()
   for (const [paneId, watched] of activities) {
+    if (isAgentPane(paneId)) {
+      activities.delete(paneId)
+      continue
+    }
     const quietMs = now - watched.activity.lastOutputAt
     if (quietMs >= WAITING_AFTER_QUIET_MS && looksLikeWaitingForInput(watched.tail)) {
       activities.delete(paneId)
-      announce(paneId, 'is waiting for you', 'It asked a question and needs your answer.')
+      announceForPane(paneId, 'is waiting for you', 'It asked a question and needs your answer.')
       continue
     }
     const status = classifyActivity(watched.activity, now)
@@ -76,7 +40,7 @@ function checkActivities(): void {
     }
     activities.delete(paneId)
     if (status === 'finished-long-run') {
-      announce(paneId, 'finished', 'The terminal output has gone quiet.')
+      announceForPane(paneId, 'finished', 'The terminal output has gone quiet.')
     }
   }
   if (activities.size === 0 && checkTimer !== null) {

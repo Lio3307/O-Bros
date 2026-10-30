@@ -4,6 +4,9 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 
 ## [Unreleased]
 
+### Fixed
+- **"Finished" notifications came again and again.** After an agent finished, switching to another tab or app made Claude or Codex redraw its screen, and O-BROS counted that as new work, so it notified again. Agent notifications now come once per turn: one when the agent finishes or asks, and the next only after you send it something new. Tab switches, resizes and redraws never notify. Plain terminals keep the old "output went quiet" notice.
+
 ## [0.1.8] - 2026-10-29
 
 ### Added

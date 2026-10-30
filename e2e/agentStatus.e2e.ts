@@ -92,3 +92,41 @@ test('puts the cursor in the terminal you switch to, and in the pane you used la
   await app.window.getByTitle('Projects', { exact: true }).click()
   await expect.poll(focusIsInFocusedPane).toBe(true)
 })
+
+test('notifies once when an agent finishes in another tab, not again after switching tabs or resizing', async () => {
+  test.setTimeout(120_000)
+  await app.window.evaluate(() => {
+    const titles: string[] = []
+    Object.assign(window, { shownNotifications: titles })
+    window.Notification = class {
+      onclick: (() => void) | null = null
+      constructor(title: string) {
+        titles.push(title)
+      }
+    } as unknown as typeof Notification
+  })
+  const shownNotifications = () => app.window.evaluate(() => (window as unknown as { shownNotifications: string[] }).shownNotifications)
+  await app.window.getByRole('button', { name: 'ShellAgent', exact: true }).click()
+  const agentTab = app.window.locator('.tab').first()
+  await expect(agentTab.locator('.agent-status-icon')).toHaveClass(/agent-status-ready/, { timeout: 20_000 })
+  await app.window.waitForTimeout(SHELL_START_MS)
+
+  await typeLine(SLOW_OUTPUT)
+  await app.window.getByTitle('New terminal').click()
+  await expect(agentTab.locator('.agent-status-icon')).toHaveClass(/agent-status-done/, { timeout: 20_000 })
+  await expect.poll(shownNotifications).toEqual(['ShellAgent finished'])
+
+  for (const size of [900, 1100, 1000]) {
+    await agentTab.click()
+    await app.application.evaluate(({ BrowserWindow }, width) => BrowserWindow.getAllWindows()[0].setSize(width, 700), size)
+    await app.window.locator('.tab').last().click()
+    await app.window.waitForTimeout(1500)
+  }
+  await app.window.waitForTimeout(5000)
+  expect(await shownNotifications()).toEqual(['ShellAgent finished'])
+
+  await agentTab.click()
+  await typeLine(SLOW_OUTPUT)
+  await app.window.locator('.tab').last().click()
+  await expect.poll(shownNotifications, { timeout: 30_000 }).toEqual(['ShellAgent finished', 'ShellAgent finished'])
+})

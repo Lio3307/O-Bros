@@ -64,6 +64,15 @@ function checkStatuses(): void {
   }
 }
 
+export function turnOf(paneId: string): number | null {
+  const activity = activities.get(paneId)
+  return activity === undefined ? null : (activity.lastSubmitAt ?? activity.startedAt)
+}
+
+export function isAgentPane(paneId: string): boolean {
+  return activities.has(paneId)
+}
+
 export function noteAgentOutput(paneId: string): void {
   updateActivity(paneId, (activity) => withOutput(activity, Date.now()))
 }

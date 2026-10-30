@@ -25,6 +25,7 @@ import { useLayoutStore } from './state/layoutStore'
 import { startProjectTabSync } from './state/projectTabSync'
 import { startReviewBaselines } from './state/reviewBaselineWatcher'
 import { startTeamBridge } from './features/team/teamBridge'
+import { startAgentNotifications } from './features/terminal/agentNotifications'
 import { startAgentStatusTracking } from './features/terminal/agentStatusTracking'
 import { useAgentCatalogStore } from './state/agentCatalogStore'
 import { useProjectsStore } from './state/projectsStore'
@@ -53,6 +54,7 @@ function useStartupData(): void {
     const stopReviewBaselines = startReviewBaselines()
     const stopTeamBridge = startTeamBridge()
     const stopAgentStatusTracking = startAgentStatusTracking()
+    const stopAgentNotifications = startAgentNotifications()
     const stopAutomaticUpdates = startAutomaticUpdates()
     const stopHandlerErrors = window.api.app.onHandlerError((message) => toast.warning(`Dev: ${message}`))
     void useAgentCatalogStore.getState().load()
@@ -65,6 +67,7 @@ function useStartupData(): void {
       stopReviewBaselines()
       stopTeamBridge()
       stopAgentStatusTracking()
+      stopAgentNotifications()
       stopAutomaticUpdates()
       stopHandlerErrors()
     }
