@@ -1,6 +1,13 @@
 # Screenshots
 
-The images in this folder are shown on the main README. Add your own with these exact names:
+The images in this folder are shown on the main README. They are made by a script, so they can be refreshed after any change to the interface:
+
+```
+npm run build
+README_SHOTS=docs/images npx playwright test e2e/readmeShots.e2e.ts
+```
+
+On Windows PowerShell, set the variable first: `$env:README_SHOTS = "docs/images"`. The script (`e2e/readmeShots.e2e.ts`) opens O-BROS in a test window with a made-up project, made-up conversations and fake demo agents (`e2e/readmeShots/`, each marked "(demo)"), so nothing from your own computer or accounts appears. Without `README_SHOTS` the normal test run skips it. It writes these files:
 
 | File | What to capture |
 |---|---|
