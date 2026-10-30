@@ -3,7 +3,7 @@ name: wot
 description: wot (work of teams) lets you summon other AI coding agents (Claude, Codex, Gemini, OpenCode and any other agent CLI installed on this computer) as hidden team members inside the O-BROS app, give them tasks, wait for them, read their answers and stop them. Use it when the user asks you to "use codex", "ask claude", "get a second opinion from another agent", "summon an agent", "make a team", "work in parallel with other agents", "wot", or names another agent CLI to help. It only works inside a terminal opened by the O-BROS app.
 license: MIT
 metadata:
-  version: "1.10.0"
+  version: "1.11.0"
   publisher: O-BROS
 ---
 
@@ -152,7 +152,7 @@ No wot command cancels anything when your shell stops it because of a time limit
 Options:
 
 - `--cwd <folder>`: the member works in another folder of the project (relative to your folder). Use it when your folder is the top of a drive such as `E:\`: Codex's Windows sandbox cannot run commands or write files there.
-- `-- <agent options>`: everything after `--` is passed to the agent program itself, for example `wot spawn codex --name docs -- --no-daemon`. wot refuses options it does not know, so never put agent options before `--`.
+- `-- <agent options>`: everything after `--` is passed to the agent program itself, for example `wot spawn codex --name docs -- --model <model>`. wot refuses options it does not know, so never put agent options before `--`. O-BROS already starts Codex members on their own, without Codex's shared background server, so they open a new chat in the member's folder; never pass `--no-daemon` or `-C` yourself.
 - `--task-file <path>`: only if you already wrote the task before summoning. O-BROS then types it in by itself when the agent is ready, and you skip step 4.
 
 Results:
@@ -243,6 +243,7 @@ Reading a FINISHED screen. Look at the end of the screen and do the first thing 
 | The screen shows | What you do |
 |---|---|
 | `DONE:` or `BLOCKED:` with its answer | Go to section 11. |
+| A list of old sessions, threads or tasks instead of a new chat, or a project folder that is not the member's folder | The agent did not open a fresh chat. Never press keys, pick an entry or send the task into that list: picking one resumes an old conversation in another project. `wot stop <name>` and tell the user exactly what the screen shows. Do not summon it again until the user answers. |
 | A question, a menu or a permission prompt (for example "1. Yes 2. No", "(y/n)", "Allow?") | It is asking. Go to section 9. |
 | It is still busy (for example "esc to interrupt", a spinner, "Working", "Thinking", a running command) | It only paused printing. Run `wot wait <name>` again. |
 | "Interrupted", "Request interrupted by user", or an empty prompt after the user typed something | The user stopped or redirected it on purpose. Ask the user before you send it more work. |

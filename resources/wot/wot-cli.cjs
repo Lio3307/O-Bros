@@ -58,7 +58,7 @@ Commands:
   wot spawn <agent> --name <name>              Start a hidden team member. Do this first, then send its task.
       [--task-file <path>]                     Or give the task now if it is already written.
       [--cwd <folder>]                         Work in another folder of the project (relative to yours).
-      [-- <agent options>]                     Everything after -- goes to the agent, e.g. -- --no-daemon
+      [-- <agent options>]                     Everything after -- goes to the agent, e.g. -- --model <model>
   wot list                                     List team members and what they are doing.
   wot wait <name> [--timeout <seconds>]        Wait until the member finishes its turn or asks a question.
   wot wait --any [--timeout <seconds>]         Wait for whichever of your members finishes, asks or exits first.
@@ -130,7 +130,7 @@ function checkFlags(command, flags, agentArgs) {
   const unknown = Object.keys(flags).filter((flag) => !allowed.includes(flag))
   if (unknown.length > 0) {
     const known = allowed.length === 0 ? 'none' : allowed.map((flag) => '--' + flag).join(', ')
-    const agentHint = command === 'spawn' ? '\nTo give options to the agent itself, put them after --, for example: wot spawn codex --name docs --task-file <path> -- --no-daemon' : ''
+    const agentHint = command === 'spawn' ? '\nTo give options to the agent itself, put them after --, for example: wot spawn codex --name docs --task-file <path> -- --model <model>' : ''
     finish(EXIT_CODES.failed, `ERROR: "wot ${command}" does not know ${unknown.map((flag) => '--' + flag).join(', ')}. Its options: ${known}.${agentHint}`)
   }
   if (agentArgs.length > 0 && command !== 'spawn') {

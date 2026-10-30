@@ -6,6 +6,7 @@ import { findTeamAgent, listTeamAgents, type TeamAgentOption } from '../../../sh
 import { TEAM_MEMBER_ID_PREFIX, teamMemberName } from '../../../shared/teamMemberName'
 import { autoStopReason, DEFAULT_TEAM_POLICY, isFinishedState, type TeamPolicy } from '../../../shared/teamPolicy'
 import { comparablePath, isDriveRoot, resolvePath } from '../../../shared/paths'
+import { withoutSharedServer } from '../../../shared/codexStandalone'
 import { commandWithSessionId } from '../../../shared/sessionCommand'
 import { commandWithArguments, shellKindOf } from '../../../shared/shellCommand'
 import { assertInsideProjectRoots } from '../../pathGuard'
@@ -16,6 +17,7 @@ import { loadAcpRegistry } from '../agents/acpRegistryClient'
 import { listPathCommands } from '../agents/agentDetector'
 import { killTerminal } from '../ptyManager'
 import { terminalFactsOf } from '../terminalFacts'
+import { readAgentHelp } from './codexHelp'
 import { isReadyForInput, isSettled, memberStateOf } from './memberState'
 import { typeAndSubmit, waitUntil } from '../terminalTyping'
 import { askInterface, sendToInterface } from './rendererBridge'
@@ -390,13 +392,14 @@ export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> 
   const takenNames = listMembers().map((member) => member.name)
   const provider = providerOfCommand(agent.command)
   const sessionId = provider === 'claude' ? randomUUID() : null
+  const agentArgs = provider === 'codex' ? withoutSharedServer(request.agentArgs, await readAgentHelp(agent.command)) : request.agentArgs
   const warnings = folderWarnings(cwd)
 
   const member: TeamMember = {
     id: `${TEAM_MEMBER_ID_PREFIX}${randomUUID()}`,
     name: teamMemberName(request.name, agent.name, takenNames),
     agentName: agent.name,
-    command: commandWithArguments(commandWithSessionId(agent.command, sessionId), request.agentArgs, shellKindOf(process.platform)),
+    command: commandWithArguments(commandWithSessionId(agent.command, sessionId), agentArgs, shellKindOf(process.platform)),
     cwd,
     summonedByPaneId: request.callerPaneId,
     task: request.task,
