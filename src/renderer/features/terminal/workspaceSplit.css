@@ -1,0 +1,73 @@
+.tab-content-side {
+  overflow: hidden;
+}
+
+.tab-content-side-focused::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  height: 2px;
+  background: var(--color-strong);
+  pointer-events: none;
+}
+
+.tab-beside {
+  color: var(--color-text);
+  background: var(--color-terminal);
+  border-top-color: var(--color-faint);
+}
+
+.split-drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  padding: 8px;
+}
+
+.split-drop-area {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--color-strong) 12%, transparent);
+  border: 2px solid var(--color-strong);
+  border-radius: var(--radius);
+  pointer-events: none;
+  transition:
+    inset var(--motion-fast) var(--ease-out),
+    opacity var(--motion-fast) var(--ease-out);
+}
+
+.split-drop-overlay[data-side='left'] .split-drop-area {
+  inset: 8px 50% 8px 8px;
+}
+
+.split-drop-overlay[data-side='right'] .split-drop-area {
+  inset: 8px 8px 8px 50%;
+}
+
+.split-drop-overlay[data-side='top'] .split-drop-area {
+  inset: 8px 8px 50% 8px;
+}
+
+.split-drop-overlay[data-side='bottom'] .split-drop-area {
+  inset: 50% 8px 8px 8px;
+}
+
+.split-drop-overlay[data-side='center'] .split-drop-area {
+  inset: 8px;
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--color-faint);
+}
+
+.split-drop-hint {
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--color-strong);
+  background: var(--color-popover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}

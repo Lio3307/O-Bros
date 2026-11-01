@@ -34,7 +34,7 @@ const fileTab: WorkspaceTab = { kind: 'file', id: 'tab-2', title: 'a.ts', path: 
 
 describe('session snapshot', () => {
   it('restores tabs and layout but never restarts a CLI or keeps unsaved marks', () => {
-    const raw = serializeSession({ tabs: [terminalTab, fileTab], activeTabId: 'tab-2' })
+    const raw = serializeSession({ tabs: [terminalTab, fileTab], activeTabId: 'tab-2', split: null })
     const restored = parseSession(raw)
 
     expect(restored?.activeTabId).toBe('tab-2')
@@ -64,7 +64,7 @@ describe('session snapshot', () => {
 
   it('skips a terminal tab whose layout points to a missing pane', () => {
     const broken = { ...terminalTab, panes: { 'pane-1': terminalTab.panes['pane-1'] } }
-    const restored = parseSession(serializeSession({ tabs: [broken, fileTab], activeTabId: 'tab-1' }))
+    const restored = parseSession(serializeSession({ tabs: [broken, fileTab], activeTabId: 'tab-1', split: null }))
     expect(restored?.tabs).toHaveLength(1)
     expect(restored?.activeTabId).toBe('tab-2')
   })
@@ -74,7 +74,7 @@ describe('session snapshot', () => {
       ...terminalTab,
       layout: { ...(terminalTab.layout as Extract<TerminalTab['layout'], { kind: 'split' }>), ratio: 0.3 }
     }
-    const restored = parseSession(serializeSession({ tabs: [resized], activeTabId: 'tab-1' }))
+    const restored = parseSession(serializeSession({ tabs: [resized], activeTabId: 'tab-1', split: null }))
     const layout = restored?.tabs[0].kind === 'terminal' ? restored.tabs[0].layout : null
     expect(layout?.kind === 'split' && layout.ratio).toBe(0.3)
   })
@@ -93,5 +93,13 @@ describe('session snapshot', () => {
     })
     const ignored = parseSession(notANumber)?.tabs[0]
     expect(ignored?.kind === 'terminal' && ignored.layout.kind === 'split' && ignored.layout.ratio).toBeUndefined()
+  })
+
+  it('keeps a split only when both of its tabs came back', () => {
+    const split = { first: 'tab-1', second: 'tab-2', direction: 'horizontal', ratio: 0.4 }
+    const both = parseSession(JSON.stringify({ tabs: [terminalTab, fileTab], activeTabId: 'tab-1', split }))
+    expect(both?.split).toEqual(split)
+    const oneMissing = parseSession(JSON.stringify({ tabs: [terminalTab], activeTabId: 'tab-1', split }))
+    expect(oneMissing?.split).toBeNull()
   })
 })

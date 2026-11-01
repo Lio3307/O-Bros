@@ -8,13 +8,14 @@ interface PaneLayoutViewProps {
   tab: TerminalTab
   layout: PaneLayout
   isVisible: boolean
+  isFocusedSide: boolean
 }
 
-function placement(rect: PaneRect) {
+export function placement(rect: PaneRect) {
   return { left: `${rect.left}%`, top: `${rect.top}%`, width: `${rect.width}%`, height: `${rect.height}%` }
 }
 
-export function PaneLayoutView({ tab, layout, isVisible }: PaneLayoutViewProps) {
+export function PaneLayoutView({ tab, layout, isVisible, isFocusedSide }: PaneLayoutViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const resizeSplit = useWorkspaceStore((state) => state.resizeSplit)
 
@@ -25,7 +26,7 @@ export function PaneLayoutView({ tab, layout, isVisible }: PaneLayoutViewProps) 
     <div className="pane-layout" ref={containerRef}>
       {Object.entries(rectByPaneId).map(([paneId, rect]) => (
         <div key={paneId} className="pane-slot" style={placement(rect)}>
-          <PaneFrame tab={tab} paneId={paneId} isVisible={isVisible} />
+          <PaneFrame tab={tab} paneId={paneId} isVisible={isVisible} isFocusedSide={isFocusedSide} />
         </div>
       ))}
       {dividers.map((divider) => (

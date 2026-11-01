@@ -16,6 +16,7 @@ import {
 } from '../features/terminal/paneTree'
 import { belongsToProject, neighbourTabId, tabLocation } from '../features/terminal/projectTabs'
 import { moveItem } from '../features/terminal/tabOrder'
+import { splitAfterChange, type WorkspaceSplit } from '../features/terminal/workspaceSplit'
 
 export interface TerminalPaneInfo {
   id: string
@@ -64,6 +65,12 @@ export interface NewTerminalOptions {
 interface WorkspaceState {
   tabs: WorkspaceTab[]
   activeTabId: string | null
+  split: WorkspaceSplit | null
+  draggedTabId: string | null
+  showSplit: (split: WorkspaceSplit, activeTabId: string) => void
+  closeSplit: () => void
+  resizeWorkspaceSplit: (ratio: number) => void
+  setDraggedTab: (tabId: string | null) => void
   openTerminalTab: (options: NewTerminalOptions) => void
   openFileTab: (filePath: string) => void
   activateTab: (tabId: string) => void
@@ -71,7 +78,7 @@ interface WorkspaceState {
   closeOtherTabs: (tabId: string) => void
   closeFileTabsInside: (path: string) => void
   moveTab: (draggedTabId: string, targetTabId: string) => void
-  restoreTabs: (tabs: WorkspaceTab[], activeTabId: string | null) => void
+  restoreTabs: (tabs: WorkspaceTab[], activeTabId: string | null, split: WorkspaceSplit | null) => void
   renameTab: (tabId: string, title: string) => void
   splitPane: (tabId: string, paneId: string, direction: SplitDirection) => void
   closePane: (tabId: string, paneId: string) => void
@@ -147,6 +154,21 @@ function showProjectOf(tab: WorkspaceTab): void {
 export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
   tabs: [],
   activeTabId: null,
+  split: null,
+  draggedTabId: null,
+
+  showSplit: (split, activeTabId) => set({ split, activeTabId }),
+
+  closeSplit: () => set({ split: null }),
+
+  resizeWorkspaceSplit: (ratio) => {
+    const { split } = get()
+    if (split !== null) {
+      set({ split: { ...split, ratio } })
+    }
+  },
+
+  setDraggedTab: (draggedTabId) => set({ draggedTabId }),
 
   openTerminalTab: (options) => {
     const terminalCount = get().tabs.filter((tab) => tab.kind === 'terminal').length
@@ -221,7 +243,7 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
     }
   },
 
-  restoreTabs: (tabs, activeTabId) => set({ tabs, activeTabId }),
+  restoreTabs: (tabs, activeTabId, split) => set({ tabs, activeTabId, split }),
 
   renameTab: (tabId, title) => {
     set({ tabs: get().tabs.map((tab) => (tab.id !== tabId ? tab : isTerminalTab(tab) ? { ...tab, title, isTitleFromAgent: false } : { ...tab, title })) })
@@ -320,3 +342,24 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
     })
   }
 }))
+
+useWorkspaceStore.subscribe((state, previous) => {
+  if (state.split === null || (state.tabs === previous.tabs && state.activeTabId === previous.activeTabId)) {
+    return
+  }
+  const projectPath = useProjectsStore.getState().activeProjectPath
+  const isInProject = (tabId: string | null) => {
+    const tab = state.tabs.find((candidate) => candidate.id === tabId)
+    return tab !== undefined && belongsToProject(tab, projectPath)
+  }
+  const split = splitAfterChange({
+    split: state.split,
+    tabs: state.tabs,
+    previousActiveTabId: previous.activeTabId,
+    activeTabId: state.activeTabId,
+    isSameProject: isInProject(state.activeTabId) && isInProject(state.split.first)
+  })
+  if (split !== state.split) {
+    useWorkspaceStore.setState({ split })
+  }
+})

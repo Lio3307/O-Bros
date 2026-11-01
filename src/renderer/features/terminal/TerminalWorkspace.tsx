@@ -1,17 +1,23 @@
-import { Suspense, useRef } from 'react'
+import { Suspense, useRef, type CSSProperties } from 'react'
 import { useActiveProjectTabs } from '../../state/activeProjectTabs'
 import { openTerminal } from '../../state/openTerminal'
 import { useProjectsStore } from '../../state/projectsStore'
 import { useTeamStore } from '../../state/teamStore'
 import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
 import { TeamMemberViews } from '../team/TeamMemberViews'
-import { PaneLayoutView } from './PaneLayoutView'
+import { computePaneRects, listDividers } from './paneTree'
+import { PaneDivider } from './PaneDivider'
+import { PaneLayoutView, placement } from './PaneLayoutView'
+import { SplitDropOverlay } from './SplitDropOverlay'
 import { TabBar } from './TabBar'
+import { isShowingSplit, layoutOfSplit } from './workspaceSplit'
 import './terminal.css'
+import './workspaceSplit.css'
 import { Button } from '../../ui/Button'
 import { lazyComponent } from '../../ui/lazyComponent'
 import { LoadingText } from '../../ui/LoadingText'
 import { imageTypeOf } from '../../../shared/imageFiles'
+import { cn } from '../../ui/cn'
 
 function FirstRunState() {
   const addRoot = useProjectsStore((state) => state.addRoot)
@@ -45,17 +51,34 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
   const hasNoFolders = useProjectsStore((state) => state.roots.length === 0)
   const isMemberShown = useTeamStore((state) => state.shownMemberId !== null)
 
-  const terminalTabs = tabs.filter(isTerminalTab)
-  const activeFileTab = projectTabs.find((tab) => tab.kind === 'file' && tab.id === activeTabId)
+  const split = useWorkspaceStore((state) => state.split)
+  const activateTab = useWorkspaceStore((state) => state.activateTab)
+  const resizeWorkspaceSplit = useWorkspaceStore((state) => state.resizeWorkspaceSplit)
+  const contentRef = useRef<HTMLDivElement>(null)
 
-  if (activeTabId !== null) {
-    startedTabIds.current.add(activeTabId)
+  const terminalTabs = tabs.filter(isTerminalTab)
+  const shownSplit = isShowingSplit(split, activeTabId) && !isMemberShown ? split : null
+  const shownTabIds = shownSplit === null ? (activeTabId === null ? [] : [activeTabId]) : [shownSplit.first, shownSplit.second]
+  const shownFileTabs = projectTabs.filter((tab) => tab.kind === 'file' && shownTabIds.includes(tab.id))
+  const rectByTabId = shownSplit === null ? {} : computePaneRects(layoutOfSplit(shownSplit))
+
+  shownTabIds.forEach((tabId) => startedTabIds.current.add(tabId))
+
+  function sideProps(tabId: string): { style?: CSSProperties; onMouseDownCapture?: () => void } {
+    const rect = rectByTabId[tabId]
+    return rect === undefined
+      ? {}
+      : { style: placement(rect), onMouseDownCapture: () => tabId !== activeTabId && activateTab(tabId) }
+  }
+
+  function sideClass(tabId: string): string | false {
+    return shownSplit !== null && (tabId === activeTabId ? 'tab-content-side tab-content-side-focused' : 'tab-content-side')
   }
 
   return (
     <div className={isVisible ? 'workspace' : 'workspace workspace-hidden'}>
       <TabBar />
-      <div className="workspace-content">
+      <div className="workspace-content" ref={contentRef}>
         {!isMemberShown && projectTabs.length === 0 && hasNoFolders && <FirstRunState />}
         {!isMemberShown && projectTabs.length === 0 && !hasNoFolders && (
           <div className="empty-state">
@@ -68,30 +91,39 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
         {terminalTabs
           .filter((tab) => startedTabIds.current.has(tab.id))
           .map((tab) => {
-            const isActive = tab.id === activeTabId && !isMemberShown
+            const isShown = shownTabIds.includes(tab.id) && !isMemberShown
             return (
-              <div key={tab.id} className={isActive ? 'tab-content' : 'tab-content tab-content-hidden'}>
-                <PaneLayoutView tab={tab} layout={tab.layout} isVisible={isVisible && isActive} />
+              <div key={tab.id} className={cn('tab-content', !isShown && 'tab-content-hidden', isShown && sideClass(tab.id))} {...(isShown ? sideProps(tab.id) : {})}>
+                <PaneLayoutView tab={tab} layout={tab.layout} isVisible={isVisible && isShown} isFocusedSide={tab.id === activeTabId} />
               </div>
             )
           })}
-        {!isMemberShown && activeFileTab?.kind === 'file' && (
-          <div className="tab-content">
-            <Suspense
-              fallback={
-                <div className="loading-overlay">
-                  <LoadingText text="Opening the editor…" isDelayed />
+        {!isMemberShown &&
+          shownFileTabs.map(
+            (fileTab) =>
+              fileTab.kind === 'file' && (
+                <div key={fileTab.id} className={cn('tab-content', sideClass(fileTab.id))} {...sideProps(fileTab.id)}>
+                  <Suspense
+                    fallback={
+                      <div className="loading-overlay">
+                        <LoadingText text="Opening the editor…" isDelayed />
+                      </div>
+                    }
+                  >
+                    {imageTypeOf(fileTab.path) === null ? (
+                      <CodeEditor tabId={fileTab.id} filePath={fileTab.path} />
+                    ) : (
+                      <ImageViewer filePath={fileTab.path} />
+                    )}
+                  </Suspense>
                 </div>
-              }
-            >
-              {imageTypeOf(activeFileTab.path) === null ? (
-                <CodeEditor tabId={activeFileTab.id} filePath={activeFileTab.path} />
-              ) : (
-                <ImageViewer filePath={activeFileTab.path} />
-              )}
-            </Suspense>
-          </div>
-        )}
+              )
+          )}
+        {shownSplit !== null &&
+          listDividers(layoutOfSplit(shownSplit)).map((divider) => (
+            <PaneDivider key="workspace-split" divider={divider} containerRef={contentRef} onRatioChange={resizeWorkspaceSplit} />
+          ))}
+        {!isMemberShown && <SplitDropOverlay />}
         <TeamMemberViews isVisible={isVisible} />
       </div>
     </div>

@@ -13,9 +13,10 @@ interface PaneFrameProps {
   tab: TerminalTab
   paneId: string
   isVisible: boolean
+  isFocusedSide: boolean
 }
 
-export function PaneFrame({ tab, paneId, isVisible }: PaneFrameProps) {
+export function PaneFrame({ tab, paneId, isVisible, isFocusedSide }: PaneFrameProps) {
   const splitPane = useWorkspaceStore((state) => state.splitPane)
   const renamePane = useWorkspaceStore((state) => state.renamePane)
   const focusPane = useWorkspaceStore((state) => state.focusPane)
@@ -62,7 +63,7 @@ export function PaneFrame({ tab, paneId, isVisible }: PaneFrameProps) {
         startCommand={pane.startCommand}
         startsAgent={isAgentCommand(pane.startCommand, launchers, registry)}
         isVisible={isVisible}
-        isFocusTarget={tab.focusedPaneId === paneId}
+        isFocusTarget={isFocusedSide && tab.focusedPaneId === paneId}
       />
     </div>
   )

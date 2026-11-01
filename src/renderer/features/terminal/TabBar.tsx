@@ -1,4 +1,4 @@
-import { ChevronDown, Columns2, Plus, Rows2, X } from 'lucide-react'
+import { ChevronDown, Columns2, Plus, Rows2, Square, X } from 'lucide-react'
 import { FileTypeIcon } from '../../ui/FileTypeIcon'
 import { TerminalTabIcon } from './TerminalTabIcon'
 import { TabTeamButton } from './TabTeamButton'
@@ -10,8 +10,11 @@ import { copyPath, revealInFileExplorer } from '../files/fileActions'
 import { openTerminal } from '../../state/openTerminal'
 import { requestCloseOtherTabs, requestCloseTab } from '../../state/requestCloseTab'
 import { isTerminalTab, useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore'
+import { openTabBeside, openTerminalBeside } from '../../state/splitActions'
 import { continueInAnotherAgentItem } from '../history/continueFromTab'
+import { isShowingSplit, TAB_DRAG_TYPE } from './workspaceSplit'
 import { showTab } from '../../state/showTab'
+import { cn } from '../../ui/cn'
 import { EditableTitle } from '../../ui/EditableTitle'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { useShortcutLabel } from '../../state/shortcutsStore'
@@ -34,9 +37,24 @@ function continueItem(tab: WorkspaceTab): PopupMenuItem[] {
   return item === null ? [] : [{ ...item, hasSeparatorBefore: true }]
 }
 
+function splitItems(tab: WorkspaceTab): PopupMenuItem[] {
+  const { split, activeTabId, closeSplit } = useWorkspaceStore.getState()
+  if (isShowingSplit(split, tab.id) && isShowingSplit(split, activeTabId)) {
+    return [{ label: 'Close split', onSelect: closeSplit }]
+  }
+  if (activeTabId === null || activeTabId === tab.id) {
+    return []
+  }
+  return [
+    { label: 'Open beside', onSelect: () => openTabBeside(tab.id, 'horizontal') },
+    { label: 'Open below', onSelect: () => openTabBeside(tab.id, 'vertical') }
+  ]
+}
+
 function contextMenuItemsFor(tab: WorkspaceTab): PopupMenuItem[] {
   const location = locationOf(tab)
   return [
+    ...splitItems(tab),
     { label: 'Close', onSelect: () => requestCloseTab(tab.id) },
     { label: 'Close other tabs', onSelect: () => requestCloseOtherTabs(tab.id) },
     {
@@ -62,6 +80,10 @@ interface TabItemProps {
 function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
   const renameTab = useWorkspaceStore((state) => state.renameTab)
   const moveTab = useWorkspaceStore((state) => state.moveTab)
+  const setDraggedTab = useWorkspaceStore((state) => state.setDraggedTab)
+  const isBesideActive = useWorkspaceStore(
+    (state) => !isActive && isShowingSplit(state.split, state.activeTabId) && (state.split.first === tab.id || state.split.second === tab.id)
+  )
   const needsAttention = useAttentionStore((state) => state.tabIds.includes(tab.id))
   const showsAgentStatus = useAgentStatusStore(
     (state) => tab.kind === 'terminal' && Object.keys(tab.panes).some((paneId) => state.statuses[paneId] !== undefined)
@@ -78,7 +100,7 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
 
   return (
     <div
-      className={isActive ? 'tab tab-active' : 'tab'}
+      className={cn('tab', isActive && 'tab-active', isBesideActive && 'tab-beside')}
       title={tab.kind === 'file' ? tab.path : tab.title}
       draggable
       onClick={() => showTab(tab.id)}
@@ -87,11 +109,17 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
         event.preventDefault()
         onOpenMenu({ x: event.clientX, y: event.clientY, items: contextMenuItemsFor(tab) })
       }}
-      onDragStart={(event) => event.dataTransfer.setData('text/plain', tab.id)}
+      onDragStart={(event) => {
+        event.dataTransfer.setData(TAB_DRAG_TYPE, tab.id)
+        event.dataTransfer.effectAllowed = 'move'
+        setDraggedTab(tab.id)
+      }}
+      onDragEnd={() => setDraggedTab(null)}
       onDragOver={(event) => event.preventDefault()}
       onDrop={(event) => {
         event.preventDefault()
-        moveTab(event.dataTransfer.getData('text/plain'), tab.id)
+        setDraggedTab(null)
+        moveTab(event.dataTransfer.getData(TAB_DRAG_TYPE), tab.id)
       }}
     >
       {tab.kind === 'terminal' ? <TerminalTabIcon tab={tab} /> : <FileTypeIcon path={tab.path} />}
@@ -122,6 +150,8 @@ export function TabBar() {
   const tabs = useActiveProjectTabs()
   const activeTabId = useWorkspaceStore((state) => state.activeTabId)
   const splitPane = useWorkspaceStore((state) => state.splitPane)
+  const closeSplit = useWorkspaceStore((state) => state.closeSplit)
+  const isSplitShown = useWorkspaceStore((state) => isShowingSplit(state.split, state.activeTabId))
   const splitRightLabel = useShortcutLabel('splitRight')
   const splitDownLabel = useShortcutLabel('splitDown')
   const clearAttention = useAttentionStore((state) => state.clear)
@@ -186,6 +216,21 @@ export function TabBar() {
           <button type="button" title="All tabs" onClick={showAllTabs}>
             <ChevronDown size={16} />
           </button>
+        )}
+        {isSplitShown && (
+          <button type="button" title="Close split and show one tab" aria-label="Close split" onClick={closeSplit}>
+            <Square size={16} />
+          </button>
+        )}
+        {!isSplitShown && activeTab?.kind === 'file' && (
+          <>
+            <button type="button" title="Open a terminal to the right" aria-label="Open a terminal to the right" onClick={() => openTerminalBeside('horizontal')}>
+              <Columns2 size={16} />
+            </button>
+            <button type="button" title="Open a terminal below" aria-label="Open a terminal below" onClick={() => openTerminalBeside('vertical')}>
+              <Rows2 size={16} />
+            </button>
+          </>
         )}
         {splittableTab !== null && (
           <>

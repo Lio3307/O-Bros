@@ -1,5 +1,6 @@
 import {
   ChevronsDownUp,
+  Columns2,
   Copy,
   ExternalLink,
   FilePlus,
@@ -13,6 +14,7 @@ import {
 import { lastPathSegment, parentPath } from '../../../shared/paths'
 import { useFileDialogStore } from '../../state/fileDialogStore'
 import { useFileTreeStore } from '../../state/fileTreeStore'
+import { openFileBeside } from '../../state/splitActions'
 import type { PopupMenuItem } from '../../ui/PopupMenu'
 import { sendPathToTerminal } from '../terminal/sendToTerminal'
 import { copyPath, copyRelativePath, openFolderInTerminal, revealInFileExplorer } from './fileActions'
@@ -101,6 +103,14 @@ export function buildEntryMenuItems(target: TreeTarget): PopupMenuItem[] {
       label: 'Find in Folder',
       icon: <Search size={ICON_SIZE} />,
       onSelect: () => setSearchScope(target.path)
+    })
+  }
+
+  if (!target.isDirectory) {
+    items.push({
+      label: 'Open to the Side',
+      icon: <Columns2 size={ICON_SIZE} />,
+      onSelect: () => openFileBeside(target.path)
     })
   }
 

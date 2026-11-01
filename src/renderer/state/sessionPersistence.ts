@@ -13,15 +13,15 @@ export function startSessionPersistence(): () => void {
   let saveTimer: ReturnType<typeof setTimeout> | null = null
 
   const stopListening = useWorkspaceStore.subscribe((state, previous) => {
-    if (state.tabs === previous.tabs && state.activeTabId === previous.activeTabId) {
+    if (state.tabs === previous.tabs && state.activeTabId === previous.activeTabId && state.split === previous.split) {
       return
     }
     if (saveTimer !== null) {
       clearTimeout(saveTimer)
     }
     saveTimer = setTimeout(() => {
-      const { tabs, activeTabId } = useWorkspaceStore.getState()
-      writeStored(STORAGE_KEY, serializeSession({ tabs, activeTabId }))
+      const { tabs, activeTabId, split } = useWorkspaceStore.getState()
+      writeStored(STORAGE_KEY, serializeSession({ tabs, activeTabId, split }))
     }, SAVE_DELAY_MS)
   })
 
@@ -36,6 +36,6 @@ export function startSessionPersistence(): () => void {
 export function restoreSavedSession(): void {
   const saved = loadSavedSession()
   if (saved !== null && useWorkspaceStore.getState().tabs.length === 0) {
-    useWorkspaceStore.getState().restoreTabs(saved.tabs, saved.activeTabId)
+    useWorkspaceStore.getState().restoreTabs(saved.tabs, saved.activeTabId, saved.split)
   }
 }

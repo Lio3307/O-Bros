@@ -23,7 +23,7 @@ function terminalTabOf(tabId: string) {
 }
 
 beforeEach(() => {
-  useWorkspaceStore.getState().restoreTabs([], null)
+  useWorkspaceStore.getState().restoreTabs([], null, null)
 })
 
 describe('splitPane', () => {

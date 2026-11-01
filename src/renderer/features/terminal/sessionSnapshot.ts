@@ -1,12 +1,14 @@
 import type { AccountRef } from '../../../shared/types'
 import type { FileTab, TerminalPaneInfo, TerminalTab, WorkspaceTab } from '../../state/workspaceStore'
-import { clampSplitRatio, listPaneIds, type PaneLayout } from './paneTree'
+import { clampSplitRatio, DEFAULT_SPLIT_RATIO, listPaneIds, type PaneLayout } from './paneTree'
+import type { WorkspaceSplit } from './workspaceSplit'
 import { isRecord } from '../../../shared/isRecord'
 import { programOf } from '../../../shared/agentLaunchers'
 
 export interface SessionSnapshot {
   tabs: WorkspaceTab[]
   activeTabId: string | null
+  split: WorkspaceSplit | null
 }
 
 type JsonRecord = Record<string, unknown>
@@ -102,6 +104,18 @@ function toTab(value: unknown): WorkspaceTab | null {
   return value.kind === 'file' ? toFileTab(value) : null
 }
 
+function toSplit(value: unknown, tabs: WorkspaceTab[]): WorkspaceSplit | null {
+  if (!isRecord(value) || (value.direction !== 'horizontal' && value.direction !== 'vertical')) {
+    return null
+  }
+  const isOpenTab = (tabId: unknown) => tabs.some((tab) => tab.id === tabId)
+  if (!isOpenTab(value.first) || !isOpenTab(value.second) || value.first === value.second) {
+    return null
+  }
+  const ratio = typeof value.ratio === 'number' ? clampSplitRatio(value.ratio) : DEFAULT_SPLIT_RATIO
+  return { first: value.first as string, second: value.second as string, direction: value.direction, ratio }
+}
+
 export function serializeSession(snapshot: SessionSnapshot): string {
   return JSON.stringify(snapshot)
 }
@@ -117,7 +131,7 @@ export function parseSession(raw: string | null): SessionSnapshot | null {
     }
     const tabs = parsed.tabs.map(toTab).filter((tab): tab is WorkspaceTab => tab !== null)
     const activeTabId = tabs.some((tab) => tab.id === parsed.activeTabId) ? (parsed.activeTabId as string) : null
-    return { tabs, activeTabId: activeTabId ?? tabs[0]?.id ?? null }
+    return { tabs, activeTabId: activeTabId ?? tabs[0]?.id ?? null, split: toSplit(parsed.split, tabs) }
   } catch {
     return null
   }
