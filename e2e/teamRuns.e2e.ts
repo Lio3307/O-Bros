@@ -36,7 +36,7 @@ process.stdin.on('end', () => {
     say({ type: 'item.completed', item: { type: 'agent_message', text: 'DONE: answer to ' + task.trim() } })
     say({ type: 'turn.completed' })
     process.exit(0)
-  }, 6000)
+  }, 15000)
 })
 `
 

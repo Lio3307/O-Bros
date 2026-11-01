@@ -272,13 +272,12 @@ test('README screenshots', async () => {
   await page.keyboard.press('Enter')
   const members = page.locator('.row-session .session-member, .session-members .row')
   await expect(page.getByText('test-writer', { exact: true }).first()).toBeVisible({ timeout: 60_000 })
-  await expect(page.getByText('asking', { exact: true }).first()).toBeVisible({ timeout: 60_000 })
   await expect(members.first()).toBeVisible()
   await shoot(page, 'workspace')
 
   await page.getByText('test-writer', { exact: true }).first().click()
-  await page.waitForTimeout(6000)
-  await expect(page.getByText('Waiting for an answer').first()).toBeVisible({ timeout: 30_000 })
+  await expect(page.locator('.team-frame:not(.tab-content-hidden)').getByText('Finished').first()).toBeVisible({ timeout: 30_000 })
+  await page.waitForTimeout(1000)
   await shoot(page, 'team')
 
   await page.getByTitle('Changes', { exact: true }).click()

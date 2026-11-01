@@ -12,6 +12,7 @@ describe('cleanTerminalEnvironment', () => {
       ORCA_CODEX_HOME: 'C:\\x',
       TERM_PROGRAM: 'Orca',
       TERM_PROGRAM_VERSION: '1.4.218',
+      CHROME_CRASHPAD_PIPE_NAME: 'crashpad-pipe',
       ORCHESTRA: 'kept'
     })
     expect(cleaned).toEqual({ Path: 'C:\\Windows', USERPROFILE: 'C:\\Users\\me', ORCHESTRA: 'kept' })

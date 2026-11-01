@@ -18,7 +18,7 @@ o-bros puts real terminals, a code editor, git changes, session history and your
 
 | Team member view | Continue in another agent |
 |---|---|
-| ![A team member asking a question](docs/images/team.png) | ![A Codex conversation continued in Claude](docs/images/history.png) |
+| ![A team member showing its progress and finishing a task](docs/images/team.png) | ![A Codex conversation continued in Claude](docs/images/history.png) |
 
 | Git changes, side by side | Storage you control |
 |---|---|

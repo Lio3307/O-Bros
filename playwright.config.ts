@@ -4,7 +4,7 @@ export default defineConfig({
   testDir: 'e2e',
   testMatch: '**/*.e2e.ts',
   timeout: 60_000,
-  workers: 1,
+  workers: process.env.CI === undefined ? 3 : 1,
   retries: 0,
   reporter: 'list'
 })

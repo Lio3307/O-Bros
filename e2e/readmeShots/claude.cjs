@@ -36,7 +36,7 @@ function lead(text) {
   write(`\n${dot} I'll bring in two team members with wot: Codex reviews, Gemini writes tests.\n`)
   const reviewer = runWot('wot spawn codex --name reviewer --task "Review src/todos.ts and src/server.ts for bugs. Start your answer with DONE: and list what you found."')
   write(`\n${dot} ${style.bold('Bash')}(wot spawn codex --name reviewer)\n  ${style.dim('└')} ${reviewer}\n`)
-  const tester = runWot('wot spawn gemini --name test-writer --task "Write unit tests for completeTodo and listTodos in src/todos.test.ts."')
+  const tester = runWot('wot spawn gemini --name test-writer --access edit --task "Write unit tests for completeTodo and listTodos in src/todos.test.ts."')
   write(`\n${dot} ${style.bold('Bash')}(wot spawn gemini --name test-writer)\n  ${style.dim('└')} ${tester}\n`)
   write(`\n${dot} Both are working. I'll wait for their answers with ${style.bold('wot wait --any')}.\n\n${style.dim('✻ Waiting for team members… (esc to interrupt)')}`)
 }
