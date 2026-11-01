@@ -1,0 +1,26 @@
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding-top: 8px;
+  font-size: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagination-page {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.pagination .icon-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
