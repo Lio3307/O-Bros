@@ -13,6 +13,7 @@ interface Settings {
   repositorySearchDepth: number
   historyFolder: string | null
   historyKeepDays: number | null
+  trustedFolders: string[]
 }
 
 function settingsFilePath(): string {
@@ -26,7 +27,8 @@ function withDefaults(saved: Partial<Settings> | null): Settings {
     conversationFolder: typeof saved?.conversationFolder === 'string' ? saved.conversationFolder : null,
     repositorySearchDepth: repositorySearchDepthOf(saved?.repositorySearchDepth),
     historyFolder: typeof saved?.historyFolder === 'string' ? saved.historyFolder : null,
-    historyKeepDays: historyKeepDaysOf(saved?.historyKeepDays)
+    historyKeepDays: historyKeepDaysOf(saved?.historyKeepDays),
+    trustedFolders: Array.isArray(saved?.trustedFolders) ? saved.trustedFolders.filter((folder) => typeof folder === 'string') : []
   }
 }
 

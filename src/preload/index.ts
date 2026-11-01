@@ -141,6 +141,10 @@ const api: DesktopApi = {
   shell: {
     reveal: (path) => ipcRenderer.invoke(IpcChannel.shellReveal, path)
   },
+  trust: {
+    check: (folder) => ipcRenderer.invoke(IpcChannel.trustCheck, folder),
+    grant: (folder) => ipcRenderer.invoke(IpcChannel.trustGrant, folder)
+  },
   ports: {
     list: () => ipcRenderer.invoke(IpcChannel.portsList),
     stop: (pid) => ipcRenderer.invoke(IpcChannel.portsStop, pid),

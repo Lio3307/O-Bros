@@ -21,7 +21,7 @@ export function FolderOverview({ folderPath, message }: { folderPath: string; me
         </span>
       </header>
       <p className="muted">{isMissing ? MISSING_FOLDER_MESSAGE : message}</p>
-      {!isMissing && <RepositoryPicker folderPath={folderPath} />}
+      {!isMissing && !message.includes('not trusted') && <RepositoryPicker folderPath={folderPath} />}
     </div>
   )
 }

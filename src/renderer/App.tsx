@@ -27,6 +27,7 @@ import { startProjectTabSync } from './state/projectTabSync'
 import { startReviewBaselines } from './state/reviewBaselineWatcher'
 import { startTeamBridge } from './features/team/teamBridge'
 import { startAgentNotifications } from './features/terminal/agentNotifications'
+import { startFolderTrustPrompts } from './features/trust/folderTrustPrompt'
 import { startAgentStatusTracking } from './features/terminal/agentStatusTracking'
 import { useAgentCatalogStore } from './state/agentCatalogStore'
 import { useProjectsStore } from './state/projectsStore'
@@ -57,6 +58,7 @@ function useStartupData(): void {
     const stopAgentStatusTracking = startAgentStatusTracking()
     const stopAgentNotifications = startAgentNotifications()
     const stopAutomaticUpdates = startAutomaticUpdates()
+    const stopFolderTrustPrompts = startFolderTrustPrompts()
     const stopHandlerErrors = window.api.app.onHandlerError((message) => toast.warning(`Dev: ${message}`))
     void useAgentCatalogStore.getState().load()
     PROVIDER_COMMANDS.forEach((command) => void useAgentCatalogStore.getState().loadLogo(command))
@@ -70,6 +72,7 @@ function useStartupData(): void {
       stopAgentStatusTracking()
       stopAgentNotifications()
       stopAutomaticUpdates()
+      stopFolderTrustPrompts()
       stopHandlerErrors()
     }
   }, [])

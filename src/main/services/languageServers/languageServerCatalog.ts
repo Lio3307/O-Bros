@@ -1,3 +1,4 @@
+import { isFolderTrusted } from '../folderTrust'
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import {
@@ -80,12 +81,21 @@ async function statusOf(
   }
   if (definition.projectLocal && workspaceRoot !== null) {
     const local = await firstExisting([join(workspaceRoot, 'node_modules', '.bin')], definition.command)
-    if (local !== null) {
+    if (local !== null && (await isFolderTrusted(workspaceRoot))) {
       return { ...definition, source: 'project', resolvedPath: local }
     }
   }
   const onPath = await firstExisting(pathFolders(process.env.PATH), definition.command)
   return { ...definition, source: onPath === null ? null : 'path', resolvedPath: onPath }
+}
+
+export async function projectServerNamesIn(folder: string): Promise<string[]> {
+  const local = await Promise.all(
+    (await loadDefinitions())
+      .filter((definition) => definition.projectLocal)
+      .map(async (definition) => ((await firstExisting([join(folder, 'node_modules', '.bin')], definition.command)) === null ? [] : [definition.title]))
+  )
+  return local.flat()
 }
 
 export async function listServerStatuses(

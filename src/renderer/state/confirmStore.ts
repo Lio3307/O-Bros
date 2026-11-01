@@ -4,6 +4,7 @@ export interface ConfirmOptions {
   title: string
   message: string
   confirmLabel: string
+  cancelLabel?: string
 }
 
 interface ConfirmState {

@@ -1,3 +1,5 @@
+import { Button } from '../../ui/Button'
+import { askToTrustFolder } from '../trust/folderTrustPrompt'
 import { useCallback, useEffect } from 'react'
 import { useChangesStore } from '../../state/changesStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
@@ -97,6 +99,11 @@ export function ChangesPanel() {
         <PanelHeader title="Changes" />
         <RepositorySwitcher repoPath={repoPath} />
         {backButton}
+        {errorMessage?.includes('not trusted') === true && (
+          <Button variant="primary" className="changes-trust" onClick={() => askToTrustFolder(repoPath).then(() => refresh(repoPath))}>
+            Trust this folder
+          </Button>
+        )}
         <p className="panel-empty">
           {isMissing ? MISSING_FOLDER_MESSAGE : isLoaded ? (errorMessage ?? 'This folder is not a git repository. Pick a repository above or from the list.') : <LoadingText text="Reading the folder…" />}
         </p>

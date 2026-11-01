@@ -188,6 +188,8 @@ export const IpcChannel = {
   agentsRegistry: 'agents:registry',
   agentsLogo: 'agents:logo',
   shellReveal: 'shell:reveal',
+  trustCheck: 'trust:check',
+  trustGrant: 'trust:grant',
   portsList: 'ports:list',
   portsStop: 'ports:stop',
   portsOpen: 'ports:open',
@@ -404,6 +406,10 @@ export interface DesktopApi {
   }
   shell: {
     reveal(path: string): Promise<void>
+  }
+  trust: {
+    check(folder: string): Promise<{ isTrusted: boolean; risks: string[] }>
+    grant(folder: string): Promise<void>
   }
   ports: {
     list(): Promise<ListeningPort[]>

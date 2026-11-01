@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
 import { pathExists } from './fileSystem'
+import { assertGitIsAllowed } from './folderTrust'
 
 const execFileAsync = promisify(execFile)
 const MAX_GIT_OUTPUT_BYTES = 10 * 1024 * 1024
@@ -12,6 +13,7 @@ export interface GitRunOptions {
 }
 
 export async function runGit(cwd: string, args: string[], options: GitRunOptions = {}): Promise<string> {
+  await assertGitIsAllowed(cwd)
   const { stdout } = await execFileAsync('git', args, { cwd, maxBuffer: MAX_GIT_OUTPUT_BYTES, ...options })
   return stdout
 }

@@ -571,3 +571,14 @@
 - Mitigation and revisit trigger: Unknown output falls back to the progress log, `--interactive` is an escape hatch, and other agents keep the screen mode. Add an agent by adding an entry with a test. Revisit ACP if users want approvals during a task.
 - Recovery and ownership: src/shared/headlessAgents.ts, src/main/services/wot/memberRuns.ts, src/main/services/wot/teamRegistry.ts, src/main/services/ptyManager.ts, resources/wot/wot-cli.cjs, resources/wot/SKILL.md, e2e/teamRuns.e2e.ts.
 - Implementation / validation / outcome: Written / unit tests, e2e with a fake agent and real Codex runs pass / not yet used by the user.
+
+### Ask before a folder's own settings can run programs
+
+- Scope and goal: A break test showed that opening a folder ran code from it: git settings in `.git/config` (core.fsmonitor, diff.external, filters) through the automatic `git status`, and a language server in `node_modules/.bin`, which a plain `git clone` can carry.
+- Choice and authority: User-approved. `runGit` refuses to run in a folder with risky git settings or hooks until the user trusts it, and the language server catalog ignores a project's own server until then. `src/main/services/folderTrust.ts` reads the files without running git, including worktree links and a folder that is itself a bare repository. Trust is kept in `settings.json` as `trustedFolders` and covers the folder and everything inside it.
+- Evidence: e2e/folderTrust.e2e.ts plants the traps: nothing runs after "Keep it off", the Git panel works after "Trust this folder", and a normal repository is never asked about.
+- Alternatives and sacrifice: Passing `-c core.fsmonitor=false` was rejected because filters and textconv cannot be listed in advance and Git LFS needs them. Never using a project's own language server was rejected because it leaves the git route open. Folders with hooks or Husky get one extra question.
+- Residual risk/debt: There is no screen yet to take trust back; remove the folder from `trustedFolders` in `settings.json`. Terminals and agents are not limited: an agent or a command the user runs can still run the same code. Only `.git` is read, so settings that a global git config points at are the user's own.
+- Mitigation and revisit trigger: Add a trusted folders list to Settings if users ask to undo. Add new risky keys to `src/shared/gitConfigRisk.ts`.
+- Recovery and ownership: src/shared/gitConfigRisk.ts, src/main/services/folderTrust.ts, src/main/services/gitRunner.ts, src/main/services/languageServers/languageServerCatalog.ts, src/renderer/features/trust/folderTrustPrompt.ts.
+- Implementation / validation / outcome: Written / unit tests, e2e / not yet used by the user.
