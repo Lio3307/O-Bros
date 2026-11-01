@@ -30,13 +30,12 @@ interface UsageRowProps {
   mark: ReactNode
   name: string
   windows: LabeledWindow[]
-  errorMessage: string | null
   note: ReactNode
   mode: UsageViewMode
   onOpen?: () => void
 }
 
-function UsageRow({ mark, name, windows, errorMessage, note, mode, onOpen }: UsageRowProps) {
+function UsageRow({ mark, name, windows, note, mode, onOpen }: UsageRowProps) {
   const now = useNow(USAGE_TEXT_REFRESH_MS)
   const reset = nearestReset(windows)
   const content = (
@@ -45,9 +44,7 @@ function UsageRow({ mark, name, windows, errorMessage, note, mode, onOpen }: Usa
       <span className="usage-provider-body">
         <span className="usage-provider-heading">
           <span className="usage-provider-name">{name}</span>
-          <span className="muted">
-            {reset === null ? 'Usage unavailable' : `Resets in ${formatResetsIn(reset.resetsAt, now)}`}
-          </span>
+          {reset !== null && <span className="muted">Resets in {formatResetsIn(reset.resetsAt, now)}</span>}
         </span>
         {mode === 'detailed' && (
           <span className="usage-provider-windows">
@@ -60,9 +57,8 @@ function UsageRow({ mark, name, windows, errorMessage, note, mode, onOpen }: Usa
             ))}
           </span>
         )}
-        {windows.length === 0 && errorMessage && <span className="muted">{errorMessage}</span>}
         {note}
-        {mode === 'compact' && windows.length > 0 && (
+        {mode === 'compact' && (
           <span className="muted">
             {windows.map(({ label, window }) => `${label} ${window.percentUsed}%`).join(' · ')}
           </span>
@@ -85,7 +81,8 @@ function ProviderUsageRow({ provider, mode, onOpen }: { provider: ProviderId; mo
   const account = useAccountsStore((state) => selectActiveAccount(state, provider))
   const usage = useUsageStore((state) => (account === null ? undefined : state.usageByAccountId[account.id]))
 
-  if (account === null) {
+  const windows = listUsageWindows(usage)
+  if (account === null || windows.length === 0) {
     return null
   }
 
@@ -101,8 +98,7 @@ function ProviderUsageRow({ provider, mode, onOpen }: { provider: ProviderId; mo
     <UsageRow
       mark={<ProviderMark provider={provider} size={18} />}
       name={planProviderName(provider)}
-      windows={listUsageWindows(usage)}
-      errorMessage={usage?.errorMessage ?? null}
+      windows={windows}
       note={staleNote}
       mode={mode}
       onOpen={onOpen}
@@ -120,7 +116,6 @@ function PlanUsageRow({ plan, mode }: { plan: PlanUsage; mode: UsageViewMode }) 
       mark={<AgentIcon command={plan.logoCommand} size={18} />}
       name={planTitle(plan)}
       windows={plan.windows}
-      errorMessage={plan.errorMessage}
       note={null}
       mode={mode}
     />
@@ -146,7 +141,7 @@ export function UsagePopover({ onNavigate }: UsagePopoverProps) {
   const allPlans = useUsageStore((state) => state.plans)
   const hiddenSources = useUsageVisibilityStore((state) => state.hiddenSources)
   const providers = ACCOUNT_PROVIDER_IDS.filter((provider) => !hiddenSources.includes(provider))
-  const plans = allPlans.filter((plan) => !hiddenSources.includes(plan.id))
+  const plans = allPlans.filter((plan) => plan.windows.length > 0 && !hiddenSources.includes(plan.id))
   const openSection = useLayoutStore((state) => state.openSection)
   const selectSettingsPage = useLayoutStore((state) => state.selectSettingsPage)
 

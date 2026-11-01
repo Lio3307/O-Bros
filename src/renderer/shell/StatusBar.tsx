@@ -33,7 +33,6 @@ interface UsageSource {
   name: string
   mark: (size: number) => ReactNode
   windows: LabeledWindow[]
-  errorMessage: string | null
   usage: KnownUsage | undefined
 }
 
@@ -45,9 +44,6 @@ function measuredText(usage: KnownUsage | undefined): string {
 }
 
 function describeSource(source: UsageSource): string {
-  if (source.windows.length === 0) {
-    return `${source.name}: ${source.errorMessage ? 'unavailable' : 'not read yet'}`
-  }
   const parts = source.windows.map(({ label, window }) => `${label} ${window.percentUsed}%`)
   return `${source.name}: ${parts.join(', ')}${measuredText(source.usage)}`
 }
@@ -58,7 +54,6 @@ function planSource(plan: PlanUsage): UsageSource {
     name: plan.name,
     mark: (size) => <AgentIcon command={plan.logoCommand} size={size} />,
     windows: plan.windows,
-    errorMessage: plan.errorMessage,
     usage: undefined
   }
 }
@@ -80,26 +75,24 @@ function useUsageSources(): UsageSource[] {
         name: planProviderName(provider),
         mark: (size) => <ProviderMark provider={provider} size={size} />,
         windows: listUsageWindows(usage),
-        errorMessage: usage?.errorMessage ?? null,
         usage
       }
     ]
   })
-  return [...providers, ...plans.map(planSource)].filter((source) => !hiddenSources.includes(source.key))
+  return [...providers, ...plans.map(planSource)].filter((source) => source.windows.length > 0 && !hiddenSources.includes(source.key))
 }
 
 function UsageSummary({ onClick }: { onClick: () => void }) {
   const sources = useUsageSources()
   const now = useNow(USAGE_TEXT_REFRESH_MS)
-  if (sources.length === 0) {
+  const pressing = mostPressingWindow(sources)
+  if (pressing === null) {
     return null
   }
 
-  const pressing = mostPressingWindow(sources)
-  const lead = sources.find((source) => source.key === pressing?.key) ?? sources[0]
+  const lead = sources.find((source) => source.key === pressing.key) ?? sources[0]
   const others = sources.filter((source) => source !== lead)
-  const hasError = sources.some((source) => source.windows.length === 0 && source.errorMessage)
-  const compact = pressing === null ? null : describeCompactWindow(pressing.window, now)
+  const compact = describeCompactWindow(pressing.window, now)
 
   return (
     <>
@@ -110,14 +103,11 @@ function UsageSummary({ onClick }: { onClick: () => void }) {
         onClick={onClick}
       >
         {lead.mark(16)}
-        {pressing === null && <span>{hasError ? 'unavailable' : '—'}</span>}
-        {pressing !== null && compact !== null && (
-          <span className={cn('status-window', isUsageHigh(pressing.window.percentUsed) && 'usage-high')}>
-            <span className="status-window-label">{pressing.label}</span>
-            <span className="status-percent">{compact.percent}</span>
-            <span className="status-window-reset">{compact.remaining}</span>
-          </span>
-        )}
+        <span className={cn('status-window', isUsageHigh(pressing.window.percentUsed) && 'usage-high')}>
+          <span className="status-window-label">{pressing.label}</span>
+          <span className="status-percent">{compact.percent}</span>
+          <span className="status-window-reset">{compact.remaining}</span>
+        </span>
         {others.length > 0 && (
           <span className="status-other-marks">
             {others.map((source) => (

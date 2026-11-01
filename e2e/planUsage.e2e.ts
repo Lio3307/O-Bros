@@ -90,20 +90,21 @@ test('shows Grok and ClinePass plan limits from their own sign-ins, and never sh
   await app.window.keyboard.press('Escape')
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Agents' }).click()
-  await expect(app.window.getByText('Show Grok plan usage')).toBeVisible()
-  await expect(app.window.getByText('Show ClinePass plan usage')).toBeVisible()
+  const grokSwitch = app.window.getByRole('switch', { name: 'Show Grok in the status bar' })
+  await expect(grokSwitch).toBeChecked()
+  await expect(app.window.getByRole('switch', { name: 'Show ClinePass in the status bar' })).toBeChecked()
   await expect(app.window.getByText(/OpenRouter/)).toHaveCount(0)
   await expect(app.window.locator('.table-row', { hasText: 'Freebuff' })).toBeVisible({ timeout: 20_000 })
   await expect(app.window.getByText(/agents? on this computer, \d+ already in your list/)).toBeVisible()
 
-  await app.window.getByText('Show Grok plan usage').click()
+  await grokSwitch.click()
   await expect(usageButton).not.toHaveAttribute('title', /Grok:/)
   await usageButton.click()
   await expect(popover.getByText('ClinePass', { exact: true })).toBeVisible()
   await expect(popover.getByText('Grok · SuperGrok')).toHaveCount(0)
 })
 
-test('hides ClinePass for a Cline account without the plan, and says when the Grok sign-in expired', async () => {
+test('shows no usage without numbers, and Settings says why and how to fix it', async () => {
   test.setTimeout(60_000)
   app = await launchApp({
     separateHome: true,
@@ -117,16 +118,13 @@ test('hides ClinePass for a Cline account without the plan, and says when the Gr
   await app.window.reload()
   await app.window.waitForSelector('.rail')
 
-  const usageButton = app.window.locator('.status-usage').first()
-  await expect(usageButton).toHaveAttribute('title', /Grok: unavailable/, { timeout: 20_000 })
-  await expect(usageButton).not.toHaveAttribute('title', /ClinePass/)
-  await usageButton.click()
-  await expect(app.window.getByText('The Grok sign-in has expired. Run grok login again, then Rescan.')).toBeVisible()
-  await app.window.keyboard.press('Escape')
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Agents' }).click()
+  await expect(app.window.getByText('The Grok sign-in has expired. Run grok login again, then Rescan.')).toBeVisible({ timeout: 20_000 })
   await expect(app.window.getByText('This account has no ClinePass plan with limits')).toBeVisible()
-  await expect(app.window.getByText('Show Codex plan usage')).toBeVisible()
+  await expect(app.window.locator('.plan-limit-row', { hasText: 'Codex' })).toContainText('Not signed in')
+  await expect(app.window.getByRole('switch', { name: /in the status bar/ })).toHaveCount(0)
+  await expect(app.window.locator('.status-window')).toHaveCount(0)
   const calls = await app.application.evaluate(() => (globalThis as Record<string, unknown>).planUsageCalls as { url: string }[])
   const calledUrls = calls.map((call) => call.url)
   expect(calledUrls).toContain('https://api.cline.bot/api/v1/users/me/plan/usage-limits')

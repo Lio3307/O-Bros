@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isPlanProviderOnComputer, PLAN_PROVIDERS, planProviderNote, planProviderOf } from './planProviders'
+import { isPlanProviderOnComputer, PLAN_PROVIDERS, planProviderNote, planProviderOf, planUsageRowOf } from './planProviders'
 import type { UsageFacts } from './usageSupport'
 
 const FACTS: UsageFacts = {
@@ -31,5 +31,27 @@ describe('plan providers', () => {
     expect(planProviderNote(planProviderOf('clinepass')!, FACTS, ['clinepass'])).toBeNull()
     expect(planProviderNote(planProviderOf('claude')!, FACTS, [])).toBeNull()
     expect(planProviderNote(planProviderOf('claude')!, null, [])).toBeNull()
+  })
+})
+
+describe('planUsageRowOf', () => {
+  const claude = planProviderOf('claude')!
+  const clinePass = planProviderOf('clinepass')!
+  const codex = planProviderOf('codex')!
+
+  it('can be shown only when there are numbers, even if the latest check failed', () => {
+    expect(planUsageRowOf(claude, FACTS, [], { hasNumbers: true, errorMessage: 'Timed out' })).toEqual({ state: 'showing', text: 'Limits: 5-hour and weekly' })
+  })
+
+  it('passes on the problem and how to fix it', () => {
+    expect(planUsageRowOf(clinePass, FACTS, ['clinepass'], { hasNumbers: false, errorMessage: 'The sign-in has expired.' })).toEqual({ state: 'problem', text: 'The sign-in has expired.' })
+  })
+
+  it('says why there is nothing to show', () => {
+    const nothing = { hasNumbers: false, errorMessage: null }
+    expect(planUsageRowOf(codex, FACTS, [], nothing).text).toBe('Not signed in · run codex and sign in with your ChatGPT plan')
+    expect(planUsageRowOf(clinePass, FACTS, [], nothing).text).toBe('This account has no ClinePass plan with limits')
+    expect(planUsageRowOf(claude, FACTS, [], nothing)).toEqual({ state: 'unavailable', text: 'Checking…' })
+    expect(planUsageRowOf(claude, null, [], nothing)).toEqual({ state: 'unavailable', text: 'Checking…' })
   })
 })

@@ -815,3 +815,46 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
 }
+
+.plan-limit-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.plan-limit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.plan-limit-row + .plan-limit-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.plan-limit-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.plan-limit-name {
+  font-weight: 600;
+  color: var(--color-strong);
+}
+
+.plan-limit-state {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.plan-limit-state .status-dot {
+  flex-shrink: 0;
+}

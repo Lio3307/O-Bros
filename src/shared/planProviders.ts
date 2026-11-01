@@ -80,3 +80,23 @@ export function planProviderNote(provider: PlanProviderInfo, facts: UsageFacts |
   }
   return provider.kind === 'plan' && !readPlanIds.includes(provider.id) ? `This account has no ${provider.name} plan with limits` : null
 }
+
+export interface PlanReadingFacts {
+  hasNumbers: boolean
+  errorMessage: string | null
+}
+
+export interface PlanUsageRow {
+  state: 'showing' | 'problem' | 'unavailable'
+  text: string
+}
+
+export function planUsageRowOf(provider: PlanProviderInfo, facts: UsageFacts | null, readPlanIds: string[], reading: PlanReadingFacts): PlanUsageRow {
+  if (reading.hasNumbers) {
+    return { state: 'showing', text: `Limits: ${provider.limits}` }
+  }
+  if (reading.errorMessage !== null) {
+    return { state: 'problem', text: reading.errorMessage }
+  }
+  return { state: 'unavailable', text: planProviderNote(provider, facts, readPlanIds) ?? 'Checking…' }
+}
