@@ -2,13 +2,8 @@ import { isRecord } from './isRecord'
 
 export type BackgroundKind = 'solid' | 'wallpaper'
 
-export const TINT_IDS = ['midnight', 'slate', 'aubergine', 'pine', 'mocha', 'graphite'] as const
-
-export type TintId = (typeof TINT_IDS)[number]
-
 export interface Appearance {
   background: BackgroundKind
-  color: TintId | null
   surfaceOpacity: number
   wallpaperDim: number
   wallpaperBlur: number
@@ -29,7 +24,7 @@ export const SURFACE_OPACITY_RANGE: Range = { min: 0.3, max: 1 }
 export const WALLPAPER_DIM_RANGE: Range = { min: 0, max: 0.85 }
 export const WALLPAPER_BLUR_RANGE: Range = { min: 0, max: 24 }
 
-export const DEFAULT_APPEARANCE: Appearance = { background: 'solid', color: null, surfaceOpacity: 0.72, wallpaperDim: 0.45, wallpaperBlur: 0 }
+export const DEFAULT_APPEARANCE: Appearance = { background: 'solid', surfaceOpacity: 0.72, wallpaperDim: 0.45, wallpaperBlur: 0 }
 
 const BACKGROUND_KINDS: BackgroundKind[] = ['solid', 'wallpaper']
 const HEX_COLOR_LENGTH = 7
@@ -38,37 +33,12 @@ export function clampTo(value: unknown, range: Range, fallback: number): number 
   return typeof value === 'number' && Number.isFinite(value) ? Math.min(range.max, Math.max(range.min, value)) : fallback
 }
 
-function isTintId(value: unknown): value is TintId {
-  return TINT_IDS.includes(value as TintId)
-}
-
-const TONE_OF_OLD_COLOR: Record<string, TintId> = {
-  blue: 'midnight',
-  cyan: 'slate',
-  purple: 'aubergine',
-  green: 'pine',
-  yellow: 'mocha',
-  red: 'mocha'
-}
-
-function toneOf(value: unknown): TintId | null {
-  if (isTintId(value)) {
-    return value
-  }
-  return typeof value === 'string' ? (TONE_OF_OLD_COLOR[value] ?? null) : null
-}
-
-function savedColorOf(raw: Record<string, unknown>): TintId | null {
-  return toneOf(raw.background === 'tint' ? raw.tint : raw.color)
-}
-
 export function readAppearance(raw: unknown): Appearance {
   if (!isRecord(raw)) {
     return DEFAULT_APPEARANCE
   }
   return {
     background: BACKGROUND_KINDS.includes(raw.background as BackgroundKind) ? (raw.background as BackgroundKind) : DEFAULT_APPEARANCE.background,
-    color: savedColorOf(raw),
     surfaceOpacity: clampTo(raw.surfaceOpacity, SURFACE_OPACITY_RANGE, DEFAULT_APPEARANCE.surfaceOpacity),
     wallpaperDim: clampTo(raw.wallpaperDim, WALLPAPER_DIM_RANGE, DEFAULT_APPEARANCE.wallpaperDim),
     wallpaperBlur: clampTo(raw.wallpaperBlur, WALLPAPER_BLUR_RANGE, DEFAULT_APPEARANCE.wallpaperBlur)

@@ -8,7 +8,7 @@ import { useChangesStore } from '../../state/changesStore'
 import { useProjectsStore } from '../../state/projectsStore'
 import { toast } from '../../state/toastStore'
 import { Button } from '../../ui/Button'
-import { Dropdown, type DropdownOption } from '../../ui/Dropdown'
+import { Combobox, type ComboboxItem } from '../../ui/Combobox'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { RefreshButton } from '../../ui/RefreshButton'
 import { useNow } from '../../ui/useNow'
@@ -47,7 +47,7 @@ export function BranchCard({ status, repoPath }: { status: GitStatus; repoPath: 
   const fetchedText =
     status.lastFetchedAt === null ? 'Never fetched' : `Fetched ${formatAge(status.lastFetchedAt, now)}`
 
-  async function loadBranchOptions(): Promise<DropdownOption[]> {
+  async function loadBranchOptions(): Promise<ComboboxItem[]> {
     try {
       const { branches, current } = await window.api.git.branches(repoPath)
       return branches.map((branch) => ({ value: branch, label: branch, hint: branch === current ? 'current' : undefined }))
@@ -88,8 +88,10 @@ export function BranchCard({ status, repoPath }: { status: GitStatus; repoPath: 
   return (
     <div className="branch-card">
       <div className="branch-card-name">
-        <Dropdown
+        <Combobox
           className="branch-switch"
+          searchPlaceholder="Find a branch"
+          noMatchText="No branch matches that."
           title="Switch branch"
           icon={<GitBranch size={14} />}
           label={status.branch}

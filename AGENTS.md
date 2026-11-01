@@ -40,7 +40,7 @@ Technical decisions and their rationale live in `docs/decisions.md`. Read it bef
   Status: User-directed; implementation awaiting feedback.
 
 - Scope: src/renderer styles
-  Convention: Boxy surfaces in the JetBrains style. Every non-circular corner uses `var(--radius)` from `styles/tokens.css` (0px); do not write pixel radii. Reuse the shared components in `src/renderer/ui` (Card, StatTile, Chip, StatusDot, AgentStateBadge, OutcomeBadge, AgentName, Spinner, LoadingText, Notice) instead of new one-off styles. Start actions turn green on hover (`hover-positive`), delete and stop actions red (`hover-danger`). Every on/off setting is a switch: `<input type="checkbox" role="switch">`, styled once in `styles/base.css`.
+  Convention: Boxy surfaces in the JetBrains style. Every non-circular corner uses `var(--radius)` from `styles/tokens.css` (0px); do not write pixel radii. Reuse the shared components in `src/renderer/ui` (Card, StatTile, Chip, StatusDot, AgentStateBadge, OutcomeBadge, AgentName, Spinner, LoadingText, Notice, and Combobox for every "choose one from a list", which shows its search box once a list has 8 or more options) instead of new one-off styles. Start actions turn green on hover (`hover-positive`), delete and stop actions red (`hover-danger`). Every on/off setting is a switch: `<input type="checkbox" role="switch">`, styled once in `styles/base.css`.
   Reason: The user asked for square boxes everywhere and consistent, reusable components.
   Evidence: User request with a screenshot of the rounded lint tooltip.
   Status: User-directed; implementation awaiting feedback.

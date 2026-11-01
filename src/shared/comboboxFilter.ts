@@ -5,7 +5,7 @@ export interface ComboboxOption {
   group?: string
 }
 
-export function filterComboboxOptions(options: ComboboxOption[], query: string): ComboboxOption[] {
+export function filterComboboxOptions<Option extends ComboboxOption>(options: Option[], query: string): Option[] {
   const words = query.toLowerCase().split(' ').filter((word) => word !== '')
   return options.filter((option) => {
     const searchable = [option.label, option.hint, option.group].join(' ').toLowerCase()

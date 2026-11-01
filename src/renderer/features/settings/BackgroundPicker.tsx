@@ -1,10 +1,9 @@
-import { Ban, Check, ImagePlus } from 'lucide-react'
+import { Check, ImagePlus } from 'lucide-react'
 import type { CSSProperties, ReactNode } from 'react'
 import { flushSync } from 'react-dom'
-import { TINT_IDS, type Appearance } from '../../../shared/appearance'
+import type { Appearance } from '../../../shared/appearance'
 import { useAppearanceStore } from '../../state/appearanceStore'
-import { useThemeWithoutTint } from '../../state/colorThemeStore'
-import { TINTS, tintedTheme } from '../../theme/backgroundTints'
+import { useActiveColorTheme } from '../../state/colorThemeStore'
 import { appColorsOf } from '../../theme/themeDerivation'
 import { cn } from '../../ui/cn'
 
@@ -59,59 +58,28 @@ export function BackgroundPicker() {
   const appearance = useAppearanceStore((state) => state.appearance)
   const update = useAppearanceStore((state) => state.update)
   const wallpaperUrl = useAppearanceStore((state) => state.wallpaperUrl)
-  const theme = useThemeWithoutTint()
+  const theme = useActiveColorTheme()
   const isChosen = (background: Appearance['background']) => appearance.background === background
   const basePanel = appColorsOf(theme).panel
   const choose = (changes: Partial<Appearance>) => withCrossfade(() => update(changes))
 
   return (
-    <div className="background-groups">
-      <div className="background-group">
-        <h3 className="background-group-title">Look</h3>
-        <div className="background-picker">
-          <BackgroundTile
-            label="Solid"
-            hint="The theme color, nothing behind it"
-            isSelected={isChosen('solid')}
-            preview={imagePreview(null, theme.background, basePanel)}
-            onSelect={() => choose({ background: 'solid' })}
-          />
-          <BackgroundTile
-            label="Your image"
-            hint="A picture you choose, behind O-BROS"
-            isSelected={isChosen('wallpaper')}
-            preview={imagePreview(wallpaperUrl, theme.background, basePanel)}
-            placeholder={wallpaperUrl === null && <ImagePlus size={18} className="background-tile-icon" />}
-            onSelect={() => choose({ background: 'wallpaper' })}
-          />
-        </div>
-      </div>
-      <div className="background-group">
-        <h3 className="background-group-title">Tone</h3>
-        <div className="background-picker">
-          <BackgroundTile
-            label="None"
-            hint="The theme's own surfaces"
-            isSelected={appearance.color === null}
-            preview={imagePreview(null, theme.background, basePanel)}
-            placeholder={<Ban size={18} className="background-tile-icon" />}
-            onSelect={() => choose({ color: null })}
-          />
-          {TINT_IDS.map((tint) => {
-            const tinted = tintedTheme(theme, tint)
-            return (
-              <BackgroundTile
-                key={tint}
-                label={TINTS[tint].label}
-                hint={`${TINTS[tint].hint}, for the whole app and any look above`}
-                isSelected={appearance.color === tint}
-                preview={{ backgroundColor: tinted.background, '--tile-panel': appColorsOf(tinted).panel } as CSSProperties}
-                onSelect={() => choose({ color: tint })}
-              />
-            )
-          })}
-        </div>
-      </div>
+    <div className="background-picker">
+      <BackgroundTile
+        label="Solid"
+        hint="The theme color, nothing behind it"
+        isSelected={isChosen('solid')}
+        preview={imagePreview(null, theme.background, basePanel)}
+        onSelect={() => choose({ background: 'solid' })}
+      />
+      <BackgroundTile
+        label="Your image"
+        hint="A picture you choose, behind O-BROS"
+        isSelected={isChosen('wallpaper')}
+        preview={imagePreview(wallpaperUrl, theme.background, basePanel)}
+        placeholder={wallpaperUrl === null && <ImagePlus size={18} className="background-tile-icon" />}
+        onSelect={() => choose({ background: 'wallpaper' })}
+      />
     </div>
   )
 }

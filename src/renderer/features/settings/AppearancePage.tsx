@@ -57,7 +57,7 @@ export function AppearancePage() {
 
       <SettingsSection
         title="Background"
-        description="Look is what shows behind the app. Tone gives the whole app a quiet color, like Midnight or Mocha, and works with every look, so a picture and Midnight give dark navy glass over your picture. Text and code keep the theme colors."
+        description="What shows behind the app: the theme color, or a picture you choose. Text and code keep the theme colors."
       >
         <BackgroundPicker />
       </SettingsSection>

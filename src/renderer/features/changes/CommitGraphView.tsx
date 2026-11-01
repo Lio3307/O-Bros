@@ -6,7 +6,7 @@ import { useCommitHistoryStore } from '../../state/commitHistoryStore'
 import { useChangesStore } from '../../state/changesStore'
 import { useGitRepositoryPath } from '../../state/gitRepositoryStore'
 import { Button } from '../../ui/Button'
-import { Dropdown } from '../../ui/Dropdown'
+import { Combobox } from '../../ui/Combobox'
 import { useNow } from '../../ui/useNow'
 import { buildCommitGraph, laneCount } from './commitGraph'
 import { refsKeyOf } from './refsKey'
@@ -57,8 +57,10 @@ export function CommitGraphView() {
         <span className="graph-title">Commit graph</span>
         <span className="graph-option">
           Branch
-          <Dropdown
+          <Combobox
             className="graph-branch-select"
+            searchPlaceholder="Find a branch"
+            noMatchText="No branch matches that."
             title="Show the history of one branch"
             icon={<GitBranch size={14} />}
             label={branchFilter ?? 'All branches'}

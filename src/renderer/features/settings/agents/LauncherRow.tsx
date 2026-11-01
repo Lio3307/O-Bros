@@ -2,7 +2,7 @@ import { KeyRound, Trash2 } from 'lucide-react'
 import type { AgentLauncher } from '../../../../shared/agentLaunchers'
 import { useAgentLaunchersStore } from '../../../state/agentLaunchersStore'
 import { useCustomProvidersStore } from '../../../state/customProvidersStore'
-import { Dropdown } from '../../../ui/Dropdown'
+import { Combobox } from '../../../ui/Combobox'
 import { AgentIcon } from '../../../ui/AgentIcon'
 import { AgentUsageNote } from '../../../ui/AgentUsageNote'
 import { AgentStatusBadge } from '../../../ui/AgentStatusBadge'
@@ -53,8 +53,10 @@ export function LauncherRow({ launcher, isShown, canShowMore }: LauncherRowProps
         onChange={(event) => update(launcher.id, { command: event.target.value })}
       />
       {(providers.length > 0 || launcher.providerId != null) && (
-        <Dropdown
+        <Combobox
           className="launcher-provider"
+          searchPlaceholder="Find a provider"
+          noMatchText="No provider matches that."
           title="Which model provider this agent starts with"
           icon={<KeyRound size={14} />}
           label={chosenProvider?.name ?? NORMAL_LOGIN_LABEL}

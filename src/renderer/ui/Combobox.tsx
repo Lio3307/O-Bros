@@ -5,16 +5,19 @@ import { handlePickerKey } from '../features/files/pickerKeys'
 import { cn } from './cn'
 import { FloatingPanel } from './FloatingPanel'
 import './combobox.css'
-import './dropdown.css'
 import './popupMenu.css'
+
+export interface ComboboxItem extends ComboboxOption {
+  icon?: ReactNode
+}
 
 interface ComboboxProps {
   label: string
   value: string | null
-  loadOptions: () => ComboboxOption[] | Promise<ComboboxOption[]>
+  loadOptions: () => ComboboxItem[] | Promise<ComboboxItem[]>
   onChange: (value: string) => void
-  searchPlaceholder: string
-  noMatchText: string
+  searchPlaceholder?: string
+  noMatchText?: string
   icon?: ReactNode
   triggerHint?: string
   title?: string
@@ -26,7 +29,7 @@ interface OpenPanel {
   y: number
   width: number
   anchor: HTMLElement
-  options: ComboboxOption[]
+  options: ComboboxItem[]
 }
 
 interface ComboboxPanelProps {
@@ -40,6 +43,7 @@ interface ComboboxPanelProps {
 
 const PANEL_GAP = 4
 const MIN_PANEL_WIDTH = 320
+const SEARCH_SHOWN_FROM_OPTIONS = 8
 
 function ComboboxPanel({ panel, value, searchPlaceholder, noMatchText, onPick, onClose }: ComboboxPanelProps) {
   const listId = useId()
@@ -47,6 +51,7 @@ function ComboboxPanel({ panel, value, searchPlaceholder, noMatchText, onPick, o
   const [query, setQuery] = useState('')
   const [highlighted, setHighlighted] = useState(() => Math.max(0, panel.options.findIndex((option) => option.value === value)))
   const shown = filterComboboxOptions(panel.options, query)
+  const isSearchHidden = panel.options.length < SEARCH_SHOWN_FROM_OPTIONS && query === ''
 
   useEffect(() => {
     listRef.current?.querySelector('.combobox-option-highlighted')?.scrollIntoView({ block: 'nearest' })
@@ -78,7 +83,7 @@ function ComboboxPanel({ panel, value, searchPlaceholder, noMatchText, onPick, o
       onClose={onClose}
       style={{ width: Math.max(panel.width, MIN_PANEL_WIDTH) }}
     >
-      <label className="combobox-search">
+      <label className={cn('combobox-search', isSearchHidden && 'combobox-search-hidden')}>
         <Search size={14} />
         <input
           autoFocus
@@ -116,7 +121,8 @@ function ComboboxPanel({ panel, value, searchPlaceholder, noMatchText, onPick, o
                 onClick={() => onPick(option.value)}
               >
                 <span className="popup-menu-icon">
-                  <Check size={14} className={isSelected ? undefined : 'dropdown-check-hidden'} />
+                  <Check size={14} className={isSelected ? undefined : 'combobox-check-hidden'} />
+                  {option.icon}
                 </span>
                 <span className="popup-menu-label">{option.label}</span>
                 {option.hint !== undefined && <span className="popup-menu-hint">{option.hint}</span>}
@@ -129,7 +135,18 @@ function ComboboxPanel({ panel, value, searchPlaceholder, noMatchText, onPick, o
   )
 }
 
-export function Combobox({ label, value, loadOptions, onChange, searchPlaceholder, noMatchText, icon, triggerHint, title, className }: ComboboxProps) {
+export function Combobox({
+  label,
+  value,
+  loadOptions,
+  onChange,
+  searchPlaceholder = 'Search',
+  noMatchText = 'Nothing matches that.',
+  icon,
+  triggerHint,
+  title,
+  className
+}: ComboboxProps) {
   const [panel, setPanel] = useState<OpenPanel | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const close = useCallback(() => {
@@ -141,7 +158,9 @@ export function Combobox({ label, value, loadOptions, onChange, searchPlaceholde
     const anchor = event.currentTarget
     const bounds = anchor.getBoundingClientRect()
     const options = await loadOptions()
-    setPanel({ x: bounds.left, y: bounds.bottom + PANEL_GAP, width: bounds.width, anchor, options })
+    if (options.length > 0) {
+      setPanel({ x: bounds.left, y: bounds.bottom + PANEL_GAP, width: bounds.width, anchor, options })
+    }
   }
 
   function pick(picked: string): void {
@@ -156,14 +175,14 @@ export function Combobox({ label, value, loadOptions, onChange, searchPlaceholde
       <button
         ref={triggerRef}
         type="button"
-        className={cn('dropdown', className)}
+        className={cn('combobox-trigger', className)}
         title={title}
         aria-haspopup="listbox"
         aria-expanded={panel !== null}
         onClick={(event) => void open(event)}
       >
         {icon}
-        <span className={cn('dropdown-label', triggerHint !== undefined && 'combobox-trigger-label')}>{label}</span>
+        <span className={cn('combobox-trigger-label', triggerHint !== undefined && 'combobox-trigger-label-with-hint')}>{label}</span>
         {triggerHint !== undefined && <span className="combobox-trigger-hint">{triggerHint}</span>}
         <ChevronDown size={14} />
       </button>

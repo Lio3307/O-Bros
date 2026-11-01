@@ -6,7 +6,7 @@ import { useInstalledCommandsStore } from '../../state/installedCommandsStore'
 import { useLayoutStore } from '../../state/layoutStore'
 import { AgentIcon } from '../../ui/AgentIcon'
 import { Button } from '../../ui/Button'
-import { Dropdown } from '../../ui/Dropdown'
+import { Combobox } from '../../ui/Combobox'
 import { LoadingText } from '../../ui/LoadingText'
 import { Modal } from '../../ui/Modal'
 import { Notice } from '../../ui/Notice'
@@ -88,8 +88,10 @@ function ContinueForm({ request, close }: { request: ContinueRequest; close: () 
         <>
           <div className="modal-section">
             <span className="modal-label muted">Continue with</span>
-            <Dropdown
+            <Combobox
               className="continue-agent"
+              searchPlaceholder="Find an agent"
+              noMatchText="No agent matches that."
               title="Choose the agent that takes over"
               label={chosen.name}
               value={chosen.id}

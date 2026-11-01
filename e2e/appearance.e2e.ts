@@ -87,45 +87,7 @@ test('shows a wallpaper behind see-through panels, keeps menus solid, and goes b
   await expect(app.window.getByRole('button', { name: 'Choose image…' })).toHaveCount(0)
 })
 
-test('a tone colors the whole app and works with every look, including your image', async () => {
-  app = await launchApp({ separateHome: true })
-  const wallpaperPath = join(dirname(app.projectFolder), 'sunset.svg')
-  await writeFile(wallpaperPath, WALLPAPER_SVG, 'utf8')
-  await app.application.evaluate(({ dialog }, chosen) => {
-    dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [chosen] })
-  }, wallpaperPath)
-  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
-  await app.window.getByTitle('Plain terminal in the selected folder').click()
-  await app.window.getByTitle('Settings', { exact: true }).click()
-  await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
-  const panelColor = () => app.window.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--color-panel-solid').trim())
-  const plainPanel = await panelColor()
-  const pressed = (name: string) => app.window.getByRole('button', { name, exact: true })
-
-  await pressed('Midnight').click()
-  await expect(pressed('Midnight')).toHaveAttribute('aria-pressed', 'true')
-  await expect(pressed('Solid')).toHaveAttribute('aria-pressed', 'true')
-  await expect.poll(panelColor).not.toBe(plainPanel)
-  const tonedPanel = await panelColor()
-  expect(await backgroundAlphaOf('.side-panel')).toBe(1)
-
-  await pressed('Your image').click()
-  await app.window.getByRole('button', { name: 'Choose image…' }).click()
-  await expect(app.window.locator('.app-wallpaper-image')).toBeVisible()
-  await expect(pressed('Midnight')).toHaveAttribute('aria-pressed', 'true')
-  await expect.poll(() => backgroundAlphaOf('.side-panel')).toBeLessThan(1)
-  expect(await panelColor()).toBe(tonedPanel)
-  if (SHOTS !== undefined) {
-    await app.window.waitForTimeout(600)
-    await app.window.screenshot({ path: `${SHOTS}/appearance-tint.png` })
-  }
-
-  await pressed('None').click()
-  await expect.poll(panelColor).toBe(plainPanel)
-  await expect(pressed('Your image')).toHaveAttribute('aria-pressed', 'true')
-})
-
-test('a Transparent look saved by an older version opens as Solid and keeps its tone', async () => {
+test('a Transparent look and a tone saved by an older version open as plain Solid', async () => {
   app = await launchApp({ separateHome: true })
   await app.window.evaluate(() => localStorage.setItem('o-bros.appearance', JSON.stringify({ background: 'desktop', color: 'pine' })))
   await app.window.reload()
@@ -133,7 +95,7 @@ test('a Transparent look saved by an older version opens as Solid and keeps its 
   await app.window.getByTitle('Settings', { exact: true }).click()
   await app.window.locator('.side-panel').getByRole('button', { name: 'Appearance' }).click()
   await expect(app.window.getByRole('button', { name: 'Solid', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await expect(app.window.getByRole('button', { name: 'Pine', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(app.window.getByRole('button', { name: 'Pine', exact: true })).toHaveCount(0)
   await expect(app.window.getByRole('button', { name: 'Transparent', exact: true })).toHaveCount(0)
   expect(await backgroundAlphaOf('.side-panel')).toBe(1)
 })

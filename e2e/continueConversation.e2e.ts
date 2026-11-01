@@ -113,7 +113,7 @@ async function readProof(): Promise<string> {
 
 async function chooseAgentAndContinue(agentName: string): Promise<void> {
   const dialog = app.window.getByRole('dialog', { name: 'Continue in another agent' })
-  await dialog.locator('.dropdown').click()
+  await dialog.locator('.combobox-trigger').click()
   await app.window.locator('.popup-menu-item', { hasText: agentName }).click()
   await dialog.getByRole('button', { name: `Continue in ${agentName}` }).click()
   await expect(dialog).toHaveCount(0)
@@ -144,7 +144,7 @@ test('continues a saved conversation in another agent from History and shows the
   const dialog = app.window.getByRole('dialog', { name: 'Continue in another agent' })
   await expect(dialog).toContainText('Fix the login bug')
   await expect(dialog.getByRole('button', { name: 'Continue in Fake agent' })).toBeFocused()
-  await dialog.locator('.dropdown').click()
+  await dialog.locator('.combobox-trigger').click()
   await expect(app.window.locator('.popup-menu-item', { hasText: 'Codex' })).toContainText('same agent')
   await expect(app.window.locator('.popup-menu-item', { hasText: 'Not installed agent' })).toHaveCount(0)
   await app.window.keyboard.press('Escape')
