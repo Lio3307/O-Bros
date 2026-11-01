@@ -1,3 +1,4 @@
+import { pathBatches } from '../../shared/pathBatches'
 import { shell } from 'electron'
 import { join } from 'node:path'
 import type {
@@ -22,16 +23,20 @@ function assertPathsInsideRepo(repoPath: string, filePaths: string[]): void {
 export async function stagePaths(request: GitPathsRequest): Promise<void> {
   await assertInsideProjectRoots(request.repoPath)
   assertPathsInsideRepo(request.repoPath, request.filePaths)
-  await runGit(request.repoPath, ['add', '--', ...request.filePaths])
+  for (const batch of pathBatches(request.filePaths)) {
+    await runGit(request.repoPath, ['add', '--', ...batch])
+  }
 }
 
 export async function unstagePaths(request: GitPathsRequest): Promise<void> {
   await assertInsideProjectRoots(request.repoPath)
   assertPathsInsideRepo(request.repoPath, request.filePaths)
-  try {
-    await runGit(request.repoPath, ['restore', '--staged', '--', ...request.filePaths])
-  } catch {
-    await runGit(request.repoPath, ['rm', '--cached', '-r', '-q', '--', ...request.filePaths])
+  for (const batch of pathBatches(request.filePaths)) {
+    try {
+      await runGit(request.repoPath, ['restore', '--staged', '--', ...batch])
+    } catch {
+      await runGit(request.repoPath, ['rm', '--cached', '-r', '-q', '--', ...batch])
+    }
   }
 }
 

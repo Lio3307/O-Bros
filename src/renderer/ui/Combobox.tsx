@@ -44,13 +44,15 @@ interface ComboboxPanelProps {
 const PANEL_GAP = 4
 const MIN_PANEL_WIDTH = 320
 const SEARCH_SHOWN_FROM_OPTIONS = 8
+const MAX_SHOWN_OPTIONS = 200
 
 function ComboboxPanel({ panel, value, searchPlaceholder, noMatchText, onPick, onClose }: ComboboxPanelProps) {
   const listId = useId()
   const listRef = useRef<HTMLDivElement>(null)
   const [query, setQuery] = useState('')
-  const [highlighted, setHighlighted] = useState(() => Math.max(0, panel.options.findIndex((option) => option.value === value)))
-  const shown = filterComboboxOptions(panel.options, query)
+  const matching = filterComboboxOptions(panel.options, query)
+  const shown = matching.slice(0, MAX_SHOWN_OPTIONS)
+  const [highlighted, setHighlighted] = useState(() => Math.max(0, shown.findIndex((option) => option.value === value)))
   const isSearchHidden = panel.options.length < SEARCH_SHOWN_FROM_OPTIONS && query === ''
 
   useEffect(() => {
@@ -131,6 +133,11 @@ function ComboboxPanel({ panel, value, searchPlaceholder, noMatchText, onPick, o
           )
         })}
       </div>
+      {matching.length > shown.length && (
+        <p className="combobox-more muted">
+          Showing the first {shown.length.toLocaleString()} of {matching.length.toLocaleString()}. Type to find the rest.
+        </p>
+      )}
     </FloatingPanel>
   )
 }

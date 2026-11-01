@@ -101,6 +101,21 @@ test('trust is remembered after a restart of the page, and only asked once', asy
   await expect(dialog).toHaveCount(0)
 })
 
+test('Settings lists a trusted folder, and stopping trust turns the Git panel off again', async () => {
+  app = await launchApp({ separateHome: true })
+  await plantGitTraps()
+  await openFolder()
+  const dialog = app.window.locator('.modal', { hasText: QUESTION })
+  await dialog.getByRole('button', { name: 'Trust this folder' }).click({ timeout: 15_000 })
+  await app.window.getByTitle('Settings', { exact: true }).click()
+  await app.window.locator('.side-panel').getByRole('button', { name: 'Project folders' }).click()
+  const row = app.window.locator('.settings-section .table-row', { hasText: app.projectFolder })
+  await row.getByRole('button', { name: 'Stop trusting' }).click()
+  await expect(app.window.getByText('No trusted folders yet.')).toBeVisible()
+  await app.window.getByTitle('Changes', { exact: true }).click()
+  await expect(app.window.getByRole('button', { name: 'Trust this folder' })).toBeVisible({ timeout: 15_000 })
+})
+
 test('other ways to hide git settings are caught too', async () => {
   test.setTimeout(90_000)
   app = await launchApp({ separateHome: true })

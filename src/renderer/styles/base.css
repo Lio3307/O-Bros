@@ -306,6 +306,10 @@ input[role='switch']:disabled {
   text-align: left;
 }
 
+.show-more-row {
+  color: var(--color-muted);
+}
+
 .row > span {
   min-width: 0;
   overflow: hidden;

@@ -143,7 +143,9 @@ const api: DesktopApi = {
   },
   trust: {
     check: (folder) => ipcRenderer.invoke(IpcChannel.trustCheck, folder),
-    grant: (folder) => ipcRenderer.invoke(IpcChannel.trustGrant, folder)
+    grant: (folder) => ipcRenderer.invoke(IpcChannel.trustGrant, folder),
+    list: () => ipcRenderer.invoke(IpcChannel.trustList),
+    revoke: (folder) => ipcRenderer.invoke(IpcChannel.trustRevoke, folder)
   },
   ports: {
     list: () => ipcRenderer.invoke(IpcChannel.portsList),

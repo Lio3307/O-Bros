@@ -4,11 +4,14 @@ import { useChangesStore } from '../../state/changesStore'
 import { useCommitHistoryStore } from '../../state/commitHistoryStore'
 import { LineCounts } from './LineCounts'
 import { LoadingText } from '../../ui/LoadingText'
+import { ShowMoreRow } from '../../ui/ShowMoreRow'
+import { useListBatch } from '../../ui/useListBatch'
 
 export function CommitFiles({ commit }: { commit: GitCommit }) {
   const files = useCommitHistoryStore((state) => state.filesByHash[commit.hash])
   const selectedCommitFile = useChangesStore((state) => state.selectedCommitFile)
   const selectCommitFile = useChangesStore((state) => state.selectCommitFile)
+  const { shown, hiddenCount, showMore } = useListBatch(files ?? [])
 
   if (files === undefined) {
     return <p className="panel-empty"><LoadingText text="Loading the changed files…" /></p>
@@ -19,7 +22,7 @@ export function CommitFiles({ commit }: { commit: GitCommit }) {
 
   return (
     <div className="commit-files">
-      {files.map((file) => {
+      {shown.map((file) => {
         const isSelected = selectedCommitFile?.hash === commit.hash && selectedCommitFile.path === file.path
         return (
           <button
@@ -41,6 +44,7 @@ export function CommitFiles({ commit }: { commit: GitCommit }) {
           </button>
         )
       })}
+      <ShowMoreRow hiddenCount={hiddenCount} onShowMore={showMore} />
     </div>
   )
 }

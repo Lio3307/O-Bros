@@ -74,7 +74,7 @@ export async function launchApp(options: LaunchOptions = {}): Promise<RunningApp
     homeFolder,
     close: async () => {
       await application.close()
-      await rm(workFolder, { recursive: true, force: true })
+      await rm(workFolder, { recursive: true, force: true, maxRetries: 10, retryDelay: 500 })
     }
   }
 }

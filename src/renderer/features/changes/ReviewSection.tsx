@@ -6,6 +6,8 @@ import { askToConfirm } from '../../state/confirmStore'
 import { useReviewStore } from '../../state/reviewStore'
 import { useWorkspaceStore } from '../../state/workspaceStore'
 import { Button } from '../../ui/Button'
+import { ShowMoreRow } from '../../ui/ShowMoreRow'
+import { useListBatch } from '../../ui/useListBatch'
 import { ChangeRowButton } from './ChangeRowButton'
 
 const kindMark: Record<ReviewChange['kind'], string> = {
@@ -47,6 +49,7 @@ export function ReviewSection({ repoPath }: { repoPath: string }) {
   const status = useChangesStore((state) => state.status)
   const selectedReview = useChangesStore((state) => state.selectedReview)
   const selectReview = useChangesStore((state) => state.selectReview)
+  const { shown, hiddenCount, showMore } = useListBatch(changes ?? [])
 
   useEffect(() => {
     if (activeTabId !== null) {
@@ -69,7 +72,7 @@ export function ReviewSection({ repoPath }: { repoPath: string }) {
       {changes !== undefined && changes.length === 0 && (
         <p className="muted review-empty">Nothing changed yet in this folder.</p>
       )}
-      {(changes ?? []).map((change) => {
+      {shown.map((change) => {
         const isSelected = selectedReview?.change.path === change.path
         return (
           <div key={change.path} className="change-item">
@@ -82,6 +85,7 @@ export function ReviewSection({ repoPath }: { repoPath: string }) {
           </div>
         )
       })}
+      <ShowMoreRow hiddenCount={hiddenCount} onShowMore={showMore} />
     </section>
   )
 }

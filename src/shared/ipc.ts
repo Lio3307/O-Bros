@@ -190,6 +190,8 @@ export const IpcChannel = {
   shellReveal: 'shell:reveal',
   trustCheck: 'trust:check',
   trustGrant: 'trust:grant',
+  trustList: 'trust:list',
+  trustRevoke: 'trust:revoke',
   portsList: 'ports:list',
   portsStop: 'ports:stop',
   portsOpen: 'ports:open',
@@ -410,6 +412,8 @@ export interface DesktopApi {
   trust: {
     check(folder: string): Promise<{ isTrusted: boolean; risks: string[] }>
     grant(folder: string): Promise<void>
+    list(): Promise<string[]>
+    revoke(folder: string): Promise<void>
   }
   ports: {
     list(): Promise<ListeningPort[]>

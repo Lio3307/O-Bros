@@ -85,6 +85,16 @@ export async function trustFolder(folder: string): Promise<void> {
   await saveSettings({ ...settings, trustedFolders })
 }
 
+export async function listTrustedFolders(): Promise<string[]> {
+  return loadTrustedFolders()
+}
+
+export async function stopTrustingFolder(folder: string): Promise<void> {
+  const settings = await loadSettings()
+  trustedFolders = settings.trustedFolders.filter((trusted) => trusted !== folder)
+  await saveSettings({ ...settings, trustedFolders })
+}
+
 export async function assertGitIsAllowed(folder: string): Promise<void> {
   if ((await gitRisksOf(folder)).length > 0 && !(await isFolderTrusted(folder))) {
     throw new Error(NOT_TRUSTED_MESSAGE)

@@ -6,6 +6,8 @@ import { useFileTreeStore } from '../../state/fileTreeStore'
 import { DisclosureChevron } from '../../ui/DisclosureChevron'
 import { FileTypeIcon, FolderTypeIcon } from '../../ui/FileTypeIcon'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
+import { ShowMoreRow } from '../../ui/ShowMoreRow'
+import { useListBatch } from '../../ui/useListBatch'
 import { setDraggedPaths } from './dragData'
 import { cn } from '../../ui/cn'
 import { draggedPathsFor, pathsBetween } from './pickRange'
@@ -169,6 +171,7 @@ export function FileTree({ directoryPath, depth, selectedPath, onOpenFile }: Fil
   const refreshToken = useFileTreeStore((state) => state.refreshToken)
   const deleted = useGitMarksStore((state) => state.marks?.deletedByFolder.get(gitMarkKey(directoryPath)) ?? NO_DELETED)
   const indent = BASE_INDENT_PX + depth * INDENT_PER_LEVEL_PX + FILE_ICON_ALIGNMENT_PX
+  const { shown, hiddenCount, showMore } = useListBatch(entries)
 
   useEffect(() => {
     setErrorMessage(null)
@@ -184,9 +187,10 @@ export function FileTree({ directoryPath, depth, selectedPath, onOpenFile }: Fil
 
   return (
     <>
-      {entries.map((entry) => (
+      {shown.map((entry) => (
         <TreeEntry key={entry.path} entry={entry} depth={depth} selectedPath={selectedPath} onOpenFile={onOpenFile} />
       ))}
+      <ShowMoreRow hiddenCount={hiddenCount} onShowMore={showMore} indent={indent} />
       {deleted
         .filter((gone) => !entries.some((entry) => gitMarkKey(entry.path) === gitMarkKey(gone.path)))
         .map((gone) => (

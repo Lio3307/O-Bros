@@ -3,6 +3,8 @@ import type { GitFileChange } from '../../../shared/types'
 import { useChangesStore } from '../../state/changesStore'
 import { askToConfirm } from '../../state/confirmStore'
 import { Button } from '../../ui/Button'
+import { ShowMoreRow } from '../../ui/ShowMoreRow'
+import { useListBatch } from '../../ui/useListBatch'
 import { ChangeRowButton } from './ChangeRowButton'
 
 const kindMark: Record<GitFileChange['kind'], string> = {
@@ -43,6 +45,7 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
   const select = useChangesStore((state) => state.select)
   const stage = useChangesStore((state) => state.stage)
   const unstage = useChangesStore((state) => state.unstage)
+  const { shown, hiddenCount, showMore } = useListBatch(changes)
 
   if (changes.length === 0) {
     return null
@@ -63,7 +66,7 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
           {isStagedGroup ? 'Unstage all' : 'Stage all'}
         </Button>
       </div>
-      {changes.map((change) => {
+      {shown.map((change) => {
         const isSelected = selectedChange?.path === change.path && selectedChange.isStaged === change.isStaged
         return (
           <div key={`${change.isStaged}-${change.path}`} className="change-item">
@@ -91,6 +94,7 @@ export function ChangeGroup({ title, changes, repoPath }: ChangeGroupProps) {
           </div>
         )
       })}
+      <ShowMoreRow hiddenCount={hiddenCount} onShowMore={showMore} />
     </section>
   )
 }

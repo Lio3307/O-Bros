@@ -1,7 +1,7 @@
 import { ipcMain, shell } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
 import { assertInsideProjectRoots } from '../pathGuard'
-import { gitRisksOf, isFolderTrusted, trustFolder } from '../services/folderTrust'
+import { gitRisksOf, isFolderTrusted, listTrustedFolders, stopTrustingFolder, trustFolder } from '../services/folderTrust'
 import { projectServerNamesIn } from '../services/languageServers/languageServerCatalog'
 
 export function registerShellIpc(): void {
@@ -18,4 +18,6 @@ export function registerShellIpc(): void {
     await assertInsideProjectRoots(folder)
     await trustFolder(folder)
   })
+  ipcMain.handle(IpcChannel.trustList, () => listTrustedFolders())
+  ipcMain.handle(IpcChannel.trustRevoke, (_event, folder: string) => stopTrustingFolder(folder))
 }
