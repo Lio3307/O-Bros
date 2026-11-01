@@ -1,6 +1,7 @@
 import { readdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { imageTypeOf } from '../../shared/imageFiles'
+import { decodeEditableText } from '../../shared/textFile'
 import type { DirectoryEntry, ImageFile, SearchHit, SearchRequest } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
 import { hasEntries } from './fileSystem'
@@ -37,7 +38,11 @@ export async function readTextFile(filePath: string): Promise<string> {
   if (size > MAX_EDITABLE_BYTES) {
     throw new Error('This file is larger than 2 MB and was not opened.')
   }
-  return readFile(filePath, 'utf8')
+  const text = decodeEditableText(await readFile(filePath))
+  if (text === null) {
+    throw new Error('This file is not UTF-8 text and was not opened.')
+  }
+  return text
 }
 
 export async function readImageFile(filePath: string): Promise<ImageFile> {

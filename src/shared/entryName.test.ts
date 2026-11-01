@@ -8,6 +8,14 @@ describe('findEntryNameProblem', () => {
     expect(findEntryNameProblem('my folder')).toBeNull()
   })
 
+  it('rejects names Windows keeps for devices, with any extension and in any case', () => {
+    for (const name of ['CON', 'con', 'Nul.txt', 'COM1', 'lpt9.log', 'aux.tar.gz']) {
+      expect(findEntryNameProblem(name)).toBe('reserved')
+    }
+    expect(findEntryNameProblem('console.txt')).toBeNull()
+    expect(findEntryNameProblem('com10')).toBeNull()
+  })
+
   it('rejects empty names', () => {
     expect(findEntryNameProblem('   ')).toBe('empty')
   })

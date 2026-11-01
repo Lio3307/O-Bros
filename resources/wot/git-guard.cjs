@@ -2,8 +2,40 @@
 
 const { spawnSync } = require('node:child_process')
 
-const gitArguments = process.argv.slice(2)
-const CHECKED_WORDS = ['commit', 'push', 'branch', 'checkout', 'switch', 'worktree', 'merge', 'cherry-pick', 'revert', 'rebase', 'am', 'pull']
+const CHECKED_WORDS = ['commit', 'commit-tree', 'update-ref', 'push', 'branch', 'checkout', 'switch', 'worktree', 'merge', 'cherry-pick', 'revert', 'rebase', 'am', 'pull']
+const COMMON_READ_COMMANDS = ['status', 'diff', 'log', 'show', 'add', 'rev-parse', 'ls-files', 'config', 'blame', 'grep', 'remote', 'fetch']
+const GLOBAL_OPTIONS_WITH_VALUE = ['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--exec-path', '--config-env']
+const ALIAS_SHELL_MARK = '!'
+
+function subcommandIndexOf(args) {
+  let index = 0
+  while (index < args.length && args[index].startsWith('-')) {
+    index += GLOBAL_OPTIONS_WITH_VALUE.includes(args[index]) ? 2 : 1
+  }
+  return index
+}
+
+function withAliasExpanded(args) {
+  const realGit = process.env.O_BROS_REAL_GIT
+  const index = subcommandIndexOf(args)
+  const word = args[index]
+  if (!realGit || word === undefined || CHECKED_WORDS.includes(word) || COMMON_READ_COMMANDS.includes(word)) {
+    return args
+  }
+  const environment = { ...process.env }
+  delete environment.ELECTRON_RUN_AS_NODE
+  const result = spawnSync(realGit, [...args.slice(0, index), 'config', '--get', `alias.${word}`], { encoding: 'utf8', env: environment, windowsHide: true })
+  const value = (result.stdout || '').trim()
+  const isShellAlias = value.startsWith(ALIAS_SHELL_MARK)
+  const words = (isShellAlias ? value.slice(ALIAS_SHELL_MARK.length) : value).split(' ').filter((part) => part !== '')
+  const aliasedCommand = isShellAlias && words[0] === 'git' ? words.slice(1) : words
+  if (!aliasedCommand.some((part) => CHECKED_WORDS.includes(part))) {
+    return args
+  }
+  return [...args.slice(0, index), ...aliasedCommand, ...args.slice(index + 1)]
+}
+
+const gitArguments = withAliasExpanded(process.argv.slice(2))
 
 function stop(text) {
   process.stderr.write(text + '\n')

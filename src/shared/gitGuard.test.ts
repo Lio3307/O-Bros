@@ -9,6 +9,8 @@ describe('guardedGitAction', () => {
   it('guards commits and pushes, also behind global options', () => {
     expect(action('commit -m fix')).toBe('commit')
     expect(action('commit --amend --no-edit')).toBe('commit')
+    expect(action('commit-tree abc -m fix')).toBe('commit')
+    expect(action('update-ref refs/heads/main abc')).toBe('change a branch directly')
     expect(action('-C ../other -c user.name=x commit -m fix')).toBe('commit')
     expect(action('push origin main')).toBe('push')
     expect(action('--no-pager push')).toBe('push')

@@ -2,6 +2,11 @@ export type EntryNameProblem = 'empty' | 'has-separator' | 'reserved' | 'invalid
 
 const FORBIDDEN_CHARACTERS = '<>:"|?*'
 const RESERVED_NAMES = ['.', '..']
+const WINDOWS_DEVICE_NAMES = ['con', 'prn', 'aux', 'nul', ...['1', '2', '3', '4', '5', '6', '7', '8', '9'].flatMap((digit) => [`com${digit}`, `lpt${digit}`])]
+
+function isWindowsDeviceName(name: string): boolean {
+  return WINDOWS_DEVICE_NAMES.includes(name.split('.')[0].trim().toLowerCase())
+}
 
 function hasControlCharacter(name: string): boolean {
   return Array.from(name).some((character) => character.charCodeAt(0) < 32)
@@ -14,7 +19,7 @@ export function findEntryNameProblem(name: string): EntryNameProblem | null {
   if (name.includes('/') || name.includes('\\')) {
     return 'has-separator'
   }
-  if (RESERVED_NAMES.includes(name)) {
+  if (RESERVED_NAMES.includes(name) || isWindowsDeviceName(name)) {
     return 'reserved'
   }
   if (Array.from(name).some((character) => FORBIDDEN_CHARACTERS.includes(character)) || hasControlCharacter(name)) {

@@ -13,6 +13,9 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Tone in Settings → Appearance** (Midnight, Slate, Aubergine, Pine, Mocha and Graphite). Background is now just Solid or Your image. If you had a tone chosen, O-BROS goes back to your theme's own colors; your theme and picture stay.
 
 ### Fixed
+- **Saving could damage files that are not UTF-8 text.** Opening a binary file or an old Windows-encoded text file, typing and saving silently changed its bytes. The editor now refuses to open such files and says why.
+- **Agents could get around the git guard with an alias or plumbing commands.** `git -c alias.x=commit x`, an alias saved in the repository, `git commit-tree` and `git update-ref` are now checked like `git commit`. The guard stops agents that follow the rules, not a determined program: one that runs the real git by its full path still gets through.
+- **A file or folder could be named after a Windows device** such as CON or NUL, which then cannot be opened or deleted normally. Those names are now refused.
 - **O-BROS could stay running invisibly after you closed it.** If you closed the app just after opening a terminal or agent, its shell could stay alive and the O-BROS process stayed with it, with no window, holding its files. O-BROS now ends each terminal's programs before it closes the terminal, and terminals no longer start during a quit.
 - **Agents no longer leave a `debug.log` in your project.** When a sandboxed agent such as Codex ran `git`, O-BROS's git guard printed "CreateFile: Access is denied" and wrote that file in the current folder. Terminals no longer inherit the crash reporter connection that caused it.
 - **The port check pauses while O-BROS is minimized.** With the Activity page or the ports list open, it kept reading the process list and open ports every 5 seconds even when nobody could see them.

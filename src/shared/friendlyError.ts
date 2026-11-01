@@ -21,6 +21,7 @@ const KNOWN_PROBLEMS: KnownProblem[] = [
   { needle: 'larger than 20 MB', message: 'That image is larger than 20 MB. Pick a smaller one.' },
   { needle: 'not an image O-BROS can show', message: 'That file is not an image O-BROS can show.' },
   { needle: 'larger than 2 MB', message: 'This file is larger than 2 MB, so it was not opened.' },
+  { needle: 'not UTF-8 text', message: 'This file is binary or not saved as UTF-8, so it was not opened. Saving it here could damage it.' },
   { needle: 'took longer than', message: 'The tool took too long and was stopped.' },
   { needle: 'would be overwritten', message: 'Your changes would be overwritten. Commit or discard them first.' },
   { needle: 'nothing to commit', message: 'There is nothing staged to commit.' },

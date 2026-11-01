@@ -65,8 +65,11 @@ export function guardedGitAction(gitArguments: string[]): string | null {
   const subcommand = gitArguments[index]
   const argumentsAfter = gitArguments.slice(index + 1)
 
-  if (subcommand === 'commit') {
+  if (subcommand === 'commit' || subcommand === 'commit-tree') {
     return 'commit'
+  }
+  if (subcommand === 'update-ref') {
+    return 'change a branch directly'
   }
   if (subcommand === 'push') {
     return 'push'
