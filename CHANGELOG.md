@@ -13,6 +13,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Tone in Settings → Appearance** (Midnight, Slate, Aubergine, Pine, Mocha and Graphite). Background is now just Solid or Your image. If you had a tone chosen, O-BROS goes back to your theme's own colors; your theme and picture stay.
 
 ### Fixed
+- **The port check pauses while O-BROS is minimized.** With the Activity page or the ports list open, it kept reading the process list and open ports every 5 seconds even when nobody could see them.
 - **Notifications no longer come when nothing happened.** A running dev server that prints while you change pages stays silent: a command now notifies only after you ran it with Enter and O-BROS sees it has ended. Typing without sending, pasting a prompt with several lines, and pressing Ctrl+C never notify. An agent also cannot notify twice for one message when a question flickers on its screen.
 - **Clearer notification names.** Instead of "nia finished" they now say who and where: "Command finished" or "<agent> finished its reply", with "In nia." below.
 - **The problem list flickered when you hovered a warning or error icon** on a line with many problems, such as a minified file. The list grew taller than the window, covered the icon it belonged to, closed and opened again. It now stays below the icon, is at most 320 pixels tall (less on a small window) and scrolls.

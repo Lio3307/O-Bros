@@ -10,7 +10,11 @@ function startViewing(): () => void {
   viewerCount += 1
   if (pollTimer === null) {
     void usePortsStore.getState().load()
-    pollTimer = setInterval(() => void usePortsStore.getState().load(), PORTS_POLL_MS)
+    pollTimer = setInterval(() => {
+      if (!document.hidden) {
+        void usePortsStore.getState().load()
+      }
+    }, PORTS_POLL_MS)
   }
   return () => {
     viewerCount -= 1
