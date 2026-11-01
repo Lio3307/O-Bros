@@ -1,5 +1,10 @@
 import type { RepositoryEntry } from '../../../shared/types'
 
+export function parentFolderHint(repository: Pick<RepositoryEntry, 'name' | 'relativePath'>): string | undefined {
+  const parentLength = repository.relativePath.length - repository.name.length - 1
+  return parentLength > 0 ? repository.relativePath.slice(0, parentLength) : undefined
+}
+
 const finishedScans = new Map<string, RepositoryEntry[]>()
 const runningScans = new Map<string, Promise<RepositoryEntry[]>>()
 

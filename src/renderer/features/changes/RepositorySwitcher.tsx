@@ -1,33 +1,26 @@
 import { FolderGit2 } from 'lucide-react'
 import { useCallback, useEffect } from 'react'
+import type { ComboboxOption } from '../../../shared/comboboxFilter'
 import { lastPathSegment } from '../../../shared/paths'
 import type { ProjectRoot } from '../../../shared/types'
 import { useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { useProjectsStore } from '../../state/projectsStore'
-import { Dropdown, type DropdownOption } from '../../ui/Dropdown'
+import { Combobox } from '../../ui/Combobox'
 import { useLiveRefresh } from '../../ui/useLiveRefresh'
-import { repositoriesIn, rescanRepositories } from './repositoryScan'
+import { parentFolderHint, repositoriesIn, rescanRepositories } from './repositoryScan'
 
 const FOLLOW_PROJECT = 'follow-project'
+const REPOSITORY_PROJECTS_GROUP = 'Projects'
 
 function foldersToScan(roots: ProjectRoot[]): string[] {
   return roots.filter((root) => root.branch === null).map((root) => root.path)
 }
 
-async function optionsOfRoot(root: ProjectRoot): Promise<DropdownOption[]> {
-  const rootOption: DropdownOption = {
-    value: root.path,
-    label: root.name,
-    hint: root.branch ?? 'project folder',
-    hasSeparatorBefore: true
-  }
-  if (root.branch !== null) {
-    return [rootOption]
-  }
+async function optionsOfFolder(root: ProjectRoot): Promise<ComboboxOption[]> {
   const repositories = await repositoriesIn(root.path)
   return [
-    rootOption,
-    ...repositories.map((repository) => ({ value: repository.path, label: repository.name, hint: repository.relativePath }))
+    { value: root.path, label: 'Folder overview', group: root.name },
+    ...repositories.map((repository) => ({ value: repository.path, label: repository.name, hint: parentFolderHint(repository), group: root.name }))
   ]
 }
 
@@ -47,14 +40,17 @@ export function RepositorySwitcher({ repoPath }: { repoPath: string }) {
     null
   )
 
-  async function loadOptions(): Promise<DropdownOption[]> {
-    const followOption: DropdownOption = {
+  async function loadOptions(): Promise<ComboboxOption[]> {
+    const followOption: ComboboxOption = {
       value: FOLLOW_PROJECT,
-      label: 'Follow project',
+      label: 'Follow selected project',
       hint: activeProjectPath === null ? undefined : lastPathSegment(activeProjectPath)
     }
-    const rootOptions = (await Promise.all(roots.map(optionsOfRoot))).flat()
-    return [followOption, ...rootOptions]
+    const repositoryProjects = roots
+      .filter((root) => root.branch !== null)
+      .map((root) => ({ value: root.path, label: root.name, hint: root.branch ?? undefined, group: REPOSITORY_PROJECTS_GROUP }))
+    const folders = await Promise.all(roots.filter((root) => root.branch === null).map(optionsOfFolder))
+    return [followOption, ...repositoryProjects, ...folders.flat()]
   }
 
   function change(value: string): void {
@@ -66,12 +62,15 @@ export function RepositorySwitcher({ repoPath }: { repoPath: string }) {
   }
 
   return (
-    <Dropdown
+    <Combobox
       className="repository-switch"
       title={pinnedPath === null ? `${repoPath} (follows the selected project)` : repoPath}
       icon={<FolderGit2 size={14} />}
       label={lastPathSegment(repoPath)}
+      triggerHint={pinnedPath === null ? 'following' : undefined}
       value={pinnedPath ?? FOLLOW_PROJECT}
+      searchPlaceholder="Find a repository or folder"
+      noMatchText="No repository or folder matches that."
       loadOptions={loadOptions}
       onChange={change}
     />
