@@ -23,7 +23,7 @@ import { registerUpdaterIpc } from './ipc/updaterIpc'
 import { registerToolsIpc } from './ipc/toolsIpc'
 import { registerWotIpc } from './ipc/wotIpc'
 import { registerSettingsBackupIpc } from './ipc/settingsBackupIpc'
-import { killAllTerminals } from './services/ptyManager'
+import { killAllTerminals, stopStartingTerminals } from './services/ptyManager'
 import { unwatchAllFiles } from './services/fileWatcher'
 import { writeLog } from './services/logging/logFile'
 import { setBridgeTarget } from './services/wot/rendererBridge'
@@ -102,6 +102,7 @@ app.on('child-process-gone', (_event, details) =>
 )
 
 app.on('before-quit', () => {
+  stopStartingTerminals()
   closeWarmPowerShell()
   stopWotServer()
   stopUniversalHistory()

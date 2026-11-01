@@ -51,6 +51,8 @@ test('line numbers stay readable when long lines scroll sideways, and fold arrow
   await expect.poll(() => closedArrow.evaluate((marker) => Number(getComputedStyle(marker).opacity))).toBe(1)
 })
 
+const WATCH_LIST_MS = 6000
+
 test('the problem list of a line with many problems fits on screen, scrolls, and stays still while hovered', async () => {
   app = await launchApp()
   const manyUnused = Array.from({ length: 40 }, (_, index) => `function f${index}(e){}`).join(';')
@@ -63,13 +65,25 @@ test('the problem list of a line with many problems fits on screen, scrolls, and
   const marker = app.window.locator('.cm-lint-marker').first()
   await marker.waitFor({ state: 'visible', timeout: 30_000 })
 
+  await app.window.evaluate(() => {
+    const itemCounts: number[] = []
+    Object.assign(window, { shownItemCounts: itemCounts })
+    new MutationObserver((records) => {
+      for (const node of records.flatMap((record) => [...record.addedNodes])) {
+        const shown = node instanceof HTMLElement ? (node.matches('.cm-tooltip-lint') ? node : node.querySelector('.cm-tooltip-lint')) : null
+        if (shown !== null) {
+          itemCounts.push(shown.querySelectorAll('li').length)
+        }
+      }
+    }).observe(document.body, { childList: true, subtree: true })
+  })
   await marker.hover()
   const list = app.window.locator('.cm-tooltip-lint')
   await expect(list).toBeVisible()
   await expect.poll(() => list.locator('li').count()).toBeGreaterThan(10)
-  await list.evaluate((element) => element.setAttribute('data-first-shown', 'yes'))
-  await app.window.waitForTimeout(1500)
-  await expect(list).toHaveAttribute('data-first-shown', 'yes')
+  await app.window.waitForTimeout(WATCH_LIST_MS)
+  const shownItemCounts = await app.window.evaluate(() => (window as unknown as { shownItemCounts: number[] }).shownItemCounts)
+  expect(new Set(shownItemCounts).size, `the list was rebuilt with nothing new: ${shownItemCounts.join(', ')}`).toBe(shownItemCounts.length)
 
   const [listBox, markerBox, windowHeight] = await Promise.all([list.boundingBox(), marker.boundingBox(), app.window.evaluate(() => window.innerHeight)])
   expect(listBox?.height ?? 0).toBeLessThanOrEqual(321)

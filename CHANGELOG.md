@@ -13,6 +13,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Tone in Settings → Appearance** (Midnight, Slate, Aubergine, Pine, Mocha and Graphite). Background is now just Solid or Your image. If you had a tone chosen, O-BROS goes back to your theme's own colors; your theme and picture stay.
 
 ### Fixed
+- **O-BROS could stay running invisibly after you closed it.** If you closed the app just after opening a terminal or agent, its shell could stay alive and the O-BROS process stayed with it, with no window, holding its files. O-BROS now ends each terminal's programs before it closes the terminal, and terminals no longer start during a quit.
 - **Agents no longer leave a `debug.log` in your project.** When a sandboxed agent such as Codex ran `git`, O-BROS's git guard printed "CreateFile: Access is denied" and wrote that file in the current folder. Terminals no longer inherit the crash reporter connection that caused it.
 - **The port check pauses while O-BROS is minimized.** With the Activity page or the ports list open, it kept reading the process list and open ports every 5 seconds even when nobody could see them.
 - **Notifications no longer come when nothing happened.** A running dev server that prints while you change pages stays silent: a command now notifies only after you ran it with Enter and O-BROS sees it has ended. Typing without sending, pasting a prompt with several lines, and pressing Ctrl+C never notify. An agent also cannot notify twice for one message when a question flickers on its screen.

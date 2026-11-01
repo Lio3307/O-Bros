@@ -12,6 +12,7 @@ import {
   noteTerminalStarted
 } from './terminalFacts'
 import { attachRunPane, isRunMember, type RunProcess } from './wot/memberRuns'
+import { endProcessTreeNow } from './processTree'
 import { withWotEnvironment } from './wot/wotEnvironment'
 import { identityEnvironment } from '../../shared/commitIdentity'
 import { runOnceArguments, shellKindOf } from '../../shared/shellCommand'
@@ -26,6 +27,7 @@ const INITIAL_COLUMNS = 80
 const INITIAL_ROWS = 24
 
 const runningTerminals = new Map<string, Pick<IPty, 'pid' | 'write' | 'resize' | 'kill'>>()
+let isShuttingDown = false
 
 function defaultShell(): string {
   if (process.platform === 'win32') {
@@ -89,6 +91,9 @@ export async function createTerminal(owner: WebContents, request: PtyCreateReque
     throw new Error(`The folder is not available: ${request.cwd}`)
   }
   const providerVariables = request.startsAgent ? await customProviderEnvironment(request.provider) : {}
+  if (isShuttingDown) {
+    return
+  }
   runningTerminals.get(request.id)?.kill()
 
   const environment = withWotEnvironment(
@@ -185,7 +190,14 @@ export function killTerminal(id: string): void {
   forgetTerminal(id)
 }
 
+export function stopStartingTerminals(): void {
+  isShuttingDown = true
+}
+
 export function killAllTerminals(): void {
-  runningTerminals.forEach((terminal) => terminal.kill())
+  runningTerminals.forEach((terminal) => {
+    endProcessTreeNow(terminal.pid)
+    terminal.kill()
+  })
   runningTerminals.clear()
 }
