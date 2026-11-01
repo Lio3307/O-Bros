@@ -57,6 +57,12 @@ export async function rememberTeamSession(record: TeamSessionRecord): Promise<vo
   save()
 }
 
+export async function noteTeamSessionId(memberId: string, sessionId: string): Promise<void> {
+  await ensureLoaded()
+  records = records.map((record) => (record.memberId === memberId ? { ...record, sessionId } : record))
+  save()
+}
+
 function baseNameOf(file: SourceFile): string {
   return basename(file.filePath, TRANSCRIPT_EXTENSION)
 }

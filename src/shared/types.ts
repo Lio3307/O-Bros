@@ -531,6 +531,8 @@ export interface TeamMember {
   task: string
   createdAt: number
   state: TeamMemberState
+  mode: 'run' | 'screen'
+  access: 'read' | 'edit' | null
 }
 
 export type WotSkillStatus = 'missing' | 'installed' | 'outdated'

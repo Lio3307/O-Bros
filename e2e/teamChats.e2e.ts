@@ -100,7 +100,7 @@ test('marks a team member conversation in History and deletes it from Storage', 
   await app.window.getByTitle(app.projectFolder, { exact: true }).click()
   await app.window.getByTitle('Plain terminal in the selected folder').click()
   await app.window.locator('.workspace .xterm-helper-textarea').first().waitFor({ state: 'attached' })
-  await typeInTerminal(savedOutput('wot spawn codex --name reviewer --task "Review the notes file please"', 'spawn-proof.txt'))
+  await typeInTerminal(savedOutput('wot spawn codex --interactive --name reviewer --task "Review the notes file please"', 'spawn-proof.txt'))
   await expect.poll(() => readProof('fake-codex-received.txt'), { timeout: 60_000 }).toBe('Review the notes file please')
   await typeInTerminal(savedOutput('wot stop reviewer', 'stop-proof.txt'))
   await expect.poll(() => readProof('stop-proof.txt'), { timeout: 30_000 }).toContain('Stopped "reviewer"')

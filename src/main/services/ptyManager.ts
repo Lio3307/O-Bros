@@ -11,6 +11,7 @@ import {
   noteTerminalOutput,
   noteTerminalStarted
 } from './terminalFacts'
+import { attachRunPane, isRunMember, type RunProcess } from './wot/memberRuns'
 import { withWotEnvironment } from './wot/wotEnvironment'
 import { identityEnvironment } from '../../shared/commitIdentity'
 import { runOnceArguments, shellKindOf } from '../../shared/shellCommand'
@@ -24,7 +25,7 @@ const OUTPUT_FLUSH_DELAY_MS = 8
 const INITIAL_COLUMNS = 80
 const INITIAL_ROWS = 24
 
-const runningTerminals = new Map<string, IPty>()
+const runningTerminals = new Map<string, Pick<IPty, 'pid' | 'write' | 'resize' | 'kill'>>()
 
 function defaultShell(): string {
   if (process.platform === 'win32') {
@@ -90,20 +91,40 @@ export async function createTerminal(owner: WebContents, request: PtyCreateReque
   const providerVariables = request.startsAgent ? await customProviderEnvironment(request.provider) : {}
   runningTerminals.get(request.id)?.kill()
 
+  const environment = withWotEnvironment(
+    {
+      ...inheritedEnvironment(),
+      ...buildAccountEnvironment(request.account),
+      ...(request.startsAgent === true ? identityEnvironment(request.commitIdentity ?? null) : {}),
+      ...providerVariables
+    },
+    request.id
+  )
+
+  function sendToWindow(channel: string, payload: unknown): void {
+    if (!owner.isDestroyed()) {
+      owner.send(channel, payload)
+    }
+  }
+
+  if (isRunMember(request.id)) {
+    noteTerminalStarted(request.id, request.cwd, agentCommandOf(request))
+    attachRunPane(request.id, {
+      shell: defaultShell(),
+      environment,
+      show: (chunk) => sendToWindow(IpcChannel.ptyData, { id: request.id, chunk }),
+      track: (running: RunProcess) => runningTerminals.set(request.id, running),
+      untrack: () => runningTerminals.delete(request.id)
+    })
+    return
+  }
+
   const terminal = spawn(defaultShell(), shellArguments(request), {
     name: 'xterm-256color',
     cols: INITIAL_COLUMNS,
     rows: INITIAL_ROWS,
     cwd: request.cwd ?? homedir(),
-    env: withWotEnvironment(
-      {
-        ...inheritedEnvironment(),
-        ...buildAccountEnvironment(request.account),
-        ...(request.startsAgent === true ? identityEnvironment(request.commitIdentity ?? null) : {}),
-        ...providerVariables
-      },
-      request.id
-    )
+    env: environment
   })
   runningTerminals.set(request.id, terminal)
   const agentCommand = agentCommandOf(request)
@@ -111,12 +132,6 @@ export async function createTerminal(owner: WebContents, request: PtyCreateReque
   noteTerminalStarted(request.id, request.cwd, agentCommand)
   if (agentCommand !== null) {
     recordAgentSession(request, agentCommand, 'started', null)
-  }
-
-  function sendToWindow(channel: string, payload: unknown): void {
-    if (!owner.isDestroyed()) {
-      owner.send(channel, payload)
-    }
   }
 
   const output = createBatchedSender((chunk) => sendToWindow(IpcChannel.ptyData, { id: request.id, chunk }))

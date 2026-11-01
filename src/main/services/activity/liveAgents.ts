@@ -1,4 +1,5 @@
 import type { LiveAgent } from '../../../shared/activity'
+import { runStateOf } from '../wot/memberRuns'
 import { isTeamMemberPaneId } from '../../../shared/teamMemberName'
 import { listTerminalRecords } from '../terminalFacts'
 import { memberStateOf } from '../wot/memberState'
@@ -19,7 +20,7 @@ export async function listLiveAgents(): Promise<LiveAgent[]> {
         agentCommand,
         cwd: record.cwd,
         startedAt: typed?.since ?? record.startedAt,
-        state: memberStateOf(record, now),
+        state: runStateOf(paneId) ?? memberStateOf(record, now),
         isTeamMember: isTeamMemberPaneId(paneId)
       }
     ]

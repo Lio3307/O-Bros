@@ -7,6 +7,7 @@ import { TEAM_MEMBER_ID_PREFIX, teamMemberName } from '../../../shared/teamMembe
 import { autoStopReason, DEFAULT_TEAM_POLICY, isFinishedState, type TeamPolicy } from '../../../shared/teamPolicy'
 import { comparablePath, isDriveRoot, resolvePath } from '../../../shared/paths'
 import { withoutSharedServer } from '../../../shared/codexStandalone'
+import { headlessAgentOf, type MemberAccess } from '../../../shared/headlessAgents'
 import { commandWithSessionId } from '../../../shared/sessionCommand'
 import { commandWithArguments, shellKindOf } from '../../../shared/shellCommand'
 import { assertInsideProjectRoots } from '../../pathGuard'
@@ -18,10 +19,11 @@ import { listPathCommands } from '../agents/agentDetector'
 import { killTerminal } from '../ptyManager'
 import { terminalFactsOf } from '../terminalFacts'
 import { readAgentHelp } from './codexHelp'
+import { createRun, hasRunTask, isRunMember, readRun, removeRun, runReportOf, runStateOf, sendToRun, type RunReport } from './memberRuns'
 import { isReadyForInput, isSettled, memberStateOf } from './memberState'
 import { typeAndSubmit, waitUntil } from '../terminalTyping'
 import { askInterface, sendToInterface } from './rendererBridge'
-import { removeTeamSessionFiles, rememberTeamSession } from './teamSessions'
+import { noteTeamSessionId, removeTeamSessionFiles, rememberTeamSession } from './teamSessions'
 import { WotError } from './wotError'
 import { IS_PATH_CASE_INSENSITIVE, isFolder } from '../fileSystem'
 
@@ -46,9 +48,12 @@ export interface SpawnRequest {
   task: string
   agentArgs: string[]
   cwd: string
+  access: MemberAccess
+  isInteractive: boolean
 }
 
 export interface AnyWaitOutcome {
+  report: RunReport | null
   member: TeamMember | null
   nothingNew: boolean
   timedOut: boolean
@@ -65,6 +70,7 @@ export interface SpawnOutcome {
 const EXIT_SCREEN_LINES = 15
 
 export interface WaitOutcome {
+  report: RunReport | null
   member: TeamMember
   timedOut: boolean
   waitedSeconds: number
@@ -161,6 +167,10 @@ function isDelivering(memberId: string): boolean {
 }
 
 function currentStateOf(member: TeamMember): TeamMember['state'] {
+  const runState = runStateOf(member.id)
+  if (runState !== null) {
+    return runState
+  }
   const facts = terminalFactsOf(member.id)
   if (facts === undefined) {
     return 'starting'
@@ -217,7 +227,7 @@ function refreshStates(): void {
     noteFinishedTime(member, now)
     const check = {
       state,
-      finishedSince: finishedSinceById.get(member.id) ?? null,
+      finishedSince: isRunMember(member.id) ? null : (finishedSinceById.get(member.id) ?? null),
       isSummonerOpen: isTerminalOpen(member.summonedByPaneId),
       now
     }
@@ -315,6 +325,7 @@ function removeMember(memberId: string, reason: string | null = null): void {
   deliveries.delete(memberId)
   queuedSendCounts.delete(memberId)
   finishedSinceById.delete(memberId)
+  removeRun(memberId)
   killTerminal(memberId)
   keepStatesFresh()
   publish()
@@ -339,6 +350,13 @@ async function noteExitedAtStart(member: TeamMember): Promise<void> {
   )
   updateState(member, 'exited')
   publish()
+}
+
+async function removeIfPaneNeverOpens(member: TeamMember): Promise<void> {
+  const hasOpened = await waitUntil(() => terminalFactsOf(member.id) !== undefined, TERMINAL_START_TIMEOUT_MS)
+  if (!hasOpened && members.has(member.id)) {
+    removeMember(member.id, 'the O-BROS window did not open its terminal. Is the window open?')
+  }
 }
 
 async function deliverFirstTask(member: TeamMember, task: string): Promise<void> {
@@ -391,23 +409,40 @@ export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> 
   const agent = await chooseAgent(request.agent)
   const takenNames = listMembers().map((member) => member.name)
   const provider = providerOfCommand(agent.command)
+  const headless = request.isInteractive ? null : headlessAgentOf(agent.command)
   const sessionId = provider === 'claude' ? randomUUID() : null
-  const agentArgs = provider === 'codex' ? withoutSharedServer(request.agentArgs, await readAgentHelp(agent.command)) : request.agentArgs
+  const agentArgs =
+    headless === null && provider === 'codex' ? withoutSharedServer(request.agentArgs, await readAgentHelp(agent.command)) : request.agentArgs
   const warnings = folderWarnings(cwd)
+  const startCommand = headless === null ? commandWithSessionId(agent.command, sessionId) : agent.command
 
   const member: TeamMember = {
     id: `${TEAM_MEMBER_ID_PREFIX}${randomUUID()}`,
     name: teamMemberName(request.name, agent.name, takenNames),
     agentName: agent.name,
-    command: commandWithArguments(commandWithSessionId(agent.command, sessionId), agentArgs, shellKindOf(process.platform)),
+    command: commandWithArguments(startCommand, agentArgs, shellKindOf(process.platform)),
     cwd,
     summonedByPaneId: request.callerPaneId,
     task: request.task,
     createdAt: Date.now(),
-    state: 'starting'
+    state: 'starting',
+    mode: headless === null ? 'screen' : 'run',
+    access: headless === null ? null : request.access
   }
   members.set(member.id, member)
-  startingIds.add(member.id)
+  if (headless === null) {
+    startingIds.add(member.id)
+  } else {
+    createRun(member.id, {
+      agent: headless,
+      command: agent.command,
+      agentArgs,
+      access: request.access,
+      cwd,
+      sessionId: headless.choosesOwnSessionId ? sessionId : null,
+      onSessionId: (found) => void noteTeamSessionId(member.id, found)
+    })
+  }
   goneReasons.delete(member.name)
   recordTeamChange(member, `joined the team as "${member.name}"`, null)
   if (provider !== null) {
@@ -425,7 +460,14 @@ export async function spawnMember(request: SpawnRequest): Promise<SpawnOutcome> 
   keepStatesFresh()
   publish()
 
-  deliveries.set(member.id, deliverFirstTask(member, request.task))
+  if (headless === null) {
+    deliveries.set(member.id, deliverFirstTask(member, request.task))
+  } else {
+    void removeIfPaneNeverOpens(member)
+    if (request.task.trim() !== '') {
+      sendToRun(member.id, member.name, request.task)
+    }
+  }
   return { member, taskQueued: request.task.trim() !== '', warnings }
 }
 
@@ -466,6 +508,13 @@ export async function sendToMember(nameOrId: string, text: string): Promise<Send
   if (text.trim() === '') {
     throw new WotError('bad-request', 'There is no text to send.')
   }
+  if (isRunMember(member.id)) {
+    const isQueued = sendToRun(member.id, member.name, text)
+    member.task = member.task === '' ? text : member.task
+    updateState(member, currentStateOf(member))
+    publish()
+    return { member, isQueued }
+  }
   const facts = terminalFactsOf(member.id)
   const notRunning = new WotError('failed', `"${member.name}" is not running anymore. Stop it with "wot stop ${member.name}".`)
   if (facts?.hasExited === true) {
@@ -487,19 +536,31 @@ export async function readMemberScreen(nameOrId: string, lines: number | undefin
   if (isSettled(member.state)) {
     unreportedIds.delete(member.id)
   }
+  if (isRunMember(member.id)) {
+    return readRun(member.id, clamp(lines, DEFAULT_READ_LINES, MAX_READ_LINES))
+  }
   return askInterface<string>({ kind: 'readScreen', memberId: member.id, lines: clamp(lines, DEFAULT_READ_LINES, MAX_READ_LINES) })
+}
+
+function assertHasTask(member: TeamMember): void {
+  if (isRunMember(member.id) && !hasRunTask(member.id)) {
+    throw new WotError('bad-request', `"${member.name}" has no task yet, so there is nothing to wait for. Send one with "wot send ${member.name} --file <path>".`)
+  }
 }
 
 export async function waitForMember(nameOrId: string, timeoutSeconds: number | undefined): Promise<WaitOutcome> {
   const member = findMember(nameOrId)
+  assertHasTask(member)
   const startedAt = Date.now()
   const timeoutMs = clamp(timeoutSeconds, DEFAULT_WAIT_SECONDS, MAX_WAIT_SECONDS) * 1000
   const isDone = await waitUntil(() => !members.has(member.id) || isSettled(currentStateOf(member)), timeoutMs)
-  updateState(member, currentStateOf(member))
+  if (updateState(member, currentStateOf(member))) {
+    publish()
+  }
   if (isDone) {
     unreportedIds.delete(member.id)
   }
-  return { member, timedOut: !isDone, waitedSeconds: Math.round((Date.now() - startedAt) / 1000) }
+  return { member, report: runReportOf(member.id), timedOut: !isDone, waitedSeconds: Math.round((Date.now() - startedAt) / 1000) }
 }
 
 function membersSummonedBy(callerPaneId: string): TeamMember[] {
@@ -520,11 +581,14 @@ export async function waitForAnyMember(callerPaneId: string, timeoutSeconds: num
   if (own.length === 0) {
     throw new WotError('not-found', 'You have no team members right now. Summon one with "wot spawn" first.')
   }
+  if (own.every((member) => isRunMember(member.id) && !hasRunTask(member.id))) {
+    throw new WotError('bad-request', 'None of your team members has a task yet, so there is nothing to wait for. Send them one with "wot send <name> --file <path>".')
+  }
   const startedAt = Date.now()
   const waitedSeconds = (): number => Math.round((Date.now() - startedAt) / 1000)
   const isNothingNew = newlySettledMember(callerPaneId) === undefined && own.every((member) => isSettled(member.state))
   if (isNothingNew) {
-    return { member: null, nothingNew: true, timedOut: false, waitedSeconds: 0, members: own }
+    return { member: null, report: null, nothingNew: true, timedOut: false, waitedSeconds: 0, members: own }
   }
   const timeoutMs = clamp(timeoutSeconds, DEFAULT_WAIT_SECONDS, MAX_WAIT_SECONDS) * 1000
   await waitUntil(() => newlySettledMember(callerPaneId) !== undefined, timeoutMs)
@@ -532,7 +596,14 @@ export async function waitForAnyMember(callerPaneId: string, timeoutSeconds: num
   if (member !== null) {
     unreportedIds.delete(member.id)
   }
-  return { member, nothingNew: false, timedOut: member === null, waitedSeconds: waitedSeconds(), members: membersSummonedBy(callerPaneId) }
+  return {
+    member,
+    report: member === null ? null : runReportOf(member.id),
+    nothingNew: false,
+    timedOut: member === null,
+    waitedSeconds: waitedSeconds(),
+    members: membersSummonedBy(callerPaneId)
+  }
 }
 
 export function stopMember(nameOrId: string): TeamMember {

@@ -1,4 +1,5 @@
-import { execFile, spawn, type ChildProcess } from 'node:child_process'
+import { spawn, type ChildProcess } from 'node:child_process'
+import { killProcessTree } from '../processTree'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -60,23 +61,12 @@ function startProcess(server: LanguageServerStatus, cwd: string): ChildProcess {
   return spawn(command, server.args, { cwd, windowsHide: true })
 }
 
-function killTree(child: ChildProcess): void {
-  if (child.pid === undefined || child.exitCode !== null) {
-    return
-  }
-  if (process.platform === 'win32') {
-    execFile('taskkill', ['/pid', String(child.pid), '/T', '/F'], { windowsHide: true }, () => undefined)
-    return
-  }
-  child.kill()
-}
-
 function stopSession(session: Session): void {
   if (session.stopTimer !== null) {
     clearTimeout(session.stopTimer)
   }
   sessions.delete(session.info.sessionId)
-  killTree(session.child)
+  killProcessTree(session.child)
 }
 
 async function projectRootOf(filePath: string): Promise<string> {

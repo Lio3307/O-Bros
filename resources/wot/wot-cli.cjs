@@ -55,35 +55,56 @@ Commands:
   wot status                                   Check that O-BROS is running and wot is ready.
   wot agents                                   List the agents you can summon and the ones that are not installed.
   wot new-file <name>                          Create an empty text file for a long task and print its path.
-  wot spawn <agent> --name <name>              Start a hidden team member. Do this first, then send its task.
-      [--task-file <path>]                     Or give the task now if it is already written.
+  wot spawn <agent> --name <name>              Create a team member. Then send its task.
+      [--access read|edit]                     What it may do: read files (default), or also edit files in its folder.
+      [--task-file <path>]                     Give the task now if it is already written.
       [--cwd <folder>]                         Work in another folder of the project (relative to yours).
+      [--interactive]                          Use the agent's interactive screen instead of task runs.
       [-- <agent options>]                     Everything after -- goes to the agent, e.g. -- --model <model>
   wot list                                     List team members and what they are doing.
-  wot wait <name> [--timeout <seconds>]        Wait until the member finishes its turn or asks a question.
-  wot wait --any [--timeout <seconds>]         Wait for whichever of your members finishes, asks or exits first.
-  wot read <name> [--lines <number>]           Print what is on the member's screen.
+  wot wait <name> [--timeout <seconds>]        Wait for the task to end. Prints the answer.
+  wot wait --any [--timeout <seconds>]         Wait for whichever of your members ends first. Prints its answer.
+  wot read <name> [--lines <number>]           Print its last answer, or what it is doing right now.
   wot send <name> --file <path>
-  wot send <name> "<short one-line message>"   Type a message into the member and press Enter (kept until it is ready).
-  wot stop <name>                              Stop the member and close its terminal.
+  wot send <name> "<short one-line message>"   Give it a task or a follow-up in the same conversation.
+  wot stop <name>                              Stop the member.
   wot help                                     Show this help.
 
 Exit codes: 0 ok, 1 failed, 2 O-BROS not available, 3 agent not installed, 4 sandbox blocked, 5 no such member, 6 wot skill not installed.`
 
+const STDOUT = 1
+const STDERR = 2
+const BUSY_PIPE_RETRY_MS = 5
+
+function writeAll(descriptor, text) {
+  const bytes = Buffer.from(text, 'utf8')
+  let written = 0
+  while (written < bytes.length) {
+    try {
+      written += fs.writeSync(descriptor, bytes, written)
+    } catch (error) {
+      if (error.code !== 'EAGAIN') {
+        return
+      }
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, BUSY_PIPE_RETRY_MS)
+    }
+  }
+}
+
 function finish(exitCode, text) {
-  const stream = exitCode === EXIT_CODES.ok ? process.stdout : process.stderr
-  stream.write(text.endsWith('\n') ? text : text + '\n')
+  writeAll(exitCode === EXIT_CODES.ok ? STDOUT : STDERR, text.endsWith('\n') ? text : text + '\n')
   process.exit(exitCode)
 }
 
 const AGENT_ARGUMENTS_MARK = '--'
-const SWITCH_FLAGS = ['any']
+const SWITCH_FLAGS = ['any', 'interactive']
+const ACCESS_CHOICES = ['read', 'edit']
 
 const FLAGS_BY_COMMAND = {
   status: [],
   agents: [],
   'new-file': [],
-  spawn: ['name', 'task', 'task-file', 'cwd'],
+  spawn: ['name', 'task', 'task-file', 'cwd', 'access', 'interactive'],
   list: [],
   wait: ['timeout', 'any'],
   read: ['lines'],
@@ -221,9 +242,9 @@ async function call(route, body) {
 
 function describeState(state) {
   const descriptions = {
-    starting: 'starting (the agent is still opening)',
+    starting: 'starting (it has no task yet, or the agent is still opening)',
     working: 'working (it is busy, wait for it)',
-    idle: 'idle (it finished its turn, read its screen)',
+    idle: 'idle (it finished, wot read shows the result)',
     waiting: 'waiting (it is asking a question, read its screen)',
     exited: 'exited (the agent program stopped)'
   }
@@ -261,7 +282,7 @@ async function showAgents() {
   }
   for (const agent of installed) {
     const program = agent.command.split(' ')[0]
-    lines.push(`  - ${agent.name}   ->   wot spawn ${program} --name <name> --task-file <path>`)
+    lines.push(`  - ${agent.name}   ->   wot spawn ${program} --name <name>`)
   }
   lines.push('', 'Agents that are NOT installed (you CANNOT summon these):')
   lines.push(missing.length === 0 ? '  (none)' : '  ' + missing.map((agent) => agent.name).join(', '))
@@ -288,10 +309,29 @@ async function spawnMember(positional, flags, agentArgs) {
   if (agent === undefined || agent.trim() === '') {
     finish(EXIT_CODES.failed, 'ERROR: The agent is missing. Usage: wot spawn <agent> --name <name>\nRun "wot agents" to see which agents you can use.')
   }
+  if (flags.access !== undefined && !ACCESS_CHOICES.includes(flags.access)) {
+    finish(EXIT_CODES.failed, `ERROR: --access must be read or edit, not "${flags.access}".`)
+  }
   const task = textFrom(flags, positional.slice(1), 'task-file', 'task')
-  const { member, taskQueued, warnings } = await call('/spawn', { agent, name: flags.name ?? '', task, agentArgs, cwd: flags.cwd ?? '' })
+  const { member, taskQueued, warnings } = await call('/spawn', {
+    agent,
+    name: flags.name ?? '',
+    task,
+    agentArgs,
+    cwd: flags.cwd ?? '',
+    access: flags.access ?? 'read',
+    interactive: flags.interactive !== undefined
+  })
+  if (member.mode === 'run') {
+    const access = member.access === 'edit' ? 'It can edit files in its folder.' : 'It can only read files. Use --access edit for work that changes files.'
+    const next = taskQueued
+      ? `Next: run  wot wait ${member.name}`
+      : `Next: run  wot new-file ${member.name}, write the task into that file, then  wot send ${member.name} --file <path>`
+    finish(EXIT_CODES.ok, [`OK: Summoned team member "${member.name}" (${member.agentName}).`, `Mode: task runs. ${access}`, `It works in: ${member.cwd ?? 'the home folder'}`, ...(warnings ?? []).map((warning) => `NOTE: ${warning}`), next].join('\n'))
+  }
   const lines = [
     `OK: Summoned team member "${member.name}" (${member.agentName}).`,
+    'Mode: interactive screen. See "Interactive members" in the skill.',
     `It runs: ${member.command}`,
     `It works in: ${member.cwd ?? 'the home folder'}`,
     taskQueued
@@ -308,7 +348,7 @@ async function spawnMember(positional, flags, agentArgs) {
 async function listMembers() {
   const members = await call('/list', {})
   if (members.length === 0) {
-    finish(EXIT_CODES.ok, 'You have no team members right now. Summon one with: wot spawn <agent> --name <name> --task-file <path>')
+    finish(EXIT_CODES.ok, 'You have no team members right now. Summon one with: wot spawn <agent> --name <name>')
   }
   const lines = [`Your team members (${members.length}):`]
   for (const member of members) {
@@ -320,6 +360,16 @@ async function listMembers() {
 
 function stateList(members) {
   return members.map((member) => `  - ${member.name}: ${describeState(member.state)}`).join('\n')
+}
+
+function runResult(member, report) {
+  if (report.failure !== null) {
+    return `FAILED: "${member.name}" could not finish: ${report.failure}\nFix the cause and send it again with  wot send ${member.name}, or tell the user. The conversation is kept.`
+  }
+  if (report.answer === '') {
+    return `FINISHED: "${member.name}" ended without an answer. Run  wot read ${member.name}  to see what it did.`
+  }
+  return `FINISHED: "${member.name}" answered:\n${report.answer}\n----- end of answer -----`
 }
 
 async function waitForAnyMember(flags) {
@@ -335,14 +385,17 @@ async function waitForAnyMember(flags) {
     finish(EXIT_CODES.ok, `STILL_WORKING: no member finished or asked anything in ${any.waitedSeconds} seconds. They are:\n${stateList(any.members)}\nRun  wot wait --any  again.`)
   }
   const member = any.member
+  const anyOthers = any.members.filter((candidate) => candidate.name !== member.name)
+  const anyRest = anyOthers.length === 0 ? '' : `\nYour other members:\n${stateList(anyOthers)}\nThen run  wot wait --any  again for the next one.`
+  if (any.report !== null) {
+    finish(EXIT_CODES.ok, runResult(member, any.report) + anyRest)
+  }
   const nextStep = {
     idle: `FINISHED: "${member.name}" finished its turn. Run  wot read ${member.name}  to see its answer.`,
     waiting: `QUESTION: "${member.name}" is asking a question or a permission. Run  wot read ${member.name}  to see it.`,
     exited: `EXITED: "${member.name}" stopped running. Run  wot read ${member.name}  to see its last screen, then  wot stop ${member.name}.`
   }
-  const others = any.members.filter((candidate) => candidate.name !== member.name)
-  const rest = others.length === 0 ? '' : `\nYour other members:\n${stateList(others)}\nAfter handling it, run  wot wait --any  again for the next one.`
-  finish(EXIT_CODES.ok, (nextStep[member.state] ?? `"${member.name}" is ${describeState(member.state)}.`) + rest)
+  finish(EXIT_CODES.ok, (nextStep[member.state] ?? `"${member.name}" is ${describeState(member.state)}.`) + anyRest)
 }
 
 async function waitForMember(positional, flags) {
@@ -354,7 +407,10 @@ async function waitForMember(positional, flags) {
   }
   const name = requireName(positional, 'wot wait <name> [--timeout <seconds>]  or  wot wait --any')
   const timeout = flags.timeout === undefined ? undefined : Number(flags.timeout)
-  const { member, timedOut, waitedSeconds } = await call('/wait', { member: name, timeout })
+  const { member, report, timedOut, waitedSeconds } = await call('/wait', { member: name, timeout })
+  if (!timedOut && report !== null) {
+    finish(EXIT_CODES.ok, runResult(member, report))
+  }
   if (timedOut) {
     finish(
       EXIT_CODES.ok,
@@ -373,6 +429,9 @@ async function readMember(positional, flags) {
   const name = requireName(positional, 'wot read <name> [--lines <number>]')
   const lines = flags.lines === undefined ? undefined : Number(flags.lines)
   const { member, screen } = await call('/read', { member: name, lines })
+  if (member.mode === 'run') {
+    finish(EXIT_CODES.ok, `----- "${member.name}" (${member.agentName}), state: ${member.state} -----\n${screen}\n----- end -----`)
+  }
   finish(
     EXIT_CODES.ok,
     `----- screen of "${member.name}" (${member.agentName}), state: ${member.state} -----\n${screen}\n----- end of screen -----`
@@ -383,6 +442,9 @@ async function sendToMember(positional, flags) {
   const name = requireName(positional, 'wot send <name> --file <path>')
   const text = textFrom(flags, positional.slice(1), 'file', 'text')
   const { member, isQueued } = await call('/send', { member: name, text })
+  if (member.mode === 'run') {
+    finish(EXIT_CODES.ok, `OK: "${member.name}" got your message and is working on it.\nNext: run  wot wait ${member.name}`)
+  }
   if (isQueued) {
     finish(EXIT_CODES.ok, `OK: "${member.name}" is still starting. O-BROS types your message in by itself as soon as the agent is ready (usually within a minute). Do not send it again.\nNext: run  wot wait ${member.name}`)
   }

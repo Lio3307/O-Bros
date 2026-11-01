@@ -93,7 +93,9 @@ export const WOT_ROUTES: Record<string, (body: RequestBody) => Promise<unknown>>
       name: textField(body, 'name', false),
       task: textField(body, 'task', false),
       agentArgs: body.agentArgs === undefined ? [] : textListField(body, 'agentArgs'),
-      cwd: textField(body, 'cwd', false)
+      cwd: textField(body, 'cwd', false),
+      access: body.access === 'edit' ? 'edit' : 'read',
+      isInteractive: body.interactive === true
     }),
 
   '/list': async (body) => listOwnMembers(teamCallerPaneOf(body)),

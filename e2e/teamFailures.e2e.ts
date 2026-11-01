@@ -94,7 +94,7 @@ async function runInTerminal(command: string, proofFile: string, terminalInput =
 
 test('reports an agent that exits at start instead of typing the task into a shell', async () => {
   test.setTimeout(180_000)
-  const output = await runInTerminal('wot spawn codex --name broken --task "write the file" -- --fail', 'spawn-proof.txt')
+  const output = await runInTerminal('wot spawn codex --interactive --name broken --task "write the file" -- --fail', 'spawn-proof.txt')
   expect(output).toContain('OK: Summoned team member "broken"')
   const waited = await runInTerminal('wot wait broken', 'wait-proof.txt')
   expect(waited).toContain('EXITED')
@@ -110,7 +110,7 @@ test('reports an agent that exits at start instead of typing the task into a she
 
 test('a member the user interrupts with Ctrl+C becomes exited and refuses new messages', async () => {
   test.setTimeout(180_000)
-  const spawned = await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
+  const spawned = await runInTerminal('wot spawn codex --interactive --name helper --task "first job"', 'spawn-proof.txt')
   expect(spawned).toContain('OK: Summoned team member "helper"')
   await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 60_000 }).toBe('first job')
 
@@ -130,7 +130,7 @@ test('a member the user interrupts with Ctrl+C becomes exited and refuses new me
 
 test('asks before stopping a member from its row, and keeps it on cancel', async () => {
   test.setTimeout(180_000)
-  await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
+  await runInTerminal('wot spawn codex --interactive --name helper --task "first job"', 'spawn-proof.txt')
   const member = app.window.locator('.session-member', { hasText: 'helper' })
   await member.hover()
   await member.getByTitle('Stop "helper"').click()
@@ -150,7 +150,7 @@ test('asks before stopping a member from its row, and keeps it on cancel', async
 
 test('another terminal cannot see or stop a member it did not summon', async () => {
   test.setTimeout(180_000)
-  await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
+  await runInTerminal('wot spawn codex --interactive --name helper --task "first job"', 'spawn-proof.txt')
   await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 60_000 }).toBe('first job')
 
   await app.window.getByTitle('Plain terminal in the selected folder').click()
@@ -167,7 +167,7 @@ test('another terminal cannot see or stop a member it did not summon', async () 
 
 test('tells the lead that the user stopped its member in O-BROS', async () => {
   test.setTimeout(180_000)
-  await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
+  await runInTerminal('wot spawn codex --interactive --name helper --task "first job"', 'spawn-proof.txt')
   await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 60_000 }).toBe('first job')
   const member = app.window.locator('.session-member', { hasText: 'helper' })
   await member.hover()
@@ -180,8 +180,8 @@ test('tells the lead that the user stopped its member in O-BROS', async () => {
 
 test('wot wait --any reports each member that has news once, then says nothing is new', async () => {
   test.setTimeout(240_000)
-  await runInTerminal('wot spawn codex --name first --task "job one"', 'spawn-a.txt')
-  await runInTerminal('wot spawn codex --name second --task "job two"', 'spawn-b.txt')
+  await runInTerminal('wot spawn codex --interactive --name first --task "job one"', 'spawn-a.txt')
+  await runInTerminal('wot spawn codex --interactive --name second --task "job two"', 'spawn-b.txt')
 
   const reported = [await runInTerminal('wot wait --any', 'wait-1.txt'), await runInTerminal('wot wait --any', 'wait-2.txt')]
   expect(reported.join(' ')).toContain('FINISHED: "first" finished its turn')
@@ -195,11 +195,11 @@ test('wot wait --any reports each member that has news once, then says nothing i
 
 test('refuses unknown options and passes options after -- to the agent', async () => {
   test.setTimeout(180_000)
-  const refused = await runInTerminal('wot spawn codex --name docs --task "hi" --no-daemon', 'refused-proof.txt')
+  const refused = await runInTerminal('wot spawn codex --interactive --name docs --task "hi" --no-daemon', 'refused-proof.txt')
   expect(refused).toContain('does not know --no-daemon')
   expect(refused).toContain('put them after --')
 
-  const spawned = await runInTerminal("wot spawn codex --name docs --task 'hi' -- --no-daemon 'two words'", 'spawn-proof.txt')
+  const spawned = await runInTerminal("wot spawn codex --interactive --name docs --task 'hi' -- --no-daemon 'two words'", 'spawn-proof.txt')
   expect(spawned).toContain('OK: Summoned team member "docs"')
   await expect.poll(() => readProof('fake-agent-args.json'), { timeout: 30_000 }).toBe(JSON.stringify(['--no-daemon', 'two words']))
   await expect.poll(() => readProof('fake-agent-received.txt'), { timeout: 30_000 }).toBe('hi')
@@ -207,7 +207,7 @@ test('refuses unknown options and passes options after -- to the agent', async (
 
 test('the tab shows its team members in a dropdown and opens one from there', async () => {
   test.setTimeout(180_000)
-  await runInTerminal('wot spawn codex --name helper --task "first job"', 'spawn-proof.txt')
+  await runInTerminal('wot spawn codex --interactive --name helper --task "first job"', 'spawn-proof.txt')
   const teamButton = app.window.locator('.tab .tab-team')
   await expect(teamButton.locator('.tab-team-count')).toHaveText('1', { timeout: 30_000 })
 
