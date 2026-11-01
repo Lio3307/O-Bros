@@ -65,7 +65,7 @@ test('opens the storage and update settings pages', async () => {
   await app.window.getByTitle('Settings', { exact: true }).click()
 
   await app.window.getByText('Storage and memory', { exact: true }).first().click()
-  await expect(app.window.getByText('App cache', { exact: true })).toBeVisible()
+  await expect(app.window.getByRole('heading', { name: 'Free space safely' })).toBeVisible()
 
   await app.window.getByText('About and updates', { exact: true }).first().click()
   await expect(app.window.getByText('Updates are only available in the installed app')).toBeVisible()

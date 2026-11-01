@@ -33,11 +33,11 @@ const COPY_BY_KIND: Record<DataLocationKind, LocationCopy> = {
   },
   claudeSessions: {
     title: 'Claude conversations',
-    note: 'Written by Claude Code, not by o-bros. The History panel only reads these files. To delete them, use History or Saved conversations above so o-bros can ask you first.'
+    note: 'Written by Claude Code, not by o-bros. The History panel only reads these files. To delete them, use History or Conversations above so o-bros can ask you first.'
   },
   codexSessions: {
     title: 'Codex conversations',
-    note: 'Written by Codex, not by o-bros. The History panel only reads these files. To delete them, use History or Saved conversations above so o-bros can ask you first.'
+    note: 'Written by Codex, not by o-bros. The History panel only reads these files. To delete them, use History or Conversations above so o-bros can ask you first.'
   },
   teamTaskFiles: {
     title: 'Team (wot) task files',

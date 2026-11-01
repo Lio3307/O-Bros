@@ -36,7 +36,7 @@ test('saves conversations into <agent>-resume, moves the folder and keeps only r
     await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
     const section = app.window.locator('.settings-section').filter({ has: app.window.getByRole('heading', { name: 'Universal history', exact: true }) })
     await section.getByRole('button', { name: 'Save now' }).click()
-    const codexRow = section.locator('.history-agent-row', { hasText: 'codex-resume' })
+    const codexRow = section.locator('.history-agent-row').filter({ has: app.window.getByRole('button', { name: 'Open codex-resume' }) })
     await expect(codexRow).toContainText('2 conversations', { timeout: 30_000 })
 
     await section.getByRole('button', { name: 'Move…' }).click()
@@ -52,7 +52,7 @@ test('saves conversations into <agent>-resume, moves the folder and keeps only r
     expect(kept[0]).toContain('recent-chat')
 
     const disks = app.window.locator('.settings-section').filter({ has: app.window.getByRole('heading', { name: 'Your disks', exact: true }) })
-    await expect(disks).toContainText('Universal history (O-BROS copies)', { timeout: 30_000 })
+    await expect(disks.locator('.space-legend li[title*="Universal history (O-BROS copies)"]')).toBeVisible({ timeout: 30_000 })
   } finally {
     await app.close()
   }

@@ -1,5 +1,5 @@
 import { RefreshCw, Timer } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { formatBytes } from '../../../shared/format'
 import { useLayoutStore } from '../../state/layoutStore'
 import { useRecentFilesStore } from '../../state/recentFilesStore'
@@ -9,33 +9,19 @@ import { useTeamStore } from '../../state/teamStore'
 import { Button } from '../../ui/Button'
 import { SettingsPageLayout } from '../../ui/SettingsPageLayout'
 import { SettingsSection } from '../../ui/SettingsSection'
+import { StatTile } from '../../ui/StatTile'
 import { CleanupRow, pluralize } from './CleanupRow'
-import { ConversationFolderSection } from './ConversationFolderSection'
+import { ConversationsSection, useConversationStorage } from './ConversationsSection'
 import { DataLocationsSection } from './DataLocationsSection'
 import { DiskOverviewSection } from './DiskOverviewSection'
 import { HardwareAccelerationSetting } from './HardwareAccelerationSetting'
-import { SafetyLabel, SAFETY_COPY, type Safety } from './SafetyLabel'
-import { SavedSessionsSection } from './SavedSessionsSection'
-import { StorageOverview } from './StorageOverview'
 import { UniversalHistorySection } from './UniversalHistorySection'
 import { useDiskReports } from './useDiskReports'
 import './settings.css'
 import './settingsControls.css'
+import './storagePage.css'
 
-const SAFETY_ORDER: Safety[] = ['safe', 'undoable', 'permanent']
-
-function SafetyLegend() {
-  return (
-    <div className="safety-legend">
-      {SAFETY_ORDER.map((safety) => (
-        <span key={safety} className="safety-legend-item">
-          <SafetyLabel safety={safety} />
-          <span className="muted">{SAFETY_COPY[safety].explanation}</span>
-        </span>
-      ))}
-    </div>
-  )
-}
+const WAITING = '…'
 
 function useTeamMemoryBytes(): number | null {
   const members = useTeamStore((state) => state.members)
@@ -45,6 +31,13 @@ function useTeamMemoryBytes(): number | null {
   }
   const memberIds = new Set(members.map((member) => member.id))
   return snapshot.terminals.filter((terminal) => memberIds.has(terminal.paneId)).reduce((total, terminal) => total + terminal.privateBytes, 0)
+}
+
+function safeText(safeBytes: number | null): string {
+  if (safeBytes === null) {
+    return 'Measuring…'
+  }
+  return safeBytes === 0 ? 'Nothing is taking up space here right now.' : `${formatBytes(safeBytes)} can go right now. Nothing you made is lost; it is rebuilt when needed.`
 }
 
 function SafeCleanupSection() {
@@ -57,59 +50,59 @@ function SafeCleanupSection() {
   const recentFileCount = useRecentFilesStore((state) => state.paths.length)
   const isMeasuring = report === null
   const taskFileCount = report?.teamTaskFileCount ?? 0
+  const safeBytes = report === null ? null : report.appCacheBytes + report.leftoverTempBytes + report.teamTaskFileBytes
 
   return (
     <SettingsSection
       title="Free space safely"
-      description="Rebuilt when needed. At worst, something loads a little slower once."
+      description={safeText(safeBytes)}
       actions={
-        <Button variant="outline" onClick={() => clearSafeItems()}>
+        <Button variant="outline" disabled={safeBytes === null || (safeBytes === 0 && recentFileCount === 0)} onClick={() => clearSafeItems()}>
           Clear all safe items
         </Button>
       }
     >
-      <div className="table">
-        <CleanupRow
-          title="App cache"
-          description="Files the O-BROS window keeps so it starts faster."
-          amount={isMeasuring ? null : formatBytes(report.appCacheBytes)}
-          buttonLabel="Clear"
-          safety="safe"
-          effect="the space is freed now; the next start may take a moment longer while the cache is rebuilt."
-          isDisabled={isMeasuring || report.appCacheBytes === 0}
-          onClean={() => clearAppCache()}
-        />
-        <CleanupRow
-          title="Leftover temporary files"
-          description="Short-lived lint folders that a crash left in the system temp folder."
-          amount={isMeasuring ? null : pluralize(report.leftoverTempFolders, 'folder', 'folders') + ', ' + formatBytes(report.leftoverTempBytes)}
-          buttonLabel="Remove"
-          safety="safe"
-          effect="they are deleted. Folders still in use (younger than a minute) are skipped."
-          isDisabled={isMeasuring || report.leftoverTempFolders === 0}
-          onClean={() => clearLeftoverTemp()}
-        />
-        <CleanupRow
-          title="Team task files"
-          description="Text files agents write to hand a long task to a team member. wot deletes each one after reading it, so this is normally empty."
-          amount={isMeasuring ? null : `${pluralize(taskFileCount, 'file', 'files')}, ${formatBytes(report.teamTaskFileBytes)}`}
-          buttonLabel="Delete"
-          safety="safe"
-          effect="they are deleted. A task a member has not read yet would be lost, so do it when no member is starting."
-          isDisabled={taskFileCount === 0}
-          onClean={() => clearTeamTaskFiles()}
-        />
-        <CleanupRow
-          title="Recent files list"
-          description="The file names Quick open shows when its search box is empty."
-          amount={pluralize(recentFileCount, 'file', 'files')}
-          buttonLabel="Clear"
-          safety="safe"
-          effect="the list is emptied; the files themselves are not touched."
-          isDisabled={recentFileCount === 0}
-          onClean={clearRecentFiles}
-        />
-      </div>
+      <details className="storage-details">
+        <summary>Show what this clears</summary>
+        <div className="table">
+          <CleanupRow
+            title="App cache"
+            description="Files the O-BROS window keeps so it starts faster."
+            amount={isMeasuring ? null : formatBytes(report.appCacheBytes)}
+            buttonLabel="Clear"
+            effect="the space is freed now; the next start may take a moment longer while the cache is rebuilt."
+            isDisabled={isMeasuring || report.appCacheBytes === 0}
+            onClean={() => clearAppCache()}
+          />
+          <CleanupRow
+            title="Leftover temporary files"
+            description="Short-lived lint folders that a crash left behind."
+            amount={isMeasuring ? null : pluralize(report.leftoverTempFolders, 'folder', 'folders') + ', ' + formatBytes(report.leftoverTempBytes)}
+            buttonLabel="Remove"
+            effect="they are deleted. Folders still in use (younger than a minute) are skipped."
+            isDisabled={isMeasuring || report.leftoverTempFolders === 0}
+            onClean={() => clearLeftoverTemp()}
+          />
+          <CleanupRow
+            title="Team task files"
+            description="Long tasks handed to team members. Normally empty, because wot deletes each one after reading it."
+            amount={isMeasuring ? null : `${pluralize(taskFileCount, 'file', 'files')}, ${formatBytes(report.teamTaskFileBytes)}`}
+            buttonLabel="Delete"
+            effect="they are deleted. A task a member has not read yet would be lost, so do it when no member is starting."
+            isDisabled={taskFileCount === 0}
+            onClean={() => clearTeamTaskFiles()}
+          />
+          <CleanupRow
+            title="Recent files list"
+            description="The file names Quick open shows when its search box is empty."
+            amount={pluralize(recentFileCount, 'file', 'files')}
+            buttonLabel="Clear"
+            effect="the list is emptied; the files themselves are not touched."
+            isDisabled={recentFileCount === 0}
+            onClean={clearRecentFiles}
+          />
+        </div>
+      </details>
     </SettingsSection>
   )
 }
@@ -120,6 +113,7 @@ function MemorySection() {
   const stopAllTeamMembers = useStorageStore((state) => state.stopAllTeamMembers)
   const members = useTeamStore((state) => state.members)
   const teamMemoryBytes = useTeamMemoryBytes()
+  const appMemoryBytes = useResourcesStore((state) => state.snapshot?.app.privateBytes ?? null)
   const openSection = useLayoutStore((state) => state.openSection)
   const selectSettingsPage = useLayoutStore((state) => state.selectSettingsPage)
 
@@ -127,11 +121,6 @@ function MemorySection() {
     selectSettingsPage('team')
     openSection('settings')
   }
-
-  const memberAmount =
-    members.length === 0
-      ? 'none running'
-      : `${pluralize(members.length, 'member', 'members')}${teamMemoryBytes === null ? '' : `, ${formatBytes(teamMemoryBytes)}`}`
 
   return (
     <SettingsSection
@@ -143,27 +132,29 @@ function MemorySection() {
         </Button>
       }
     >
-      <div className="table">
-        <CleanupRow
-          title="Terminal history in memory"
-          description="Lines that scrolled off the top of every open terminal."
-          amount={terminalMemory.bufferedLines.toLocaleString() + ' lines in ' + pluralize(terminalMemory.terminalCount, 'terminal', 'terminals')}
-          buttonLabel="Clear"
-          safety="safe"
-          effect="memory is freed; you can no longer scroll back to those lines. Running programs and the visible screen stay."
-          isDisabled={terminalMemory.terminalCount === 0}
-          onClean={clearTerminalScrollback}
-        />
-        <CleanupRow
-          title="Running team members"
-          description="Agents a lead summoned with wot. Each one is a running agent that uses memory."
-          amount={memberAmount}
-          buttonLabel="Stop all"
-          safety="permanent"
-          effect="every member stops and its terminal closes; unfinished work in a member's turn is lost. Files they changed and their saved conversations stay."
-          isDisabled={members.length === 0}
-          onClean={stopAllTeamMembers}
-        />
+      <div className="memory-tiles">
+        <StatTile value={appMemoryBytes === null ? WAITING : formatBytes(appMemoryBytes)} label="O-BROS itself, without the agents in its terminals" />
+        <StatTile value={terminalMemory.bufferedLines.toLocaleString()} label={`lines of scrollback in ${pluralize(terminalMemory.terminalCount, 'terminal', 'terminals')}`}>
+          <Button
+            variant="outline"
+            title="Memory is freed; you can no longer scroll back to those lines. Running programs and the visible screen stay."
+            disabled={terminalMemory.terminalCount === 0}
+            onClick={clearTerminalScrollback}
+          >
+            Clear
+          </Button>
+        </StatTile>
+        <StatTile value={members.length === 0 ? 'None' : teamMemoryBytes === null ? String(members.length) : formatBytes(teamMemoryBytes)} label={members.length === 0 ? 'team members running' : pluralize(members.length, 'team member', 'team members') + ' running'}>
+          <Button
+            variant="outline"
+            className="hover-danger"
+            title="Every member stops and unfinished work in its current task is lost. Files they changed and their saved conversations stay."
+            disabled={members.length === 0}
+            onClick={stopAllTeamMembers}
+          >
+            Stop all
+          </Button>
+        </StatTile>
       </div>
     </SettingsSection>
   )
@@ -172,27 +163,33 @@ function MemorySection() {
 export function StoragePage() {
   const refresh = useStorageStore((state) => state.refresh)
   const disks = useDiskReports()
+  const { storage, reload } = useConversationStorage()
+  const [openFolderId, setOpenFolderId] = useState<string | null>(null)
 
   useEffect(() => {
     void refresh()
   }, [refresh])
 
+  function openFolderFromMap(folderId: string): void {
+    setOpenFolderId(folderId)
+    requestAnimationFrame(() => {
+      document.querySelector(`[data-folder-id="${CSS.escape(folderId)}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    })
+  }
+
   return (
     <SettingsPageLayout
       title="Storage and memory"
-      description="What O-BROS and your agents keep on your disks and in memory. Hover a button to see what it does; anything that cannot be undone asks first. Project files, git history and logins are never touched."
+      description="What O-BROS and your agents keep on this computer, and how to get space back. Nothing is uploaded anywhere."
       actions={
-        <Button variant="outline" onClick={() => refresh()}>
+        <Button variant="outline" onClick={() => Promise.all([refresh(), reload()])}>
           <RefreshCw size={14} /> Measure again
         </Button>
       }
     >
-      <StorageOverview reports={disks} />
-      <SafetyLegend />
-      <DiskOverviewSection reports={disks} />
+      <DiskOverviewSection reports={disks} folders={storage?.folders ?? []} onOpenFolder={openFolderFromMap} />
+      <ConversationsSection storage={storage} reload={reload} openFolderId={openFolderId} onOpenFolder={setOpenFolderId} />
       <SafeCleanupSection />
-      <SavedSessionsSection />
-      <ConversationFolderSection />
       <UniversalHistorySection />
       <MemorySection />
       <HardwareAccelerationSetting />

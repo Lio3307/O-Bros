@@ -7,6 +7,7 @@ import { launchApp, type RunningApp } from './launchApp'
 let app: RunningApp
 let sessionsFolder: string
 
+const SIZE_THAT_GETS_ITS_OWN_BLOCK = 80 * 1024 * 1024
 const SESSION_DAYS = ['2026/02/10', '2026/09/01', '2026/10/14']
 
 async function writeFakeSessions(): Promise<void> {
@@ -46,14 +47,26 @@ test('deletes all Codex sessions from Storage and memory', async () => {
   await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
   await app.window.getByRole('switch', { name: 'Delete permanently' }).check()
 
-  const codexRow = app.window.locator('.session-cleanup-row', { hasText: 'Codex' })
+  const codexRow = app.window.locator('.conversation-row', { hasText: 'Codex' })
   await expect(codexRow).toContainText('3 conversations', { timeout: 20_000 })
+  await codexRow.locator('.conversation-row-head').click()
   await codexRow.getByRole('button', { name: 'All', exact: true }).click()
   await codexRow.getByRole('button', { name: 'Delete' }).click()
   await app.window.getByRole('button', { name: 'Delete permanently', exact: true }).click()
 
   await expect.poll(countSessionFiles, { timeout: 20_000 }).toBe(0)
   await expect(app.window.getByText('Deleted 3 sessions', { exact: false })).toBeVisible()
+})
+
+test('clicking an agent on the space map opens its row', async () => {
+  await writeFile(join(sessionsFolder, 'large-attachment.bin'), Buffer.alloc(SIZE_THAT_GETS_ITS_OWN_BLOCK))
+  await app.window.getByTitle('Settings').click()
+  await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
+  const codexRow = app.window.locator('.conversation-row', { hasText: 'Codex' })
+  await expect(codexRow).toContainText('3 conversations', { timeout: 20_000 })
+  await expect(codexRow.getByRole('button', { name: 'Delete' })).toHaveCount(0)
+  await app.window.locator('.space-block-link[title*="Codex"]').click()
+  await expect(codexRow.getByRole('button', { name: 'Delete' })).toBeVisible()
 })
 
 test('keeps deleting when one session is in use, and says which could not be deleted', async () => {
@@ -70,9 +83,10 @@ test('keeps deleting when one session is in use, and says which could not be del
     await app.window.getByTitle('Settings').click()
     await app.window.locator('.side-panel').getByRole('button', { name: 'Storage and memory' }).click()
     await app.window.getByRole('switch', { name: 'Delete permanently' }).check()
-    const codexRow = app.window.locator('.session-cleanup-row', { hasText: 'Codex' })
+    const codexRow = app.window.locator('.conversation-row', { hasText: 'Codex' })
     await expect(codexRow).toContainText('3 conversations', { timeout: 20_000 })
-    await codexRow.getByRole('button', { name: 'All', exact: true }).click()
+    await codexRow.locator('.conversation-row-head').click()
+  await codexRow.getByRole('button', { name: 'All', exact: true }).click()
     await codexRow.getByRole('button', { name: 'Delete' }).click()
     await app.window.getByRole('button', { name: 'Delete permanently', exact: true }).click()
 

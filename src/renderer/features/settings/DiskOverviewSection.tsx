@@ -1,59 +1,107 @@
 import { HardDrive } from 'lucide-react'
 import { formatBytes } from '../../../shared/format'
-import type { DiskItemKind, DiskReport } from '../../../shared/types'
+import { storageBlocks, type StorageBlock } from '../../../shared/storageMap'
+import type { ConversationFolder, DiskReport } from '../../../shared/types'
+import { AgentIcon } from '../../ui/AgentIcon'
 import { LoadingText } from '../../ui/LoadingText'
 import { Notice } from '../../ui/Notice'
 import { SettingsSection } from '../../ui/SettingsSection'
 import { UsageBar } from '../../ui/UsageBar'
 import { isLowOnSpace, keptBytesOf } from './useDiskReports'
+import './storagePage.css'
 
-const KIND_NOTES: Record<DiskItemKind, string> = {
-  conversations: 'Saved by the agent',
-  history: 'O-BROS copy of your chats',
-  app: 'O-BROS itself',
-  updates: 'Installer waiting to install'
+const LABEL_FROM_SHARE = 0.14
+const ICON_FROM_SHARE = 0.025
+const TONE_COUNT = 6
+
+interface SpaceMapProps {
+  reports: DiskReport[] | null
+  folders: ConversationFolder[]
+  onOpenFolder: (folderId: string) => void
 }
 
-function DriveCard({ report }: { report: DiskReport }) {
+function folderAt(folders: ConversationFolder[], path: string | null): ConversationFolder | undefined {
+  return path === null ? undefined : folders.find((folder) => folder.path === path || folder.movedTo === path)
+}
+
+function toneOf(index: number): number {
+  return Math.min(index, TONE_COUNT - 1)
+}
+
+function SpaceBlock({ block, index, folder, onOpen }: { block: StorageBlock; index: number; folder: ConversationFolder | undefined; onOpen: () => void }) {
+  const content = (
+    <>
+      {folder !== undefined && block.share >= ICON_FROM_SHARE && <AgentIcon command={folder.program} size={16} />}
+      {block.share >= LABEL_FROM_SHARE && <span className="space-block-label">{block.label}</span>}
+    </>
+  )
+  const style = { flexGrow: block.share }
+  const className = `space-block space-block-tone-${toneOf(index)}`
+  return folder === undefined ? (
+    <div className={className} style={style} title={block.title}>
+      {content}
+    </div>
+  ) : (
+    <button type="button" className={`${className} space-block-link`} style={style} title={`${block.title}\nClick to manage`} onClick={onOpen}>
+      {content}
+    </button>
+  )
+}
+
+function DriveMap({ report, folders, onOpenFolder }: { report: DiskReport; folders: ConversationFolder[]; onOpenFolder: (folderId: string) => void }) {
   const { drive, items } = report
   const usedPercent = drive.totalBytes === 0 ? null : ((drive.totalBytes - drive.freeBytes) / drive.totalBytes) * 100
   const isLow = isLowOnSpace(report)
+  const blocks = storageBlocks(items, formatBytes)
 
   return (
-    <div className={isLow ? 'disk-card disk-card-low' : 'disk-card'}>
-      <div className="disk-card-head">
-        <HardDrive size={16} />
-        <span className="account-label">{drive.root}</span>
-        <span className="disk-card-free">
-          <strong>{formatBytes(drive.freeBytes)}</strong> free of {formatBytes(drive.totalBytes)}
+    <div className={isLow ? 'space-map space-map-low' : 'space-map'}>
+      <div className="space-map-head">
+        <span className="space-map-free">
+          <strong>{formatBytes(drive.freeBytes)}</strong> free
         </span>
-        <span className="muted disk-card-kept">O-BROS and agents: {formatBytes(keptBytesOf(report))}</span>
+        <span className="space-map-drive muted">
+          <HardDrive size={14} /> {drive.root} · {formatBytes(drive.totalBytes)} disk
+        </span>
       </div>
-      <UsageBar percentUsed={usedPercent} />
+      <UsageBar percentUsed={usedPercent} tone={isLow ? 'danger' : 'normal'} />
       {isLow && (
         <Notice tone="danger" title="This drive is almost full.">
-          Move conversations to another drive or delete old ones below.
+          Open an agent below to delete old conversations or move them to another drive.
         </Notice>
       )}
-      <div className="disk-items">
-        {items.map((item) => (
-          <div key={item.kind + item.path} className="disk-item" title={item.path}>
-            <span className="disk-item-label">{item.label}</span>
-            <span className="muted disk-item-note">{KIND_NOTES[item.kind]}</span>
-            <span className="disk-item-size">{formatBytes(item.bytes)}</span>
+      {blocks.length > 0 && (
+        <>
+          <p className="space-map-kept muted">
+            O-BROS and your agents keep <strong>{formatBytes(keptBytesOf(report))}</strong> here
+          </p>
+          <div className="space-strip">
+            {blocks.map((block, index) => {
+              const folder = folderAt(folders, block.path)
+              return <SpaceBlock key={block.key} block={block} index={index} folder={folder} onOpen={() => folder !== undefined && onOpenFolder(folder.id)} />
+            })}
           </div>
-        ))}
-      </div>
+          <ul className="space-legend">
+            {blocks.map((block, index) => (
+              <li key={block.key} title={block.title}>
+                <span className={`space-swatch space-block-tone-${toneOf(index)}`} />
+                <span>{block.label}</span>
+                <span className="muted">{formatBytes(block.bytes)}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </div>
   )
 }
 
-export function DiskOverviewSection({ reports }: { reports: DiskReport[] | null }) {
+export function DiskOverviewSection({ reports, folders, onOpenFolder }: SpaceMapProps) {
   return (
-    <SettingsSection title="Your disks" description="Free space on each drive, and what O-BROS and your agents keep there. Hover a line to see its folder.">
+    <SettingsSection title="Your disks">
       {reports === null && <p className="panel-empty"><LoadingText text="Measuring your drives…" /></p>}
       {reports !== null && reports.length === 0 && <p className="muted">Nothing to show yet.</p>}
-      {reports !== null && reports.map((report) => <DriveCard key={report.drive.root} report={report} />)}
+      {reports !== null && reports.map((report) => <DriveMap key={report.drive.root} report={report} folders={folders} onOpenFolder={onOpenFolder} />)}
     </SettingsSection>
   )
 }

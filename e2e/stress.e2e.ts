@@ -75,7 +75,7 @@ test('keeps the window responsive while a terminal prints a lot of output', asyn
 
     await app.window.getByTitle('Settings', { exact: true }).click()
     await app.window.getByText('Storage and memory', { exact: true }).first().click()
-    await expect(app.window.getByText('App cache', { exact: true })).toBeVisible({ timeout: 10_000 })
+    await expect(app.window.getByRole('heading', { name: 'Free space safely' })).toBeVisible({ timeout: 10_000 })
   } finally {
     await app.close()
   }

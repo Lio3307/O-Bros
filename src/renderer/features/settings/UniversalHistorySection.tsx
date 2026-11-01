@@ -8,12 +8,13 @@ import { HISTORY_KEEP_DAYS_OPTIONS } from '../../../shared/universalHistory'
 import { askToConfirm } from '../../state/confirmStore'
 import { useStorageStore } from '../../state/storageStore'
 import { toast } from '../../state/toastStore'
+import { AgentIcon } from '../../ui/AgentIcon'
 import { Button } from '../../ui/Button'
 import { LoadingText } from '../../ui/LoadingText'
 import { SegmentedControl } from '../../ui/SegmentedControl'
 import { SettingsSection } from '../../ui/SettingsSection'
 import { pluralize } from './CleanupRow'
-import { SafetyLabel } from './SafetyLabel'
+import './storagePage.css'
 
 const KEEP_EVERYTHING = 0
 
@@ -102,16 +103,19 @@ export function UniversalHistorySection() {
   return (
     <SettingsSection
       title="Universal history"
-      description={
-        <>
-          O-BROS's own small text copy of your Claude and Codex conversations, so you can continue them in another agent.
-          It keeps your messages and the answers, not tool output.
-        </>
-      }
+      description="O-BROS's own small text copy of your Claude and Codex conversations, so another agent can continue them. Your messages and the answers, not tool output."
       actions={
         <>
           <Button variant="outline" disabled={isBusy} onClick={() => void saveNow()}>
             <RefreshCw size={14} /> Save now
+          </Button>
+          <Button
+            variant="outline"
+            title="Pick a folder. O-BROS copies everything into o-bros-history there, checks the copy, then removes the old folder. Move it back the same way."
+            disabled={isBusy}
+            onClick={() => void move()}
+          >
+            <FolderInput size={14} /> Move…
           </Button>
           <Button variant="outline" onClick={() => void openFolder(null)}>
             <FolderOpen size={14} /> Open folder
@@ -122,62 +126,39 @@ export function UniversalHistorySection() {
       {report === null && <p className="panel-empty"><LoadingText text="Reading the universal history…" /></p>}
       {report !== null && (
         <>
-          <div className="table">
-            <div className="table-row cleanup-row">
-              <div className="cell cell-account">
-                <span className="cleanup-title">
-                  <span className="account-label">Folder</span>
-                  <SafetyLabel safety="undoable" />
-                </span>
-                <span className="mono location-path">{report.folder}</span>
-                <span className="muted">
-                  {report.isDefaultFolder ? 'The default, inside the O-BROS data folder. ' : ''}
-                  {report.drive === null ? '' : `Drive ${report.drive.root} has ${formatBytes(report.drive.freeBytes)} free. `}
-                  {savedText(report)}
-                </span>
-              </div>
-              <span className="cleanup-amount">
-                {pluralize(report.conversationCount, 'conversation', 'conversations')}, {formatBytes(report.totalBytes)}
-              </span>
-              <Button
-                variant="outline"
-                title="Pick a folder. O-BROS copies everything into o-bros-history there, checks the copy, then removes the old folder. Move it back the same way."
-                disabled={isBusy}
-                onClick={() => void move()}
-              >
-                <FolderInput size={14} /> Move…
-              </Button>
-            </div>
-            {report.agents.map((agent) => (
-              <div key={agent.folderName} className="table-row history-agent-row">
-                <div className="cell cell-account">
-                  <span className="account-label">{agent.folderName}</span>
-                  <span className="muted">Copies of {agent.agent} conversations</span>
-                </div>
-                <span className="cleanup-amount">
-                  {pluralize(agent.conversationCount, 'conversation', 'conversations')}, {formatBytes(agent.totalBytes)}
-                </span>
-                <Button variant="outline" onClick={() => void openFolder(agent.agent)}>
-                  <FolderOpen size={14} /> Open
-                </Button>
-              </div>
-            ))}
-          </div>
-          <div className="history-keep">
-            <span className="cleanup-title">
-              <span className="account-label">Keep copies of</span>
-              <SafetyLabel safety="permanent" />
+          <div className="history-summary">
+            <strong>{formatBytes(report.totalBytes)}</strong>
+            <span>{pluralize(report.conversationCount, 'conversation', 'conversations')}</span>
+            <span className="muted">
+              {report.drive === null ? '' : `${report.drive.root} has ${formatBytes(report.drive.freeBytes)} free. `}
+              {savedText(report)}
             </span>
+          </div>
+          <span className="mono location-path muted">{report.folder}</span>
+          {report.agents.length > 0 && (
+            <div className="history-agents">
+              {report.agents.map((agent) => (
+                <div key={agent.folderName} className="history-agent-row">
+                  <AgentIcon command={agent.agent} size={14} />
+                  <span title={agent.folderName}>{pluralize(agent.conversationCount, 'conversation', 'conversations')}</span>
+                  <span className="muted">{formatBytes(agent.totalBytes)}</span>
+                  <Button variant="icon" title={`Open ${agent.folderName}`} aria-label={`Open ${agent.folderName}`} onClick={() => void openFolder(agent.agent)}>
+                    <FolderOpen size={14} />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="history-keep-row">
+            <span>Keep copies of</span>
             <SegmentedControl
               className="settings-segmented"
               options={HISTORY_KEEP_DAYS_OPTIONS.map((days) => ({ value: days ?? KEEP_EVERYTHING, label: keepLabel(days) }))}
               value={report.keepDays ?? KEEP_EVERYTHING}
               onChange={(value) => void changeKeep(value)}
             />
-            <p className="muted">
-              Older copies are deleted for good and can no longer be continued in another agent. The agents' own conversations stay.
-            </p>
           </div>
+          <p className="muted">Older copies are deleted for good. The agents' own conversations stay.</p>
         </>
       )}
     </SettingsSection>
