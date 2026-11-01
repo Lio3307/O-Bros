@@ -15,6 +15,7 @@ import { SidePanel } from './shell/SidePanel'
 import { StatusBar } from './shell/StatusBar'
 import { TitleBar } from './shell/TitleBar'
 import { ConfirmHost } from './ui/ConfirmHost'
+import { ContinueDialog } from './features/history/ContinueDialog'
 import { ToastHost } from './ui/ToastHost'
 import { UpdateNoticeCard } from './features/settings/update/UpdateNoticeCard'
 import { AppBackground } from './shell/AppBackground'
@@ -128,6 +129,7 @@ export function App() {
       <FileActionDialogs />
       <CloseConfirmModal />
       <ConfirmHost />
+      <ContinueDialog />
       <TextPromptHost />
       <ToastHost>
         <UpdateNoticeCard />

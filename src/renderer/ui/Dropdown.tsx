@@ -7,6 +7,7 @@ export interface DropdownOption {
   value: string
   label: string
   hint?: string
+  icon?: ReactNode
   hasSeparatorBefore?: boolean
 }
 
@@ -71,7 +72,12 @@ export function Dropdown({ label, value, loadOptions, onChange, icon, title, cla
               hint: option.hint,
               hasSeparatorBefore: option.hasSeparatorBefore,
               isActive: isSelected,
-              icon: <Check size={14} className={isSelected ? undefined : 'dropdown-check-hidden'} />,
+              icon: (
+                <>
+                  <Check size={14} className={isSelected ? undefined : 'dropdown-check-hidden'} />
+                  {option.icon}
+                </>
+              ),
               onSelect: () => {
                 if (!isSelected) {
                   onChange(option.value)

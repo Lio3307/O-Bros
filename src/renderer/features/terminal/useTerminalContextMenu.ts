@@ -38,9 +38,7 @@ export function useTerminalContextMenu(terminalRef: RefObject<Terminal | null>, 
       return
     }
     useWorkspaceStore.getState().focusPane(tab.id, paneId)
-    const position = { x: event.clientX, y: event.clientY }
-    const show = (items: PopupMenuItem[]): void => setContextMenu({ ...position, items })
-    show(terminalMenuItems({ terminal, tab, paneId, splitRightHint, splitDownHint, reopen: show }))
+    setContextMenu({ x: event.clientX, y: event.clientY, items: terminalMenuItems({ terminal, tab, paneId, splitRightHint, splitDownHint }) })
   }
 
   const menuHandlers = {

@@ -90,7 +90,8 @@ test.beforeEach(async () => {
   })
   const launchers = [
     { id: 'codex', name: 'Codex', command: 'codex' },
-    { id: 'fake', name: 'Fake agent', command: 'fakeagent' }
+    { id: 'fake', name: 'Fake agent', command: 'fakeagent' },
+    { id: 'missing', name: 'Not installed agent', command: 'no-such-agent-here' }
   ]
   await app.window.evaluate((saved) => {
     localStorage.setItem('o-bros.agentLaunchers', saved)
@@ -108,6 +109,14 @@ const FAKE_KEY = 'sk-' + 'proj-' + 'Ab1'.repeat(14)
 
 async function readProof(): Promise<string> {
   return readFile(join(app.projectFolder, 'handoff-received.txt'), 'utf8').catch(() => '')
+}
+
+async function chooseAgentAndContinue(agentName: string): Promise<void> {
+  const dialog = app.window.getByRole('dialog', { name: 'Continue in another agent' })
+  await dialog.locator('.dropdown').click()
+  await app.window.locator('.popup-menu-item', { hasText: agentName }).click()
+  await dialog.getByRole('button', { name: `Continue in ${agentName}` }).click()
+  await expect(dialog).toHaveCount(0)
 }
 
 async function writeSavedCodexConversation(): Promise<void> {
@@ -131,8 +140,20 @@ test('continues a saved conversation in another agent from History and shows the
   await expect(row).toBeVisible({ timeout: 20_000 })
   await row.locator('.session-row').click()
 
-  await app.window.locator('.replay-actions').getByRole('button', { name: 'Continue with…' }).click()
-  await app.window.locator('.popup-menu-item', { hasText: 'Fake agent' }).click()
+  await app.window.locator('.replay-actions').getByRole('button', { name: 'Continue in another agent' }).click()
+  const dialog = app.window.getByRole('dialog', { name: 'Continue in another agent' })
+  await expect(dialog).toContainText('Fix the login bug')
+  await expect(dialog.getByRole('button', { name: 'Continue in Fake agent' })).toBeFocused()
+  await dialog.locator('.dropdown').click()
+  await expect(app.window.locator('.popup-menu-item', { hasText: 'Codex' })).toContainText('same agent')
+  await expect(app.window.locator('.popup-menu-item', { hasText: 'Not installed agent' })).toHaveCount(0)
+  await app.window.keyboard.press('Escape')
+  await expect(app.window.locator('.popup-menu-item')).toHaveCount(0)
+  await expect(dialog).toBeVisible()
+  await app.window.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+  await app.window.locator('.replay-actions').getByRole('button', { name: 'Continue in another agent' }).click()
+  await chooseAgentAndContinue('Fake agent')
 
   await expect.poll(readProof, { timeout: 90_000 }).toContain('[O-BROS handoff')
   const handoff = await readProof()
@@ -154,8 +175,8 @@ test('links the continued Codex conversation into the same thread by its handoff
   await app.window.getByTitle('History', { exact: true }).click()
   const original = app.window.locator('.session-item', { hasText: 'Fix the login bug', hasNotText: 'Continued:' })
   await original.locator('.session-row').click()
-  await app.window.locator('.replay-actions').getByRole('button', { name: 'Continue with…' }).click()
-  await app.window.locator('.popup-menu-item', { hasText: 'Codex' }).click()
+  await app.window.locator('.replay-actions').getByRole('button', { name: 'Continue in another agent' }).click()
+  await chooseAgentAndContinue('Codex')
   await app.window.locator('.tab', { hasText: 'Codex' }).first().waitFor({ timeout: 60_000 })
 
   await app.window.getByTitle('History', { exact: true }).click()
@@ -188,7 +209,7 @@ test('continues the conversation of a running agent tab in another agent', async
 
   await app.window.locator('.tab-bar .tab').first().click({ button: 'right' })
   await app.window.locator('.popup-menu-item', { hasText: 'Continue in another agent…' }).click()
-  await app.window.locator('.popup-menu-item', { hasText: 'Fake agent' }).click()
+  await chooseAgentAndContinue('Fake agent')
 
   await expect.poll(readProof, { timeout: 90_000 }).toContain('Add a dark mode toggle')
   expect(await readProof()).toContain('Codex: Working on: Add a dark mode toggle')

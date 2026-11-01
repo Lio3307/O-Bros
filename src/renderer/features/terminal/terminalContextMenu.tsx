@@ -14,7 +14,6 @@ export interface TerminalMenuContext {
   paneId: string
   splitRightHint: string
   splitDownHint: string
-  reopen: (items: PopupMenuItem[]) => void
 }
 
 async function pasteClipboard(terminal: Terminal): Promise<void> {
@@ -38,8 +37,8 @@ function copySelection(terminal: Terminal): void {
   )
 }
 
-export function terminalMenuItems({ terminal, tab, paneId, splitRightHint, splitDownHint, reopen }: TerminalMenuContext): PopupMenuItem[] {
-  const continueItem = continueInAnotherAgentItem(tab, reopen)
+export function terminalMenuItems({ terminal, tab, paneId, splitRightHint, splitDownHint }: TerminalMenuContext): PopupMenuItem[] {
+  const continueItem = continueInAnotherAgentItem(tab)
   const workspace = useWorkspaceStore.getState()
   return [
     { label: 'Copy', icon: <Copy size={ICON_SIZE} />, isDisabled: !terminal.hasSelection(), onSelect: () => copySelection(terminal) },

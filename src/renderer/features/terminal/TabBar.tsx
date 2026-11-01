@@ -29,12 +29,12 @@ function locationOf(tab: WorkspaceTab): string | null {
   return tab.kind === 'file' ? tab.path : tab.cwd
 }
 
-function continueItem(tab: WorkspaceTab, reopen: (items: PopupMenuItem[]) => void): PopupMenuItem[] {
-  const item = isTerminalTab(tab) ? continueInAnotherAgentItem(tab, reopen) : null
+function continueItem(tab: WorkspaceTab): PopupMenuItem[] {
+  const item = isTerminalTab(tab) ? continueInAnotherAgentItem(tab) : null
   return item === null ? [] : [{ ...item, hasSeparatorBefore: true }]
 }
 
-function contextMenuItemsFor(tab: WorkspaceTab, reopen: (items: PopupMenuItem[]) => void): PopupMenuItem[] {
+function contextMenuItemsFor(tab: WorkspaceTab): PopupMenuItem[] {
   const location = locationOf(tab)
   return [
     { label: 'Close', onSelect: () => requestCloseTab(tab.id) },
@@ -49,7 +49,7 @@ function contextMenuItemsFor(tab: WorkspaceTab, reopen: (items: PopupMenuItem[])
       isDisabled: location === null,
       onSelect: () => void revealInFileExplorer(location ?? '')
     },
-    ...continueItem(tab, reopen)
+    ...continueItem(tab)
   ]
 }
 
@@ -85,8 +85,7 @@ function TabItem({ tab, isActive, onOpenMenu }: TabItemProps) {
       onMouseDown={handleMouseDown}
       onContextMenu={(event) => {
         event.preventDefault()
-        const position = { x: event.clientX, y: event.clientY }
-        onOpenMenu({ ...position, items: contextMenuItemsFor(tab, (items) => onOpenMenu({ ...position, items })) })
+        onOpenMenu({ x: event.clientX, y: event.clientY, items: contextMenuItemsFor(tab) })
       }}
       onDragStart={(event) => event.dataTransfer.setData('text/plain', tab.id)}
       onDragOver={(event) => event.preventDefault()}

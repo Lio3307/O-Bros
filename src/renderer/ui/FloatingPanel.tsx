@@ -46,6 +46,7 @@ export function FloatingPanel({ x, y, onClose, anchor, className, style, label, 
     }
     function closeOnEscape(event: KeyboardEvent): void {
       if (event.key === 'Escape') {
+        event.stopPropagation()
         onClose()
       }
     }

@@ -291,8 +291,10 @@ test('README screenshots', async () => {
   const dueDates = page.locator('.session-item', { hasText: 'Add due dates', hasNotText: 'Continued:' })
   await expect(dueDates).toBeVisible({ timeout: 30_000 })
   await dueDates.locator('.session-row').click()
-  await page.locator('.replay-actions').getByRole('button', { name: 'Continue with…' }).click()
+  await page.locator('.replay-actions').getByRole('button', { name: 'Continue in another agent' }).click()
+  await page.getByRole('dialog', { name: 'Continue in another agent' }).locator('.dropdown').click()
   await page.locator('.popup-menu-item', { hasText: 'Claude' }).click()
+  await page.getByRole('button', { name: 'Continue in Claude' }).click()
   const continued = page.locator('.session-item', { hasText: 'Continued: Add due dates' })
   await page.waitForTimeout(8000)
   await expect
