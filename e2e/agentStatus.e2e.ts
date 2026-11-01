@@ -114,7 +114,7 @@ test('notifies once when an agent finishes in another tab, not again after switc
   await typeLine(SLOW_OUTPUT)
   await app.window.getByTitle('New terminal').click()
   await expect(agentTab.locator('.agent-status-icon')).toHaveClass(/agent-status-done/, { timeout: 20_000 })
-  await expect.poll(shownNotifications).toEqual(['ShellAgent finished'])
+  await expect.poll(shownNotifications).toEqual(['ShellAgent finished its reply'])
 
   for (const size of [900, 1100, 1000]) {
     await agentTab.click()
@@ -123,10 +123,10 @@ test('notifies once when an agent finishes in another tab, not again after switc
     await app.window.waitForTimeout(1500)
   }
   await app.window.waitForTimeout(5000)
-  expect(await shownNotifications()).toEqual(['ShellAgent finished'])
+  expect(await shownNotifications()).toEqual(['ShellAgent finished its reply'])
 
   await agentTab.click()
   await typeLine(SLOW_OUTPUT)
   await app.window.locator('.tab').last().click()
-  await expect.poll(shownNotifications, { timeout: 30_000 }).toEqual(['ShellAgent finished', 'ShellAgent finished'])
+  await expect.poll(shownNotifications, { timeout: 30_000 }).toEqual(['ShellAgent finished its reply', 'ShellAgent finished its reply'])
 })

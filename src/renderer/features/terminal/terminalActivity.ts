@@ -1,23 +1,22 @@
-export interface TerminalActivity {
-  runStartedAt: number
-  lastOutputAt: number
+export const LONG_COMMAND_MS = 8000
+export const QUIET_MS = 4000
+
+export interface WatchedCommand {
+  startedAt: number
+  lastOutputAt: number | null
+  lastCheckedAt: number | null
+  tail: string
 }
 
-export type ActivityStatus = 'running' | 'finished-long-run' | 'finished-short-run'
-
-export const LONG_RUN_MS = 8000
-export const SAME_RUN_GAP_MS = 3000
-export const FINISHED_AFTER_QUIET_MS = 4000
-
-export function recordOutput(activity: TerminalActivity | undefined, now: number): TerminalActivity {
-  const isSameRun = activity !== undefined && now - activity.lastOutputAt <= SAME_RUN_GAP_MS
-  return { runStartedAt: isSameRun ? activity.runStartedAt : now, lastOutputAt: now }
+export function lastSignOfLife(command: WatchedCommand): number {
+  return command.lastOutputAt ?? command.startedAt
 }
 
-export function classifyActivity(activity: TerminalActivity, now: number): ActivityStatus {
-  if (now - activity.lastOutputAt < FINISHED_AFTER_QUIET_MS) {
-    return 'running'
-  }
-  const runDuration = activity.lastOutputAt - activity.runStartedAt
-  return runDuration >= LONG_RUN_MS ? 'finished-long-run' : 'finished-short-run'
+export function isTimeToCheckIfEnded(command: WatchedCommand, now: number): boolean {
+  const signOfLife = lastSignOfLife(command)
+  return now - signOfLife >= QUIET_MS && command.lastCheckedAt !== signOfLife
+}
+
+export function ranLongEnoughToNotify(command: WatchedCommand): boolean {
+  return lastSignOfLife(command) - command.startedAt >= LONG_COMMAND_MS
 }

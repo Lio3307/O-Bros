@@ -11,6 +11,7 @@ export const WORK_RUN_MS = 8000
 export const SAME_RUN_GAP_MS = 3000
 
 const ENTER = '\r'
+const ESCAPE = '\u001b'
 
 export interface AgentActivity {
   startedAt: number
@@ -20,6 +21,7 @@ export interface AgentActivity {
   lastResizeAt: number | null
   lastSubmitAt: number | null
   hasWorked: boolean
+  hasUnsentText: boolean
   answeredLines: string[]
 }
 
@@ -32,12 +34,13 @@ export function newAgentActivity(now: number): AgentActivity {
     lastResizeAt: null,
     lastSubmitAt: null,
     hasWorked: false,
+    hasUnsentText: false,
     answeredLines: []
   }
 }
 
 export function isSubmit(data: string): boolean {
-  return data.includes(ENTER)
+  return data.endsWith(ENTER) && !data.startsWith(ESCAPE)
 }
 
 function isRecent(at: number | null, now: number): boolean {
@@ -54,7 +57,7 @@ export function withOutput(activity: AgentActivity, now: number): AgentActivity 
   }
   const isSameRun = activity.lastOutputAt !== null && now - activity.lastOutputAt <= SAME_RUN_GAP_MS
   const runStartedAt = isSameRun && activity.runStartedAt !== null ? activity.runStartedAt : now
-  const isLongRunAfterStart = now - runStartedAt >= WORK_RUN_MS && runStartedAt - activity.startedAt >= STARTING_MS
+  const isLongRunAfterStart = now - runStartedAt >= WORK_RUN_MS && runStartedAt - activity.startedAt >= STARTING_MS && !activity.hasUnsentText
   return { ...activity, lastOutputAt: now, runStartedAt, hasWorked: activity.hasWorked || isLongRunAfterStart }
 }
 
@@ -65,6 +68,7 @@ export function withTyping(activity: AgentActivity, data: string, screen: string
     lastKeyAt: submitted ? null : now,
     lastSubmitAt: submitted ? now : activity.lastSubmitAt,
     hasWorked: activity.hasWorked || submitted,
+    hasUnsentText: !submitted && (activity.hasUnsentText || !data.startsWith(ESCAPE)),
     answeredLines: submitted ? questionLinesOf(screen) : activity.answeredLines
   }
 }

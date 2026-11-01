@@ -22,7 +22,7 @@ import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
 import { useFileDropTarget } from '../files/useFileDropTarget'
 import { createFileLinkProvider } from './fileLinkProvider'
 import { openFileReference } from './openFileReference'
-import { forgetTerminalActivity, noteTerminalOutput } from './terminalActivityMonitor'
+import { forgetTerminalActivity, noteCommandStarted, noteTerminalInput, noteTerminalOutput } from './terminalActivityMonitor'
 import { noteAgentOutput, noteAgentTyping } from './agentStatusTracking'
 import { forgetPtySize, sendPtySize } from './ptySizeSender'
 import { registerTerminal, unregisterTerminal } from './terminalRegistry'
@@ -130,8 +130,12 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
     const stopListeningToTyping = terminal.onData((data) => {
       setIsStarting(false)
       noteAgentTyping(paneId, data)
+      noteTerminalInput(paneId, data)
       window.api.pty.input(paneId, data)
     })
+    if (startCommand !== null && startCommand !== undefined) {
+      noteCommandStarted(paneId)
+    }
     const resizeObserver = new ResizeObserver(fit)
     resizeObserver.observe(host)
     void document.fonts.ready.then(() => {

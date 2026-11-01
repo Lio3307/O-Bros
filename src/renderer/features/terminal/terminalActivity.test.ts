@@ -1,32 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { classifyActivity, recordOutput } from './terminalActivity'
+import { isTimeToCheckIfEnded, ranLongEnoughToNotify, type WatchedCommand } from './terminalActivity'
 
-describe('recordOutput', () => {
-  it('starts a run on the first output', () => {
-    expect(recordOutput(undefined, 1000)).toEqual({ runStartedAt: 1000, lastOutputAt: 1000 })
+function command(lastOutputAt: number | null, lastCheckedAt: number | null = null): WatchedCommand {
+  return { startedAt: 1000, lastOutputAt, lastCheckedAt, tail: '' }
+}
+
+describe('isTimeToCheckIfEnded', () => {
+  it('waits for quiet', () => {
+    expect(isTimeToCheckIfEnded(command(5000), 8000)).toBe(false)
+    expect(isTimeToCheckIfEnded(command(5000), 9000)).toBe(true)
   })
 
-  it('keeps the run start while output keeps arriving', () => {
-    const first = recordOutput(undefined, 1000)
-    expect(recordOutput(first, 3500)).toEqual({ runStartedAt: 1000, lastOutputAt: 3500 })
+  it('checks once per burst of output, so a quiet dev server is not asked about every second', () => {
+    expect(isTimeToCheckIfEnded(command(5000, 5000), 60_000)).toBe(false)
+    expect(isTimeToCheckIfEnded(command(50_000, 5000), 60_000)).toBe(true)
   })
 
-  it('starts a new run after a long silence', () => {
-    const first = recordOutput(undefined, 1000)
-    expect(recordOutput(first, 9000)).toEqual({ runStartedAt: 9000, lastOutputAt: 9000 })
+  it('also checks a command that never printed anything', () => {
+    expect(isTimeToCheckIfEnded(command(null), 6000)).toBe(true)
   })
 })
 
-describe('classifyActivity', () => {
-  it('is running while output is recent', () => {
-    expect(classifyActivity({ runStartedAt: 0, lastOutputAt: 10_000 }, 12_000)).toBe('running')
-  })
-
-  it('reports a finished long run after enough quiet', () => {
-    expect(classifyActivity({ runStartedAt: 0, lastOutputAt: 10_000 }, 14_500)).toBe('finished-long-run')
-  })
-
-  it('does not treat a short burst as a long run', () => {
-    expect(classifyActivity({ runStartedAt: 0, lastOutputAt: 500 }, 5000)).toBe('finished-short-run')
+describe('ranLongEnoughToNotify', () => {
+  it('measures from Enter to the last output, not from the last burst', () => {
+    expect(ranLongEnoughToNotify(command(4000))).toBe(false)
+    expect(ranLongEnoughToNotify(command(9000))).toBe(true)
   })
 })

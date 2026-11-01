@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { agentStatusOf, newAgentActivity, withOutput, withResize, withScreen, withTyping, type AgentActivity } from './agentStatus'
+import { agentStatusOf, isSubmit, newAgentActivity, withOutput, withResize, withScreen, withTyping, type AgentActivity } from './agentStatus'
 
 const START = 1_000_000
 const ENTER = String.fromCharCode(13)
@@ -81,6 +81,21 @@ describe('agentStatusOf', () => {
     expect(agentStatusOf(typed, '', START + 50_200)).toBe('done')
     const resized = withOutput(withResize(done, START + 60_000), START + 60_200)
     expect(agentStatusOf(resized, '', START + 60_300)).toBe('done')
+  })
+
+  it('does not see a pasted prompt or Alt+Enter as sending', () => {
+    const escape = String.fromCharCode(27)
+    expect(isSubmit(ENTER)).toBe(true)
+    expect(isSubmit(escape + '[200~first line' + ENTER + 'second line' + escape + '[201~')).toBe(false)
+    expect(isSubmit(escape + ENTER)).toBe(false)
+  })
+
+  it('does not count output as work while a prompt is typed but not sent', () => {
+    const typed = withTyping(newAgentActivity(START), 'h', '', START + 9000)
+    const redraws = outputEverySecond(typed, START + 10_000, START + 20_000)
+    expect(agentStatusOf(redraws, '', START + 30_000)).toBe('ready')
+    const focusReport = withTyping(newAgentActivity(START), String.fromCharCode(27) + '[O', '', START + 9000)
+    expect(agentStatusOf(outputEverySecond(focusReport, START + 10_000, START + 20_000), '', START + 30_000)).toBe('done')
   })
 
   it('counts a long run of output as work when the task was typed in by O-BROS', () => {

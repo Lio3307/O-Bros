@@ -1,16 +1,14 @@
 import type { AgentStatus } from '../../../shared/agentStatus'
+import type { PaneNotice } from '../../../shared/paneNoticeText'
 import { useAgentStatusStore } from '../../state/agentStatusStore'
 import { turnOf } from './agentStatusTracking'
 import { announceForPane } from './paneNotification'
 
 type NotifiedStatus = 'done' | 'asking'
 
-const MESSAGES: Record<NotifiedStatus, [string, string]> = {
-  done: ['finished', 'It is done and waiting for your next message.'],
-  asking: ['is asking you', 'It needs your answer to go on.']
-}
+const NOTICE_OF: Record<NotifiedStatus, PaneNotice> = { done: 'finished', asking: 'asking' }
 
-const notifiedKeys = new Map<string, string>()
+const notifiedKeys = new Map<string, Set<string>>()
 
 export function notificationKeyOf(status: AgentStatus, turn: number): string | null {
   return status === 'done' || status === 'asking' ? `${status}@${turn}` : null
@@ -25,12 +23,12 @@ function noticeStatuses(statuses: Record<string, AgentStatus>): void {
   for (const [paneId, status] of Object.entries(statuses)) {
     const turn = turnOf(paneId)
     const key = turn === null ? null : notificationKeyOf(status, turn)
-    if (key === null || notifiedKeys.get(paneId) === key) {
+    const seenKeys = notifiedKeys.get(paneId) ?? new Set<string>()
+    if (key === null || seenKeys.has(key)) {
       continue
     }
-    notifiedKeys.set(paneId, key)
-    const [happened, detail] = MESSAGES[status as NotifiedStatus]
-    announceForPane(paneId, happened, detail)
+    notifiedKeys.set(paneId, seenKeys.add(key))
+    announceForPane(paneId, NOTICE_OF[status as NotifiedStatus])
   }
 }
 

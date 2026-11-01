@@ -88,11 +88,10 @@ export function TerminalSettingsPage() {
             checked={notifyWhenFinished}
             onChange={(event) => setNotifyWhenFinished(event.target.checked)}
           />
-          <span>Notify me when a terminal finishes or asks me a question while I am elsewhere</span>
+          <span>Notify me when an agent or command finishes or asks me a question while I am elsewhere</span>
         </label>
         <p className="muted">
-          o-bros watches terminal output. If a terminal prints for 8 seconds or more and then stays silent for 4
-          seconds, you get a notification and a dot on its tab. If an agent asks a question such as "Do you want to proceed?" or a yes/no prompt, you are told right away that it is waiting for you.
+          An agent notifies once per message you send. A command you ran notifies when it has really ended after 8 seconds or more, so a dev server that keeps running stays silent. Typing without pressing Enter never notifies. A question such as "Do you want to proceed?" or a yes/no prompt notifies right away.
         </p>
       </section>
     </SettingsPageLayout>
