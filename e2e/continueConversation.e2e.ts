@@ -85,7 +85,8 @@ test.beforeEach(async () => {
       'fake-codex.cjs': FAKE_CODEX_SOURCE,
       'fake-agent.cjs': FAKE_AGENT_SOURCE,
       ...wrapper('codex', 'fake-codex.cjs'),
-      ...wrapper('fakeagent', 'fake-agent.cjs')
+      ...wrapper('fakeagent', 'fake-agent.cjs'),
+      ...wrapper('qwen', 'fake-agent.cjs')
     }
   })
   const launchers = [
@@ -147,6 +148,7 @@ test('continues a saved conversation in another agent from History and shows the
   await dialog.locator('.combobox-trigger').click()
   await expect(app.window.locator('.popup-menu-item', { hasText: 'Codex' })).toContainText('same agent')
   await expect(app.window.locator('.popup-menu-item', { hasText: 'Not installed agent' })).toHaveCount(0)
+  await expect(app.window.locator('.popup-menu-item', { hasText: 'Qwen' })).toBeVisible()
   await app.window.keyboard.press('Escape')
   await expect(app.window.locator('.popup-menu-item')).toHaveCount(0)
   await expect(dialog).toBeVisible()

@@ -25,7 +25,7 @@ function hiddenNote(hiddenCount: number): string {
   return ` ${things} replaced with [hidden] and not sent.`
 }
 
-export async function continueWithAgent(sessionFilePath: string, launcher: AgentLauncher): Promise<void> {
+export async function continueWithAgent(sessionFilePath: string, launcher: Pick<AgentLauncher, 'name' | 'command'>): Promise<void> {
   toast.info(`Preparing the handoff for ${launcher.name}…`)
   let plan
   try {

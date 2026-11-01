@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { agentStatusOf, providerOfCommand, type AgentLauncher } from '../../../shared/agentLaunchers'
+import { providerOfCommand } from '../../../shared/agentLaunchers'
+import { listTeamAgents, type TeamAgentOption } from '../../../shared/teamAgents'
+import { useAgentCatalogStore } from '../../state/agentCatalogStore'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
 import { useContinueDialogStore, type ContinueRequest } from '../../state/continueDialogStore'
 import { useInstalledCommandsStore } from '../../state/installedCommandsStore'
@@ -28,15 +30,16 @@ function ContinueForm({ request, close }: { request: ContinueRequest; close: () 
   const launchers = useAgentLaunchersStore((state) => state.launchers)
   const installedCommands = useInstalledCommandsStore((state) => state.commands)
   const refreshIfOlderThan = useInstalledCommandsStore((state) => state.refreshIfOlderThan)
-  const [pickedId, setPickedId] = useState<string | null>(null)
+  const registry = useAgentCatalogStore((state) => state.registry)
+  const [pickedCommand, setPickedCommand] = useState<string | null>(null)
 
   useEffect(() => {
     void refreshIfOlderThan(INSTALLED_LIST_MAX_AGE_MS)
   }, [refreshIfOlderThan])
 
-  const isSameAgent = (launcher: AgentLauncher) => providerOfCommand(launcher.command) === request.provider
-  const agents = launchers.filter((launcher) => agentStatusOf(launcher.command, installedCommands) !== 'missing')
-  const chosen = agents.find((agent) => agent.id === pickedId) ?? agents.find((agent) => !isSameAgent(agent)) ?? agents[0] ?? null
+  const isSameAgent = (agent: TeamAgentOption) => providerOfCommand(agent.command) === request.provider
+  const agents = listTeamAgents(launchers, registry, installedCommands ?? []).filter((agent) => agent.isInstalled)
+  const chosen = agents.find((agent) => agent.command === pickedCommand) ?? agents.find((agent) => !isSameAgent(agent)) ?? agents[0] ?? null
   const isChecking = installedCommands === null
 
   function start(): void {
@@ -94,17 +97,17 @@ function ContinueForm({ request, close }: { request: ContinueRequest; close: () 
               noMatchText="No agent matches that."
               title="Choose the agent that takes over"
               label={chosen.name}
-              value={chosen.id}
+              value={chosen.command}
               icon={<AgentIcon command={chosen.command} />}
               loadOptions={() =>
                 agents.map((agent) => ({
-                  value: agent.id,
+                  value: agent.command,
                   label: agent.name,
                   icon: <AgentIcon command={agent.command} />,
                   hint: isSameAgent(agent) ? 'same agent' : undefined
                 }))
               }
-              onChange={setPickedId}
+              onChange={setPickedCommand}
             />
           </div>
           <ul className="continue-steps muted">
