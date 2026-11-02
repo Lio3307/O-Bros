@@ -1,6 +1,7 @@
 import { agentLabelOf } from '../../../shared/agentLaunchers'
 import { describePaneNotice, type PaneNotice } from '../../../shared/paneNoticeText'
 import { lastPathSegment } from '../../../shared/paths'
+import { useAgentCatalogStore } from '../../state/agentCatalogStore'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
 import { useAttentionStore } from '../../state/attentionStore'
 import { useLayoutStore } from '../../state/layoutStore'
@@ -42,7 +43,7 @@ function showSystemNotification(paneId: string, title: string, body: string): vo
 }
 
 function agentLabelOfPane(pane: TerminalPaneInfo): string | null {
-  return isAgentPane(pane.id) && pane.agentCommand !== null ? agentLabelOf(pane.agentCommand, useAgentLaunchersStore.getState().launchers) : null
+  return isAgentPane(pane.id) && pane.agentCommand !== null ? agentLabelOf(pane.agentCommand, useAgentLaunchersStore.getState().launchers, useAgentCatalogStore.getState().registry) : null
 }
 
 function describeForPane(tab: TerminalTab, paneId: string, notice: PaneNotice): { title: string; body: string } {

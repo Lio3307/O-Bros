@@ -19,8 +19,11 @@ describe('describePaneNotice', () => {
     expect(notice.body).toContain('In nia, tab "login bug".')
   })
 
-  it('adds the pane name, to tell two panes of the same agent apart', () => {
-    const notice = describePaneNotice('finished', { agentLabel: 'Gemini', folderName: 'nia', customTabTitle: 'login bug', paneTitle: 'Terminal 2' })
-    expect(notice.body).toContain('In nia, tab "login bug", pane "Terminal 2".')
+  it('puts the pane name in the title, to tell two panes of the same agent apart', () => {
+    const source = { agentLabel: 'Gemini', folderName: 'nia', customTabTitle: null, paneTitle: 'Terminal 2' }
+    expect(describePaneNotice('finished', source).title).toBe('Gemini finished its reply: Terminal 2')
+    expect(describePaneNotice('asking', source).title).toBe('Gemini is asking you a question: Terminal 2')
+    expect(describePaneNotice('finished', { ...source, agentLabel: null }).title).toBe('Command finished: Terminal 2')
+    expect(describePaneNotice('finished', source).body).not.toContain('Terminal 2')
   })
 })

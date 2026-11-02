@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  agentLabelOf,
   agentStatusOf,
   isUsableLauncher,
   parseAgentLaunchers,
@@ -169,5 +170,21 @@ describe('providerIdForCommand', () => {
     expect(providerIdForCommand(launchers, 'codex')).toBeNull()
     expect(providerIdForCommand(launchers, 'claudette')).toBeNull()
     expect(providerIdForCommand(launchers, null)).toBeNull()
+  })
+})
+
+describe('agentLabelOf with the agent registry', () => {
+  const registry = [{ id: 'aider', name: 'Aider', description: '', commands: ['aider'], iconUrl: null }]
+
+  it('prefers the name in the list of agents on this computer', () => {
+    expect(agentLabelOf('aider --yes', [{ id: 'mine', name: 'My Aider', command: 'aider' }], registry)).toBe('My Aider')
+  })
+
+  it('uses the registry name for an agent that is not in that list', () => {
+    expect(agentLabelOf('aider --yes', [], registry)).toBe('Aider')
+  })
+
+  it('falls back to the program name for anything else', () => {
+    expect(agentLabelOf('mytool --yes', [], registry)).toBe('mytool')
   })
 })

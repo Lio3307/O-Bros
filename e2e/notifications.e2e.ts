@@ -100,7 +100,7 @@ test('two panes that look alike: the notice names the pane, and clicking it goes
 
   await expect.poll(notices, { timeout: 30_000 }).toHaveLength(1)
   const [notice] = await notices()
-  expect(notice.body).toContain(`pane "${jobPaneTitle}"`)
+  expect(notice.title).toBe(`Command finished: ${jobPaneTitle}`)
 
   await app.window.evaluate(() => (window as unknown as { lastNotice: { onclick: () => void } }).lastNotice.onclick())
   const focusedPane = app.window.locator('.pane-frame-focused')

@@ -54,10 +54,11 @@ export function programOf(command: string): string {
   return command.trim().split(' ')[0]
 }
 
-export function agentLabelOf(command: string, launchers: AgentLauncher[]): string {
+export function agentLabelOf(command: string, launchers: AgentLauncher[], registry: AcpAgent[] = []): string {
   const program = programOf(command).toLowerCase()
   const launcher = launchers.find((candidate) => programOf(candidate.command).toLowerCase() === program)
-  return launcher === undefined ? programOf(command) : shortAgentName(launcher.name)
+  const named = launcher ?? registry.find((agent) => agent.commands.includes(program))
+  return named === undefined ? programOf(command) : shortAgentName(named.name)
 }
 
 export function isAgentCommand(command: string | null, launchers: AgentLauncher[], registry: AcpAgent[]): boolean {
