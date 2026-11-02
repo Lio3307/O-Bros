@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ActivityEntry, LiveAgent } from './activity'
-import { activityByHour, describeActivity, sumOfHours, summarizeToday, timeByAgent } from './activityStats'
+import { groupAgentsByFolder, activityByHour, describeActivity, sumOfHours, summarizeToday, timeByAgent } from './activityStats'
 
 const NOW = new Date(2026, 9, 16, 15, 0).getTime()
 const MINUTE = 60_000
@@ -31,8 +31,23 @@ const ENTRIES = [
 ]
 
 const LIVE: LiveAgent[] = [
-  { paneId: 'p', agentCommand: 'codex --session-id x', cwd: null, startedAt: NOW - 20 * MINUTE, state: 'working', isTeamMember: true }
+  { paneId: 'p', agentCommand: 'codex --session-id x', cwd: null, startedAt: NOW - 20 * MINUTE, state: 'working', isTeamMember: true, alsoRunning: [] }
 ]
+
+describe('groupAgentsByFolder', () => {
+  it('keeps agents of one folder together, in the order first seen', () => {
+    const [codex] = LIVE
+    const agents = [
+      { ...codex, paneId: 'a', cwd: 'E:/one' },
+      { ...codex, paneId: 'b', cwd: null },
+      { ...codex, paneId: 'c', cwd: 'E:/one' }
+    ]
+    expect(groupAgentsByFolder(agents).map(({ folder, agents: inFolder }) => [folder, inFolder.map((agent) => agent.paneId)])).toEqual([
+      ['E:/one', ['a', 'c']],
+      [null, ['b']]
+    ])
+  })
+})
 
 describe('activity stats', () => {
   it('sums today only, including agents that still run', () => {

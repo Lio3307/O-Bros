@@ -20,6 +20,7 @@ export interface LiveAgent {
   startedAt: number
   state: TeamMemberState
   isTeamMember: boolean
+  alsoRunning: string[]
 }
 
 export interface ActivityEntry extends NewActivity {

@@ -22,6 +22,7 @@ const KEYS_THAT_MAY_START_OR_STOP_AN_AGENT = ['\r', '\u0003', '\u0004']
 const LAUNCH_GRACE_MS = 10_000
 
 const typedAgents = new Map<string, TypedAgent>()
+const programsByPane = new Map<string, string[]>()
 let lastScanAt = 0
 let scanning: Promise<void> | null = null
 let keyScanTimer: NodeJS.Timeout | null = null
@@ -47,6 +48,26 @@ function launchedAgentTerminals(): { id: string; pid: number; agentCommand: stri
   })
 }
 
+function programsInTree(table: ProcessEntry[], pid: number, programs: string[]): string[] {
+  const found = collectProcessTree(table, pid)
+    .filter((entry) => entry.pid !== pid)
+    .map((entry) => agentProgramOf(entry, programs))
+    .filter((program) => program !== null)
+  return [...new Set(found)]
+}
+
+function noteProgramsInPanes(table: ProcessEntry[], programs: string[]): void {
+  programsByPane.clear()
+  for (const { id, pid } of listRunningTerminals()) {
+    programsByPane.set(id, programsInTree(table, pid, programs))
+  }
+}
+
+export function otherAgentsInPane(paneId: string, mainCommand: string): string[] {
+  const mainProgram = programOf(mainCommand).toLowerCase()
+  return (programsByPane.get(paneId) ?? []).filter((program) => program.toLowerCase() !== mainProgram)
+}
+
 function checkLaunchedAgents(table: ProcessEntry[]): void {
   for (const { id, pid, agentCommand } of launchedAgentTerminals()) {
     const program = programOf(agentCommand).toLowerCase()
@@ -66,6 +87,7 @@ async function scan(): Promise<void> {
   const runningIds = new Set(terminals.map(({ id }) => id))
   forgetPanesExcept(new Set(listRunningTerminals().map(({ id }) => id)))
   checkLaunchedAgents(table)
+  noteProgramsInPanes(table, catalog.programs)
   for (const [paneId, agent] of typedAgents) {
     if (!runningIds.has(paneId)) {
       finish(paneId, agent, now)

@@ -55,6 +55,27 @@
   color: var(--color-muted);
 }
 
+.live-folders,
+.live-folder {
+  display: flex;
+  flex-direction: column;
+}
+
+.live-folders {
+  gap: 16px;
+}
+
+.live-folder {
+  gap: 8px;
+}
+
+.live-folder-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-strong);
+}
+
 .live-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

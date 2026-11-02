@@ -131,3 +131,16 @@ export function timeByAgent(entries: ActivityEntry[], live: LiveAgent[], now: nu
   live.forEach((agent) => add(agent.agentCommand, liveTimeToday(agent, now), 0))
   return [...byAgent.values()].filter((agent) => agent.timeMs > 0).sort((first, second) => second.timeMs - first.timeMs)
 }
+
+export interface FolderOfAgents {
+  folder: string | null
+  agents: LiveAgent[]
+}
+
+export function groupAgentsByFolder(agents: LiveAgent[]): FolderOfAgents[] {
+  const groups = new Map<string | null, LiveAgent[]>()
+  for (const agent of agents) {
+    groups.set(agent.cwd, [...(groups.get(agent.cwd) ?? []), agent])
+  }
+  return [...groups].map(([folder, agentsInFolder]) => ({ folder, agents: agentsInFolder }))
+}

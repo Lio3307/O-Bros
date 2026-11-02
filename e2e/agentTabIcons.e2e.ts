@@ -85,6 +85,6 @@ test('an agent typed into a plain terminal shows its icon while it runs', async 
   await app.window.keyboard.type('node tools/claude-code/cli.js')
   await app.window.keyboard.press('Enter')
 
-  await expect(tabIcon()).toHaveAttribute('title', runningTitle('claude'), { timeout: 10_000 })
+  await expect(tabIcon()).toHaveAttribute('title', runningTitle('Claude'), { timeout: 10_000 })
   await expect(tabIcon()).toHaveClass(/agent-status-stopped/, { timeout: 40_000 })
 })
