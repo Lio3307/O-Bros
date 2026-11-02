@@ -18,7 +18,8 @@ async function abortAfterConfirm(repoPath: string, title: string): Promise<void>
   const isConfirmed = await askToConfirm({
     title: 'Cancel and go back?',
     message: `${title} stops, and the branch goes back to how it was before it started. Conflicts you already resolved are thrown away.`,
-    confirmLabel: 'Cancel it'
+    confirmLabel: 'Cancel it',
+    tone: 'danger'
   })
   if (isConfirmed) {
     await useChangesStore.getState().abortOperation(repoPath)

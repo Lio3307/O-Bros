@@ -18,7 +18,7 @@ export function ConfirmHost() {
           <Button variant="outline" autoFocus onClick={() => answer(false)}>
             {options.cancelLabel ?? 'Cancel'}
           </Button>
-          <Button variant="primary" onClick={() => answer(true)}>
+          <Button variant={options.tone ?? 'primary'} onClick={() => answer(true)}>
             {options.confirmLabel}
           </Button>
         </>

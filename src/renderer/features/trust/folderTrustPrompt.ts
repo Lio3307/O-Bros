@@ -23,6 +23,7 @@ export async function askToTrustFolder(folder: string): Promise<void> {
     title: 'Do you trust this folder?',
     message: messageFor(risks),
     confirmLabel: 'Trust this folder',
+    tone: 'warning',
     cancelLabel: 'Keep it off'
   })
   if (isConfirmed) {

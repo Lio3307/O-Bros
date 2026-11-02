@@ -4,6 +4,7 @@ export interface SessionDeleteMessage {
   title: string
   message: string
   confirmLabel: string
+  tone: 'danger'
 }
 
 export function describeSessionDelete(sessionCount: number, totalBytes: number, permanently: boolean, isEverything = false): SessionDeleteMessage {
@@ -17,6 +18,7 @@ export function describeSessionDelete(sessionCount: number, totalBytes: number, 
   return {
     title: isEverything && !isSingle ? `Delete all ${sessionCount} ${noun}?` : `Delete ${sessionCount} ${noun}?`,
     message: `You will not be able to resume ${pronoun} or read ${pronoun} in History. ${spaceSentence} Your project files and logins are not touched.`,
-    confirmLabel: permanently ? 'Delete permanently' : 'Move to Recycle Bin'
+    confirmLabel: permanently ? 'Delete permanently' : 'Move to Recycle Bin',
+    tone: 'danger'
   }
 }

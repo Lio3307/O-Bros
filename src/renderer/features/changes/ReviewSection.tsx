@@ -33,7 +33,8 @@ async function revertAfterConfirm(tabId: string, change: ReviewChange): Promise<
   const isConfirmed = await askToConfirm({
     title: 'Put this file back?',
     message: revertMessage(change),
-    confirmLabel: 'Put back'
+    confirmLabel: 'Put back',
+    tone: 'danger'
   })
   if (isConfirmed) {
     await useReviewStore.getState().revert(tabId, change)

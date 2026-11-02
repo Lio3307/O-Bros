@@ -26,7 +26,8 @@ async function confirmClosing(check: ClosingCheck): Promise<boolean> {
   return askToConfirm({
     title: check.title,
     message: [describeRunningAgents(check.agents), unsaved].filter((part) => part !== '').join(' '),
-    confirmLabel: check.confirmLabel
+    confirmLabel: check.confirmLabel,
+    tone: 'danger'
   })
 }
 

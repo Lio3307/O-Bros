@@ -15,7 +15,8 @@ export async function stopTeamMember(member: TeamMember): Promise<void> {
   const isConfirmed = await askToConfirm({
     title: `Stop team member "${member.name}"?`,
     message: `${member.agentName} stops and its terminal closes.${warningFor(member)} Files it already changed stay as they are, and its conversation stays saved.`,
-    confirmLabel: 'Stop member'
+    confirmLabel: 'Stop member',
+    tone: 'danger'
   })
   if (isConfirmed) {
     await window.api.wot.closeMember(member.id)

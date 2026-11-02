@@ -82,7 +82,8 @@ export function UniversalHistorySection() {
       const isConfirmed = await askToConfirm({
         title: `Keep only the last ${days} days?`,
         message: `O-BROS deletes its copies of conversations that were not used for ${days} days, now and from then on. The agents' own conversations are not touched, so you can still resume them, but older chats are no longer handed to another agent.`,
-        confirmLabel: `Keep ${days} days`
+        confirmLabel: `Keep ${days} days`,
+        tone: 'danger'
       })
       if (!isConfirmed) {
         return

@@ -209,7 +209,9 @@ input[role='switch']:disabled {
 }
 
 .button-outline,
-.button-primary {
+.button-primary,
+.button-danger,
+.button-warning {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -229,11 +231,31 @@ input[role='switch']:disabled {
   background: var(--color-hover);
 }
 
-.button-primary {
+.button-primary,
+.button-danger,
+.button-warning {
   font-weight: 600;
-  color: var(--color-terminal-solid);
-  background: var(--color-strong);
+  color: var(--color-on-fill);
+  background: var(--button-fill);
   border: none;
+}
+
+.button-primary {
+  --button-fill: var(--color-success);
+}
+
+.button-danger {
+  --button-fill: var(--color-danger);
+}
+
+.button-warning {
+  --button-fill: var(--color-warning);
+}
+
+.button-primary:hover:not(:disabled),
+.button-danger:hover:not(:disabled),
+.button-warning:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--button-fill) 85%, var(--color-strong));
 }
 
 .button-remove {

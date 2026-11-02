@@ -13,7 +13,8 @@ async function dropAfterConfirm(repoPath: string, ref: string, message: string):
   const isConfirmed = await askToConfirm({
     title: 'Delete this stash?',
     message: `"${message}" is removed and cannot be restored.`,
-    confirmLabel: 'Delete'
+    confirmLabel: 'Delete',
+    tone: 'danger'
   })
   if (isConfirmed) {
     await useStashStore.getState().drop(repoPath, ref)

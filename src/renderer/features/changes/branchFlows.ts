@@ -68,7 +68,8 @@ export async function deleteBranchFlow(repoPath: string, name: string): Promise<
   const isConfirmed = await askToConfirm({
     title: `Delete branch "${name}"?`,
     message: 'The branch is removed from this computer. Commits that are only on it can be lost.',
-    confirmLabel: 'Delete'
+    confirmLabel: 'Delete',
+    tone: 'danger'
   })
   if (!isConfirmed) {
     return
@@ -100,7 +101,8 @@ function askForceDelete(name: string): Promise<boolean> {
   return askToConfirm({
     title: 'Delete anyway?',
     message: `"${name}" has commits that are not on any other branch. Deleting it loses them.`,
-    confirmLabel: 'Delete anyway'
+    confirmLabel: 'Delete anyway',
+    tone: 'danger'
   })
 }
 
@@ -112,7 +114,8 @@ export async function undoLastCommitFlow(repoPath: string, status: GitStatus): P
   const isConfirmed = await askToConfirm({
     title: 'Undo the last commit?',
     message: `The commit is removed from the branch and its changes go back to staged, so nothing is lost.${publishedWarning}`,
-    confirmLabel: 'Undo commit'
+    confirmLabel: 'Undo commit',
+    tone: 'warning'
   })
   if (!isConfirmed) {
     return

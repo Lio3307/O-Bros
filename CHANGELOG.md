@@ -9,6 +9,9 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Delete several conversations in History at once.** Press Select in the History header: each conversation gets a check box, and a bar shows Select all with the number shown, how many are selected and their size, and a red Delete button. Deleting always asks first and says how many ("Delete 3 sessions?", or "Delete all 12 sessions?" when everything shown is selected); it works on search results and with Team only too. Esc or Done leaves select mode. The separate Delete button next to Team only is gone, since Select all does the same.
 - **The Files panel shows git changes.** Next to the folder name it says whether the folder is in a git repository, with its branch and how many files changed (or "No git"). In the tree, changed files are yellow with M, new files green with U (A once staged), deleted files stay listed in red, crossed out, with D until you commit, renamed files are blue with R, and conflicts red with !. Folders that hold changes get a dot in the strongest color. It updates by itself as you and your agents work.
 
+### Changed
+- **Buttons now show what they do by color.** Main actions are green. A button that deletes, stops or discards something is red, and one that is risky but loses nothing right away, such as **Push anyway** or **Trust this folder**, is amber.
+
 ### Removed
 - **Tone in Settings → Appearance** (Midnight, Slate, Aubergine, Pine, Mocha and Graphite). Background is now just Solid or Your image. If you had a tone chosen, O-BROS goes back to your theme's own colors; your theme and picture stay.
 

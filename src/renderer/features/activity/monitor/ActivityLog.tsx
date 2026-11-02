@@ -53,7 +53,8 @@ async function confirmClear(): Promise<void> {
   const isConfirmed = await askToConfirm({
     title: 'Clear the activity log?',
     message: 'This removes every entry from the log and resets the numbers above. Your sessions, commits and files are not touched.',
-    confirmLabel: 'Clear'
+    confirmLabel: 'Clear',
+    tone: 'danger'
   })
   if (isConfirmed) {
     await useActivityStore.getState().clear()

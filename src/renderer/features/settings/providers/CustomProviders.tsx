@@ -51,7 +51,8 @@ function ProviderRow({ provider, onEdit }: { provider: CustomProvider; onEdit: (
     const isConfirmed = await askToConfirm({
       title: `Delete ${provider.name}?`,
       message: 'The provider and its saved key are deleted. Agent buttons that used it go back to their normal login.',
-      confirmLabel: 'Delete provider'
+      confirmLabel: 'Delete provider',
+      tone: 'danger'
     })
     if (isConfirmed) {
       await remove(provider.id).catch((error: unknown) =>

@@ -5,6 +5,7 @@ export interface ConfirmOptions {
   message: string
   confirmLabel: string
   cancelLabel?: string
+  tone?: 'danger' | 'warning'
 }
 
 interface ConfirmState {

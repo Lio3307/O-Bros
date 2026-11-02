@@ -2,13 +2,15 @@ import { useRef, useState, type ButtonHTMLAttributes, type MouseEvent } from 're
 import { createClickCooldown } from '../../shared/clickCooldown'
 import { cn } from './cn'
 
-export type ButtonVariant = 'outline' | 'primary' | 'icon' | 'link' | 'remove' | 'plain'
+export type ButtonVariant = 'outline' | 'primary' | 'danger' | 'warning' | 'icon' | 'link' | 'remove' | 'plain'
 
 const CLICK_COOLDOWN_MS = 350
 
 const CLASS_BY_VARIANT: Record<ButtonVariant, string> = {
   outline: 'button-outline',
   primary: 'button-primary',
+  danger: 'button-danger',
+  warning: 'button-warning',
   icon: 'icon-button',
   link: 'link-button',
   remove: 'button-remove',

@@ -91,7 +91,8 @@ export const useStorageStore = create<StorageState>()((set, get) => ({
     const isConfirmed = await askToConfirm({
       title: 'Stop all team members?',
       message: 'Every team member stops and its terminal closes. Files they changed stay as they are, and their conversations stay saved.',
-      confirmLabel: 'Stop all'
+      confirmLabel: 'Stop all',
+      tone: 'danger'
     })
     if (!isConfirmed) {
       return

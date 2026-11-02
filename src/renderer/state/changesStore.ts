@@ -150,7 +150,8 @@ export const useChangesStore = create<ChangesState>()((set, get) => {
         const isConfirmed = await askToConfirm({
           title: 'Push commits with an agent in them?',
           message: ['These commits would show an agent on GitHub:', '', ...traces].join('\n'),
-          confirmLabel: 'Push anyway'
+          confirmLabel: 'Push anyway',
+          tone: 'warning'
         })
         if (!isConfirmed) {
           return false

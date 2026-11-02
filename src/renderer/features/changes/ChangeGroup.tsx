@@ -29,7 +29,8 @@ async function confirmDiscard(change: GitFileChange): Promise<boolean> {
     message: isUntracked
       ? `"${change.path}" is a new file. It moves to the Recycle Bin or Trash.`
       : `Your edits to "${change.path}" are removed and cannot be restored.`,
-    confirmLabel: 'Discard'
+    confirmLabel: 'Discard',
+    tone: 'danger'
   })
 }
 

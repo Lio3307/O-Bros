@@ -26,7 +26,8 @@ function confirmStop(port: ListeningPort): Promise<boolean> {
     message:
       `${port.processName} (process ${port.pid}), started in "${terminalTitleOf(port.paneId)}", will be stopped. ` +
       `${localUrlOf(port)} stops answering until you start it again. The terminal stays open.`,
-    confirmLabel: 'Stop server'
+    confirmLabel: 'Stop server',
+    tone: 'danger'
   })
 }
 

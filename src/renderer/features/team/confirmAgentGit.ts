@@ -24,7 +24,8 @@ function questionFor(request: AgentGitRequest): ConfirmOptions {
   return {
     title: hasWarnings ? `Allow "${request.action}" with an agent in it?` : `Allow it to ${request.action}?`,
     message: lines.join('\n'),
-    confirmLabel: hasWarnings ? 'Allow anyway' : 'Allow'
+    confirmLabel: hasWarnings ? 'Allow anyway' : 'Allow',
+    tone: hasWarnings ? 'warning' : undefined
   }
 }
 

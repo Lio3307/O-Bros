@@ -117,6 +117,7 @@ test('History selects several conversations or all of them, says how many, and d
   await bar.getByRole('button', { name: 'Delete 2' }).click()
   const dialog = app.window.getByRole('dialog')
   await expect(dialog).toContainText('Delete 2 sessions?')
+  await expect(dialog.getByRole('button', { name: 'Delete permanently', exact: true })).toHaveClass('button-danger')
   await dialog.getByRole('button', { name: 'Delete permanently', exact: true }).click()
   await expect.poll(countSessionFiles, { timeout: 20_000 }).toBe(1)
   await expect(rows).toHaveCount(1, { timeout: 20_000 })

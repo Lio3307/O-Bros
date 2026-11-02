@@ -19,7 +19,7 @@ function questionFor(request: AgentHostRequest, action: string): ConfirmOptions 
     '',
     ANSWER_WINDOW_NOTE
   ]
-  return { title: `Allow it to run ${action}?`, message: lines.join('\n'), confirmLabel: 'Allow' }
+  return { title: `Allow it to run ${action}?`, message: lines.join('\n'), confirmLabel: 'Allow', tone: action.includes(TOKEN_WORD) ? 'warning' : undefined }
 }
 
 export async function confirmAgentHost(request: AgentHostRequest): Promise<AgentHostAnswer> {

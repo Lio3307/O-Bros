@@ -13,7 +13,8 @@ export async function restartToUpdate(): Promise<void> {
     const isConfirmed = await askToConfirm({
       title: 'Restart to update?',
       message: impact,
-      confirmLabel: 'Restart and install'
+      confirmLabel: 'Restart and install',
+      tone: 'warning'
     })
     if (!isConfirmed) {
       return
