@@ -220,7 +220,7 @@
 }
 
 .pane-frame-focused .pane-actions {
-  visibility: visible;
+  visibility: inherit;
 }
 
 .terminal-host {

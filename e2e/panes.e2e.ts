@@ -89,6 +89,20 @@ test('closing one pane leaves the other terminal running with its state', async 
   await expect.poll(() => readTrimmed('state.txt'), { timeout: 20_000 }).toBe('alive')
 })
 
+test('the split buttons of a split tab do not show over another tab', async () => {
+  await openTerminalInProject()
+  await app.window.keyboard.press('Control+Shift+D')
+  const visiblePaneButtons = app.window.locator('.pane-actions').filter({ visible: true })
+  await expect(visiblePaneButtons).toHaveCount(1)
+
+  await openTerminalInProject()
+  await expect(app.window.locator('.tab')).toHaveCount(2)
+  await expect(visiblePaneButtons).toHaveCount(0)
+
+  await app.window.locator('.tab').first().click()
+  await expect(visiblePaneButtons).toHaveCount(1)
+})
+
 test('dragging the divider changes the size of the panes', async () => {
   await openTerminalInProject()
   await app.window.keyboard.press('Control+Shift+D')
