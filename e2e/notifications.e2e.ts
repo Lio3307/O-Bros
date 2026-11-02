@@ -32,6 +32,7 @@ test.beforeEach(async () => {
     window.Notification = class {
       constructor(title: string, options?: NotificationOptions) {
         seen.push({ title, body: options?.body ?? '' })
+        ;(window as unknown as { lastNotice: unknown }).lastNotice = this
       }
     } as unknown as typeof Notification
   })
@@ -78,4 +79,32 @@ test('notifies for a command that ended, never for a running dev server or an un
   const [notice] = await notices()
   expect(notice.title).toBe('Command finished')
   expect(notice.body).toContain('In ')
+})
+
+test('two panes that look alike: the notice names the pane, and clicking it goes to that pane', async () => {
+  test.setTimeout(120_000)
+  const tabs = app.window.locator('.tab')
+  await openPlainTerminal()
+  await app.window.locator('button[title^="Split right"]').first().click()
+  const panes = app.window.locator('.pane-frame')
+  await expect(panes).toHaveCount(2)
+  await app.window.waitForTimeout(3000)
+  const jobPaneTitle = (await panes.nth(0).locator('.pane-title').textContent()) ?? ''
+
+  await panes.nth(0).locator('.xterm').click()
+  await app.window.keyboard.type('node job.js')
+  await app.window.keyboard.press('Enter')
+  await panes.nth(1).locator('.xterm').click()
+  await openPlainTerminal()
+  await expect(tabs).toHaveCount(2)
+
+  await expect.poll(notices, { timeout: 30_000 }).toHaveLength(1)
+  const [notice] = await notices()
+  expect(notice.body).toContain(`pane "${jobPaneTitle}"`)
+
+  await app.window.evaluate(() => (window as unknown as { lastNotice: { onclick: () => void } }).lastNotice.onclick())
+  const focusedPane = app.window.locator('.pane-frame-focused')
+  await expect(focusedPane).toHaveCount(1)
+  await expect(focusedPane.locator('.pane-title')).toHaveText(jobPaneTitle)
+  await expect.poll(() => focusedPane.evaluate((frame) => frame.contains(document.activeElement))).toBe(true)
 })

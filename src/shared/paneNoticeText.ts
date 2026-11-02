@@ -4,11 +4,14 @@ export interface PaneNoticeSource {
   agentLabel: string | null
   folderName: string
   customTabTitle: string | null
+  paneTitle: string | null
 }
 
 export function describePaneNotice(notice: PaneNotice, source: PaneNoticeSource): { title: string; body: string } {
-  const { agentLabel, folderName, customTabTitle } = source
-  const place = customTabTitle === null ? `In ${folderName}.` : `In ${folderName}, tab "${customTabTitle}".`
+  const { agentLabel, folderName, customTabTitle, paneTitle } = source
+  const tabPart = customTabTitle === null ? '' : `, tab "${customTabTitle}"`
+  const panePart = paneTitle === null ? '' : `, pane "${paneTitle}"`
+  const place = `In ${folderName}${tabPart}${panePart}.`
   if (notice === 'asking') {
     return {
       title: agentLabel === null ? 'A command is asking you a question' : `${agentLabel} is asking you a question`,
