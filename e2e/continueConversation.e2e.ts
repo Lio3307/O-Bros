@@ -156,8 +156,17 @@ test('continues a saved conversation in another agent from History and shows the
   await expect(dialog).toHaveCount(0)
   await app.window.locator('.replay-actions').getByRole('button', { name: 'Continue in another agent' }).click()
   await chooseAgentAndContinue('Fake agent')
+  const card = app.window.getByRole('status').filter({ hasText: 'Fake agent' })
+  await expect(card).toContainText('Handing off to Fake agent')
+  if (process.env.HANDOFF_SHOTS !== undefined) {
+    await app.window.screenshot({ path: join(process.env.HANDOFF_SHOTS, 'handoff-running.png') })
+  }
 
   await expect.poll(readProof, { timeout: 90_000 }).toContain('[O-BROS handoff')
+  await expect(card).toContainText('Handed off to Fake agent', { timeout: 30_000 })
+  if (process.env.HANDOFF_SHOTS !== undefined) {
+    await app.window.screenshot({ path: join(process.env.HANDOFF_SHOTS, 'handoff-done.png') })
+  }
   const handoff = await readProof()
   expect(handoff).toContain('Fix the login bug in auth.ts')
   expect(handoff).toContain('The token check is inverted.')

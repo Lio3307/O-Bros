@@ -45,7 +45,7 @@ function ContinueForm({ request, close }: { request: ContinueRequest; close: () 
   function start(): void {
     if (chosen !== null) {
       close()
-      void continueWithAgent(request.sessionFilePath, chosen)
+      void continueWithAgent(request.sessionFilePath, request.provider, chosen)
     }
   }
 

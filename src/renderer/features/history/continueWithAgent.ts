@@ -1,6 +1,8 @@
 import { accountToRef } from '../../../shared/accounts'
 import { providerOfCommand, type AgentLauncher } from '../../../shared/agentLaunchers'
 import { friendlyErrorMessage } from '../../../shared/friendlyError'
+import type { ProviderId } from '../../../shared/types'
+import { useHandoffStore, type Handoff, type HandoffStep } from '../../state/handoffStore'
 import { selectActiveAccount, useAccountsStore } from '../../state/accountsStore'
 import { useHistoryStore } from '../../state/historyStore'
 import { useLayoutStore } from '../../state/layoutStore'
@@ -25,24 +27,51 @@ function hiddenNote(hiddenCount: number): string {
   return ` ${things} replaced with [hidden] and not sent.`
 }
 
-export async function continueWithAgent(sessionFilePath: string, launcher: Pick<AgentLauncher, 'name' | 'command'>): Promise<void> {
-  toast.info(`Preparing the handoff for ${launcher.name}…`)
+const DONE_SHOWN_MS = 4000
+
+function handoffReporter(fromProvider: ProviderId, launcher: Pick<AgentLauncher, 'name' | 'command'>) {
+  let current: Handoff | null = null
+  const report = (step: HandoffStep, note = ''): void => {
+    current = { fromProvider, toName: launcher.name, toCommand: launcher.command, step, note }
+    useHandoffStore.setState({ handoff: current })
+  }
+  const close = (): void => {
+    if (useHandoffStore.getState().handoff === current) {
+      useHandoffStore.setState({ handoff: null })
+    }
+  }
+  return { report, close }
+}
+
+export async function continueWithAgent(
+  sessionFilePath: string,
+  fromProvider: ProviderId,
+  launcher: Pick<AgentLauncher, 'name' | 'command'>
+): Promise<void> {
+  const { report, close } = handoffReporter(fromProvider, launcher)
+  report('reading')
   let plan
   try {
     plan = await window.api.history.continueWith({ sessionFilePath, agentCommand: launcher.command })
   } catch (error) {
+    close()
     toast.error(friendlyErrorMessage(error, 'Could not prepare the handoff.'))
     return
   }
+  report('opening')
   const paneId = openHandoffTerminal(plan.cwd, plan.command, `${launcher.name} (continued)`)
   if (paneId === null) {
+    close()
     toast.error('Could not open a terminal for the agent.')
     return
   }
+  report('sending')
   const result = await window.api.pty.typeWhenReady(paneId, plan.handoffText)
   if (result.isSent) {
-    toast.success(`${launcher.name} got the handoff and continues the conversation.${hiddenNote(plan.hiddenCount)}`)
+    report('done', hiddenNote(plan.hiddenCount))
+    setTimeout(close, DONE_SHOWN_MS)
   } else {
+    close()
     toast.warning(result.message)
   }
   void useHistoryStore.getState().loadThreads()

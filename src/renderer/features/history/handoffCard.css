@@ -1,0 +1,145 @@
+.handoff-card {
+  position: fixed;
+  left: 50%;
+  bottom: 44px;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(440px, calc(100vw - 32px));
+  padding: 12px 14px;
+  color: var(--color-text);
+  background: var(--color-popover);
+  border: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-accent);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%);
+  animation: handoff-enter var(--motion-base) var(--ease-out);
+}
+
+.handoff-card[data-step='done'] {
+  border-top-color: var(--color-success);
+}
+
+.handoff-route {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.handoff-track {
+  position: relative;
+  width: 56px;
+  height: 2px;
+  overflow: hidden;
+  background: var(--color-border);
+}
+
+.handoff-packet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 2px;
+  background: var(--color-accent);
+  animation: handoff-travel 1.1s var(--ease-out) infinite;
+}
+
+.handoff-card[data-step='done'] .handoff-track {
+  background: var(--color-success);
+}
+
+.handoff-card[data-step='done'] .handoff-packet {
+  display: none;
+}
+
+.handoff-target {
+  position: relative;
+  display: inline-flex;
+}
+
+.handoff-check {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  padding: 1px;
+  color: var(--color-on-fill);
+  background: var(--color-success);
+  border-radius: 50%;
+}
+
+.handoff-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.handoff-title {
+  font-weight: 600;
+  color: var(--color-strong);
+}
+
+.handoff-step {
+  font-size: 12px;
+}
+
+.handoff-progress {
+  display: flex;
+  flex-shrink: 0;
+  gap: 3px;
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.handoff-tick {
+  width: 6px;
+  height: 6px;
+  background: var(--color-border);
+}
+
+.handoff-tick-now {
+  background: var(--color-accent);
+  animation: handoff-pulse 1.1s ease-in-out infinite;
+}
+
+.handoff-tick-done {
+  background: var(--color-success);
+}
+
+@keyframes handoff-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+}
+
+@keyframes handoff-travel {
+  from {
+    transform: translateX(-14px);
+  }
+  to {
+    transform: translateX(56px);
+  }
+}
+
+@keyframes handoff-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .handoff-card,
+  .handoff-packet,
+  .handoff-tick-now {
+    animation: none;
+  }
+
+  .handoff-packet {
+    left: 21px;
+  }
+}

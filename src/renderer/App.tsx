@@ -17,6 +17,7 @@ import { StatusBar } from './shell/StatusBar'
 import { TitleBar } from './shell/TitleBar'
 import { ConfirmHost } from './ui/ConfirmHost'
 import { ContinueDialog } from './features/history/ContinueDialog'
+import { HandoffCard } from './features/history/HandoffCard'
 import { ToastHost } from './ui/ToastHost'
 import { UpdateNoticeCard } from './features/settings/update/UpdateNoticeCard'
 import { AppBackground } from './shell/AppBackground'
@@ -136,6 +137,7 @@ export function App() {
       <CloseConfirmModal />
       <ConfirmHost />
       <ContinueDialog />
+      <HandoffCard />
       <TextPromptHost />
       <ToastHost>
         <UpdateNoticeCard />
