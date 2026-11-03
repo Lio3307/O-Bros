@@ -3,8 +3,21 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
   pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'LICENSE'
   workflow_dispatch:
+    inputs:
+      run-e2e:
+        description: 'Also run the end-to-end tests on Windows (about 15 minutes)'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -17,10 +30,11 @@ jobs:
   check:
     name: Check on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Get the code
@@ -47,10 +61,12 @@ jobs:
       - name: Build
         run: npm run build
 
-  smoke:
-    name: Smoke test on Windows
+  e2e:
+    name: End-to-end tests on Windows
+    if: github.event_name == 'workflow_dispatch' && inputs.run-e2e
+    needs: check
     runs-on: windows-latest
-    continue-on-error: true
+    timeout-minutes: 40
 
     steps:
       - name: Get the code
@@ -65,5 +81,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build and run the smoke tests
-        run: npm run test:e2e
+      - name: Build and run the end-to-end tests
+        run: npm run test:e2e -- --workers=1

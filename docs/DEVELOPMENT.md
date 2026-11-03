@@ -24,9 +24,9 @@ Run `typecheck`, `test` and `build` before you share a change.
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs on every push to `main` and on every pull request. On Windows, Ubuntu and macOS it installs with `npm ci`, then runs `npm run typecheck`, `npm test` and `npm run build`. It does not launch the app, because the runners have no display.
+`.github/workflows/ci.yml` runs on every push to `main` and on every pull request, except when only Markdown, `docs/` or the license changed. On Ubuntu and Windows it installs with `npm ci`, then runs `npm run typecheck`, `npm run lint`, `npm test` and `npm run build`; the first failure cancels the other system. The end-to-end tests do not run by themselves: start CI by hand (Actions → CI → Run workflow) and tick **Also run the end-to-end tests on Windows**. Run them locally with `npm run test:e2e -- --workers=1` before a release. macOS is only built by the release workflow, which also runs the checks once on Ubuntu instead of on every system. Every job has a time limit, so a stuck run cannot use up minutes. Public repositories run on GitHub-hosted runners for free; if the repository becomes private, the Free plan includes $12 of runner time a month, and macOS costs about 10 times as much as Linux.
 
-Dependabot (`.github/dependabot.yml`) opens weekly pull requests for npm packages and monthly ones for GitHub Actions. CodeMirror and xterm packages are grouped so they upgrade together. `CHANGELOG.md` lists user-visible changes under Unreleased; move them under a version heading when you tag a release.
+Dependabot (`.github/dependabot.yml`) opens monthly pull requests for npm packages, at most 3 at a time, with minor and patch updates grouped, and monthly ones for GitHub Actions. CodeMirror and xterm packages are grouped so they upgrade together. `CHANGELOG.md` lists user-visible changes under Unreleased; move them under a version heading when you tag a release.
 
 The macOS job and the Ubuntu job cover code paths that have not been run by hand (for example the `lsof` port listing), so a failure there is information, not necessarily a mistake in your change.
 

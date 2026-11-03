@@ -4,8 +4,8 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 3
     ignore:
       - dependency-name: '@types/node'
         update-types:
@@ -36,6 +36,11 @@ updates:
           - '@xterm/*'
       dev-tooling:
         dependency-type: development
+        update-types:
+          - minor
+          - patch
+      app-packages:
+        dependency-type: production
         update-types:
           - minor
           - patch
