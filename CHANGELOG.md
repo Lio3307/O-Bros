@@ -16,6 +16,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Tone in Settings → Appearance** (Midnight, Slate, Aubergine, Pine, Mocha and Graphite). Background is now just Solid or Your image. If you had a tone chosen, O-BROS goes back to your theme's own colors; your theme and picture stay.
 
 ### Fixed
+- **The loading screen shows when O-BROS starts.** The loading screen waited and then faded in, so by the time it could be seen the app had usually replaced it. It now shows as soon as the window can draw, about 0.4 seconds sooner.
 - **Split buttons no longer show over another tab.** After leaving a tab with split terminals, its split and close buttons stayed on screen on top of the tab you moved to.
 - **The Agent monitor keeps up with many agents across folders.** Running agents are grouped by folder when they are in more than one. If several agents run inside one terminal, the card now says which others are there; before, only the first was shown. The folder is where the terminal started, so a later `cd` is not followed yet.
 - **Notifications from split panes are clearer.** Clicking a notification now puts your cursor in the pane that sent it, not just its tab, so an answer goes to the right agent. When two panes in a tab run the same agent, the notification title also names the pane, such as "Claude finished its reply: Terminal 2". Agents are named as they are on your computer, and an agent O-BROS recognizes but has not listed now shows its proper name, not its program name.
