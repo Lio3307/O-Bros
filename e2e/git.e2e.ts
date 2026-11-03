@@ -113,6 +113,9 @@ test('names the folder and lists its repositories in the main area when it is no
   await trail.getByRole('button', { name: 'sample-project' }).click()
   await expect(trail).toHaveCount(0)
   await expect(overview).toContainText(app.projectFolder)
+  await expect(overview).toContainText('Only folders that hold a git repository are listed, looking up to 3 folder levels down.')
+  await overview.getByRole('button', { name: 'Change how deep to look' }).click()
+  await expect(app.window.getByText('How deep to look for repositories')).toBeVisible()
 })
 
 test('shows the commit graph in the main area and opens a commit file from it', async () => {

@@ -8,16 +8,7 @@ import { useLayoutStore } from '../../state/layoutStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { useWorkspaceStore, type TerminalPaneInfo, type TerminalTab } from '../../state/workspaceStore'
 import { isAgentPane } from './agentStatusTracking'
-import { goToPane } from './goToPane'
-
-function findTabOfPane(paneId: string): TerminalTab | null {
-  for (const tab of useWorkspaceStore.getState().tabs) {
-    if (tab.kind === 'terminal' && paneId in tab.panes) {
-      return tab
-    }
-  }
-  return null
-}
+import { findTabOfPane, goToPane } from './goToPane'
 
 function isUserWatching(tab: TerminalTab): boolean {
   const isTabShown = useWorkspaceStore.getState().activeTabId === tab.id && useLayoutStore.getState().section === 'projects'

@@ -1,11 +1,10 @@
 import { join } from 'node:path'
-import { DEFAULT_REPOSITORY_SEARCH_DEPTH } from '../../shared/repositorySearch'
+import { DEFAULT_REPOSITORY_SEARCH_DEPTH, MAX_REPOSITORIES_FOUND } from '../../shared/repositorySearch'
 import type { RepositoryEntry } from '../../shared/types'
 import { assertInsideProjectRoots } from '../pathGuard'
 import { readDirectoryIfExists } from './fileSystem'
 import { isVisibleFolder, readCurrentBranch } from './projectScanner'
 
-const MAX_REPOSITORIES = 100
 const SEARCH_TIME_LIMIT_MS = 20_000
 
 interface SearchLimits {
@@ -14,7 +13,7 @@ interface SearchLimits {
 }
 
 function isOverLimit(found: RepositoryEntry[], limits: SearchLimits): boolean {
-  return found.length >= MAX_REPOSITORIES || Date.now() > limits.stopAt
+  return found.length >= MAX_REPOSITORIES_FOUND || Date.now() > limits.stopAt
 }
 
 async function collectRepositories(

@@ -90,16 +90,28 @@ async function readUnixProcessTable(): Promise<ProcessEntry[]> {
     })
 }
 
-let tableInFlight: Promise<ProcessEntry[]> | null = null
+const TABLE_REUSE_MS = 2000
+
+let latestTable: Promise<ProcessEntry[]> | null = null
+let latestTableAt = 0
 
 export function readProcessTable(): Promise<ProcessEntry[]> {
-  if (tableInFlight === null) {
+  if (latestTable === null || Date.now() - latestTableAt > TABLE_REUSE_MS) {
     const read = process.platform === 'win32' ? readWindowsProcessTable() : readUnixProcessTable()
-    tableInFlight = read.finally(() => {
-      tableInFlight = null
-    })
+    latestTable = read
+    latestTableAt = Date.now()
+    read.then(
+      () => {
+        latestTableAt = Date.now()
+      },
+      () => {
+        if (latestTable === read) {
+          latestTable = null
+        }
+      }
+    )
   }
-  return tableInFlight
+  return latestTable
 }
 
 export function startedBefore(child: ProcessEntry, parent: ProcessEntry): boolean {

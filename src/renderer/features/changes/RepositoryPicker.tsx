@@ -7,6 +7,7 @@ import { useGitRepositoryStore } from '../../state/gitRepositoryStore'
 import { LoadingText } from '../../ui/LoadingText'
 import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { scanRepositories } from './repositoryScan'
+import { SearchDepthNote } from './SearchDepthNote'
 
 function repositoryCountText(count: number): string {
   return count === 1 ? '1 repository' : `${count} repositories`
@@ -46,9 +47,23 @@ export function RepositoryPicker({ folderPath }: { folderPath: string }) {
     return <p className="panel-empty"><LoadingText text="Looking for repositories…" /></p>
   }
   if (repositories.length === 0) {
-    return <p className="muted">No repositories were found inside this folder.</p>
+    return (
+      <>
+        <p className="muted">No repositories were found inside this folder.</p>
+        <SearchDepthNote foundCount={0} />
+      </>
+    )
   }
 
+  return (
+    <>
+      <RepositoryRows folderPath={folderPath} repositories={repositories} onOpen={open} />
+      <SearchDepthNote foundCount={repositories.length} />
+    </>
+  )
+}
+
+function RepositoryRows({ folderPath, repositories, onOpen: open }: { folderPath: string; repositories: RepositoryEntry[]; onOpen: (path: string) => void }) {
   return (
     <section className="repository-list">
       <h3 className="repository-list-title">
