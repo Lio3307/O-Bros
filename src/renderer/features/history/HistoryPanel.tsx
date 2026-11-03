@@ -1,5 +1,5 @@
 import { Check, ListChecks, Minus, Play, Search, Trash2, X } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { formatBytes } from '../../../shared/format'
 import { describeSessionDelete } from '../../../shared/sessionDeleteMessage'
 import { groupByDay, type DayGroup } from '../../../shared/time'
@@ -52,13 +52,27 @@ interface Picking {
 interface SessionItemProps {
   session: SessionSummary | SessionSearchHit
   isSelected: boolean
-  picking: Picking
+  isPicking: boolean
+  isPicked: boolean
+  onToggle: (filePath: string) => void
 }
 
-function SessionItem({ session, isSelected, picking }: SessionItemProps) {
+function SessionRows({ sessions, selectedFilePath, picking }: { sessions: (SessionSummary | SessionSearchHit)[]; selectedFilePath: string | null; picking: Picking }) {
+  return sessions.map((session) => (
+    <SessionItem
+      key={session.filePath}
+      session={session}
+      isSelected={session.filePath === selectedFilePath}
+      isPicking={picking.isOn}
+      isPicked={picking.pickedPaths.has(session.filePath)}
+      onToggle={picking.toggle}
+    />
+  ))
+}
+
+const SessionItem = memo(function SessionItem({ session, isSelected, isPicking, isPicked, onToggle }: SessionItemProps) {
   const select = useHistoryStore((state) => state.select)
-  const isPicked = picking.pickedPaths.has(session.filePath)
-  const rowClass = picking.isOn
+  const rowClass = isPicking
     ? cn('session-row session-row-picking', isPicked && 'session-row-picked')
     : cn('session-row', isSelected && 'session-row-selected')
 
@@ -67,11 +81,11 @@ function SessionItem({ session, isSelected, picking }: SessionItemProps) {
       <button
         type="button"
         className={rowClass}
-        aria-pressed={picking.isOn ? isPicked : undefined}
-        onClick={() => (picking.isOn ? picking.toggle(session.filePath) : select(session.filePath))}
+        aria-pressed={isPicking ? isPicked : undefined}
+        onClick={() => (isPicking ? onToggle(session.filePath) : select(session.filePath))}
       >
         <span className="session-title">
-          {picking.isOn && (
+          {isPicking && (
             <span className={cn('session-check', isPicked && 'session-check-on')} aria-hidden="true">
               {isPicked && <Check size={11} strokeWidth={3} />}
             </span>
@@ -90,7 +104,7 @@ function SessionItem({ session, isSelected, picking }: SessionItemProps) {
           {session.projectPath ?? 'Unknown folder'}
         </span>
       </button>
-      {!picking.isOn && (
+      {!isPicking && (
         <div className="session-actions">
           <ContinueButton session={session} />
           <button
@@ -113,7 +127,7 @@ function SessionItem({ session, isSelected, picking }: SessionItemProps) {
       )}
     </div>
   )
-}
+})
 
 interface SelectionBarProps {
   shown: SessionSummary[]
@@ -229,9 +243,7 @@ function SearchResults({ hits, selectedFilePath, picking }: { hits: SessionSearc
   return (
     <section>
       <h3 className="section-label">{hits.length} found</h3>
-      {hits.map((hit) => (
-        <SessionItem key={hit.filePath} session={hit} isSelected={hit.filePath === selectedFilePath} picking={picking} />
-      ))}
+      <SessionRows sessions={hits} selectedFilePath={selectedFilePath} picking={picking} />
     </section>
   )
 }
@@ -268,11 +280,11 @@ export function HistoryPanel() {
   }
 
   const pickedSet = useMemo(() => new Set(pickedPaths), [pickedPaths])
-  const picking: Picking = {
-    isOn: isPicking,
-    pickedPaths: pickedSet,
-    toggle: (filePath) => setPickedPaths((paths) => (paths.includes(filePath) ? paths.filter((path) => path !== filePath) : [...paths, filePath]))
-  }
+  const toggle = useCallback(
+    (filePath: string) => setPickedPaths((paths) => (paths.includes(filePath) ? paths.filter((path) => path !== filePath) : [...paths, filePath])),
+    []
+  )
+  const picking: Picking = { isOn: isPicking, pickedPaths: pickedSet, toggle }
 
   const visibleSessions = isTeamOnly ? sessions.filter((session) => session.teamMemberName !== null) : sessions
   const hasTeamChats = sessions.some((session) => session.teamMemberName !== null)
@@ -331,14 +343,7 @@ export function HistoryPanel() {
           groups[group].length === 0 ? null : (
             <section key={group}>
               <h3 className="section-label">{group}</h3>
-              {groups[group].map((session) => (
-                <SessionItem
-                  key={session.filePath}
-                  session={session}
-                  isSelected={session.filePath === selectedFilePath}
-                  picking={picking}
-                />
-              ))}
+              <SessionRows sessions={groups[group]} selectedFilePath={selectedFilePath} picking={picking} />
             </section>
           )
         )}

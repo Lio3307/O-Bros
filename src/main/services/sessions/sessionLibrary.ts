@@ -1,11 +1,12 @@
 import { accountToRef } from '../../../shared/accounts'
 import type { SessionMessage, SessionPage, SessionSummary } from '../../../shared/types'
+import { forgetHeadersExcept, readHeaderOf } from './headerCache'
 import { findSourceOf, listSourceFiles, readSessionSources, type SourceFile } from './sessionSources'
 
 const HEADERS_READ_AT_ONCE = 50
 
 export async function summarizeSessionFile(file: SourceFile): Promise<SessionSummary> {
-  const header = await file.source.format.readHeader(file.filePath)
+  const header = await readHeaderOf(file, file.source.format.readHeader)
   return {
     filePath: file.filePath,
     sessionId: header.sessionId,
@@ -29,6 +30,7 @@ async function summarizeAFewAtATime(files: SourceFile[]): Promise<SessionSummary
 
 export async function listSessions(limit: number): Promise<SessionPage> {
   const files = await listSourceFiles(await readSessionSources())
+  forgetHeadersExcept(files)
   const newestFiles = files.sort((first, second) => second.modifiedAt - first.modifiedAt).slice(0, limit)
   return {
     sessions: await summarizeAFewAtATime(newestFiles),

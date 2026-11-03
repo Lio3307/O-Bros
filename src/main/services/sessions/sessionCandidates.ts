@@ -1,5 +1,6 @@
 import { realpath } from 'node:fs'
 import type { SessionCandidate } from '../../../shared/teamSessions'
+import { readHeaderOf } from './headerCache'
 import type { SourceFile } from './sessionSources'
 
 export function realFolderOf(path: string): Promise<string> {
@@ -11,7 +12,7 @@ export function readSessionCandidates(files: SourceFile[], since: number): Promi
     files
       .filter((file) => file.modifiedAt >= since)
       .map(async (file) => {
-        const header = await file.source.format.readHeader(file.filePath)
+        const header = await readHeaderOf(file, file.source.format.readHeader)
         return {
           sessionId: header.sessionId,
           provider: file.source.format.provider,
