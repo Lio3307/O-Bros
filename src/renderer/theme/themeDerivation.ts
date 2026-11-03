@@ -14,6 +14,8 @@ const STRONG_STRENGTH = 0.6
 
 const APP_TINTS = { chrome: 0.045, panel: 0.07, hover: 0.1, selected: 0.15, border: 0.18, muted: 0.62, faint: 0.42 }
 
+export const TEXT_ON_FILL = { dark: '#000000', light: '#ffffff' }
+
 const DARK_STATUS = { success: '#3fb950', danger: '#f85149', info: '#58a6ff', warning: '#d29922' }
 const LIGHT_STATUS = { success: '#1a7f37', danger: '#cf222e', info: '#0969da', warning: '#9a6700' }
 
@@ -78,6 +80,7 @@ export function appColorsOf(theme: ColorTheme): AppColors {
     muted: readableOn(tint(APP_TINTS.muted), panel, MINIMUM_TEXT_CONTRAST),
     faint: readableOn(tint(APP_TINTS.faint), panel, MINIMUM_FAINT_CONTRAST),
     strong: mixColors(theme.foreground, isDark ? '#ffffff' : '#000000', STRONG_STRENGTH),
+    accent: readableOn(theme.cursor, isDark ? TEXT_ON_FILL.dark : TEXT_ON_FILL.light, MINIMUM_TEXT_CONTRAST),
     ...(isDark ? DARK_STATUS : LIGHT_STATUS)
   }
 }

@@ -19,6 +19,7 @@ const VARIABLE_BY_COLOR: Record<keyof AppColors, string> = {
   muted: '--color-muted',
   faint: '--color-faint',
   strong: '--color-strong',
+  accent: '--color-accent',
   success: '--color-success',
   danger: '--color-danger',
   info: '--color-info',

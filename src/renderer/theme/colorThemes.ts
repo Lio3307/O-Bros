@@ -20,6 +20,7 @@ export interface AppColors {
   muted: string
   faint: string
   strong: string
+  accent: string
   success: string
   danger: string
   info: string
@@ -91,6 +92,7 @@ const BUILT_IN_COLOR_THEMES: ColorTheme[] = [
       muted: '#8c8c8c',
       faint: '#5a5a5a',
       strong: '#ffffff',
+      accent: '#ffffff',
       success: '#3fb950',
       danger: '#f85149',
       info: '#58a6ff',

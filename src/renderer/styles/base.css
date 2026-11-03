@@ -241,7 +241,7 @@ input[role='switch']:disabled {
 }
 
 .button-primary {
-  --button-fill: var(--color-success);
+  --button-fill: var(--color-accent);
 }
 
 .button-danger {
