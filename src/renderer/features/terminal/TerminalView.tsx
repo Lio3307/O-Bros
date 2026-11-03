@@ -33,6 +33,8 @@ import { trimTerminalToHost } from './terminalFit'
 import { useGpuRenderer } from './useGpuRenderer'
 import { useTerminalContextMenu } from './useTerminalContextMenu'
 import { useTerminalSearch } from './useTerminalSearch'
+import { handoffInto, isReceivingHandoff, useHandoffStore } from '../../state/handoffStore'
+import { HandoffPaneOverlay } from '../history/HandoffCard'
 
 interface TerminalViewProps {
   paneId: string
@@ -75,6 +77,7 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
   const terminalRef = useRef<Terminal | null>(null)
   const fitAddonRef = useRef<FitAddon | null>(null)
   const [isStarting, setIsStarting] = useState(true)
+  const isReceiving = useHandoffStore((state) => handoffInto(state.handoff, paneId) !== null)
   const launchers = useAgentLaunchersStore((state) => state.launchers)
   const fontSize = useTerminalFontStore((state) => state.fontSize)
   const scrollback = useTerminalSettingsStore((state) => state.scrollback)
@@ -128,6 +131,9 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
       onExit: () => terminal.write('\r\n[process exited]\r\n')
     })
     const stopListeningToTyping = terminal.onData((data) => {
+      if (isReceivingHandoff(paneId)) {
+        return
+      }
       setIsStarting(false)
       noteAgentTyping(paneId, data)
       noteTerminalInput(paneId, data)
@@ -240,7 +246,8 @@ export function TerminalView({ paneId, cwd, account, startCommand, startsAgent, 
         {...menuHandlers}
         onPasteCapture={pasteImageWhenNoText}
       />
-      {isStarting && (
+      <HandoffPaneOverlay paneId={paneId} />
+      {isStarting && !isReceiving && (
         <div className="loading-overlay">
           <LoadingText text={startingLabel} isDelayed />
         </div>

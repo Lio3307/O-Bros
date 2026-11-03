@@ -31,8 +31,8 @@ const DONE_SHOWN_MS = 4000
 
 function handoffReporter(fromProvider: ProviderId, launcher: Pick<AgentLauncher, 'name' | 'command'>) {
   let current: Handoff | null = null
-  const report = (step: HandoffStep, note = ''): void => {
-    current = { fromProvider, toName: launcher.name, toCommand: launcher.command, step, note }
+  const report = (step: HandoffStep, paneId: string | null = null, note = ''): void => {
+    current = { fromProvider, toName: launcher.name, toCommand: launcher.command, step, paneId, note }
     useHandoffStore.setState({ handoff: current })
   }
   const close = (): void => {
@@ -65,10 +65,10 @@ export async function continueWithAgent(
     toast.error('Could not open a terminal for the agent.')
     return
   }
-  report('sending')
+  report('sending', paneId)
   const result = await window.api.pty.typeWhenReady(paneId, plan.handoffText)
   if (result.isSent) {
-    report('done', hiddenNote(plan.hiddenCount))
+    report('done', paneId, hiddenNote(plan.hiddenCount))
     setTimeout(close, DONE_SHOWN_MS)
   } else {
     close()

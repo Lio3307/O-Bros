@@ -110,6 +110,30 @@
   background: var(--color-success);
 }
 
+.handoff-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--color-terminal-solid) 85%, transparent);
+  cursor: progress;
+}
+
+.handoff-overlay-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 360px;
+  text-align: center;
+}
+
+.handoff-overlay-box .handoff-route {
+  margin-bottom: 4px;
+}
+
 @keyframes handoff-enter {
   from {
     opacity: 0;

@@ -162,8 +162,18 @@ test('continues a saved conversation in another agent from History and shows the
     await app.window.screenshot({ path: join(process.env.HANDOFF_SHOTS, 'handoff-running.png') })
   }
 
+  const paneOverlay = app.window.locator('.handoff-overlay')
+  await expect(paneOverlay).toContainText('You can type here once it is in', { timeout: 30_000 })
+  await app.window.locator('.xterm-helper-textarea').last().focus()
+  await app.window.keyboard.type('typed too early')
+  if (process.env.HANDOFF_SHOTS !== undefined) {
+    await app.window.screenshot({ path: join(process.env.HANDOFF_SHOTS, 'handoff-pane.png') })
+  }
+
   await expect.poll(readProof, { timeout: 90_000 }).toContain('[O-BROS handoff')
   await expect(card).toContainText('Handed off to Fake agent', { timeout: 30_000 })
+  await expect(paneOverlay).toHaveCount(0)
+  expect(await readProof()).not.toContain('typed too early')
   if (process.env.HANDOFF_SHOTS !== undefined) {
     await app.window.screenshot({ path: join(process.env.HANDOFF_SHOTS, 'handoff-done.png') })
   }
