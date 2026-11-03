@@ -27,7 +27,7 @@
     "@replit/codemirror-vim": "^6.4.0",
     "electron-updater": "^6.8.9",
     "oxfmt": "^0.74.0",
-    "oxlint": "^1.89.0"
+    "oxlint": "^1.90.0"
   },
   "devDependencies": {
     "@codemirror/autocomplete": "^6.20.4",
