@@ -57,9 +57,4 @@ test('searches, filters and pages through the log', async () => {
   await app.window.getByRole('button', { name: 'Clear the search' }).click()
   await expect(search).toHaveValue('')
   await expect(rows).toHaveCount(25)
-
-  await app.window.locator('.activity-log-kind').click()
-  await app.window.getByRole('option', { name: 'Git actions' }).click()
-  await expect(rows).toHaveCount(3)
-  await expect(app.window.locator('.activity-log-kind')).toHaveText('Git actions')
 })

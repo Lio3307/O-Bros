@@ -12,8 +12,8 @@ const ENTRIES = [
   entry('team', 3, { kind: 'team', agentCommand: 'codex', text: 'joined the team' })
 ]
 
-function idsFor(query: string, kind: Parameters<typeof filterActivity>[2] = 'all'): string[] {
-  return filterActivity(ENTRIES, query, kind).map((found) => found.id)
+function idsFor(query: string): string[] {
+  return filterActivity(ENTRIES, query).map((found) => found.id)
 }
 
 describe('filterActivity', () => {
@@ -32,10 +32,5 @@ describe('filterActivity', () => {
   it('needs every word, and ignores spaces around them', () => {
     expect(idsFor('  commit   denied ')).toEqual(['git'])
     expect(idsFor('commit codex')).toEqual([])
-  })
-
-  it('combines the search with the kind', () => {
-    expect(idsFor('', 'git')).toEqual(['git'])
-    expect(idsFor('gemini', 'team')).toEqual([])
   })
 })

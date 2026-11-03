@@ -16,11 +16,6 @@
   min-width: 0;
 }
 
-.activity-log-kind {
-  flex: 0 0 180px;
-  height: 32px;
-}
-
 .activity-day {
   display: flex;
   flex-direction: column;
