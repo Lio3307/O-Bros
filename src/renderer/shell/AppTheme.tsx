@@ -3,7 +3,7 @@ import { isHexColor } from '../../shared/hexColor'
 import { useSurfaceAlpha } from '../state/appearanceStore'
 import { useActiveColorTheme } from '../state/colorThemeStore'
 import type { AppColors } from '../theme/colorThemes'
-import { appColorsOf, isDarkTheme } from '../theme/themeDerivation'
+import { appColorsOf, dangerFillOf, isDarkTheme } from '../theme/themeDerivation'
 
 const STYLE_ID = 'o-bros-theme'
 const CLEAR_COLOR = '#00000000'
@@ -30,7 +30,8 @@ function themeRuleOf(colors: AppColors, isDark: boolean): string {
   const declarations = (Object.keys(VARIABLE_BY_COLOR) as (keyof AppColors)[])
     .filter((name) => isHexColor(colors[name]))
     .map((name) => `${VARIABLE_BY_COLOR[name]}: ${colors[name]};`)
-  return `:root { ${declarations.join(' ')} color-scheme: ${isDark ? 'dark' : 'light'}; }`
+  const dangerFill = isHexColor(colors.danger) ? `--color-danger-fill: ${dangerFillOf(colors.danger)};` : ''
+  return `:root { ${declarations.join(' ')} ${dangerFill} color-scheme: ${isDark ? 'dark' : 'light'}; }`
 }
 
 function themeStyleElement(): HTMLStyleElement {

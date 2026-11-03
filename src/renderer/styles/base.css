@@ -245,7 +245,8 @@ input[role='switch']:disabled {
 }
 
 .button-danger {
-  --button-fill: var(--color-danger);
+  --button-fill: var(--color-danger-fill);
+  color: #ffffff;
 }
 
 .button-warning {
@@ -256,6 +257,10 @@ input[role='switch']:disabled {
 .button-danger:hover:not(:disabled),
 .button-warning:hover:not(:disabled) {
   background: color-mix(in srgb, var(--button-fill) 85%, var(--color-strong));
+}
+
+.button-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--button-fill) 85%, #000000);
 }
 
 .button-remove {

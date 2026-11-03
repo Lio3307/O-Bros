@@ -19,6 +19,10 @@ export const TEXT_ON_FILL = { dark: '#000000', light: '#ffffff' }
 const DARK_STATUS = { success: '#3fb950', danger: '#f85149', info: '#58a6ff', warning: '#d29922' }
 const LIGHT_STATUS = { success: '#1a7f37', danger: '#cf222e', info: '#0969da', warning: '#9a6700' }
 
+export function dangerFillOf(danger: string): string {
+  return readableOn(danger, TEXT_ON_FILL.light, MINIMUM_TEXT_CONTRAST)
+}
+
 export function isDarkTheme(theme: Pick<ColorTheme, 'background'>): boolean {
   return isDarkColor(theme.background)
 }

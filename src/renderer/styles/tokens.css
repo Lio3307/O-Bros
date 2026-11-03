@@ -21,6 +21,7 @@
   --color-info: #58a6ff;
   --color-warning: #d29922;
   --color-on-fill: #000000;
+  --color-danger-fill: #c6413a;
   --color-added-bg: color-mix(in srgb, var(--color-success) 14%, transparent);
   --color-removed-bg: color-mix(in srgb, var(--color-danger) 14%, transparent);
   --color-hunk-bg: color-mix(in srgb, var(--color-info) 10%, transparent);

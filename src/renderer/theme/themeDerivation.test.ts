@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { isHexColor } from '../../shared/hexColor'
 import { contrastRatio, isDarkColor, mixColors, readableOn } from './colorMath'
 import { COLOR_THEMES, DEFAULT_COLOR_THEME_ID, DEFAULT_LIGHT_COLOR_THEME_ID, findColorTheme, terminalContrastOf } from './colorThemes'
-import { appColorsOf, isDarkTheme, TEXT_ON_FILL, themeFromPalette } from './themeDerivation'
+import { appColorsOf, dangerFillOf, isDarkTheme, TEXT_ON_FILL, themeFromPalette } from './themeDerivation'
 
 const MINIMUM_THEMES_PER_MODE = 20
 
@@ -57,13 +57,14 @@ describe('the theme list', () => {
     }
   })
 
-  it('fills main buttons with a color of the theme that its button text can be read on', () => {
+  it('fills main buttons with a color of the theme that its button text can be read on, and red buttons with a red that white text can be read on', () => {
     for (const theme of COLOR_THEMES) {
       const textOnFill = isDarkTheme(theme) ? TEXT_ON_FILL.dark : TEXT_ON_FILL.light
       const app = appColorsOf(theme)
-      for (const fill of [app.accent, app.danger, app.warning]) {
+      for (const fill of [app.accent, app.warning]) {
         expect(contrastRatio(fill, textOnFill), `${theme.label} ${fill}`).toBeGreaterThanOrEqual(4.5)
       }
+      expect(contrastRatio(dangerFillOf(app.danger), TEXT_ON_FILL.light), `${theme.label} danger`).toBeGreaterThanOrEqual(4.5)
     }
   })
 
