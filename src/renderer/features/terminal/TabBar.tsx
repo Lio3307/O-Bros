@@ -10,7 +10,7 @@ import { copyPath, revealInFileExplorer } from '../files/fileActions'
 import { openTerminal } from '../../state/openTerminal'
 import { requestCloseOtherTabs, requestCloseTab } from '../../state/requestCloseTab'
 import { isTerminalTab, useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore'
-import { openTabBeside, openTerminalBeside } from '../../state/splitActions'
+import { areBothTerminals, openTabBeside, openTerminalBeside } from '../../state/splitActions'
 import { continueInAnotherAgentItem } from '../history/continueFromTab'
 import { isShowingSplit, TAB_DRAG_TYPE } from './workspaceSplit'
 import { showTab } from '../../state/showTab'
@@ -45,9 +45,10 @@ function splitItems(tab: WorkspaceTab): PopupMenuItem[] {
   if (activeTabId === null || activeTabId === tab.id) {
     return []
   }
+  const joins = areBothTerminals(activeTabId, tab.id)
   return [
-    { label: 'Open beside', onSelect: () => openTabBeside(tab.id, 'horizontal') },
-    { label: 'Open below', onSelect: () => openTabBeside(tab.id, 'vertical') }
+    { label: joins ? 'Join the current tab, on the right' : 'Open beside', onSelect: () => openTabBeside(tab.id, 'horizontal') },
+    { label: joins ? 'Join the current tab, below' : 'Open below', onSelect: () => openTabBeside(tab.id, 'vertical') }
   ]
 }
 

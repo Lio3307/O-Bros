@@ -1,4 +1,4 @@
-import { Columns2, Rows2, X } from 'lucide-react'
+import { Columns2, Rows2, SquareArrowOutUpRight, X } from 'lucide-react'
 import { isAgentCommand } from '../../../shared/agentLaunchers'
 import { useAgentCatalogStore } from '../../state/agentCatalogStore'
 import { useAgentLaunchersStore } from '../../state/agentLaunchersStore'
@@ -20,6 +20,7 @@ export function PaneFrame({ tab, paneId, isVisible, isFocusedSide }: PaneFramePr
   const splitPane = useWorkspaceStore((state) => state.splitPane)
   const renamePane = useWorkspaceStore((state) => state.renamePane)
   const focusPane = useWorkspaceStore((state) => state.focusPane)
+  const movePaneToNewTab = useWorkspaceStore((state) => state.movePaneToNewTab)
   const splitRightLabel = useShortcutLabel('splitRight')
   const splitDownLabel = useShortcutLabel('splitDown')
   const closePaneLabel = useShortcutLabel('closePane')
@@ -38,8 +39,8 @@ export function PaneFrame({ tab, paneId, isVisible, isFocusedSide }: PaneFramePr
           <span className="pane-heading">
             <PaneAgentStatus pane={pane} />
             <EditableTitle
-            className="pane-title"
-            value={pane.title}
+              className="pane-title"
+              value={pane.title}
               onCommit={(title) => renamePane(tab.id, paneId, title)}
             />
           </span>
@@ -49,6 +50,9 @@ export function PaneFrame({ tab, paneId, isVisible, isFocusedSide }: PaneFramePr
             </button>
             <button type="button" title={`Split down (${splitDownLabel})`} onClick={() => splitPane(tab.id, paneId, 'vertical')}>
               <Rows2 size={14} />
+            </button>
+            <button type="button" title="Move to its own tab" onClick={() => movePaneToNewTab(tab.id, paneId)}>
+              <SquareArrowOutUpRight size={14} />
             </button>
             <button type="button" title={`Close pane (${closePaneLabel})`} onClick={() => requestClosePane(tab.id, paneId)}>
               <X size={14} />

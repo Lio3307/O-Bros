@@ -22,9 +22,18 @@
   inset: 0;
 }
 
-.tab-content-hidden {
+.tab-content-hidden,
+.pane-slot-hidden {
   visibility: hidden;
   pointer-events: none;
+}
+
+.tab-content-terminal {
+  pointer-events: none;
+}
+
+.tab-content-terminal .pane-divider {
+  pointer-events: auto;
 }
 
 .tab-bar {

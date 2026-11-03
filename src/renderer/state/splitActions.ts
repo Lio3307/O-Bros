@@ -1,11 +1,25 @@
 import { DEFAULT_SPLIT_RATIO, type SplitDirection } from '../features/terminal/paneTree'
-import { dropPartner, splitFromDrop, type DropSide } from '../features/terminal/workspaceSplit'
+import { dropPartner, splitFromDrop, type DropSide, type WorkspaceSplit } from '../features/terminal/workspaceSplit'
 import { openTerminal } from './openTerminal'
 import { useWorkspaceStore } from './workspaceStore'
 
+export function areBothTerminals(firstTabId: string | null, secondTabId: string | null): boolean {
+  const isTerminal = (tabId: string | null) => useWorkspaceStore.getState().tabs.some((tab) => tab.id === tabId && tab.kind === 'terminal')
+  return isTerminal(firstTabId) && isTerminal(secondTabId)
+}
+
+function showTogether(split: WorkspaceSplit, keptTabId: string, movedTabId: string): void {
+  const workspace = useWorkspaceStore.getState()
+  if (areBothTerminals(keptTabId, movedTabId)) {
+    workspace.joinTabs(keptTabId, movedTabId, split)
+    return
+  }
+  workspace.showSplit(split, movedTabId)
+}
+
 function showBeside(previousTabId: string | null, tabId: string | null, direction: SplitDirection): void {
   if (previousTabId !== null && tabId !== null && previousTabId !== tabId) {
-    useWorkspaceStore.getState().showSplit({ first: previousTabId, second: tabId, direction, ratio: DEFAULT_SPLIT_RATIO }, tabId)
+    showTogether({ first: previousTabId, second: tabId, direction, ratio: DEFAULT_SPLIT_RATIO }, previousTabId, tabId)
   }
 }
 
@@ -36,5 +50,5 @@ export function dropTabOnSide(draggedTabId: string, side: DropSide): void {
     workspace.activateTab(draggedTabId)
     return
   }
-  workspace.showSplit(splitFromDrop(side, draggedTabId, partner), draggedTabId)
+  showTogether(splitFromDrop(side, draggedTabId, partner), partner, draggedTabId)
 }

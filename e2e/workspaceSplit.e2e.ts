@@ -1,5 +1,5 @@
 import { expect, test, type Locator } from '@playwright/test'
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { launchApp, type RunningApp } from './launchApp'
 
@@ -145,4 +145,35 @@ test('a file opens to the side from the Files panel', async () => {
   await app.window.locator('.popup-menu-item', { hasText: 'Open to the Side' }).click()
   await expect(sides()).toHaveCount(2)
   await expect(tab('second.txt')).toHaveClass(/tab-active/)
+})
+
+test('a terminal dropped on another terminal joins it as a pane, keeps running, and can go back to its own tab', async () => {
+  await app.window.locator('.xterm-helper-textarea').last().focus()
+  await app.window.keyboard.type(process.platform === 'win32' ? "$env:JOIN_STATE='alive'" : 'export JOIN_STATE=alive')
+  await app.window.keyboard.press('Enter')
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  await expect(app.window.locator('.tab')).toHaveCount(2)
+  const second = app.window.locator('.tab').nth(1)
+  await app.window.locator('.tab').first().click()
+
+  await dropOnSide(second, 'bottom')
+  await expect(app.window.locator('.tab')).toHaveCount(1)
+  await expect(sides()).toHaveCount(0)
+  const panes = app.window.locator('.pane-slot:not(.pane-slot-hidden) .pane-frame')
+  await expect(panes).toHaveCount(2)
+  const [top, bottom] = await Promise.all([panes.nth(0).boundingBox(), panes.nth(1).boundingBox()])
+  expect(top?.y).toBeLessThan(bottom?.y ?? 0)
+  await panes.nth(0).locator('.xterm-helper-textarea').focus()
+  await app.window.keyboard.type(process.platform === 'win32' ? '$env:JOIN_STATE | Out-File -Encoding ascii joined.txt' : 'echo $JOIN_STATE > joined.txt')
+  await app.window.keyboard.press('Enter')
+  const readJoined = () => readFile(join(app.projectFolder, 'joined.txt'), 'utf8').then((text) => text.trim(), () => '')
+  await expect.poll(readJoined, { timeout: 20_000 }).toBe('alive')
+  if (SHOTS !== undefined) {
+    await app.window.screenshot({ path: `${SHOTS}/split-joined.png` })
+  }
+
+  await panes.nth(1).getByTitle('Move to its own tab').click()
+  await expect(app.window.locator('.tab')).toHaveCount(2)
+  await app.window.locator('.tab').first().click()
+  await expect(panes).toHaveCount(1)
 })

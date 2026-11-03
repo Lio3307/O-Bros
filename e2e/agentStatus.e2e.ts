@@ -32,7 +32,7 @@ async function typeLine(text: string): Promise<void> {
 function focusedTerminalIsShown(): Promise<boolean> {
   return app.window.evaluate(() => {
     const focused = document.activeElement
-    return focused !== null && focused.classList.contains('xterm-helper-textarea') && focused.closest('.tab-content-hidden') === null
+    return focused !== null && focused.classList.contains('xterm-helper-textarea') && focused.closest('.tab-content-hidden, .pane-slot-hidden') === null
   })
 }
 
@@ -75,10 +75,10 @@ test('puts the cursor in the terminal you switch to, and in the pane you used la
   await app.window.locator('.tab', { hasText: 'ShellAgent' }).click()
   await expect.poll(focusedTerminalIsShown).toBe(true)
   await app.window.locator('.tab-bar-actions').getByTitle(/^Split right/).click()
-  await expect(app.window.locator('.tab-content:not(.tab-content-hidden) .pane-frame')).toHaveCount(2)
+  await expect(app.window.locator('.pane-slot:not(.pane-slot-hidden) .pane-frame')).toHaveCount(2)
   await expect.poll(focusIsInFocusedPane).toBe(true)
 
-  const firstPane = app.window.locator('.tab-content:not(.tab-content-hidden) .pane-frame').first()
+  const firstPane = app.window.locator('.pane-slot:not(.pane-slot-hidden) .pane-frame').first()
   await firstPane.locator('.pane-header').click({ position: { x: 4, y: 4 } })
   await expect(firstPane).toHaveClass(/pane-frame-focused/)
 

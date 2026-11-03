@@ -77,7 +77,7 @@ function firstTerminalInput() {
 }
 
 function activeTabTerminalInput() {
-  return app.window.locator('.tab-content:not(.tab-content-hidden) .xterm-helper-textarea').first()
+  return app.window.locator('.pane-slot:not(.pane-slot-hidden) .xterm-helper-textarea').first()
 }
 
 async function runInTerminal(command: string, proofFile: string, terminalInput = firstTerminalInput()): Promise<string> {

@@ -7,7 +7,7 @@ import { isTerminalTab, useWorkspaceStore } from '../../state/workspaceStore'
 import { TeamMemberViews } from '../team/TeamMemberViews'
 import { computePaneRects, listDividers } from './paneTree'
 import { PaneDivider } from './PaneDivider'
-import { PaneLayoutView, placement } from './PaneLayoutView'
+import { PaneDividers, placement, TerminalPanes, WHOLE_AREA } from './PaneLayoutView'
 import { SplitDropOverlay } from './SplitDropOverlay'
 import { TabBar } from './TabBar'
 import { isShowingSplit, layoutOfSplit } from './workspaceSplit'
@@ -63,6 +63,9 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
   const rectByTabId = shownSplit === null ? {} : computePaneRects(layoutOfSplit(shownSplit))
 
   shownTabIds.forEach((tabId) => startedTabIds.current.add(tabId))
+  const placedTerminalTabs = terminalTabs
+    .filter((tab) => startedTabIds.current.has(tab.id))
+    .map((tab) => ({ tab, area: rectByTabId[tab.id] ?? WHOLE_AREA, isShown: shownTabIds.includes(tab.id) && !isMemberShown }))
 
   function sideProps(tabId: string): { style?: CSSProperties; onMouseDownCapture?: () => void } {
     const rect = rectByTabId[tabId]
@@ -88,16 +91,16 @@ export function TerminalWorkspace({ isVisible }: TerminalWorkspaceProps) {
             </Button>
           </div>
         )}
-        {terminalTabs
-          .filter((tab) => startedTabIds.current.has(tab.id))
-          .map((tab) => {
-            const isShown = shownTabIds.includes(tab.id) && !isMemberShown
-            return (
-              <div key={tab.id} className={cn('tab-content', !isShown && 'tab-content-hidden', isShown && sideClass(tab.id))} {...(isShown ? sideProps(tab.id) : {})}>
-                <PaneLayoutView tab={tab} layout={tab.layout} isVisible={isVisible && isShown} isFocusedSide={tab.id === activeTabId} />
-              </div>
-            )
-          })}
+        <TerminalPanes placedTabs={placedTerminalTabs} isVisible={isVisible} activeTabId={activeTabId} />
+        {placedTerminalTabs.map(({ tab, area, isShown }) => (
+          <div
+            key={tab.id}
+            className={cn('tab-content', 'tab-content-terminal', !isShown && 'tab-content-hidden', isShown && sideClass(tab.id))}
+            style={placement(area)}
+          >
+            <PaneDividers tab={tab} />
+          </div>
+        ))}
         {!isMemberShown &&
           shownFileTabs.map(
             (fileTab) =>

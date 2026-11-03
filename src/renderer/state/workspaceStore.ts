@@ -17,6 +17,7 @@ import {
 import { belongsToProject, neighbourTabId, tabLocation } from '../features/terminal/projectTabs'
 import { moveItem } from '../features/terminal/tabOrder'
 import { splitAfterChange, type WorkspaceSplit } from '../features/terminal/workspaceSplit'
+import { joinTerminalTabs, splitOffPane } from '../features/terminal/tabJoin'
 
 export interface TerminalPaneInfo {
   id: string
@@ -81,6 +82,8 @@ interface WorkspaceState {
   restoreTabs: (tabs: WorkspaceTab[], activeTabId: string | null, split: WorkspaceSplit | null) => void
   renameTab: (tabId: string, title: string) => void
   splitPane: (tabId: string, paneId: string, direction: SplitDirection) => void
+  joinTabs: (keptTabId: string, movedTabId: string, split: WorkspaceSplit) => void
+  movePaneToNewTab: (tabId: string, paneId: string) => void
   closePane: (tabId: string, paneId: string) => void
   resizeSplit: (tabId: string, path: SplitPath, ratio: number) => void
   renamePane: (tabId: string, paneId: string, title: string) => void
@@ -271,6 +274,31 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
         }
       })
     })
+  },
+
+  joinTabs: (keptTabId, movedTabId, split) => {
+    const { tabs } = get()
+    const kept = tabs.find((tab) => tab.id === keptTabId)
+    const moved = tabs.find((tab) => tab.id === movedTabId)
+    if (kept === undefined || moved === undefined || kept === moved || !isTerminalTab(kept) || !isTerminalTab(moved)) {
+      return
+    }
+    const joined = joinTerminalTabs(kept, moved, split)
+    set({ tabs: tabs.filter((tab) => tab !== moved).map((tab) => (tab === kept ? joined : tab)), activeTabId: keptTabId })
+  },
+
+  movePaneToNewTab: (tabId, paneId) => {
+    const { tabs } = get()
+    const source = tabs.find((tab) => tab.id === tabId)
+    if (source === undefined || !isTerminalTab(source)) {
+      return
+    }
+    const result = splitOffPane(source, paneId, newId(), Date.now())
+    if (result === null) {
+      return
+    }
+    const index = tabs.indexOf(source)
+    set({ tabs: [...tabs.slice(0, index), result.remaining, result.tab, ...tabs.slice(index + 1)], activeTabId: result.tab.id })
   },
 
   closePane: (tabId, paneId) => {
