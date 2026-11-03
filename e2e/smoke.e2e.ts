@@ -97,13 +97,18 @@ test('hides and shows the terminals of a folder', async () => {
   await app.window.getByTitle('Plain terminal in the selected folder').click()
   const folderSessions = app.window.locator('.folder-sessions .row-session')
   await expect(folderSessions).toHaveCount(1, { timeout: 15_000 })
+  const webRow = app.window.locator('.folder-row', { hasText: 'web' })
+  await expect(webRow.locator('.lucide-folder-open')).toHaveCount(1)
 
   await app.window.getByTitle('Hide its terminals').click()
   await expect(folderSessions).toHaveCount(0)
   await expect(app.window.getByTitle('1 open terminal')).toBeVisible()
+  await expect(webRow.locator('.lucide-folder-open')).toHaveCount(0)
+  await expect(webRow.locator('.lucide-folder')).toHaveCount(1)
 
   await app.window.getByTitle('Show its terminals').click()
   await expect(folderSessions).toHaveCount(1)
+  await expect(webRow.locator('.lucide-folder-open')).toHaveCount(1)
 })
 
 test('sessions stay in the sidebar when another folder is selected, and clicking one opens its folder', async () => {

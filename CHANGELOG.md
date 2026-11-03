@@ -19,6 +19,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Tone in Settings → Appearance** (Midnight, Slate, Aubergine, Pine, Mocha and Graphite). Background is now just Solid or Your image. If you had a tone chosen, O-BROS goes back to your theme's own colors; your theme and picture stay.
 
 ### Fixed
+- **Folder icons in Projects match whether a folder is open.** A folder shows an open folder icon while its terminals are shown and a closed one when they are hidden. Before, the open icon only marked the selected folder, whatever its state.
 - **The loading screen shows when O-BROS starts.** The loading screen waited and then faded in, so by the time it could be seen the app had usually replaced it. It now shows as soon as the window can draw, about 0.4 seconds sooner.
 - **Split buttons no longer show over another tab.** After leaving a tab with split terminals, its split and close buttons stayed on screen on top of the tab you moved to.
 - **The Agent monitor keeps up with many agents across folders.** Running agents are grouped by folder when they are in more than one. If several agents run inside one terminal, the card now says which others are there; before, only the first was shown. The folder is where the terminal started, so a later `cd` is not followed yet.

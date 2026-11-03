@@ -204,7 +204,7 @@ function FolderRow({ folder, sessions, hasFinished, now }: FolderRowProps) {
           aria-current={isCurrentProject ? 'true' : undefined}
           onClick={() => selectProject(folder.path)}
         >
-          {isCurrentProject ? <FolderOpen size={14} /> : <Folder size={14} />}
+          {hasSessions && !isCollapsed ? <FolderOpen size={14} /> : <Folder size={14} />}
           <span className="row-name">{folder.name}</span>
           {folder.branch !== null && <BranchLabel branch={folder.branch} />}
           {hasSessions && isCollapsed && (
