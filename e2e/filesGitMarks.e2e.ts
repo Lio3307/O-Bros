@@ -68,3 +68,29 @@ test('the Files panel says whether the folder is in git and marks new, changed a
   await app.window.getByTitle(join(app.projectFolder, 'plain'), { exact: true }).click()
   await expect(panel.locator('.files-git')).toHaveText('No git', { timeout: 15_000 })
 })
+
+test('the Files panel shows the folder of the terminal in use, not only the project', async () => {
+  app = await launchApp()
+  const subfolder = join(app.projectFolder, 'app')
+  await mkdir(subfolder)
+  await writeFile(join(subfolder, 'inside.txt'), 'inside\n', 'utf8')
+  await app.window.reload()
+  await app.window.waitForSelector('.rail')
+
+  await app.window.getByTitle(subfolder, { exact: true }).click()
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.locator('.tab', { hasText: 'app' }).click()
+  await app.window.getByTitle('Toggle files panel').click()
+  const panel = app.window.locator('.files-panel')
+  await expect(panel.locator('.panel-title')).toHaveText('app')
+  await expect(panel.locator('.row', { hasText: 'inside.txt' })).toBeVisible()
+
+  await panel.locator('.row', { hasText: 'inside.txt' }).click()
+  await expect(app.window.locator('.tab', { hasText: 'inside.txt' })).toHaveClass(/tab-active/)
+  await expect(panel.locator('.panel-title')).toHaveText('app')
+
+  await app.window.getByTitle(app.projectFolder, { exact: true }).click()
+  await app.window.getByTitle('Plain terminal in the selected folder').click()
+  await expect(panel.locator('.panel-title')).toHaveText('sample-project')
+})

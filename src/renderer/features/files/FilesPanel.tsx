@@ -5,12 +5,13 @@ import { useFileTreeStore } from '../../state/fileTreeStore'
 import { useGitMarksStore } from '../../state/gitMarksStore'
 import type { GitStatus } from '../../../shared/types'
 import { useProjectsStore } from '../../state/projectsStore'
-import { useWorkspaceStore } from '../../state/workspaceStore'
+import { useWorkspaceStore, type WorkspaceTab } from '../../state/workspaceStore'
 import { FileTypeIcon } from '../../ui/FileTypeIcon'
 import { PopupMenu, type PopupMenuItem } from '../../ui/PopupMenu'
 import { useLiveRefresh } from '../../ui/useLiveRefresh'
 import { FileTree } from './FileTree'
 import { buildRootMenuItems } from './fileTreeMenu'
+import { nextFilesRoot } from './filesRoot'
 import { mergeSearchHits, type MergedHit } from './mergeSearchHits'
 import './files.css'
 import { Button } from '../../ui/Button'
@@ -48,10 +49,20 @@ function GitSummary({ status }: { status: GitStatus | null | undefined }) {
   )
 }
 
+function useFilesRoot(activeTab: WorkspaceTab | undefined): string | null {
+  const projectPath = useProjectsStore((state) => state.activeProjectPath)
+  const [root, setRoot] = useState(() => nextFilesRoot(null, projectPath, activeTab))
+  const next = nextFilesRoot(root, projectPath, activeTab)
+  if (next !== root) {
+    setRoot(next)
+  }
+  return next
+}
+
 export function FilesPanel() {
-  const activeProjectPath = useProjectsStore((state) => state.activeProjectPath)
   const openFileTab = useWorkspaceStore((state) => state.openFileTab)
   const activeTab = useWorkspaceStore((state) => state.tabs.find((tab) => tab.id === state.activeTabId))
+  const rootPath = useFilesRoot(activeTab)
   const searchScopePath = useFileTreeStore((state) => state.searchScopePath)
   const setSearchScope = useFileTreeStore((state) => state.setSearchScope)
 
@@ -61,31 +72,31 @@ export function FilesPanel() {
   const [openMenu, setOpenMenu] = useState<OpenMenu | null>(null)
   const closeMenu = useCallback(() => setOpenMenu(null), [])
   const refreshTree = useFileTreeStore((state) => state.refresh)
-  const gitStatus = useGitMarksStore((state) => (state.projectPath === activeProjectPath ? state.status : undefined))
+  const gitStatus = useGitMarksStore((state) => (state.projectPath === rootPath ? state.status : undefined))
   const loadGitMarks = useGitMarksStore((state) => state.load)
 
   useEffect(() => {
-    if (activeProjectPath !== null) {
-      void loadGitMarks(activeProjectPath)
+    if (rootPath !== null) {
+      void loadGitMarks(rootPath)
     }
-  }, [activeProjectPath, loadGitMarks])
+  }, [rootPath, loadGitMarks])
 
   useLiveRefresh(
     useCallback(async () => {
       refreshTree()
-      if (activeProjectPath !== null) {
-        await loadGitMarks(activeProjectPath)
+      if (rootPath !== null) {
+        await loadGitMarks(rootPath)
       }
-    }, [refreshTree, loadGitMarks, activeProjectPath])
+    }, [refreshTree, loadGitMarks, rootPath])
   )
 
   const selectedPath = activeTab?.kind === 'file' ? activeTab.path : null
   const isSearching = query.trim().length > 0
-  const searchRoot = searchScopePath ?? activeProjectPath
+  const searchRoot = searchScopePath ?? rootPath
 
   useEffect(() => {
     setSearchScope(null)
-  }, [activeProjectPath, setSearchScope])
+  }, [rootPath, setSearchScope])
 
   useEffect(() => {
     if (searchScopePath !== null) {
@@ -110,7 +121,7 @@ export function FilesPanel() {
     return () => clearTimeout(timer)
   }, [searchRoot, query, isSearching])
 
-  if (activeProjectPath === null) {
+  if (rootPath === null) {
     return (
       <aside className="files-panel">
         <p className="panel-empty">Open a folder in Projects to browse its files.</p>
@@ -119,17 +130,19 @@ export function FilesPanel() {
   }
 
   function showRootMenu(event: MouseEvent<HTMLDivElement>): void {
-    if (event.target !== event.currentTarget || activeProjectPath === null) {
+    if (event.target !== event.currentTarget || rootPath === null) {
       return
     }
     event.preventDefault()
-    setOpenMenu({ x: event.clientX, y: event.clientY, items: buildRootMenuItems(activeProjectPath) })
+    setOpenMenu({ x: event.clientX, y: event.clientY, items: buildRootMenuItems(rootPath) })
   }
 
   return (
     <aside className="files-panel">
       <header className="files-header">
-        <span className="panel-title">{lastPathSegment(activeProjectPath)}</span>
+        <span className="panel-title" title={rootPath}>
+          {lastPathSegment(rootPath)}
+        </span>
         <GitSummary status={gitStatus} />
       </header>
       <label className="find-field">
@@ -159,7 +172,7 @@ export function FilesPanel() {
             </button>
           ))
         ) : (
-          <FileTree directoryPath={activeProjectPath} depth={0} selectedPath={selectedPath} onOpenFile={openFileTab} />
+          <FileTree directoryPath={rootPath} depth={0} selectedPath={selectedPath} onOpenFile={openFileTab} />
         )}
       </div>
       {openMenu !== null && <PopupMenu x={openMenu.x} y={openMenu.y} items={openMenu.items} onClose={closeMenu} />}
