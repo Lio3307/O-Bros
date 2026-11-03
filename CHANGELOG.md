@@ -14,6 +14,7 @@ All notable changes to o-bros are listed here. The format follows [Keep a Change
 - **Buttons now show what they do by color.** Main actions take your theme's accent (its cursor color, or white in the O-BROS theme). A button that deletes, stops or discards something is red, and one that is risky but loses nothing right away, such as **Push anyway** or **Trust this folder**, is amber.
 
 ### Removed
+- **The "Git actions asked" and "Team members summoned" tiles on the Activity page.** Agent time and Sessions started stay; git actions and team members are still in the hourly chart and the log.
 - **Tone in Settings → Appearance** (Midnight, Slate, Aubergine, Pine, Mocha and Graphite). Background is now just Solid or Your image. If you had a tone chosen, O-BROS goes back to your theme's own colors; your theme and picture stay.
 
 ### Fixed

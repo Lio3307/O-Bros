@@ -6,9 +6,6 @@ const HOUR_MS = 60 * 60 * 1000
 export interface DaySummary {
   agentTimeMs: number
   sessionCount: number
-  gitAllowed: number
-  gitDenied: number
-  teamJoined: number
 }
 
 export interface HourActivity {
@@ -52,13 +49,9 @@ export function summarizeToday(entries: ActivityEntry[], live: LiveAgent[], now:
   const today = entriesOfToday(entries, now)
   const closedTime = today.reduce((total, entry) => total + finishedTimeOf(entry), 0)
   const runningTime = live.reduce((total, agent) => total + liveTimeToday(agent, now), 0)
-  const gitEntries = today.filter((entry) => entry.kind === 'git')
   return {
     agentTimeMs: closedTime + runningTime,
-    sessionCount: today.filter(isSessionStart).length,
-    gitAllowed: gitEntries.filter((entry) => entry.outcome === 'allowed').length,
-    gitDenied: gitEntries.filter((entry) => entry.outcome === 'denied').length,
-    teamJoined: today.filter(isTeamJoin).length
+    sessionCount: today.filter(isSessionStart).length
   }
 }
 

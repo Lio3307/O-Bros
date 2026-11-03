@@ -53,10 +53,7 @@ describe('activity stats', () => {
   it('sums today only, including agents that still run', () => {
     expect(summarizeToday(ENTRIES, LIVE, NOW)).toEqual({
       agentTimeMs: 53 * MINUTE,
-      sessionCount: 1,
-      gitAllowed: 1,
-      gitDenied: 1,
-      teamJoined: 1
+      sessionCount: 1
     })
   })
 

@@ -130,19 +130,10 @@
   border-top: 1px solid var(--color-border);
 }
 
-.live-card-numbers span,
-.monitor-tile-split span {
+.live-card-numbers span {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-}
-
-.monitor-tile-split {
-  display: flex;
-  gap: 12px;
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--color-muted);
 }
 
 .monitor-columns {
