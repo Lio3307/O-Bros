@@ -13,6 +13,9 @@ describe('isAbsolutePath', () => {
 describe('resolvePath', () => {
   it('joins a relative path to the base with the base separator', () => {
     expect(resolvePath('C:\\dev\\app', 'src/a.ts')).toBe('C:\\dev\\app\\src\\a.ts')
+    expect(resolvePath('E:\\', 'CompanyRepo')).toBe('E:\\CompanyRepo')
+    expect(resolvePath('/', 'home')).toBe('/home')
+    expect(resolvePath('C:\\dev\\app\\', 'src')).toBe('C:\\dev\\app\\src')
     expect(resolvePath('/home/me/app', './src/a.ts')).toBe('/home/me/app/src/a.ts')
   })
 

@@ -187,7 +187,9 @@ test('continues a saved conversation in another agent from History and shows the
   expect(handoff).not.toContain(FAKE_KEY)
 
   await app.window.getByTitle('History', { exact: true }).click()
-  await expect(row.locator('.chip', { hasText: 'Codex → fakeagent' })).toBeVisible({ timeout: 20_000 })
+  await row.click()
+  await expect(app.window.locator('.replay-actions .chip', { hasText: 'Codex → fakeagent' })).toBeVisible({ timeout: 20_000 })
+  await expect(row.locator('.chip')).toHaveCount(0)
 })
 
 test('links the continued Codex conversation into the same thread by its handoff marker', async () => {
@@ -212,8 +214,10 @@ test('links the continued Codex conversation into the same thread by its handoff
       { timeout: 90_000 }
     )
     .toBe(1)
-  await expect(continued.locator('.chip', { hasText: 'Codex → Codex' })).toBeVisible({ timeout: 30_000 })
-  await expect(original.locator('.chip', { hasText: 'Codex → Codex' })).toBeVisible()
+  await continued.locator('.session-row').click()
+  await expect(app.window.locator('.replay-actions .chip', { hasText: 'Codex → Codex' })).toBeVisible({ timeout: 30_000 })
+  await original.locator('.session-row').click()
+  await expect(app.window.locator('.replay-actions .chip', { hasText: 'Codex → Codex' })).toBeVisible()
 })
 
 test('continues the conversation of a running agent tab in another agent', async () => {

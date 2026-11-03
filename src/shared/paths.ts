@@ -59,6 +59,9 @@ export function resolvePath(basePath: string, path: string): string {
   }
   const separator = basePath.includes('\\') ? '\\' : '/'
   const segments = normalizeSeparators(basePath).split('/')
+  while (segments.length > 1 && segments[segments.length - 1] === '') {
+    segments.pop()
+  }
   for (const segment of normalizeSeparators(path).split('/')) {
     if (segment === '..' && segments.length > 1) {
       segments.pop()

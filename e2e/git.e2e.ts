@@ -97,6 +97,22 @@ test('names the folder and lists its repositories in the main area when it is no
   await expect(overview).toHaveCSS('overflow-y', 'auto')
   await app.window.waitForTimeout(1000)
   expect(errorOutput.join('')).not.toContain('git:stashList')
+
+  await mkdir(join(app.projectFolder, 'group', 'tools', 'cli'), { recursive: true })
+  await execFileAsync('git', ['init'], { cwd: join(app.projectFolder, 'group', 'tools', 'cli') })
+  await overview.locator('.repository-row', { hasText: 'group' }).click()
+  await overview.locator('.repository-row', { hasText: 'tools' }).click({ timeout: 15_000 })
+  const trail = overview.getByRole('navigation', { name: 'Where this folder is' })
+  await expect(trail).toHaveText(/sample-project.*group.*tools/)
+  await expect(trail.locator('[aria-current="location"]')).toHaveText('tools')
+  if (process.env.TRAIL_SHOTS !== undefined) {
+    await overview.screenshot({ path: join(process.env.TRAIL_SHOTS, 'folder-trail.png') })
+  }
+  await trail.getByRole('button', { name: 'group' }).click()
+  await expect(trail.locator('[aria-current="location"]')).toHaveText('group')
+  await trail.getByRole('button', { name: 'sample-project' }).click()
+  await expect(trail).toHaveCount(0)
+  await expect(overview).toContainText(app.projectFolder)
 })
 
 test('shows the commit graph in the main area and opens a commit file from it', async () => {

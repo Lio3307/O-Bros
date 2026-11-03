@@ -12,7 +12,6 @@ import { ProviderMark } from '../../ui/ProviderMark'
 import { cn } from '../../ui/cn'
 import { ContinueButton } from './ContinueButton'
 import { SessionTitle } from './SessionTitle'
-import { ThreadChip } from './ThreadChip'
 import './history.css'
 import './historyFilter.css'
 import { Button } from '../../ui/Button'
@@ -94,7 +93,6 @@ const SessionItem = memo(function SessionItem({ session, isSelected, isPicking, 
             <SessionTitle sessionId={session.sessionId} title={session.title} />
           </span>
         </span>
-        <ThreadChip sessionId={session.sessionId} />
         {session.teamMemberName !== null && (
           <Chip title="A wot team member had this conversation">Team member · {session.teamMemberName}</Chip>
         )}

@@ -953,6 +953,46 @@
   white-space: nowrap;
 }
 
+.folder-trail {
+  display: flex;
+  margin-left: -4px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.folder-trail-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.folder-trail-link {
+  padding: 1px 4px;
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+}
+
+.folder-trail-link:hover {
+  color: var(--color-strong);
+  background: var(--color-hover);
+}
+
+.folder-trail-current {
+  padding: 1px 4px;
+  color: var(--color-text);
+}
+
+.folder-trail-arrow {
+  flex-shrink: 0;
+  color: var(--color-faint);
+}
+
 .folder-overview-name {
   font-size: 18px;
   font-weight: 600;
