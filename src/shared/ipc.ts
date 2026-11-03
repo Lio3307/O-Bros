@@ -82,7 +82,7 @@ import type {
   SearchRequest,
   SessionMessage,
   SessionStorageReport,
-  SessionSummary,
+  SessionPage,
   TeamChatsReport,
   StorageReport,
   UpdateStatus
@@ -381,7 +381,7 @@ export interface DesktopApi {
     agents(): Promise<TeamAgentOption[]>
   }
   history: {
-    list(): Promise<SessionSummary[]>
+    list(limit: number): Promise<SessionPage>
     get(filePath: string): Promise<SessionMessage[]>
     search(query: string): Promise<SessionSearchHit[]>
     remove(filePaths: string[], permanently: boolean): Promise<RemoveSessionsResult>

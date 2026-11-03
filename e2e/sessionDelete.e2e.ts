@@ -107,11 +107,19 @@ test('History selects several conversations or all of them, says how many, and d
 
   await app.window.getByRole('button', { name: 'Select', exact: true }).click()
   const bar = app.window.locator('.history-select-bar')
-  await expect(bar).toContainText('Nothing selected')
-  await expect(bar.getByRole('button', { name: 'Delete 0' })).toBeDisabled()
+  await expect(bar.getByRole('checkbox')).toContainText('Select all 3')
+  await expect(bar.getByRole('checkbox')).toHaveAttribute('aria-checked', 'false')
+  await expect(bar.getByRole('button', { name: 'Delete', exact: true })).toBeDisabled()
+  if (process.env.SELECT_SHOTS !== undefined) {
+    await app.window.locator('.side-panel').screenshot({ path: join(process.env.SELECT_SHOTS, 'select-none.png') })
+  }
   await rows.filter({ hasText: 'task 0' }).click()
   await rows.filter({ hasText: 'task 1' }).click()
-  await expect(bar).toContainText('2 selected')
+  await expect(bar.getByRole('checkbox')).toContainText('2 of 3')
+  await expect(bar.getByRole('checkbox')).toHaveAttribute('aria-checked', 'mixed')
+  if (process.env.SELECT_SHOTS !== undefined) {
+    await app.window.locator('.side-panel').screenshot({ path: join(process.env.SELECT_SHOTS, 'select-some.png') })
+  }
   await expect(rows.filter({ hasText: 'task 0' })).toHaveAttribute('aria-pressed', 'true')
 
   await bar.getByRole('button', { name: 'Delete 2' }).click()
@@ -124,8 +132,9 @@ test('History selects several conversations or all of them, says how many, and d
   await expect(bar).toHaveCount(0)
 
   await app.window.getByRole('button', { name: 'Select', exact: true }).click()
-  await bar.getByText('Select all (1)').click()
-  await expect(bar).toContainText('1 selected')
+  await bar.getByRole('checkbox').click()
+  await expect(bar.getByRole('checkbox')).toContainText('1 of 1')
+  await expect(bar.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true')
   await app.window.keyboard.press('Escape')
   await expect(bar).toHaveCount(0)
   await expect(rows.first()).not.toHaveAttribute('aria-pressed', 'true')
@@ -140,15 +149,44 @@ test('History deletes everything shown with Select all, and says all in the ques
 
   await app.window.getByRole('button', { name: 'Select', exact: true }).click()
   const bar = app.window.locator('.history-select-bar')
-  await bar.getByText('Select all (3)').click()
+  await bar.getByRole('checkbox').click()
   await bar.getByRole('button', { name: 'Delete all 3' }).click()
   const dialog = app.window.getByRole('dialog')
   await expect(dialog).toContainText('Delete all 3 sessions?')
   await dialog.getByRole('button', { name: 'Cancel' }).click()
+  await expect(dialog).toHaveCount(0)
   expect(await countSessionFiles()).toBe(3)
 
-  await bar.getByRole('button', { name: 'Delete all 3' }).click()
+  await expect(async () => {
+    await bar.getByRole('button', { name: 'Delete all 3' }).click()
+    await expect(dialog).toBeVisible({ timeout: 1000 })
+  }).toPass({ timeout: 10_000 })
   await dialog.getByRole('button', { name: 'Delete permanently', exact: true }).click()
   await expect.poll(countSessionFiles, { timeout: 20_000 }).toBe(0)
   await expect(app.window.locator('.session-row')).toHaveCount(0, { timeout: 20_000 })
+})
+
+test('History lists the newest 50 first and shows the rest on request, for select and delete too', async () => {
+  const folder = join(sessionsFolder, '2026', '10', '01')
+  await mkdir(folder, { recursive: true })
+  for (let index = 0; index < 57; index++) {
+    const meta = { type: 'session_meta', payload: { id: `older-${index}`, cwd: app.projectFolder } }
+    const message = { type: 'response_item', payload: { type: 'message', role: 'user', content: [{ type: 'input_text', text: `older ${index}` }] } }
+    await writeFile(join(folder, `rollout-2026-10-01T08-00-00-older-${index}.jsonl`), `${JSON.stringify(meta)}\n${JSON.stringify(message)}\n`, 'utf8')
+  }
+  await app.window.getByTitle('History', { exact: true }).click()
+  const rows = app.window.locator('.session-row')
+  await expect(rows).toHaveCount(50, { timeout: 20_000 })
+  const showMore = app.window.getByRole('button', { name: 'Show 10 more (10 not shown)' })
+  await expect(showMore).toBeVisible()
+
+  await app.window.getByRole('button', { name: 'Select', exact: true }).click()
+  const bar = app.window.locator('.history-select-bar')
+  await expect(bar.getByRole('checkbox')).toContainText('Select all 50 shown')
+
+  await showMore.click()
+  await expect(rows).toHaveCount(60, { timeout: 20_000 })
+  await expect(showMore).toHaveCount(0)
+  await expect(bar.getByRole('checkbox')).toContainText('Select all 60')
+  await expect(bar.getByRole('checkbox')).not.toContainText('shown')
 })

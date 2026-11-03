@@ -157,6 +157,13 @@ export interface SessionSummary {
   teamMemberName: string | null
 }
 
+export interface SessionPage {
+  sessions: SessionSummary[]
+  total: number
+}
+
+export const FIRST_LISTED_SESSIONS = 50
+
 export interface TeamChatsReport {
   sessionCount: number
   totalBytes: number

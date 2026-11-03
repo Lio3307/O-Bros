@@ -1,5 +1,5 @@
-import { Check, ListChecks, Play, Search, Trash2, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { Check, ListChecks, Minus, Play, Search, Trash2, X } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { formatBytes } from '../../../shared/format'
 import { describeSessionDelete } from '../../../shared/sessionDeleteMessage'
 import { groupByDay, type DayGroup } from '../../../shared/time'
@@ -18,6 +18,7 @@ import './historyFilter.css'
 import { Button } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
 import { LoadingText } from '../../ui/LoadingText'
+import { ShowMoreRow } from '../../ui/ShowMoreRow'
 
 const dayGroupOrder: DayGroup[] = ['Today', 'Yesterday', 'Earlier']
 
@@ -44,7 +45,7 @@ async function removeAfterConfirm(sessions: SessionSummary[], isEverything = fal
 
 interface Picking {
   isOn: boolean
-  pickedPaths: string[]
+  pickedPaths: ReadonlySet<string>
   toggle: (filePath: string) => void
 }
 
@@ -56,7 +57,7 @@ interface SessionItemProps {
 
 function SessionItem({ session, isSelected, picking }: SessionItemProps) {
   const select = useHistoryStore((state) => state.select)
-  const isPicked = picking.pickedPaths.includes(session.filePath)
+  const isPicked = picking.pickedPaths.has(session.filePath)
   const rowClass = picking.isOn
     ? cn('session-row session-row-picking', isPicked && 'session-row-picked')
     : cn('session-row', isSelected && 'session-row-selected')
@@ -116,13 +117,14 @@ function SessionItem({ session, isSelected, picking }: SessionItemProps) {
 
 interface SelectionBarProps {
   shown: SessionSummary[]
-  pickedPaths: string[]
+  pickedPaths: ReadonlySet<string>
+  hasMore: boolean
   onPick: (filePaths: string[]) => void
   onDeleted: () => void
 }
 
-function SelectionBar({ shown, pickedPaths, onPick, onDeleted }: SelectionBarProps) {
-  const picked = shown.filter((session) => pickedPaths.includes(session.filePath))
+function SelectionBar({ shown, pickedPaths, hasMore, onPick, onDeleted }: SelectionBarProps) {
+  const picked = shown.filter((session) => pickedPaths.has(session.filePath))
   const isEverything = shown.length > 0 && picked.length === shown.length
   const isSome = picked.length > 0 && !isEverything
 
@@ -134,24 +136,30 @@ function SelectionBar({ shown, pickedPaths, onPick, onDeleted }: SelectionBarPro
 
   return (
     <div className="history-select-bar">
-      <label className="history-select-all">
-        <input
-          type="checkbox"
-          checked={isEverything}
-          ref={(input) => {
-            if (input !== null) {
-              input.indeterminate = isSome
-            }
-          }}
-          onChange={() => onPick(isEverything ? [] : shown.map((session) => session.filePath))}
-        />
-        Select all ({shown.length})
-      </label>
-      <span className="history-select-count">
-        {picked.length === 0 ? 'Nothing selected' : `${picked.length} selected · ${formatBytes(totalBytesOf(picked))}`}
-      </span>
+      <button
+        type="button"
+        role="checkbox"
+        aria-checked={isEverything ? true : isSome ? 'mixed' : false}
+        className="history-select-all"
+        title={isEverything ? 'Select none' : hasMore ? `Select the ${shown.length} shown. Show more below to pick older ones.` : `Select all ${shown.length}`}
+        onClick={() => onPick(isEverything ? [] : shown.map((session) => session.filePath))}
+      >
+        <span className={cn('session-check', picked.length > 0 && 'session-check-on')} aria-hidden="true">
+          {isEverything && <Check size={11} strokeWidth={3} />}
+          {isSome && <Minus size={11} strokeWidth={3} />}
+        </span>
+        {picked.length === 0 ? (
+          <span className="history-select-text">
+            Select all <span className="muted">{hasMore ? `${shown.length} shown` : shown.length}</span>
+          </span>
+        ) : (
+          <span className="history-select-text">
+            {picked.length} of {shown.length} <span className="muted">· {formatBytes(totalBytesOf(picked))}</span>
+          </span>
+        )}
+      </button>
       <Button variant="remove" className="history-delete-picked" disabled={picked.length === 0} onClick={deletePicked}>
-        <Trash2 size={14} /> {isEverything ? `Delete all ${picked.length}` : `Delete ${picked.length}`}
+        <Trash2 size={14} /> {picked.length === 0 ? 'Delete' : isEverything ? `Delete all ${picked.length}` : `Delete ${picked.length}`}
       </Button>
     </div>
   )
@@ -230,6 +238,8 @@ function SearchResults({ hits, selectedFilePath, picking }: { hits: SessionSearc
 
 export function HistoryPanel() {
   const sessions = useHistoryStore((state) => state.sessions)
+  const totalSessions = useHistoryStore((state) => state.totalSessions)
+  const showMore = useHistoryStore((state) => state.showMore)
   const selectedFilePath = useHistoryStore((state) => state.selectedFilePath)
   const load = useHistoryStore((state) => state.load)
   const searchHits = useHistoryStore((state) => state.searchHits)
@@ -256,9 +266,10 @@ export function HistoryPanel() {
     setPickedPaths([])
   }
 
+  const pickedSet = useMemo(() => new Set(pickedPaths), [pickedPaths])
   const picking: Picking = {
     isOn: isPicking,
-    pickedPaths,
+    pickedPaths: pickedSet,
     toggle: (filePath) => setPickedPaths((paths) => (paths.includes(filePath) ? paths.filter((path) => path !== filePath) : [...paths, filePath]))
   }
 
@@ -286,7 +297,15 @@ export function HistoryPanel() {
         )}
       </PanelHeader>
       <SearchBox />
-      {isPicking && <SelectionBar shown={shownSessions} pickedPaths={pickedPaths} onPick={setPickedPaths} onDeleted={stopPicking} />}
+      {isPicking && (
+        <SelectionBar
+          shown={shownSessions}
+          pickedPaths={pickedSet}
+          hasMore={searchHits === null && totalSessions > sessions.length}
+          onPick={setPickedPaths}
+          onDeleted={stopPicking}
+        />
+      )}
       {searchHits !== null && <SearchResults hits={searchHits} selectedFilePath={selectedFilePath} picking={picking} />}
       {searchHits === null && (
         <TeamFilter
@@ -317,6 +336,7 @@ export function HistoryPanel() {
             </section>
           )
         )}
+      {searchHits === null && hasLoaded && <ShowMoreRow hiddenCount={Math.max(totalSessions - sessions.length, 0)} onShowMore={() => void showMore()} />}
     </div>
   )
 }

@@ -67,11 +67,10 @@
   top: 0;
   z-index: 1;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
+  gap: 8px;
   margin: 0 0 8px;
-  padding: 8px;
+  padding: 4px 4px 4px 8px;
   background: var(--color-panel-solid);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
@@ -79,31 +78,37 @@
 
 .history-select-all {
   display: inline-flex;
+  flex: 1;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  min-width: 0;
+  height: 26px;
+  padding: 0;
   font-size: 12px;
   color: var(--color-text);
-  white-space: nowrap;
+  background: transparent;
+  border: none;
   cursor: pointer;
 }
 
-.history-select-all input {
-  margin: 0;
-  accent-color: var(--color-strong);
+.history-select-all:hover .session-check:not(.session-check-on) {
+  border-color: var(--color-strong);
 }
 
-.history-select-count {
-  font-size: 12px;
-  color: var(--color-muted);
+.history-select-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .history-delete-picked {
   display: inline-flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 6px;
   height: 26px;
-  margin-left: auto;
+  margin-left: 0;
   padding: 0 10px;
 }
 

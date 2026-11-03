@@ -1,8 +1,8 @@
 import { accountToRef } from '../../../shared/accounts'
-import type { SessionMessage, SessionSummary } from '../../../shared/types'
+import type { SessionMessage, SessionPage, SessionSummary } from '../../../shared/types'
 import { findSourceOf, listSourceFiles, readSessionSources, type SourceFile } from './sessionSources'
 
-const MAX_LISTED_SESSIONS = 50
+const HEADERS_READ_AT_ONCE = 50
 
 export async function summarizeSessionFile(file: SourceFile): Promise<SessionSummary> {
   const header = await file.source.format.readHeader(file.filePath)
@@ -19,13 +19,18 @@ export async function summarizeSessionFile(file: SourceFile): Promise<SessionSum
   }
 }
 
-export async function listSessions(): Promise<SessionSummary[]> {
-  const files = await listSourceFiles(await readSessionSources())
-  const newestFiles = files
-    .sort((first, second) => second.modifiedAt - first.modifiedAt)
-    .slice(0, MAX_LISTED_SESSIONS)
+async function summarizeAFewAtATime(files: SourceFile[]): Promise<SessionSummary[]> {
+  const summaries: SessionSummary[] = []
+  for (let start = 0; start < files.length; start += HEADERS_READ_AT_ONCE) {
+    summaries.push(...(await Promise.all(files.slice(start, start + HEADERS_READ_AT_ONCE).map(summarizeSessionFile))))
+  }
+  return summaries
+}
 
-  return Promise.all(newestFiles.map(summarizeSessionFile))
+export async function listSessions(limit: number): Promise<SessionPage> {
+  const files = await listSourceFiles(await readSessionSources())
+  const newestFiles = files.sort((first, second) => second.modifiedAt - first.modifiedAt).slice(0, limit)
+  return { sessions: await summarizeAFewAtATime(newestFiles), total: files.length }
 }
 
 export async function readSession(filePath: string): Promise<SessionMessage[]> {

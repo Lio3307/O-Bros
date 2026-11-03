@@ -113,7 +113,7 @@ const api: DesktopApi = {
     agents: () => ipcRenderer.invoke(IpcChannel.wotAgents)
   },
   history: {
-    list: () => ipcRenderer.invoke(IpcChannel.historyList),
+    list: (limit) => ipcRenderer.invoke(IpcChannel.historyList, limit),
     get: (filePath) => ipcRenderer.invoke(IpcChannel.historyGet, filePath),
     search: (query) => ipcRenderer.invoke(IpcChannel.historySearch, query),
     remove: (filePaths, permanently) => ipcRenderer.invoke(IpcChannel.historyRemove, filePaths, permanently),

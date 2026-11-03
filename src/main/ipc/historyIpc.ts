@@ -2,6 +2,7 @@ import { latestSessionFile, listThreadSummaries, prepareContinuation } from '../
 import { ipcMain } from 'electron'
 import { IpcChannel } from '../../shared/ipc'
 import type { ContinueRequest, RemoveOlderSessionsRequest, SessionSummary, TeamChatsReport } from '../../shared/types'
+import { sessionListLimit } from '../../shared/sessionListLimit'
 import { listSessions, readSession } from '../services/sessions/sessionLibrary'
 import { searchSessions } from '../services/sessions/sessionSearch'
 import { removeSessions, removeSessionsOlderThan } from '../services/sessions/sessionRemoval'
@@ -19,7 +20,10 @@ async function readTeamChatsReport(): Promise<TeamChatsReport> {
 }
 
 export function registerHistoryIpc(): void {
-  ipcMain.handle(IpcChannel.historyList, () => listSessions().then(withTeamMemberNames))
+  ipcMain.handle(IpcChannel.historyList, async (_event, limit: unknown) => {
+    const page = await listSessions(sessionListLimit(limit))
+    return { ...page, sessions: await withTeamMemberNames(page.sessions) }
+  })
   ipcMain.handle(IpcChannel.historyGet, (_event, filePath: string) => readSession(filePath))
   ipcMain.handle(IpcChannel.historySearch, (_event, query: string) => searchSessions(query).then(withTeamMemberNames))
   ipcMain.handle(IpcChannel.historyRemove, (_event, filePaths: string[], permanently: boolean) =>
