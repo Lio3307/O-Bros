@@ -1,4 +1,26 @@
-export type ShortcutAction = 'splitRight' | 'splitDown' | 'closePane' | 'newTerminal' | 'openCommandPalette'
+export const SHORTCUT_ACTIONS = [
+  'newTerminal',
+  'splitRight',
+  'splitDown',
+  'closePane',
+  'nextTab',
+  'previousTab',
+  'focusPaneLeft',
+  'focusPaneRight',
+  'focusPaneUp',
+  'focusPaneDown',
+  'showTerminals',
+  'showProjects',
+  'showHistory',
+  'showChanges',
+  'showActivity',
+  'showSettings',
+  'toggleSidebar',
+  'toggleFilesPanel',
+  'openCommandPalette'
+] as const
+
+export type ShortcutAction = (typeof SHORTCUT_ACTIONS)[number]
 
 export interface Shortcut {
   mod: boolean
@@ -17,13 +39,25 @@ export interface KeyEventLike {
 
 export type ShortcutMap = Record<ShortcutAction, Shortcut>
 
-export const SHORTCUT_ACTIONS: ShortcutAction[] = ['splitRight', 'splitDown', 'closePane', 'newTerminal', 'openCommandPalette']
-
 export const SHORTCUT_LABELS: Record<ShortcutAction, { title: string; description: string }> = {
   splitRight: { title: 'Split right', description: 'Splits the focused terminal into two side by side.' },
   splitDown: { title: 'Split down', description: 'Splits the focused terminal into two, one above the other.' },
   closePane: { title: 'Close pane', description: 'Closes the focused terminal pane.' },
   newTerminal: { title: 'New terminal', description: 'Opens a plain terminal in the selected folder.' },
+  nextTab: { title: 'Next tab', description: 'Goes to the tab on the right, in the selected folder.' },
+  previousTab: { title: 'Previous tab', description: 'Goes to the tab on the left, in the selected folder.' },
+  focusPaneLeft: { title: 'Pane on the left', description: 'In a split tab, moves to the pane on the left.' },
+  focusPaneRight: { title: 'Pane on the right', description: 'In a split tab, moves to the pane on the right.' },
+  focusPaneUp: { title: 'Pane above', description: 'In a split tab, moves to the pane above.' },
+  focusPaneDown: { title: 'Pane below', description: 'In a split tab, moves to the pane below.' },
+  showTerminals: { title: 'All open terminals', description: 'Lists every open terminal in every folder, to search and jump to one.' },
+  showProjects: { title: 'Go to Projects', description: 'Shows your folders and terminals.' },
+  showHistory: { title: 'Go to History', description: 'Shows your saved conversations.' },
+  showChanges: { title: 'Go to Changes', description: 'Shows the git changes of the selected folder.' },
+  showActivity: { title: 'Go to Activity', description: 'Shows what your agents are doing.' },
+  showSettings: { title: 'Go to Settings', description: 'Opens Settings.' },
+  toggleSidebar: { title: 'Show or hide the left side panel', description: 'Shows or hides the bar on the left and its panel.' },
+  toggleFilesPanel: { title: 'Show or hide the files panel', description: 'Shows or hides the files panel on the right.' },
   openCommandPalette: { title: 'Command palette', description: 'Opens the list of every command, to search and run.' }
 }
 
@@ -32,6 +66,20 @@ export const DEFAULT_SHORTCUTS: ShortcutMap = {
   splitDown: { mod: true, shift: true, alt: false, key: 'e' },
   closePane: { mod: true, shift: true, alt: false, key: 'w' },
   newTerminal: { mod: true, shift: true, alt: false, key: 't' },
+  nextTab: { mod: true, shift: false, alt: false, key: 'tab' },
+  previousTab: { mod: true, shift: true, alt: false, key: 'tab' },
+  focusPaneLeft: { mod: false, shift: false, alt: true, key: 'arrowleft' },
+  focusPaneRight: { mod: false, shift: false, alt: true, key: 'arrowright' },
+  focusPaneUp: { mod: false, shift: false, alt: true, key: 'arrowup' },
+  focusPaneDown: { mod: false, shift: false, alt: true, key: 'arrowdown' },
+  showTerminals: { mod: true, shift: true, alt: false, key: 'l' },
+  showProjects: { mod: true, shift: false, alt: false, key: '1' },
+  showHistory: { mod: true, shift: false, alt: false, key: '2' },
+  showChanges: { mod: true, shift: false, alt: false, key: '3' },
+  showActivity: { mod: true, shift: false, alt: false, key: '4' },
+  showSettings: { mod: true, shift: false, alt: false, key: ',' },
+  toggleSidebar: { mod: true, shift: true, alt: false, key: 'b' },
+  toggleFilesPanel: { mod: true, shift: false, alt: true, key: 'b' },
   openCommandPalette: { mod: true, shift: true, alt: false, key: 'p' }
 }
 
@@ -49,6 +97,7 @@ const KEY_NAMES: Record<string, string> = {
   arrowright: 'Right',
   arrowup: 'Up',
   arrowdown: 'Down',
+  tab: 'Tab',
   ' ': 'Space',
   '\\': '\\'
 }

@@ -5,6 +5,7 @@ import {
   findShortcutProblem,
   formatShortcut,
   parseShortcuts,
+  SHORTCUT_ACTIONS,
   shortcutFromEvent,
   type KeyEventLike
 } from './shortcuts'
@@ -95,5 +96,18 @@ describe('parseShortcuts', () => {
   it('ignores a saved shortcut that has no Ctrl, Cmd or Alt', () => {
     const saved = JSON.stringify({ splitRight: { mod: false, shift: true, alt: false, key: 'r' } })
     expect(parseShortcuts(saved).splitRight).toEqual(DEFAULT_SHORTCUTS.splitRight)
+  })
+})
+
+describe('the default shortcuts', () => {
+  it('are all different, and none is taken by copy, paste, save, search or quick open', () => {
+    for (const action of SHORTCUT_ACTIONS) {
+      expect(findShortcutProblem(DEFAULT_SHORTCUTS, action, DEFAULT_SHORTCUTS[action]), action).toBeNull()
+    }
+  })
+
+  it('names Tab and the arrow keys', () => {
+    expect(formatShortcut(DEFAULT_SHORTCUTS.previousTab, false)).toBe('Ctrl+Shift+Tab')
+    expect(formatShortcut(DEFAULT_SHORTCUTS.focusPaneLeft, false)).toBe('Alt+Left')
   })
 })

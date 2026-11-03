@@ -127,3 +127,40 @@ export function setSplitRatio(layout: PaneLayout, path: SplitPath, ratio: number
     ? { ...layout, first: setSplitRatio(layout.first, rest, ratio) }
     : { ...layout, second: setSplitRatio(layout.second, rest, ratio) }
 }
+
+export type PaneDirection = 'left' | 'right' | 'up' | 'down'
+
+const TOUCHING = 0.01
+
+function gapTowards(from: PaneRect, to: PaneRect, direction: PaneDirection): number {
+  const gaps: Record<PaneDirection, number> = {
+    left: from.left - (to.left + to.width),
+    right: to.left - (from.left + from.width),
+    up: from.top - (to.top + to.height),
+    down: to.top - (from.top + from.height)
+  }
+  return gaps[direction]
+}
+
+function overlapAcross(from: PaneRect, to: PaneRect, direction: PaneDirection): number {
+  const isSideways = direction === 'left' || direction === 'right'
+  const [start, size, otherStart, otherSize] = isSideways
+    ? [from.top, from.height, to.top, to.height]
+    : [from.left, from.width, to.left, to.width]
+  return Math.min(start + size, otherStart + otherSize) - Math.max(start, otherStart)
+}
+
+export function paneInDirection(layout: PaneLayout, fromPaneId: string, direction: PaneDirection): string | null {
+  const rects = computePaneRects(layout)
+  const from = rects[fromPaneId]
+  if (from === undefined) {
+    return null
+  }
+  const candidates = Object.entries(rects)
+    .filter(([paneId, rect]) => paneId !== fromPaneId && gapTowards(from, rect, direction) >= -TOUCHING && overlapAcross(from, rect, direction) > TOUCHING)
+    .sort(
+      ([, first], [, second]) =>
+        gapTowards(from, first, direction) - gapTowards(from, second, direction) || overlapAcross(from, second, direction) - overlapAcross(from, first, direction)
+    )
+  return candidates[0]?.[0] ?? null
+}

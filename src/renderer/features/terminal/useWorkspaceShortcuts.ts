@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { findShortcutAction } from '../../../shared/shortcuts'
 import { useShortcutsStore } from '../../state/shortcutsStore'
-import { SHORTCUT_ACTIONS } from './shortcutActions'
+import { REPEATING_ACTIONS, SHORTCUT_ACTIONS } from './shortcutActions'
 
 export function useWorkspaceShortcuts(): void {
   useEffect(() => {
@@ -14,12 +14,12 @@ export function useWorkspaceShortcuts(): void {
       if (action === null) {
         return
       }
-      event.preventDefault()
-      event.stopPropagation()
-      if (event.repeat) {
+      const runs = !event.repeat || REPEATING_ACTIONS.includes(action)
+      if (runs && SHORTCUT_ACTIONS[action]() === false) {
         return
       }
-      SHORTCUT_ACTIONS[action]()
+      event.preventDefault()
+      event.stopPropagation()
     }
 
     window.addEventListener('keydown', handleKeyDown, true)

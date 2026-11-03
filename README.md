@@ -86,6 +86,11 @@ If `npm install` leaves Electron without its binary, run `node node_modules/elec
 | `Shift+Alt+F` | Format the open file |
 | `Ctrl+Shift+D` / `Ctrl+Shift+E` | Split the focused terminal right / down (change them in Settings, Shortcuts) |
 | `Ctrl+Shift+W` / `Ctrl+Shift+T` | Close the focused pane / open a new terminal |
+| `Ctrl+Tab` / `Ctrl+Shift+Tab` | Next / previous tab in the selected folder |
+| `Alt` + arrow keys | Move to the pane on that side in a split tab |
+| `Ctrl+Shift+L` | List every open terminal in every folder and jump to one |
+| `Ctrl+1` to `Ctrl+4` / `Ctrl+,` | Go to Projects, History, Changes, Activity / Settings |
+| `Ctrl+Shift+B` / `Ctrl+Alt+B` | Show or hide the left side panel / the files panel on the right |
 | `Ctrl+Shift+P` | Command palette: search and run any action |
 | `F2` / `Del` | Rename / delete the selected item in the file tree |
 

@@ -31,6 +31,24 @@ export const TERMINAL_COMMANDS: AppCommand[] = [
     shortcutAction: 'closePane',
     run: SHORTCUT_ACTIONS.closePane
   },
+  ...(
+    [
+      ['nextTab', 'Go to the next tab', ['right', 'switch']],
+      ['previousTab', 'Go to the previous tab', ['left', 'switch']],
+      ['focusPaneLeft', 'Go to the pane on the left', ['split', 'focus']],
+      ['focusPaneRight', 'Go to the pane on the right', ['split', 'focus']],
+      ['focusPaneUp', 'Go to the pane above', ['split', 'focus']],
+      ['focusPaneDown', 'Go to the pane below', ['split', 'focus']],
+      ['showTerminals', 'Show all open terminals', ['list', 'switch', 'panes', 'sessions']]
+    ] as const
+  ).map(([action, title, keywords]) => ({
+    id: `terminal.${action}`,
+    title,
+    group: 'Terminal',
+    keywords: [...keywords],
+    shortcutAction: action,
+    run: SHORTCUT_ACTIONS[action]
+  })),
   {
     id: 'terminal.zoomIn',
     title: 'Make terminal text larger',

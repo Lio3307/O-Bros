@@ -33,8 +33,15 @@ Split the focused terminal right or down from the buttons in the tab bar, or wit
 | `Ctrl+Shift+E` | Split down |
 | `Ctrl+Shift+W` | Close the focused pane |
 | `Ctrl+Shift+T` | New terminal in the selected folder |
+| `Ctrl+Tab` / `Ctrl+Shift+Tab` | Next / previous tab in the selected folder, wrapping around |
+| `Alt+Left`, `Alt+Right`, `Alt+Up`, `Alt+Down` | Move to the pane on that side in a split tab |
+| `Ctrl+Shift+L` | All open terminals: every terminal in every folder, to search by name, folder or agent and jump to one |
+| `Ctrl+1` to `Ctrl+4` | Go to Projects, History, Changes, Activity |
+| `Ctrl+,` | Go to Settings |
+| `Ctrl+Shift+B` | Show or hide the left side panel |
+| `Ctrl+Alt+B` | Show or hide the files panel on the right |
 
-On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → Shortcuts**: click a shortcut, then press the keys. A shortcut must include Ctrl, Cmd or Alt, so typing in a terminal is never taken over, and a shortcut already used for copy, paste, save, search or quick open is refused.
+On a Mac, `Cmd` is used instead of `Ctrl`. Change any of them in **Settings → Shortcuts**: click a shortcut, then press the keys. A shortcut must include Ctrl, Cmd or Alt, so typing in a terminal is never taken over, and a shortcut already used for copy, paste, save, search or quick open is refused. The pane keys only act in a split tab: anywhere else, such as the editor, Alt and an arrow key keep doing what they normally do.
 
 ### Starting without a project folder
 

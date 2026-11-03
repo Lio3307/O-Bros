@@ -4,6 +4,7 @@ import {
   computePaneRects,
   listDividers,
   listPaneIds,
+  paneInDirection,
   removePaneFromLayout,
   setSplitRatio,
   splitPaneInLayout,
@@ -89,5 +90,27 @@ describe('listDividers and setSplitRatio', () => {
     expect(clampSplitRatio(0)).toBe(0.15)
     expect(clampSplitRatio(1)).toBe(0.85)
     expect(clampSplitRatio(0.4)).toBe(0.4)
+  })
+})
+
+describe('paneInDirection', () => {
+  const layout: PaneLayout = {
+    kind: 'split',
+    direction: 'horizontal',
+    first: { kind: 'pane', paneId: 'left' },
+    second: { kind: 'split', direction: 'vertical', first: { kind: 'pane', paneId: 'topRight' }, second: { kind: 'pane', paneId: 'bottomRight' } }
+  }
+
+  it('finds the pane next to the focused one', () => {
+    expect(paneInDirection(layout, 'left', 'right')).toBe('topRight')
+    expect(paneInDirection(layout, 'bottomRight', 'left')).toBe('left')
+    expect(paneInDirection(layout, 'topRight', 'down')).toBe('bottomRight')
+    expect(paneInDirection(layout, 'bottomRight', 'up')).toBe('topRight')
+  })
+
+  it('stays put at an edge', () => {
+    expect(paneInDirection(layout, 'left', 'left')).toBeNull()
+    expect(paneInDirection(layout, 'left', 'up')).toBeNull()
+    expect(paneInDirection({ kind: 'pane', paneId: 'only' }, 'only', 'right')).toBeNull()
   })
 })

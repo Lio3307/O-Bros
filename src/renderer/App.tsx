@@ -4,6 +4,7 @@ import { FilesPanel } from './features/files/FilesPanel'
 import { FileActionDialogs } from './features/files/FileActionDialogs'
 import { QuickOpen } from './features/files/QuickOpen'
 import { CommandPalette } from './features/commands/CommandPalette'
+import { TerminalList } from './features/terminal/TerminalList'
 import { TextPromptHost } from './ui/TextPromptHost'
 import { CloseConfirmModal } from './features/shutdown/CloseConfirmModal'
 import { useQuickOpenShortcut } from './features/files/useQuickOpenShortcut'
@@ -114,6 +115,7 @@ export function App() {
   const isFilesPanelOpen = useLayoutStore((state) => state.isFilesPanelOpen)
   const isQuickOpenVisible = useLayoutStore((state) => state.isQuickOpenVisible)
   const isCommandPaletteVisible = useLayoutStore((state) => state.isCommandPaletteVisible)
+  const isTerminalListVisible = useLayoutStore((state) => state.isTerminalListVisible)
 
   return (
     <div className="app">
@@ -129,6 +131,7 @@ export function App() {
       <StatusBar />
       {isQuickOpenVisible && <QuickOpen />}
       {isCommandPaletteVisible && <CommandPalette />}
+      {isTerminalListVisible && <TerminalList />}
       <FileActionDialogs />
       <CloseConfirmModal />
       <ConfirmHost />

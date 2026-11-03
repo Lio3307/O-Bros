@@ -1,22 +1,25 @@
+import type { ShortcutAction } from '../../../shared/shortcuts'
 import { useLayoutStore, type Section } from '../../state/layoutStore'
+import { SHORTCUT_ACTIONS } from '../terminal/shortcutActions'
 import { SETTINGS_PAGES } from '../settings/settingsPages'
 import { toast } from '../../state/toastStore'
 import { openFirstTeamMember } from '../team/openTeamMember'
 import type { AppCommand } from './commandTypes'
 
-const SECTION_COMMANDS: { section: Section; title: string; keywords: string[] }[] = [
-  { section: 'projects', title: 'Show Projects', keywords: ['folders', 'terminals'] },
-  { section: 'history', title: 'Show conversation History', keywords: ['sessions', 'resume', 'claude', 'codex'] },
-  { section: 'changes', title: 'Show Changes (Git)', keywords: ['git', 'commit', 'diff'] },
-  { section: 'activity', title: 'Show agent Activity', keywords: ['log', 'timeline', 'agents', 'today'] }
+const SECTION_COMMANDS: { section: Section; shortcutAction: ShortcutAction; title: string; keywords: string[] }[] = [
+  { section: 'projects', shortcutAction: 'showProjects', title: 'Show Projects', keywords: ['folders', 'terminals'] },
+  { section: 'history', shortcutAction: 'showHistory', title: 'Show conversation History', keywords: ['sessions', 'resume'] },
+  { section: 'changes', shortcutAction: 'showChanges', title: 'Show Changes (Git)', keywords: ['git', 'commit', 'diff'] },
+  { section: 'activity', shortcutAction: 'showActivity', title: 'Show agent Activity', keywords: ['log', 'timeline', 'agents', 'today'] }
 ]
 
-const sectionCommands: AppCommand[] = SECTION_COMMANDS.map(({ section, title, keywords }) => ({
+const sectionCommands: AppCommand[] = SECTION_COMMANDS.map(({ section, shortcutAction, title, keywords }) => ({
   id: `show.${section}`,
   title,
   group: 'Go to',
   keywords,
-  run: () => useLayoutStore.getState().openSection(section)
+  shortcutAction,
+  run: SHORTCUT_ACTIONS[shortcutAction]
 }))
 
 const settingsCommands: AppCommand[] = SETTINGS_PAGES.map(({ page, label }) => ({
@@ -56,15 +59,17 @@ export const NAVIGATION_COMMANDS: AppCommand[] = [
     id: 'view.toggleSidebar',
     title: 'Show or hide the side panel',
     group: 'View',
-    keywords: ['sidebar'],
-    run: () => useLayoutStore.getState().toggleSidebarVisibility()
+    keywords: ['sidebar', 'left'],
+    shortcutAction: 'toggleSidebar',
+    run: SHORTCUT_ACTIONS.toggleSidebar
   },
   {
     id: 'view.toggleFiles',
     title: 'Show or hide the files panel',
     group: 'View',
-    keywords: ['tree', 'explorer'],
-    run: () => useLayoutStore.getState().toggleFilesPanel()
+    keywords: ['tree', 'explorer', 'right'],
+    shortcutAction: 'toggleFilesPanel',
+    run: SHORTCUT_ACTIONS.toggleFilesPanel
   },
   ...settingsCommands
 ]

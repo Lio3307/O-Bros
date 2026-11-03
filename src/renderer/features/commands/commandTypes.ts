@@ -7,5 +7,5 @@ export interface AppCommand {
   keywords?: string[]
   shortcutAction?: ShortcutAction
   shortcutText?: string
-  run: () => void | Promise<unknown>
+  run: () => unknown
 }

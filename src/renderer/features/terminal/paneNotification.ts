@@ -8,6 +8,7 @@ import { useLayoutStore } from '../../state/layoutStore'
 import { useTerminalSettingsStore } from '../../state/terminalSettingsStore'
 import { useWorkspaceStore, type TerminalPaneInfo, type TerminalTab } from '../../state/workspaceStore'
 import { isAgentPane } from './agentStatusTracking'
+import { goToPane } from './goToPane'
 
 function findTabOfPane(paneId: string): TerminalTab | null {
   for (const tab of useWorkspaceStore.getState().tabs) {
@@ -23,15 +24,6 @@ function isUserWatching(tab: TerminalTab): boolean {
   return isTabShown && document.hasFocus()
 }
 
-function goToPane(paneId: string): void {
-  window.focus()
-  const tab = findTabOfPane(paneId)
-  if (tab !== null) {
-    useWorkspaceStore.getState().focusPane(tab.id, paneId)
-    useWorkspaceStore.getState().activateTab(tab.id)
-    useLayoutStore.getState().showSection('projects')
-  }
-}
 
 function showSystemNotification(paneId: string, title: string, body: string): void {
   try {

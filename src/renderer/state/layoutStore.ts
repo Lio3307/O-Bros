@@ -11,6 +11,7 @@ interface LayoutState {
   isFilesPanelOpen: boolean
   isQuickOpenVisible: boolean
   isCommandPaletteVisible: boolean
+  isTerminalListVisible: boolean
   selectSection: (section: Section) => void
   openSection: (section: Section) => void
   showSection: (section: Section) => void
@@ -20,6 +21,7 @@ interface LayoutState {
   closeQuickOpen: () => void
   openCommandPalette: () => void
   closeCommandPalette: () => void
+  setTerminalListVisible: (isVisible: boolean) => void
   selectSettingsPage: (page: SettingsPage) => void
 }
 
@@ -30,6 +32,7 @@ export const useLayoutStore = create<LayoutState>()((set, get) => ({
   isFilesPanelOpen: false,
   isQuickOpenVisible: false,
   isCommandPaletteVisible: false,
+  isTerminalListVisible: false,
 
   selectSection: (section) => {
     const { section: currentSection, sidebarMode } = get()
@@ -54,6 +57,8 @@ export const useLayoutStore = create<LayoutState>()((set, get) => ({
   openCommandPalette: () => set({ isCommandPaletteVisible: true }),
 
   closeCommandPalette: () => set({ isCommandPaletteVisible: false }),
+
+  setTerminalListVisible: (isTerminalListVisible) => set({ isTerminalListVisible }),
 
   selectSettingsPage: (settingsPage) => set({ settingsPage })
 }))
