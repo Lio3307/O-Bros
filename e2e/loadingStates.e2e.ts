@@ -15,7 +15,7 @@ test('slow lists show what they are loading instead of an empty or wrong message
 
   await app.application.evaluate(({ ipcMain }) => {
     ipcMain.removeHandler('history:list')
-    ipcMain.handle('history:list', () => new Promise((resolve) => setTimeout(() => resolve({ sessions: [], total: 0 }), 2500)))
+    ipcMain.handle('history:list', () => new Promise((resolve) => setTimeout(() => resolve({ sessions: [], total: 0, totalBytes: 0 }), 2500)))
   })
   await app.window.getByTitle('History', { exact: true }).click()
   await expect(app.window.getByText('Reading your conversations…')).toBeVisible()

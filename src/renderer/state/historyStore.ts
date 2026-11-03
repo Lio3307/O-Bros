@@ -8,6 +8,7 @@ import { toast } from './toastStore'
 interface HistoryState {
   sessions: SessionSummary[]
   totalSessions: number
+  totalBytes: number
   listedLimit: number
   hasLoaded: boolean
   threads: ThreadSummary[]
@@ -31,7 +32,7 @@ let latestListId = 0
 export const useHistoryStore = create<HistoryState>()((set, get) => {
   async function reload(): Promise<void> {
     const listId = ++latestListId
-    const [{ sessions, total }, threads] = await Promise.all([
+    const [{ sessions, total, totalBytes }, threads] = await Promise.all([
       window.api.history.list(get().listedLimit).finally(() => set({ hasLoaded: true })),
       window.api.history.threads().catch(() => [])
     ])
@@ -42,6 +43,7 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
     set({
       sessions,
       totalSessions: total,
+      totalBytes,
       threads,
       selectedFilePath: selectedStillListed ? get().selectedFilePath : (sessions[0]?.filePath ?? null)
     })
@@ -50,6 +52,7 @@ export const useHistoryStore = create<HistoryState>()((set, get) => {
   return {
     sessions: [],
     totalSessions: 0,
+    totalBytes: 0,
     listedLimit: FIRST_LISTED_SESSIONS,
     hasLoaded: false,
     threads: [],

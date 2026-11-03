@@ -177,6 +177,7 @@ test('History lists the newest 50 first and shows the rest on request, for selec
   await app.window.getByTitle('History', { exact: true }).click()
   const rows = app.window.locator('.session-row')
   await expect(rows).toHaveCount(50, { timeout: 20_000 })
+  await expect(app.window.locator('.history-total')).toHaveText(/^60 conversations · .+ on disk$/)
   const showMore = app.window.getByRole('button', { name: 'Show 10 more (10 not shown)' })
   await expect(showMore).toBeVisible()
 

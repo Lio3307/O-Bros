@@ -239,6 +239,7 @@ function SearchResults({ hits, selectedFilePath, picking }: { hits: SessionSearc
 export function HistoryPanel() {
   const sessions = useHistoryStore((state) => state.sessions)
   const totalSessions = useHistoryStore((state) => state.totalSessions)
+  const totalBytes = useHistoryStore((state) => state.totalBytes)
   const showMore = useHistoryStore((state) => state.showMore)
   const selectedFilePath = useHistoryStore((state) => state.selectedFilePath)
   const load = useHistoryStore((state) => state.load)
@@ -297,6 +298,11 @@ export function HistoryPanel() {
         )}
       </PanelHeader>
       <SearchBox />
+      {searchHits === null && totalSessions > 0 && (
+        <p className="history-total" title="Every Claude and Codex conversation on this computer, also the ones not shown yet">
+          {totalSessions.toLocaleString()} {totalSessions === 1 ? 'conversation' : 'conversations'} · {formatBytes(totalBytes)} on disk
+        </p>
+      )}
       {isPicking && (
         <SelectionBar
           shown={shownSessions}

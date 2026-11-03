@@ -62,6 +62,14 @@
   border-color: var(--color-strong);
 }
 
+.history-total {
+  margin: 8px 0;
+  padding: 0 12px;
+  font-size: 12px;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .history-select-bar {
   position: sticky;
   top: 0;

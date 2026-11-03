@@ -160,6 +160,7 @@ export interface SessionSummary {
 export interface SessionPage {
   sessions: SessionSummary[]
   total: number
+  totalBytes: number
 }
 
 export const FIRST_LISTED_SESSIONS = 50

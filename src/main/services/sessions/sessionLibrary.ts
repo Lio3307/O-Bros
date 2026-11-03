@@ -30,7 +30,11 @@ async function summarizeAFewAtATime(files: SourceFile[]): Promise<SessionSummary
 export async function listSessions(limit: number): Promise<SessionPage> {
   const files = await listSourceFiles(await readSessionSources())
   const newestFiles = files.sort((first, second) => second.modifiedAt - first.modifiedAt).slice(0, limit)
-  return { sessions: await summarizeAFewAtATime(newestFiles), total: files.length }
+  return {
+    sessions: await summarizeAFewAtATime(newestFiles),
+    total: files.length,
+    totalBytes: files.reduce((sum, file) => sum + file.sizeBytes, 0)
+  }
 }
 
 export async function readSession(filePath: string): Promise<SessionMessage[]> {
