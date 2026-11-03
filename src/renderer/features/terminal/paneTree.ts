@@ -11,28 +11,31 @@ export function listPaneIds(layout: PaneLayout): string[] {
   return [...listPaneIds(layout.first), ...listPaneIds(layout.second)]
 }
 
-export function splitPaneInLayout(
-  layout: PaneLayout,
-  targetPaneId: string,
-  direction: SplitDirection,
-  newPaneId: string
-): PaneLayout {
+function placeBeside(layout: PaneLayout, targetPaneId: string, newPaneId: string, direction: SplitDirection, isBefore: boolean): PaneLayout {
   if (layout.kind === 'pane') {
     if (layout.paneId !== targetPaneId) {
       return layout
     }
-    return {
-      kind: 'split',
-      direction,
-      first: layout,
-      second: { kind: 'pane', paneId: newPaneId }
-    }
+    const added: PaneLayout = { kind: 'pane', paneId: newPaneId }
+    return { kind: 'split', direction, first: isBefore ? added : layout, second: isBefore ? layout : added }
   }
   return {
     ...layout,
-    first: splitPaneInLayout(layout.first, targetPaneId, direction, newPaneId),
-    second: splitPaneInLayout(layout.second, targetPaneId, direction, newPaneId)
+    first: placeBeside(layout.first, targetPaneId, newPaneId, direction, isBefore),
+    second: placeBeside(layout.second, targetPaneId, newPaneId, direction, isBefore)
   }
+}
+
+export function splitPaneInLayout(layout: PaneLayout, targetPaneId: string, direction: SplitDirection, newPaneId: string): PaneLayout {
+  return placeBeside(layout, targetPaneId, newPaneId, direction, false)
+}
+
+export function movePaneInLayout(layout: PaneLayout, paneId: string, targetPaneId: string, direction: SplitDirection, isBefore: boolean): PaneLayout {
+  const withoutMoved = removePaneFromLayout(layout, paneId)
+  if (withoutMoved === null || paneId === targetPaneId || !listPaneIds(withoutMoved).includes(targetPaneId)) {
+    return layout
+  }
+  return placeBeside(withoutMoved, targetPaneId, paneId, direction, isBefore)
 }
 
 export function removePaneFromLayout(layout: PaneLayout, targetPaneId: string): PaneLayout | null {

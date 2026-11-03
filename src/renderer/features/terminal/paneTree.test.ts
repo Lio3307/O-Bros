@@ -4,6 +4,7 @@ import {
   computePaneRects,
   listDividers,
   listPaneIds,
+  movePaneInLayout,
   paneInDirection,
   removePaneFromLayout,
   setSplitRatio,
@@ -112,5 +113,30 @@ describe('paneInDirection', () => {
     expect(paneInDirection(layout, 'left', 'left')).toBeNull()
     expect(paneInDirection(layout, 'left', 'up')).toBeNull()
     expect(paneInDirection({ kind: 'pane', paneId: 'only' }, 'only', 'right')).toBeNull()
+  })
+})
+
+describe('movePaneInLayout', () => {
+  const sideBySide = splitPaneInLayout({ kind: 'pane', paneId: 'a' }, 'a', 'horizontal', 'b')
+
+  it('moves a pane to the chosen side of another pane', () => {
+    expect(movePaneInLayout(sideBySide, 'b', 'a', 'vertical', true)).toEqual({
+      kind: 'split',
+      direction: 'vertical',
+      first: { kind: 'pane', paneId: 'b' },
+      second: { kind: 'pane', paneId: 'a' }
+    })
+  })
+
+  it('moves a pane next to one inside a nested split, keeping the rest', () => {
+    const three = splitPaneInLayout(sideBySide, 'b', 'vertical', 'c')
+    const moved = movePaneInLayout(three, 'a', 'c', 'horizontal', false)
+    expect(listPaneIds(moved)).toEqual(['b', 'c', 'a'])
+    expect(computePaneRects(moved).a.left).toBeGreaterThan(computePaneRects(moved).c.left)
+  })
+
+  it('leaves the layout alone for a drop on itself or on a pane that is not there', () => {
+    expect(movePaneInLayout(sideBySide, 'a', 'a', 'vertical', true)).toBe(sideBySide)
+    expect(movePaneInLayout(sideBySide, 'a', 'x', 'vertical', true)).toBe(sideBySide)
   })
 })

@@ -177,3 +177,32 @@ test('a terminal dropped on another terminal joins it as a pane, keeps running, 
   await app.window.locator('.tab').first().click()
   await expect(panes).toHaveCount(1)
 })
+
+test('a pane is dragged by its header to another side of the tab', async () => {
+  await app.window.keyboard.press('Control+Shift+D')
+  const panes = app.window.locator('.pane-slot:not(.pane-slot-hidden) .pane-frame')
+  await expect(panes).toHaveCount(2)
+  const [left, right] = await Promise.all([panes.nth(0).boundingBox(), panes.nth(1).boundingBox()])
+  if (left === null || right === null) {
+    throw new Error('The panes are not visible')
+  }
+  expect(left.x).toBeLessThan(right.x)
+
+  await panes.nth(1).locator('.pane-header').hover({ position: { x: 20, y: 10 } })
+  await app.window.mouse.down()
+  await app.window.mouse.move(left.x + left.width / 2, left.y + left.height / 2, { steps: 5 })
+  const overlay = app.window.locator('.pane-slot .split-drop-overlay')
+  await expect(overlay).toBeVisible()
+  await app.window.mouse.move(left.x + left.width / 2, left.y + left.height - 20, { steps: 5 })
+  await expect(overlay).toHaveAttribute('data-side', 'bottom')
+  if (SHOTS !== undefined) {
+    await app.window.screenshot({ path: `${SHOTS}/pane-dragging.png` })
+  }
+  await app.window.mouse.up()
+
+  await expect(overlay).toHaveCount(0)
+  const [top, bottom] = await Promise.all([panes.nth(0).boundingBox(), panes.nth(1).boundingBox()])
+  expect(top?.x).toBe(bottom?.x)
+  expect(top?.y).toBeLessThan(bottom?.y ?? 0)
+  await expect(app.window.locator('.tab')).toHaveCount(1)
+})

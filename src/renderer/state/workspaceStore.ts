@@ -9,6 +9,7 @@ import {
   listPaneIds,
   removePaneFromLayout,
   setSplitRatio,
+  movePaneInLayout,
   splitPaneInLayout,
   type PaneLayout,
   type SplitDirection,
@@ -16,7 +17,7 @@ import {
 } from '../features/terminal/paneTree'
 import { belongsToProject, neighbourTabId, tabLocation } from '../features/terminal/projectTabs'
 import { moveItem } from '../features/terminal/tabOrder'
-import { splitAfterChange, type WorkspaceSplit } from '../features/terminal/workspaceSplit'
+import { directionOfSide, isBeforeSide, splitAfterChange, type EdgeSide, type WorkspaceSplit } from '../features/terminal/workspaceSplit'
 import { joinTerminalTabs, splitOffPane } from '../features/terminal/tabJoin'
 
 export interface TerminalPaneInfo {
@@ -68,10 +69,13 @@ interface WorkspaceState {
   activeTabId: string | null
   split: WorkspaceSplit | null
   draggedTabId: string | null
+  draggedPaneId: string | null
   showSplit: (split: WorkspaceSplit, activeTabId: string) => void
   closeSplit: () => void
   resizeWorkspaceSplit: (ratio: number) => void
   setDraggedTab: (tabId: string | null) => void
+  setDraggedPane: (paneId: string | null) => void
+  movePane: (tabId: string, paneId: string, targetPaneId: string, side: EdgeSide) => void
   openTerminalTab: (options: NewTerminalOptions) => void
   openFileTab: (filePath: string) => void
   activateTab: (tabId: string) => void
@@ -159,6 +163,7 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
   activeTabId: null,
   split: null,
   draggedTabId: null,
+  draggedPaneId: null,
 
   showSplit: (split, activeTabId) => set({ split, activeTabId }),
 
@@ -172,6 +177,18 @@ export const useWorkspaceStore = create<WorkspaceState>()((set, get) => ({
   },
 
   setDraggedTab: (draggedTabId) => set({ draggedTabId }),
+
+  setDraggedPane: (draggedPaneId) => set({ draggedPaneId }),
+
+  movePane: (tabId, paneId, targetPaneId, side) => {
+    set({
+      tabs: mapTerminalTab(get().tabs, tabId, (tab) => ({
+        ...tab,
+        layout: movePaneInLayout(tab.layout, paneId, targetPaneId, directionOfSide(side), isBeforeSide(side)),
+        focusedPaneId: paneId
+      }))
+    })
+  },
 
   openTerminalTab: (options) => {
     const terminalCount = get().tabs.filter((tab) => tab.kind === 'terminal').length

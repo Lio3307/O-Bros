@@ -7,6 +7,7 @@ import { useWorkspaceStore, type TerminalTab } from '../../state/workspaceStore'
 import { useShortcutLabel } from '../../state/shortcutsStore'
 import { EditableTitle } from '../../ui/EditableTitle'
 import { PaneAgentStatus } from './PaneAgentStatus'
+import { PANE_DRAG_TYPE } from './workspaceSplit'
 import { TerminalView } from './TerminalView'
 
 interface PaneFrameProps {
@@ -21,6 +22,7 @@ export function PaneFrame({ tab, paneId, isVisible, isFocusedSide }: PaneFramePr
   const renamePane = useWorkspaceStore((state) => state.renamePane)
   const focusPane = useWorkspaceStore((state) => state.focusPane)
   const movePaneToNewTab = useWorkspaceStore((state) => state.movePaneToNewTab)
+  const setDraggedPane = useWorkspaceStore((state) => state.setDraggedPane)
   const splitRightLabel = useShortcutLabel('splitRight')
   const splitDownLabel = useShortcutLabel('splitDown')
   const closePaneLabel = useShortcutLabel('closePane')
@@ -35,7 +37,17 @@ export function PaneFrame({ tab, paneId, isVisible, isFocusedSide }: PaneFramePr
   return (
     <div className={frameClassName} onMouseDown={() => focusPane(tab.id, paneId)}>
       {hasSeveralPanes && (
-        <div className="pane-header">
+        <div
+          className="pane-header"
+          draggable
+          title="Drag to move this pane"
+          onDragStart={(event) => {
+            event.dataTransfer.setData(PANE_DRAG_TYPE, paneId)
+            event.dataTransfer.effectAllowed = 'move'
+            setDraggedPane(paneId)
+          }}
+          onDragEnd={() => setDraggedPane(null)}
+        >
           <span className="pane-heading">
             <PaneAgentStatus pane={pane} />
             <EditableTitle

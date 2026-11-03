@@ -12,6 +12,17 @@ export type DropSide = 'left' | 'right' | 'top' | 'bottom' | 'center'
 const EDGE_SHARE = 0.34
 
 export const TAB_DRAG_TYPE = 'application/x-o-bros-tab'
+export const PANE_DRAG_TYPE = 'application/x-o-bros-pane'
+
+export type EdgeSide = Exclude<DropSide, 'center'>
+
+export function directionOfSide(side: EdgeSide): SplitDirection {
+  return side === 'left' || side === 'right' ? 'horizontal' : 'vertical'
+}
+
+export function isBeforeSide(side: EdgeSide): boolean {
+  return side === 'left' || side === 'top'
+}
 
 export function dropSideAt(x: number, y: number, width: number, height: number): DropSide {
   const distances: [DropSide, number][] = [
@@ -43,12 +54,12 @@ export function dropPartner(split: WorkspaceSplit | null, activeTabId: string | 
   return isShowingSplit(split, draggedTabId) ? otherTabOf(split, draggedTabId) : null
 }
 
-export function splitFromDrop(side: Exclude<DropSide, 'center'>, draggedTabId: string, partnerTabId: string): WorkspaceSplit {
-  const isDraggedFirst = side === 'left' || side === 'top'
+export function splitFromDrop(side: EdgeSide, draggedTabId: string, partnerTabId: string): WorkspaceSplit {
+  const isDraggedFirst = isBeforeSide(side)
   return {
     first: isDraggedFirst ? draggedTabId : partnerTabId,
     second: isDraggedFirst ? partnerTabId : draggedTabId,
-    direction: side === 'left' || side === 'right' ? 'horizontal' : 'vertical',
+    direction: directionOfSide(side),
     ratio: DEFAULT_SPLIT_RATIO
   }
 }
